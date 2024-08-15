@@ -1,6 +1,6 @@
 <div align="center">
 
-![Logo of agentX](./docs/images/agentx_logo.png)
+<img src="docs/images/agentx_logo.png" width="350">
 
 # **AgentX**
 
