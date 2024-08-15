@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "agentx"
+version = "0.1.0"
+description = "The Ultimate Modular Autonomous AI Agent Framework."
+authors = ["Prabhu Raghav <prabhu@decisionfacts.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<=3.13"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
