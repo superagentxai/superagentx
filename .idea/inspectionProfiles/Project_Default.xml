@@ -1,0 +1,37 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="24">
+            <item index="0" class="java.lang.String" itemvalue="cv2" />
+            <item index="1" class="java.lang.String" itemvalue="uvloop" />
+            <item index="2" class="java.lang.String" itemvalue="httptools" />
+            <item index="3" class="java.lang.String" itemvalue="yarl" />
+            <item index="4" class="java.lang.String" itemvalue="megablocks" />
+            <item index="5" class="java.lang.String" itemvalue="streamlit" />
+            <item index="6" class="java.lang.String" itemvalue="typing_extensions" />
+            <item index="7" class="java.lang.String" itemvalue="httpx" />
+            <item index="8" class="java.lang.String" itemvalue="tiktoken" />
+            <item index="9" class="java.lang.String" itemvalue="pydantic" />
+            <item index="10" class="java.lang.String" itemvalue="jq" />
+            <item index="11" class="java.lang.String" itemvalue="python-dotenv" />
+            <item index="12" class="java.lang.String" itemvalue="df-extract" />
+            <item index="13" class="java.lang.String" itemvalue="openai" />
+            <item index="14" class="java.lang.String" itemvalue="qdrant-client" />
+            <item index="15" class="java.lang.String" itemvalue="boto3" />
+            <item index="16" class="java.lang.String" itemvalue="fastapi" />
+            <item index="17" class="java.lang.String" itemvalue="elasticsearch" />
+            <item index="18" class="java.lang.String" itemvalue="langchain" />
+            <item index="19" class="java.lang.String" itemvalue="ibm-watson-machine-learning" />
+            <item index="20" class="java.lang.String" itemvalue="auto-gptq" />
+            <item index="21" class="java.lang.String" itemvalue="uvicorn" />
+            <item index="22" class="java.lang.String" itemvalue="langchain-experimental" />
+            <item index="23" class="java.lang.String" itemvalue="google-cloud-documentai" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
