@@ -1,2 +1,2 @@
 # agentX
-The Ultimate Modular AI Agent Framework.
+The Ultimate Modular Autonomous AI Agent Framework.
