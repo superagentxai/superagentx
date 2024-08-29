@@ -1,10 +1,21 @@
 from enum import Enum
+from select import select
 from typing import Any
 
 from sqlalchemy import create_engine, text
 
 from agentx.handler.base import BaseHandler
-from agentx.handler.sql.exceptions import InvalidDatabase
+from agentx.handler.sql.exceptions import InvalidDatabase, InvalidSQLAction
+
+
+class SQLAction(str, Enum):
+    SELECT = "select"
+    INSERT = "insert"
+    UPDATE = "update"
+    DELETE = "delete"
+    CREATE_TABLE = "create_table"
+    DROP_TABLE = "drop_table"
+    ALTER_TABLE = "alter_table"
 
 
 class SQLHandler(BaseHandler):
@@ -71,7 +82,25 @@ class SQLHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
-        pass
+        if isinstance(action, str):
+            action = action.lower()
+        match action:
+            case SQLAction.SELECT:
+                return self.select(**kwargs)
+            case SQLAction.INSERT:
+                return self.insert(**kwargs)
+            case SQLAction.UPDATE:
+                return self.update(**kwargs)
+            case SQLAction.DELETE:
+                return self.delete(**kwargs)
+            case SQLAction.CREATE_TABLE:
+                return self.create_table(**kwargs)
+            case SQLAction.DROP_TABLE:
+                return self.drop_table(**kwargs)
+            case SQLAction.ALTER_TABLE:
+                return self.alter_table(**kwargs)
+            case _:
+                raise InvalidSQLAction(f"Invalid sql action `{action}`")
 
     def select(
             self,
