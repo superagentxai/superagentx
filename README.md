@@ -27,6 +27,15 @@
 
 ## Key Features
 
+## Environment Setup
+```shell
+$ cd <path-to>/agentx
+$ python3.12 -m venv venv
+$ source venv/bin/activate
+(venv) $ pip install poetry
+(venv) $ poetry install
+```
+
 ## Installing Dependencies
 ```bash
 poetry shell
