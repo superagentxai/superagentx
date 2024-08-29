@@ -8,7 +8,7 @@ from agentx.exceptions import UnSupportedType
 from agentx.handler.base import BaseHandler
 
 
-class ContentCreatorType(Enum):
+class ContentCreatorType(str, Enum):
     TEXT = "TEXT"
     VIDEO = "VIDEO"
     IMAGE = "IMAGE"
@@ -51,7 +51,7 @@ class ContentCreatorHandler(BaseHandler):
                 )
             ]
         chain = self.llm.invoke(messages)
-        return chain
+        return chain.content
 
     def video_creation(self):
         raise NotImplementedError
