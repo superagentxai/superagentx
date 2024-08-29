@@ -1,13 +1,17 @@
 [tool.poetry]
 name = "agentx"
 version = "0.1.0"
-description = "The Ultimate Modular Autonomous AI Agent Framework."
-authors = ["Prabhu Raghav <prabhu@decisionfacts.io>"]
+description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
+authors = ["DecisionFacts AI <prabhu@decisionfacts.io>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
+pydantic = "^2.8.2"
+langchain = "^0.2.14"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
 
 [build-system]
 requires = ["poetry-core"]
