@@ -1,4 +1,5 @@
 import abc
+from abc import abstractmethod
 from enum import Enum
 from typing import Any
 
@@ -6,6 +7,7 @@ from typing import Any
 # Base Class
 class BaseHandler (abc.ABC):
 
+    @abstractmethod
     def handle(
             self,
             *,
