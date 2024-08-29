@@ -1,11 +1,15 @@
-from abc import ABC
+import abc
+from enum import Enum
 from typing import Any
-
-from pydantic import BaseModel
 
 
 # Base Class
-class BaseHandler (BaseModel, ABC):
+class BaseHandler (abc.ABC):
 
-    def handle(self, *args: Any, **kwargs: Any) -> Any:
+    def handle(
+            self,
+            action: str | Enum,
+            *args,
+            **kwargs
+    ) -> Any:
         raise NotImplementedError("Subclasses should implement this method.")
