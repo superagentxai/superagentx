@@ -1,4 +1,4 @@
-from agentx.tool.base import BaseHandler
+from agentx.handler.base import BaseHandler
 
 
 class MysqlHandler(BaseHandler):
