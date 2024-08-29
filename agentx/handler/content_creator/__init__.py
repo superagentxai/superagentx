@@ -3,10 +3,9 @@ from typing import Any
 
 from langchain_core.language_models.chat_models import BaseLanguageModel
 from langchain_openai.chat_models import ChatOpenAI
-from pydantic import BaseModel
 
 from agentx.exceptions import UnSupportedType
-from agentx.tool.base import BaseHandler
+from agentx.handler.base import BaseHandler
 
 
 class ContentCreatorType(Enum):
