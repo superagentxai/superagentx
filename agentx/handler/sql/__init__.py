@@ -16,8 +16,7 @@ class SQLHandler(BaseHandler):
             host: str | None = None,
             port: int | None = None,
             username: str | None = None,
-            password: str | None = None,
-
+            password: str | None = None
     ):
         self.database_type = database_type.lower()
         self.host = host or "localhost"
