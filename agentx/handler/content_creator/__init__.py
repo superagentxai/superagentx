@@ -26,8 +26,8 @@ class ContentCreatorHandler(BaseHandler):
 
     def handle(
             self,
+            *,
             action: str | Enum,
-            *args,
             **kwargs
     ) -> Any:
         match action:
@@ -54,7 +54,7 @@ class ContentCreatorHandler(BaseHandler):
         return chain.content
 
     def video_creation(self):
-        raise NotImplementedError
+        pass
 
     def image_creation(self):
-        raise NotImplementedError
+        pass
