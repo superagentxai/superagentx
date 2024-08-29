@@ -2,7 +2,7 @@ import os
 from agentx.handler.content_creator import ContentCreatorHandler
 from langchain_openai import ChatOpenAI
 
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = "<OPENAI_API_KEY>"
 content_creator_handler = ContentCreatorHandler(
     prompt="Create the digital marketing content",
     llm=ChatOpenAI(model="gpt-4o")
