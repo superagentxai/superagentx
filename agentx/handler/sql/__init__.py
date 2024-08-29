@@ -68,8 +68,8 @@ class SQLHandler(BaseHandler):
 
     def handle(
             self,
+            *,
             action: str | Enum,
-            *args,
             **kwargs
     ) -> Any:
         pass
