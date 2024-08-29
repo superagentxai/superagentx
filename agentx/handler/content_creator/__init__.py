@@ -33,13 +33,13 @@ class ContentCreatorHandler(BaseHandler):
         match action:
             case ContentCreatorType.TEXT:
                 result = self.text_creation()
+                return result
             case ContentCreatorType.IMAGE:
                 raise NotImplementedError(f"{action} will be implement in future ")
             case ContentCreatorType.VIDEO:
                 raise NotImplementedError(f"{action} will be implement in future ")
             case _:
                 raise InvalidType(f"{action} is not supported")
-        return result
 
     def text_creation(self):
         messages = self.prompt
