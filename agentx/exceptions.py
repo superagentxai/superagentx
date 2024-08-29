@@ -1,2 +1,2 @@
-class UnSupportedType(Exception):
+class InvalidType(Exception):
     pass

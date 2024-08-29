@@ -4,7 +4,7 @@ from typing import Any
 from langchain_core.language_models.chat_models import BaseLanguageModel
 from langchain_openai.chat_models import ChatOpenAI
 
-from agentx.exceptions import UnSupportedType
+from agentx.exceptions import InvalidType
 from agentx.handler.base import BaseHandler
 
 
@@ -34,11 +34,11 @@ class ContentCreatorHandler(BaseHandler):
             case ContentCreatorType.TEXT:
                 result = self.text_creation()
             case ContentCreatorType.IMAGE:
-                raise NotImplementedError(f"{action} future will be implement")
+                raise NotImplementedError(f"{action} will be implement in future ")
             case ContentCreatorType.VIDEO:
-                raise NotImplementedError(f"{action} future will be implement")
+                raise NotImplementedError(f"{action} will be implement in future ")
             case _:
-                raise UnSupportedType(f"{action} is not supported")
+                raise InvalidType(f"{action} is not supported")
         return result
 
     def text_creation(self):
