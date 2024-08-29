@@ -13,8 +13,8 @@ from agentx.handler.email.exceptions import SendEmailFailed, InvalidEmailAction
 
 
 class EmailAction(str, Enum):
-    SEND = "SEND"
-    READ = "READ"
+    SEND = "send"
+    READ = "read"
 
 
 class EmailHandler(BaseHandler):
@@ -51,6 +51,8 @@ class EmailHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+        if isinstance(action, str):
+            action = action.lower()
         match action:
             case EmailAction.SEND:
                 return self.send_email(**kwargs)
