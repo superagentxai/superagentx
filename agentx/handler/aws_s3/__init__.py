@@ -13,8 +13,12 @@ from agentx.handler.base import BaseHandler
 logger = logging.getLogger(__name__)
 
 
-class DownloadFilesFailed:
-    pass
+class AWSS3HandlerEnum(str, Enum):
+
+    LIST_BUCKET = "list_bucket"
+    UPLOAD_FILE = "upload_file"
+    DOWNLOAD_FILE = "download_file"
+    LIST_FILES = "list_files"
 
 
 class AWSS3Handler(BaseHandler):
@@ -36,7 +40,15 @@ class AWSS3Handler(BaseHandler):
         )
 
     def handle(self, *, action: str | Enum, **kwargs) -> Any:
-        pass
+        match action:
+            case AWSS3HandlerEnum.LIST_BUCKET:
+                self.list_buckets(**kwargs)
+            case AWSS3HandlerEnum.UPLOAD_FILE:
+                self.upload_file(**kwargs)
+            case AWSS3HandlerEnum.DOWNLOAD_FILE:
+                self.download_file(**kwargs)
+            case AWSS3HandlerEnum.LIST_FILES:
+                self.list_files()
 
     def list_buckets(
             self,
