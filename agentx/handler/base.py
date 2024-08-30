@@ -15,3 +15,12 @@ class BaseHandler (abc.ABC):
             **kwargs
     ) -> Any:
         raise NotImplementedError("Subclasses should implement this method.")
+
+    @abstractmethod
+    async def ahandle(
+            self,
+            *,
+            action: str | Enum,
+            **kwargs
+    ) -> Any:
+        raise NotImplementedError("Subclasses should implement this method.")
