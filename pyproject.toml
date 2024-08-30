@@ -9,6 +9,8 @@ readme = "README.md"
 python = ">=3.10,<=3.13"
 pydantic = "^2.8.2"
 langchain = "^0.2.14"
+boto3 = "^1.35.8"
+pytest = "^8.3.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
