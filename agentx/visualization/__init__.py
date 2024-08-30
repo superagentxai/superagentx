@@ -2,13 +2,15 @@ import pandas
 import webbrowser
 import os
 
+from datetime import datetime
+from os import PathLike
+from pathlib import Path
 from enum import Enum
 from math import pi
 from bokeh.plotting import figure, output_file, show
 from bokeh.models import FactorRange
 from bokeh.palettes import Category20c
 from bokeh.transform import cumsum
-
 from agentx.visualization.exceptions import InvalidChartType
 
 
@@ -24,32 +26,79 @@ class Visualize:
 
     def render_charts(
             self,
+            *,
             chart_type: str | Enum,
-            data: dict | list
+            data: dict | list,
+            output_type: str | None = None,
+            output_path: str | PathLike[str] | None = None,
+            **kwargs
     ):
-        output_file("agentx_chart_output.html")
 
         match chart_type.lower():
             case ChartType.LINE:
-                self.line_chart(data)
+                self.line_chart(
+                    data=data,
+                    output_type=output_type,
+                    output_path=output_path,
+                    **kwargs
+                )
             case ChartType.VBAR:
-                self.verticalBar(data)
+                self.verticalBar(
+                    data=data,
+                    output_type=output_type,
+                    output_path=output_path,
+                    **kwargs
+                )
             case ChartType.HBAR:
-                self.horizontalBar(data)
+                self.horizontalBar(
+                    data=data,
+                    output_type=output_type,
+                    output_path=output_path,
+                    **kwargs
+                )
             case ChartType.PIE:
-                self.pieChart(data)
+                self.pieChart(
+                    data=data,
+                    output_type=output_type,
+                    output_path=output_path,
+                    **kwargs
+                )
             case ChartType.TABLE:
-                self.table_chart(data)
+                self.table_chart(
+                    data=data,
+                    output_type=output_type,
+                    output_path=output_path,
+                    **kwargs
+                )
             case _:
                 raise InvalidChartType(f'Invalid chart type `{chart_type}`')
 
     @staticmethod
     def line_chart(
+            *,
             data: dict | list,
-            title: str = "Line Chart",
-            line_width: int = 2,
-            color: str = "#1890ff"
+            output_type: str | None = None,
+            output_path: str | PathLike[str] | None = None,
+            title: str | None = None,
+            line_width: int | None = None,
+            outer_width: int | None = None,
+            outer_height: int | None = None,
+            color: str | None = None,
+            show_output: bool = False
     ):
+        if not title:
+            title = "Line Chart"
+        if not line_width:
+            line_width = 2
+        if not outer_width:
+            outer_width = 400
+        if not outer_height:
+            outer_height = 400
+        if not color:
+            color = "#1890ff"
+        if not output_type:
+            output_type = "html"
+
         if isinstance(data, dict):
             data = [data]
 
@@ -61,8 +110,8 @@ class Visualize:
                 title=title,
                 x_axis_label="x",
                 y_axis_label="y",
-                outer_width=400,
-                outer_height=400
+                outer_width=outer_width,
+                outer_height=outer_height
             )
             chart.line(
                 x,
@@ -70,18 +119,38 @@ class Visualize:
                 line_width=line_width,
                 color=color
             )
-            show(chart)
+
+            if not output_path:
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+
+            output_file(output_path)
+
+            if show_output:
+                show(chart)
 
     @staticmethod
     def verticalBar(
+            *,
             data: dict | list,
-            title: str = "VerticalBar Chart",
-            width: float = 0.7,
-            color: str = "#1890ff"
+            output_type: str | None = None,
+            output_path: str | PathLike[str] | None = None,
+            title: str | None = None,
+            width: float | None = None,
+            color: str | None = None,
+            show_output: bool = False
     ):
+        if not title:
+            title = "VerticalBar Chart"
+        if not width:
+            width = 0.7
+        if not color:
+            color = "#1890ff"
+        if not output_type:
+            output_type = "html"
+
         if isinstance(data, dict):
             data = [data]
-        print(len(data))
+
         for items in data:
             x = list(items.keys())
             top = list(items.values())
@@ -96,15 +165,36 @@ class Visualize:
                 width=width,
                 color=color
             )
-            show(chart)
+
+            if not output_path:
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+
+            output_file(output_path)
+
+            if show_output:
+                show(chart)
 
     @staticmethod
     def horizontalBar(
+            *,
             data: dict | list,
-            title: str = "HorizontalBar Chart",
-            color: str = "#1890ff",
-            height: float = 0.7,
+            output_type: str | None = None,
+            output_path: str | PathLike[str] | None = None,
+            title: str | None = None,
+            color: str | None = None,
+            height: float | None = None,
+            show_output: bool = False
+
     ):
+        if not title:
+            title = "HorizontalBar Chart"
+        if not color:
+            color = "#1890ff"
+        if not height:
+            height = 0.7
+        if not output_type:
+            output_type = "html"
+
         if isinstance(data, dict):
             data = [data]
 
@@ -122,19 +212,39 @@ class Visualize:
                 height=height,
                 color=color
             )
-            show(chart)
+
+            if not output_path:
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+
+            output_file(output_path)
+
+            if show_output:
+                show(chart)
 
     @staticmethod
     def pieChart(
+            *,
             data: dict | list,
-            title: str = "Pie Chart",
-            line_color: str = "white",
-            fill_color: str = "color",
+            output_type: str | None = None,
+            output_path: str | PathLike[str] | None = None,
+            title: str | None = None,
+            line_color: str | None = None,
+            fill_color: str | None = None,
+            show_output: bool = False
     ):
+        if not title:
+            title = "Pie Chart"
+        if not line_color:
+            line_color = "white"
+        if not fill_color:
+            fill_color = "color"
+        if not output_type:
+            output_type = "html"
+
         if isinstance(data, dict):
             data = [data]
 
-        for items in data:
+        for index, items in enumerate(data):
             data = pandas.Series(items).reset_index(name='value').rename(columns={'index': 'key'})
             data['angle'] = data['value'] / data['value'].sum() * 2 * pi
             data['color'] = Category20c[len(items)]
@@ -159,17 +269,33 @@ class Visualize:
             chart.axis.axis_label = None
             chart.axis.visible = False
             chart.grid.grid_line_color = None
-            show(chart)
+
+            if not output_path:
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+
+            output_file(output_path)
+
+            if show_output:
+                show(chart)
 
     @staticmethod
     def table_chart(
-            data: dict | list
+            *,
+            data: dict | list,
+            show_output: bool = False,
+            output_type: str | None = None,
+            output_path: str | PathLike[str]
     ):
         if isinstance(data, dict):
             data = [data]
 
         table_data = pandas.DataFrame(data)
-        output_file = "agentx_table.html"
-        table_data.to_html(output_file)
-        filename = 'file:///' + os.getcwd() + '/' + output_file
-        webbrowser.open_new_tab(filename)
+
+        if not output_path:
+            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+
+        table_data.to_html(str(output_path))
+        filename = 'file:///' + os.getcwd() + '/' + str(output_path)
+
+        if show_output:
+            webbrowser.open_new_tab(filename)
