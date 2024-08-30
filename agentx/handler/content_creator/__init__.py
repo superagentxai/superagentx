@@ -1,3 +1,4 @@
+from abc import ABC
 from enum import Enum
 from typing import Any
 
@@ -9,12 +10,12 @@ from agentx.handler.base import BaseHandler
 
 
 class ContentCreatorType(str, Enum):
-    TEXT = "TEXT"
-    VIDEO = "VIDEO"
-    IMAGE = "IMAGE"
+    TEXT = "text"
+    VIDEO = "video"
+    IMAGE = "image"
 
 
-class ContentCreatorHandler(BaseHandler):
+class ContentCreatorHandler(BaseHandler, ABC):
 
     def __init__(
             self,
@@ -30,10 +31,11 @@ class ContentCreatorHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+        if isinstance(action, str):
+            action = action.lower()
         match action:
             case ContentCreatorType.TEXT:
-                result = self.text_creation()
-                return result
+                return self.text_creation()
             case ContentCreatorType.IMAGE:
                 raise NotImplementedError(f"{action} will be implement in future ")
             case ContentCreatorType.VIDEO:
@@ -57,4 +59,40 @@ class ContentCreatorHandler(BaseHandler):
         pass
 
     def image_creation(self):
+        pass
+
+    async def ahandle(
+            self,
+            *,
+            action: str | Enum,
+            **kwargs
+    ) -> Any:
+        if isinstance(action, str):
+            action = action.lower()
+        match action:
+            case ContentCreatorType.TEXT:
+                return await self.atext_creation()
+            case ContentCreatorType.IMAGE:
+                raise NotImplementedError(f"{action} will be implement in future ")
+            case ContentCreatorType.VIDEO:
+                raise NotImplementedError(f"{action} will be implement in future ")
+            case _:
+                raise InvalidType(f"{action} is not supported")
+
+    async def atext_creation(self):
+        messages = self.prompt
+        if isinstance(self.llm, ChatOpenAI):
+            messages = [
+                (
+                    "human",
+                    self.prompt
+                )
+            ]
+        chain = await self.llm.ainvoke(messages)
+        return chain.content
+
+    async def avideo_creation(self):
+        pass
+
+    async def aimage_creation(self):
         pass
