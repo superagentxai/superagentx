@@ -31,6 +31,8 @@ class ContentCreatorHandler(BaseHandler, ABC):
             action: str | Enum,
             **kwargs
     ) -> Any:
+        if isinstance(action, str):
+            action = action.lower()
         match action:
             case ContentCreatorType.TEXT:
                 return self.text_creation()
@@ -66,7 +68,7 @@ class ContentCreatorHandler(BaseHandler, ABC):
             **kwargs
     ) -> Any:
         if isinstance(action, str):
-            action = action.upper()
+            action = action.lower()
         match action:
             case ContentCreatorType.TEXT:
                 return await self.atext_creation()
