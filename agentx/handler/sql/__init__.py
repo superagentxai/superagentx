@@ -1,11 +1,9 @@
 from enum import Enum
-from select import select
 from typing import Any
-
-from sqlalchemy import create_engine, text
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.sql.exceptions import InvalidDatabase, InvalidSQLAction
+from sqlalchemy import create_engine, text
 
 
 class SQLAction(str, Enum):
@@ -163,5 +161,3 @@ class SQLHandler(BaseHandler):
                 text(stmt),
                 values
             )
-
-
