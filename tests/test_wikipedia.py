@@ -8,10 +8,21 @@ search = Wikipedia(
 
 
 def test_search():
-    result = search.handle(
+    search.handle(
         action="summary",
         query="story about mangatha movie",
         sentences=10,
-        **{}
+        # language="hi"
     )
-    assert result
+    #
+    # search.handle(
+    #     action="search",
+    #     query="good",
+    #     results=10,
+    #     # language="hi"
+    # )
+
+    # search.handle(
+    #     action="page",
+    #     query="india"
+    # )

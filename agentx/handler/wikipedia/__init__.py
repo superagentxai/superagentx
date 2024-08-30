@@ -34,16 +34,40 @@ class Wikipedia(BaseHandler):
             case SearchAction.SUMMARY:
                 self.get_summary(**kwargs)
             case SearchAction.SEARCH:
-                pass
+                self.get_search(**kwargs)
             case SearchAction.PAGE:
-                pass
+                self.get_page(**kwargs)
             case _:
                 raise InvalidAction(f'Invalid Action `{action}`')
 
     def get_summary(self,
-                    query,
-                    sentences
-                    ):
+                    query: str | None = None,
+                    sentences: int | None = None,
+                    language: str | None = None
+                    ) -> Any:
+        if language:
+            wikipedia.set_lang(language)
+
         result = wikipedia.summary(query, sentences=sentences)
-        return result
         print(result)
+        return result
+
+    def get_search(self,
+                   query: str | None = None,
+                   results: int | None = None,
+                   language: str | None = None
+                   ):
+        if language:
+            wikipedia.set_lang(language)
+
+        results = wikipedia.search(query, results=results)
+        print(results)
+        return results
+
+    def get_page(self,
+                 query
+                 ):
+        print("query---->", query)
+        results = wikipedia.page(query)
+        # print(results)
+        return results
