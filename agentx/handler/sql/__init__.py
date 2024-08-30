@@ -21,6 +21,7 @@ class SQLHandler(BaseHandler):
 
     def __init__(
             self,
+            *,
             database_type: str,
             database: str,
             host: str | None = None,
@@ -131,6 +132,7 @@ class SQLHandler(BaseHandler):
 
     def select(
             self,
+            *,
             query: str
     ):
         with self._engine.connect() as conn:
@@ -138,6 +140,7 @@ class SQLHandler(BaseHandler):
 
     def insert(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -148,6 +151,7 @@ class SQLHandler(BaseHandler):
 
     def update(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -158,6 +162,7 @@ class SQLHandler(BaseHandler):
 
     def delete(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -168,6 +173,7 @@ class SQLHandler(BaseHandler):
 
     def create_table(
             self,
+            *,
             stmt: str
     ):
         with self._engine.begin() as conn:
@@ -177,6 +183,7 @@ class SQLHandler(BaseHandler):
 
     def drop_table(
             self,
+            *,
             stmt: str
     ):
         with self._engine.begin() as conn:
@@ -186,6 +193,7 @@ class SQLHandler(BaseHandler):
 
     def alter_table(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -196,6 +204,7 @@ class SQLHandler(BaseHandler):
 
     def _stat_begin(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -233,6 +242,7 @@ class SQLHandler(BaseHandler):
 
     async def aselect(
             self,
+            *,
             query: str
     ):
         async with self._aengine.connect() as conn:
@@ -241,6 +251,7 @@ class SQLHandler(BaseHandler):
 
     async def ainsert(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -251,6 +262,7 @@ class SQLHandler(BaseHandler):
 
     async def aupdate(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -261,6 +273,7 @@ class SQLHandler(BaseHandler):
 
     async def adelete(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -271,6 +284,7 @@ class SQLHandler(BaseHandler):
 
     async def acreate_table(
             self,
+            *,
             stmt: str
     ):
         async with self._aengine.begin() as conn:
@@ -279,6 +293,7 @@ class SQLHandler(BaseHandler):
             )
     async def adrop_table(
             self,
+            *,
             stmt: str
     ):
         async with self._aengine.begin() as conn:
@@ -288,6 +303,7 @@ class SQLHandler(BaseHandler):
 
     async def aalter_table(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -298,6 +314,7 @@ class SQLHandler(BaseHandler):
 
     async def _astat_begin(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
