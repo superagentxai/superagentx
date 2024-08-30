@@ -161,5 +161,3 @@ class SQLHandler(BaseHandler):
                 text(stmt),
                 values
             )
-
-
