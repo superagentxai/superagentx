@@ -1,18 +1,18 @@
 from enum import Enum
 from typing import Any
-from agentx.handler.base import BaseHandler
-from agentx.handler.wikipedia.exceptions import InvalidAction
 
 import wikipedia
+
+from agentx.handler.base import BaseHandler
+from agentx.handler.wikipedia.exceptions import InvalidAction
 
 
 class SearchAction(str, Enum):
     SUMMARY = "summary"
     SEARCH = "search"
-    PAGE = "page"
 
 
-class Wikipedia(BaseHandler):
+class WikipediaHandler(BaseHandler):
 
     def __init__(
             self,
@@ -26,8 +26,8 @@ class Wikipedia(BaseHandler):
 
     def handle(
             self,
-            *,
             action: str | Enum,
+            *args,
             **kwargs
     ) -> Any:
         match action.lower():
@@ -35,8 +35,6 @@ class Wikipedia(BaseHandler):
                 self.get_summary(**kwargs)
             case SearchAction.SEARCH:
                 self.get_search(**kwargs)
-            case SearchAction.PAGE:
-                self.get_page(**kwargs)
             case _:
                 raise InvalidAction(f'Invalid Action `{action}`')
 
@@ -44,7 +42,7 @@ class Wikipedia(BaseHandler):
                     query: str | None = None,
                     sentences: int | None = None,
                     language: str | None = None
-                    ) -> Any:
+                    ):
         if language:
             wikipedia.set_lang(language)
 
@@ -64,10 +62,5 @@ class Wikipedia(BaseHandler):
         print(results)
         return results
 
-    def get_page(self,
-                 query
-                 ):
-        print("query---->", query)
-        results = wikipedia.page(query)
-        # print(results)
-        return results
+    async def ahandle(self, *, action: str | Enum, **kwargs) -> Any:
+        pass

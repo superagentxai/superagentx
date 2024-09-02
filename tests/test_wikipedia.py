@@ -1,6 +1,6 @@
-from agentx.handler.wikipedia import Wikipedia
+from agentx.handler.wikipedia import WikipediaHandler
 
-search = Wikipedia(
+search = WikipediaHandler(
     action="",
     query="",
     sentences=5
@@ -10,19 +10,13 @@ search = Wikipedia(
 def test_search():
     search.handle(
         action="summary",
-        query="story about mangatha movie",
-        sentences=10,
-        # language="hi"
+        query="story about titanic movie",
+        sentences=20
     )
-    #
+
     # search.handle(
     #     action="search",
     #     query="good",
     #     results=10,
-    #     # language="hi"
-    # )
-
-    # search.handle(
-    #     action="page",
-    #     query="india"
+    #     language="hi"
     # )
