@@ -218,6 +218,14 @@ class WeatherHandler(BaseHandler):
 
         return response
 
+    async def ahandle(
+            self,
+            *,
+            action: str | Enum,
+            **kwargs
+    ) -> Any:
+        pass
+
     def handle(
             self,
             action: str | Enum,
