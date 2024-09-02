@@ -9,3 +9,6 @@ class InvalidWeatherAction(Exception):
 
 class InvalidLocation(Exception):
     pass
+
+class InvalidResponseType(Exception):
+    pass
