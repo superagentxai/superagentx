@@ -1,13 +1,14 @@
+import logging
 from enum import Enum
 from typing import Any
 
-from jira.client import ResultList
+from jira import JIRA, Issue
+from jira.client import ResultList, Sprint
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.exceptions import InvalidAction
 from agentx.handler.jira.exceptions import SprintException, AuthException, ProjectException, TaskException
-from jira import JIRA, Issue
-import logging
+from agentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -24,20 +25,6 @@ class JiraActions(str, Enum):
     ASSIGN_ISSUE = 'assign_issue'
 
 
-def authenticate(
-        email: str,
-        token: str,
-        organization: str
-):
-    try:
-        jira = JIRA(f'https://{organization}.atlassian.net', basic_auth=(email, token))
-        print("Authenticate Success")
-        return jira
-    except Exception as ex:
-        message = f'JIRA Handler Authentication Problem {ex}'
-        raise AuthException(message)
-
-
 class JiraHandler(BaseHandler):
 
     def __init__(
@@ -49,7 +36,20 @@ class JiraHandler(BaseHandler):
         self.email = email
         self.token = token
         self.organization = organization
-        self._connection: JIRA = authenticate(self.email, self.token, self.organization)
+        self._connection: JIRA = self._connect()
+
+    def _connect(self) -> JIRA:
+        try:
+            jira = JIRA(
+                server=f'https://{self.organization}.atlassian.net',
+                basic_auth=(self.email, self.token)
+            )
+            logger.debug("Authenticate Success")
+            return jira
+        except Exception as ex:
+            message = f'JIRA Handler Authentication Problem {ex}'
+            logger.error(message, exc_info=ex)
+            raise AuthException(message)
 
     def handle(
             self,
@@ -63,11 +63,9 @@ class JiraHandler(BaseHandler):
             case JiraActions.PROJECT:
                 return self.get_list_projects()
             case JiraActions.ACTIVE_SPRINT:
-                sprint: ResultList = self.get_active_sprint(**kwargs)
-                return sprint
+                return self.get_active_sprint(**kwargs)
             case JiraActions.CREATE_SPRINT:
-                sprint: ResultList = self.create_sprint(**kwargs)
-                return sprint
+                return self.create_sprint(**kwargs)
             case JiraActions.GET_ISSUE:
                 return self.get_issue(**kwargs)
             case JiraActions.ADD_ISSUE_TO_SPRINT:
@@ -125,7 +123,7 @@ class JiraHandler(BaseHandler):
             description: str | None = ''
     ):
         try:
-            sprint_info: ResultList = self._connection.create_sprint(
+            sprint_info: Sprint = self._connection.create_sprint(
                 name=name,
                 board_id=board_id,
                 startDate=start_date,
@@ -220,3 +218,35 @@ class JiraHandler(BaseHandler):
             message = f"Comments added failed! {ex}"
             logger.error(message)
             raise TaskException(message)
+
+    async def ahandle(
+            self,
+            *,
+            action: str | Enum,
+            **kwargs
+    ) -> Any:
+        if isinstance(action, str):
+            action = action.lower()
+        match action:
+            case JiraActions.PROJECT:
+                return await sync_to_async(self.get_list_projects)
+            case JiraActions.ACTIVE_SPRINT:
+                return await sync_to_async(self.get_active_sprint, **kwargs)
+            case JiraActions.CREATE_SPRINT:
+                return await sync_to_async(self.create_sprint, **kwargs)
+            case JiraActions.GET_ISSUE:
+                return await sync_to_async(self.get_issue, **kwargs)
+            case JiraActions.ADD_ISSUE_TO_SPRINT:
+                return await sync_to_async(self.add_issue_to_sprint, **kwargs)
+            case JiraActions.MOVE_TO_BACKLOG:
+                return await sync_to_async(self.move_to_backlog, **kwargs)
+            case JiraActions.ADD_COMMENT:
+                return await sync_to_async(self.add_comment_for_issue, **kwargs)
+            case JiraActions.CREATE_ISSUE:
+                raise NotImplementedError
+            case JiraActions.ASSIGN_ISSUE:
+                raise NotImplementedError
+            case _:
+                message = f'Invalid Jira action {action}!'
+                logger.error(message)
+                raise InvalidAction(message)
