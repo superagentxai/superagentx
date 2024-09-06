@@ -1,5 +1,6 @@
-import asyncio
 from typing import Any
+
+import asyncio
 
 
 async def sync_to_async(func, *args, **kwargs) -> Any:
