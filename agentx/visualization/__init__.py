@@ -2,6 +2,7 @@ import os
 import webbrowser
 from datetime import datetime
 from enum import Enum
+from itertools import dropwhile
 from math import pi
 from os import PathLike
 from pathlib import Path
@@ -514,9 +515,6 @@ class Visualize:
             data = [data]
 
         async for index, items in iter_to_aiter(enumerate(data)):
-            # _series = pandas.Series(items)
-            # _series = await sync_to_async(pandas.Series(items).reset_index, name='value')
-            # data = await sync_to_async(_series.rename, columns={'index': 'key'})
             data = pandas.Series(items).reset_index(name='value').rename(columns={'index': 'key'})
             data['angle'] = data['value'] / data['value'].sum() * 2 * pi
             data['color'] = Category20c[len(items)]
