@@ -1,16 +1,18 @@
-import pandas
-import webbrowser
 import os
-
+import webbrowser
 from datetime import datetime
-from os import PathLike
-from pathlib import Path
 from enum import Enum
 from math import pi
-from bokeh.plotting import figure, output_file, show
+from os import PathLike
+from pathlib import Path
+
+import pandas
 from bokeh.models import FactorRange
 from bokeh.palettes import Category20c
+from bokeh.plotting import figure, output_file, show
 from bokeh.transform import cumsum
+
+from agentx.utils.helper import sync_to_async
 from agentx.visualization.exceptions import InvalidChartType
 
 
@@ -24,60 +26,58 @@ class ChartType(str, Enum):
 
 class Visualize:
 
+    def __init__(
+            self,
+            output_type: str | None = None
+    ):
+        self.output_type = output_type  or "html"
+
     def render_charts(
             self,
             *,
             chart_type: str | Enum,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             **kwargs
     ):
-
         match chart_type.lower():
             case ChartType.LINE:
                 self.line_chart(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.VBAR:
-                self.verticalBar(
+                self.vertical_bar(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.HBAR:
-                self.horizontalBar(
+                self.horizontal_bar(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.PIE:
-                self.pieChart(
+                self.pie_chart(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.TABLE:
                 self.table_chart(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case _:
                 raise InvalidChartType(f'Invalid chart type `{chart_type}`')
 
-    @staticmethod
     def line_chart(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_width: int | None = None,
@@ -96,8 +96,6 @@ class Visualize:
             outer_height = 400
         if not color:
             color = "#1890ff"
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -121,18 +119,17 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
             output_file(output_path)
 
             if show_output:
                 show(chart)
 
-    @staticmethod
-    def verticalBar(
+    def vertical_bar(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             width: float | None = None,
@@ -145,8 +142,6 @@ class Visualize:
             width = 0.7
         if not color:
             color = "#1890ff"
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -167,18 +162,17 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
             output_file(output_path)
 
             if show_output:
                 show(chart)
 
-    @staticmethod
-    def horizontalBar(
+    def horizontal_bar(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             color: str | None = None,
@@ -192,8 +186,6 @@ class Visualize:
             color = "#1890ff"
         if not height:
             height = 0.7
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -214,18 +206,17 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
             output_file(output_path)
 
             if show_output:
                 show(chart)
 
-    @staticmethod
-    def pieChart(
+    def pie_chart(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_color: str | None = None,
@@ -238,8 +229,6 @@ class Visualize:
             line_color = "white"
         if not fill_color:
             fill_color = "color"
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -271,19 +260,18 @@ class Visualize:
             chart.grid.grid_line_color = None
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
             output_file(output_path)
 
             if show_output:
                 show(chart)
 
-    @staticmethod
     def table_chart(
+            self,
             *,
             data: dict | list,
             show_output: bool = False,
-            output_type: str | None = None,
             output_path: str | PathLike[str]
     ):
         if isinstance(data, dict):
@@ -292,7 +280,7 @@ class Visualize:
         table_data = pandas.DataFrame(data)
 
         if not output_path:
-            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
         table_data.to_html(str(output_path))
         filename = 'file:///' + os.getcwd() + '/' + str(output_path)
@@ -300,61 +288,52 @@ class Visualize:
         if show_output:
             webbrowser.open_new_tab(filename)
 
-
     async def arender_charts(
             self,
             *,
             chart_type: str | Enum,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             **kwargs
     ):
-
         match chart_type.lower():
             case ChartType.LINE:
                 await self.aline_chart(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.VBAR:
-                await self.averticalBar(
+                await self.avertical_bar(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.HBAR:
-                await self.ahorizontalBar(
+                await self.ahorizontal_bar(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.PIE:
-                await self.apieChart(
+                await self.apie_chart(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.TABLE:
                 await self.atable_chart(
                     data=data,
-                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case _:
                 raise InvalidChartType(f'Invalid chart type `{chart_type}`')
 
-    @staticmethod
     async def aline_chart(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_width: int | None = None,
@@ -373,8 +352,6 @@ class Visualize:
             outer_height = 400
         if not color:
             color = "#1890ff"
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -398,18 +375,17 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
-            output_file(output_path)
+            await sync_to_async(output_file, output_path)
 
             if show_output:
-                show(chart)
+                await sync_to_async(show, chart)
 
-    @staticmethod
-    async def averticalBar(
+    async def avertical_bar(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             width: float | None = None,
@@ -422,8 +398,6 @@ class Visualize:
             width = 0.7
         if not color:
             color = "#1890ff"
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -444,18 +418,17 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
-            output_file(output_path)
+            await sync_to_async(output_file, output_path)
 
             if show_output:
-                show(chart)
+                await sync_to_async(show, chart)
 
-    @staticmethod
-    async def ahorizontalBar(
+    async def ahorizontal_bar(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             color: str | None = None,
@@ -469,8 +442,6 @@ class Visualize:
             color = "#1890ff"
         if not height:
             height = 0.7
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -491,18 +462,17 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
-            output_file(output_path)
+            await sync_to_async(output_file, output_path)
 
             if show_output:
-                show(chart)
+                await sync_to_async(show, chart)
 
-    @staticmethod
-    async def apieChart(
+    async def apie_chart(
+            self,
             *,
             data: dict | list,
-            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_color: str | None = None,
@@ -515,8 +485,6 @@ class Visualize:
             line_color = "white"
         if not fill_color:
             fill_color = "color"
-        if not output_type:
-            output_type = "html"
 
         if isinstance(data, dict):
             data = [data]
@@ -548,19 +516,18 @@ class Visualize:
             chart.grid.grid_line_color = None
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
-            output_file(output_path)
+            await sync_to_async(output_file, output_path)
 
             if show_output:
-                show(chart)
+                await sync_to_async(show, chart)
 
-    @staticmethod
     async def atable_chart(
+            self,
             *,
             data: dict | list,
             show_output: bool = False,
-            output_type: str | None = None,
             output_path: str | PathLike[str]
     ):
         if isinstance(data, dict):
@@ -569,10 +536,10 @@ class Visualize:
         table_data = await pandas.DataFrame(data)
 
         if not output_path:
-            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type}"
+            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
 
         table_data.to_html(str(output_path))
         filename = 'file:///' + os.getcwd() + '/' + str(output_path)
 
         if show_output:
-            webbrowser.open_new_tab(filename)
+            await sync_to_async(webbrowser.open_new_tab, filename)
