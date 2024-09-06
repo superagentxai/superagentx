@@ -1,3 +1,5 @@
+import asyncio
+
 from agentx.handler.weather import WeatherHandler
 
 # API KEY is required if commercial. otherwise not required
@@ -5,8 +7,8 @@ from agentx.handler.weather import WeatherHandler
 w_handler = WeatherHandler()
 
 
-def test_forecast_weather():
-    res = w_handler.handle(
+async def test_forecast_weather():
+    res = await w_handler.ahandle(
         location="Chennai",
         forecast_days=7,
         past_days=0,
@@ -18,8 +20,8 @@ def test_forecast_weather():
 
     assert res
 
-def test_historical_weather():
-    res = w_handler.handle(
+async def test_historical_weather():
+    res = await w_handler.ahandle(
         action="historical",
         location="chennai",
         start_date="2024-08-14",
@@ -29,8 +31,8 @@ def test_historical_weather():
     )
     assert res
 
-def test_climate_weather():
-    res = w_handler.handle(
+async def test_climate_weather():
+    res = await w_handler.ahandle(
         location="chennai",
         start_date="2024-08-14",
         end_date="2024-08-28",
@@ -39,8 +41,8 @@ def test_climate_weather():
     )
     assert res
 
-def test_flood_weather():
-    res = w_handler.handle(
+async def test_flood_weather():
+    res = await w_handler.ahandle(
         location="chennai",
         forecast_days=3,
         past_days=0,
@@ -49,8 +51,8 @@ def test_flood_weather():
     )
     assert res
 
-def test_air_quality_weather():
-    res = w_handler.handle(
+async def test_air_quality_weather():
+    res = await w_handler.ahandle(
         location="chennai",
         forecast_days=3,
         past_days=0,
@@ -60,8 +62,8 @@ def test_air_quality_weather():
     )
     assert res
 
-def test_marine_weather():
-    res = w_handler.handle(
+async def test_marine_weather():
+    res = await w_handler.ahandle(
         location="chennai",
         forecast_days=3,
         past_days=0,
@@ -74,4 +76,4 @@ def test_marine_weather():
 
 
 if __name__ == '__main__':
-    test_flood_weather()
+    asyncio.run(test_flood_weather())
