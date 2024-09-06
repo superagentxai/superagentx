@@ -9,6 +9,7 @@ readme = "README.md"
 python = ">=3.10,<=3.13"
 pydantic = "^2.8.2"
 langchain = "^0.2.14"
+boto3 = "^1.35.8"
 langchain-openai = "0.1.23"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.32"}
 psycopg2-binary = "^2.9.9"
@@ -28,6 +29,10 @@ asyncpg = "^0.29.0"
 aiomysql = "^0.2.0"
 pyodbc = "^5.1.0"
 aioodbc = "^0.5.0"
+pandas = "^2.2.2"
+bokeh = "^3.5.2"
+jira = "^3.8.0"
+wikipedia = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
