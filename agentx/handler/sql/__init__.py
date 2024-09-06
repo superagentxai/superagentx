@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, final
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.sql.exceptions import InvalidDatabase, InvalidSQLAction
@@ -104,6 +104,7 @@ class SQLHandler(BaseHandler):
             self.port = 1433
         return f"mssql+aioodbc://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?charset=utf8"
 
+    @final
     def handle(
             self,
             *,
@@ -214,6 +215,7 @@ class SQLHandler(BaseHandler):
                 values
             )
 
+    @final
     async def ahandle(
             self,
             *,
@@ -291,6 +293,7 @@ class SQLHandler(BaseHandler):
             return await conn.execute(
                 text(stmt)
             )
+
     async def adrop_table(
             self,
             *,
