@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 
-class LLMType(Enum):
+class LLMType(str, Enum):
     OPENAI_CLIENT = 'openai'
     AZURE_OPENAI_CLIENT = 'azure-openai'
     LLAMA_CLIENT = 'llama'
