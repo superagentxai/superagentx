@@ -85,8 +85,7 @@ class JiraHandler(BaseHandler):
 
     def get_list_projects(self):
         try:
-            projects = self._connection.projects()
-            return projects
+            return self._connection.projects()
         except Exception as ex:
             message = f"Projects Getting Error! {ex}"
             logger.error(message)
@@ -101,13 +100,12 @@ class JiraHandler(BaseHandler):
             status: str | None = 'active'
     ):
         try:
-            sprint_info: ResultList = self._connection.sprints(
+            return self._connection.sprints(
                 board_id=board_id,
                 startAt=start,
                 maxResults=size,
                 state=status
             )
-            return sprint_info
         except Exception as ex:
             message = f"Active Sprint Not Found! {ex}"
             logger.error(message)
@@ -123,14 +121,13 @@ class JiraHandler(BaseHandler):
             description: str | None = ''
     ):
         try:
-            sprint_info: Sprint = self._connection.create_sprint(
+            return self._connection.create_sprint(
                 name=name,
                 board_id=board_id,
                 startDate=start_date,
                 endDate=end_date,
                 goal=description
             )
-            return sprint_info
         except Exception as ex:
             message = f"Sprint Creation Failed! {ex}"
             logger.error(message)
@@ -145,8 +142,7 @@ class JiraHandler(BaseHandler):
             message = f"Issue Id is not empty"
             raise TaskException(message)
         try:
-            issue: Issue = self._connection.issue(id=issue_id)
-            return issue.raw
+            return self._connection.issue(id=issue_id).raw
         except Exception as ex:
             message = f"Issue Not Found! {ex}"
             logger.error(message)
@@ -168,11 +164,10 @@ class JiraHandler(BaseHandler):
                 board_id=board_id
             )
             for sprint in current_sprint:
-                created_task = self._connection.add_issues_to_sprint(
+                return self._connection.add_issues_to_sprint(
                     sprint_id=sprint.id,
                     issue_keys=issue_keys
                 )
-                return created_task
         except Exception as ex:
             message = f"Failed to add issue! {ex}"
             logger.error(message)
@@ -186,10 +181,9 @@ class JiraHandler(BaseHandler):
         if issue_keys is None:
             issue_keys = []
         try:
-            created_task = self._connection.move_to_backlog(
+            return self._connection.move_to_backlog(
                 issue_keys=issue_keys
             )
-            return created_task
         except Exception as ex:
             message = f"Failed to move backlog! {ex}"
             logger.error(message)
@@ -209,11 +203,10 @@ class JiraHandler(BaseHandler):
                 message = f"Comments is not empty"
                 raise TaskException(message)
             else:
-                comments_info = self._connection.add_comment(
+                return self._connection.add_comment(
                     issue=issue_keys,
                     body=comments
                 )
-                return comments_info
         except Exception as ex:
             message = f"Comments added failed! {ex}"
             logger.error(message)
