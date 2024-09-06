@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, final
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.sql.exceptions import InvalidDatabase, InvalidSQLAction
@@ -21,6 +21,7 @@ class SQLHandler(BaseHandler):
 
     def __init__(
             self,
+            *,
             database_type: str,
             database: str,
             host: str | None = None,
@@ -103,6 +104,7 @@ class SQLHandler(BaseHandler):
             self.port = 1433
         return f"mssql+aioodbc://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?charset=utf8"
 
+    @final
     def handle(
             self,
             *,
@@ -131,6 +133,7 @@ class SQLHandler(BaseHandler):
 
     def select(
             self,
+            *,
             query: str
     ):
         with self._engine.connect() as conn:
@@ -138,6 +141,7 @@ class SQLHandler(BaseHandler):
 
     def insert(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -148,6 +152,7 @@ class SQLHandler(BaseHandler):
 
     def update(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -158,6 +163,7 @@ class SQLHandler(BaseHandler):
 
     def delete(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -168,6 +174,7 @@ class SQLHandler(BaseHandler):
 
     def create_table(
             self,
+            *,
             stmt: str
     ):
         with self._engine.begin() as conn:
@@ -177,6 +184,7 @@ class SQLHandler(BaseHandler):
 
     def drop_table(
             self,
+            *,
             stmt: str
     ):
         with self._engine.begin() as conn:
@@ -186,6 +194,7 @@ class SQLHandler(BaseHandler):
 
     def alter_table(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -196,6 +205,7 @@ class SQLHandler(BaseHandler):
 
     def _stat_begin(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -205,6 +215,7 @@ class SQLHandler(BaseHandler):
                 values
             )
 
+    @final
     async def ahandle(
             self,
             *,
@@ -233,6 +244,7 @@ class SQLHandler(BaseHandler):
 
     async def aselect(
             self,
+            *,
             query: str
     ):
         async with self._aengine.connect() as conn:
@@ -241,6 +253,7 @@ class SQLHandler(BaseHandler):
 
     async def ainsert(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -251,6 +264,7 @@ class SQLHandler(BaseHandler):
 
     async def aupdate(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -261,6 +275,7 @@ class SQLHandler(BaseHandler):
 
     async def adelete(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -271,14 +286,17 @@ class SQLHandler(BaseHandler):
 
     async def acreate_table(
             self,
+            *,
             stmt: str
     ):
         async with self._aengine.begin() as conn:
             return await conn.execute(
                 text(stmt)
             )
+
     async def adrop_table(
             self,
+            *,
             stmt: str
     ):
         async with self._aengine.begin() as conn:
@@ -288,6 +306,7 @@ class SQLHandler(BaseHandler):
 
     async def aalter_table(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
@@ -298,6 +317,7 @@ class SQLHandler(BaseHandler):
 
     async def _astat_begin(
             self,
+            *,
             stmt: str,
             values: list[dict]
     ):
