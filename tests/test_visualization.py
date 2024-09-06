@@ -44,5 +44,5 @@ chart_data = [
 
 
 def test_visualization():
-    obj.render_charts(chart_type="pie", data=chart_data, output_type="html", show_output=True)
+    obj.render_charts(chart_type="pie", data=chart_data, show_output=True)
     # obj.verticalBar(data=chart_data, output_type="html", show_output=True)

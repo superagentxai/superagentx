@@ -44,5 +44,5 @@ chart_data = [
 
 
 async def test_visualization():
-    await obj.render_charts(chart_type="pie", data=chart_data, output_type="html", show_output=True)
+    await obj.arender_charts(chart_type="pie", data=chart_data, output_type="html", show_output=True)
     # obj.verticalBar(data=chart_data, output_type="html", show_output=True)

@@ -12,7 +12,7 @@ from bokeh.palettes import Category20c
 from bokeh.plotting import figure, output_file, show
 from bokeh.transform import cumsum
 
-from agentx.utils.helper import sync_to_async
+from agentx.utils.helper import sync_to_async, iter_to_aiter
 from agentx.visualization.exceptions import InvalidChartType
 
 
@@ -37,6 +37,7 @@ class Visualize:
             *,
             chart_type: str | Enum,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             **kwargs
     ):
@@ -44,30 +45,35 @@ class Visualize:
             case ChartType.LINE:
                 self.line_chart(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.VBAR:
                 self.vertical_bar(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.HBAR:
                 self.horizontal_bar(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.PIE:
                 self.pie_chart(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.TABLE:
                 self.table_chart(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
@@ -78,6 +84,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_width: int | None = None,
@@ -119,7 +126,7 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             output_file(output_path)
 
@@ -130,6 +137,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             width: float | None = None,
@@ -162,7 +170,7 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             output_file(output_path)
 
@@ -173,6 +181,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             color: str | None = None,
@@ -206,7 +215,7 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             output_file(output_path)
 
@@ -217,6 +226,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_color: str | None = None,
@@ -260,7 +270,7 @@ class Visualize:
             chart.grid.grid_line_color = None
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             output_file(output_path)
 
@@ -272,6 +282,7 @@ class Visualize:
             *,
             data: dict | list,
             show_output: bool = False,
+            output_type: str | None = None,
             output_path: str | PathLike[str]
     ):
         if isinstance(data, dict):
@@ -280,7 +291,7 @@ class Visualize:
         table_data = pandas.DataFrame(data)
 
         if not output_path:
-            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
         table_data.to_html(str(output_path))
         filename = 'file:///' + os.getcwd() + '/' + str(output_path)
@@ -293,6 +304,7 @@ class Visualize:
             *,
             chart_type: str | Enum,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             **kwargs
     ):
@@ -300,30 +312,35 @@ class Visualize:
             case ChartType.LINE:
                 await self.aline_chart(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.VBAR:
                 await self.avertical_bar(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.HBAR:
                 await self.ahorizontal_bar(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.PIE:
                 await self.apie_chart(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
             case ChartType.TABLE:
                 await self.atable_chart(
                     data=data,
+                    output_type=output_type,
                     output_path=output_path,
                     **kwargs
                 )
@@ -334,6 +351,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_width: int | None = None,
@@ -356,7 +374,7 @@ class Visualize:
         if isinstance(data, dict):
             data = [data]
 
-        for items in data:
+        async for items in iter_to_aiter(data):
             x = items["x"]
             y = items["y"]
 
@@ -367,7 +385,8 @@ class Visualize:
                 outer_width=outer_width,
                 outer_height=outer_height
             )
-            await chart.line(
+            await sync_to_async(
+                chart.line,
                 x,
                 y,
                 line_width=line_width,
@@ -375,7 +394,7 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             await sync_to_async(output_file, output_path)
 
@@ -386,6 +405,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             width: float | None = None,
@@ -402,7 +422,7 @@ class Visualize:
         if isinstance(data, dict):
             data = [data]
 
-        for items in data:
+        async for items in iter_to_aiter(data):
             x = list(items.keys())
             top = list(items.values())
 
@@ -410,7 +430,8 @@ class Visualize:
                 x_range=x,
                 title=title
             )
-            await chart.vbar(
+            await sync_to_async(
+                chart.vbar,
                 x=x,
                 top=top,
                 width=width,
@@ -418,7 +439,7 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             await sync_to_async(output_file, output_path)
 
@@ -429,6 +450,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             color: str | None = None,
@@ -446,7 +468,7 @@ class Visualize:
         if isinstance(data, dict):
             data = [data]
 
-        for items in data:
+        async for items in iter_to_aiter(data):
             x = list(items.keys())
             right = list(items.values())
 
@@ -454,7 +476,8 @@ class Visualize:
                 y_range=FactorRange(factors=x),
                 title=title
             )
-            await chart.hbar(
+            await sync_to_async(
+                chart.hbar,
                 y=x,
                 right=right,
                 height=height,
@@ -462,7 +485,7 @@ class Visualize:
             )
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             await sync_to_async(output_file, output_path)
 
@@ -473,6 +496,7 @@ class Visualize:
             self,
             *,
             data: dict | list,
+            output_type: str | None = None,
             output_path: str | PathLike[str] | None = None,
             title: str | None = None,
             line_color: str | None = None,
@@ -489,7 +513,10 @@ class Visualize:
         if isinstance(data, dict):
             data = [data]
 
-        for index, items in enumerate(data):
+        async for index, items in iter_to_aiter(enumerate(data)):
+            # _series = pandas.Series(items)
+            # _series = await sync_to_async(pandas.Series(items).reset_index, name='value')
+            # data = await sync_to_async(_series.rename, columns={'index': 'key'})
             data = pandas.Series(items).reset_index(name='value').rename(columns={'index': 'key'})
             data['angle'] = data['value'] / data['value'].sum() * 2 * pi
             data['color'] = Category20c[len(items)]
@@ -500,7 +527,8 @@ class Visualize:
                 tooltips="@key:@value",
                 x_range=(-0.5, 1.0)
             )
-            await chart.wedge(
+            await sync_to_async(
+                chart.wedge,
                 x=0,
                 y=0,
                 radius=0.4,
@@ -516,7 +544,7 @@ class Visualize:
             chart.grid.grid_line_color = None
 
             if not output_path:
-                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+                output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
             await sync_to_async(output_file, output_path)
 
@@ -528,15 +556,16 @@ class Visualize:
             *,
             data: dict | list,
             show_output: bool = False,
+            output_type: str | None = None,
             output_path: str | PathLike[str]
     ):
         if isinstance(data, dict):
             data = [data]
 
-        table_data = await pandas.DataFrame(data)
+        table_data = await sync_to_async(pandas.DataFrame, data)
 
         if not output_path:
-            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{self.output_type}"
+            output_path = Path('.') / f"{int(datetime.now().timestamp())}.{output_type or self.output_type}"
 
         table_data.to_html(str(output_path))
         filename = 'file:///' + os.getcwd() + '/' + str(output_path)
