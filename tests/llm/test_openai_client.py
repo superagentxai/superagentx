@@ -1,13 +1,11 @@
-import pytest
-from openai import AzureOpenAI
-from pydantic import BaseModel
-from openai.types.chat.chat_completion import ChatCompletion
-from agentx.llm import LLMClient
-from agentx.llm.openai import OpenAIClient
 import logging
-import os
 
+import pytest
+from openai.types.chat.chat_completion import ChatCompletion
+
+from agentx.llm import LLMClient
 from agentx.llm.openai import ChatCompletionParams
+from agentx.llm.openai import OpenAIClient
 
 logger = logging.getLogger(__name__)
 

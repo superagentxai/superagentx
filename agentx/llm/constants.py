@@ -1,5 +1,4 @@
 
-
 OPENAI_PRICE1K = {
 
     "gpt-4o": (0.005, 0.015),
