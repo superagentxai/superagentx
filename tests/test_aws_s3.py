@@ -16,8 +16,3 @@ def test_s3_handler_list_bucket():
 
 def test_s3_handler_download():
     s3_handler.handle(action="download_file",object_name="<file_path>")
-
-
-
-
-
