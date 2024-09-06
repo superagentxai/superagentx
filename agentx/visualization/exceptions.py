@@ -1,0 +1,3 @@
+
+class InvalidChartType(Exception):
+    pass
