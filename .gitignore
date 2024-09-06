@@ -10,6 +10,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.idea/
 build/
 develop-eggs/
 dist/
@@ -24,7 +25,6 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
-.idea/
 .installed.cfg
 *.egg
 *.iml
@@ -149,10 +149,10 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Pyre type checker
+# Pyre llm_type checker
 .pyre/
 
-# pytype static type analyzer
+# pytype static llm_type analyzer
 .pytype/
 
 # Cython debug symbols
