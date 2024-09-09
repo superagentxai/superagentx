@@ -1,14 +1,17 @@
 from agentx.handler.sql import SQLHandler
 
-sql_handler = SQLHandler(database_type="sqlite", database="/tmp/sample.db")
+sql_handler = SQLHandler(
+      database_type="sqlite",
+      database="/tmp/sample.db"
+)
 
 
-def test_sqlite_1():
+def test_create_table():
     res = sql_handler.handle(action="CREATE_TABLE", stmt="CREATE TABLE test (x int, y int)")
     print("Create table res => ", res)
 
 
-def test_sqlite_2():
+def test_insert_table():
     res = sql_handler.handle(
         action="INSERT",
         stmt="INSERT INTO test (x, y) VALUES (:x, :y)",
@@ -17,7 +20,7 @@ def test_sqlite_2():
     print("Insert row res => ", res)
 
 
-def test_sqlite_3():
+def test_select_table():
     res = sql_handler.handle(
         action="SELECT",
         query="SELECT * from test"
@@ -26,7 +29,7 @@ def test_sqlite_3():
     assert len(res) > 0
 
 
-def test_sqlite_4():
+def test_drop_table():
     res = sql_handler.handle(
         action="DROP_TABLE",
         stmt="DROP TABLE test"
