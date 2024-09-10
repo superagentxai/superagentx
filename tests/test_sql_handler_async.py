@@ -7,7 +7,7 @@ sql_handler = SQLHandler(
 )
 
 
-async def test_sqlite_1():
+async def test_create_table():
     res = await sql_handler.ahandle(
         action="CREATE_TABLE",
         stmt="CREATE TABLE test (x int, y int)"
@@ -15,7 +15,7 @@ async def test_sqlite_1():
     print("Create table res => ", res)
 
 
-async def test_sqlite_2():
+async def test_insert_table():
     res = await sql_handler.ahandle(
         action="INSERT",
         stmt="INSERT INTO test (x, y) VALUES (:x, :y)",
@@ -24,7 +24,7 @@ async def test_sqlite_2():
     print("Insert row res => ", res)
 
 
-async def test_sqlite_3():
+async def test_select_table():
     res = await sql_handler.ahandle(
         action="SELECT",
         query="SELECT * from test"
@@ -33,7 +33,7 @@ async def test_sqlite_3():
     assert len(res) > 0
 
 
-async def test_sqlite_4():
+async def test_drop_table():
     res = await sql_handler.ahandle(
         action="DROP_TABLE",
         stmt="DROP TABLE test"
