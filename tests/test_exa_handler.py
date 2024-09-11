@@ -5,8 +5,8 @@ exa_handler = ExaHandler()
 def test_exa_handler():
     exa = exa_handler.handle(action="search_contents",
                              query="Topics in AI",
-                             type="auto",
                              use_autoprompt=True,
+                             type="auto",
                              num_results=5,
                              )
     print(exa)
