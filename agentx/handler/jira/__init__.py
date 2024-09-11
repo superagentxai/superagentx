@@ -2,8 +2,7 @@ import logging
 from enum import Enum
 from typing import Any
 
-from jira import JIRA, Issue
-from jira.client import ResultList, Sprint
+from jira import JIRA
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.exceptions import InvalidAction
@@ -29,6 +28,7 @@ class JiraHandler(BaseHandler):
 
     def __init__(
             self,
+            *,
             email: str,
             token: str,
             organization: str
@@ -53,8 +53,8 @@ class JiraHandler(BaseHandler):
 
     def handle(
             self,
+            *,
             action: str | Enum,
-            *args,
             **kwargs
     ) -> Any:
         if isinstance(action, str):
@@ -96,15 +96,14 @@ class JiraHandler(BaseHandler):
             *,
             board_id: int,
             start: int | None = 0,
-            size: int | None = 1,
-            status: str | None = 'active'
+            size: int | None = 1
     ):
         try:
             return self._connection.sprints(
                 board_id=board_id,
                 startAt=start,
                 maxResults=size,
-                state=status
+                state='active'
             )
         except Exception as ex:
             message = f"Active Sprint Not Found! {ex}"
@@ -116,9 +115,9 @@ class JiraHandler(BaseHandler):
             *,
             name: str,
             board_id: int,
-            start_date: Any | None = '',
-            end_date: Any | None = '',
-            description: str | None = ''
+            start_date: Any | None = None,
+            end_date: Any | None = None,
+            description: str | None = None
     ):
         try:
             return self._connection.create_sprint(
@@ -136,11 +135,8 @@ class JiraHandler(BaseHandler):
     def get_issue(
             self,
             *,
-            issue_id: str | None = None
+            issue_id: str
     ):
-        if issue_id is None:
-            message = f"Issue Id is not empty"
-            raise TaskException(message)
         try:
             return self._connection.issue(id=issue_id).raw
         except Exception as ex:
@@ -151,14 +147,9 @@ class JiraHandler(BaseHandler):
     def add_issue_to_sprint(
             self,
             *,
-            board_id: int | None = 1,
-            issue_keys=None
+            board_id: int,
+            issue_keys: list[str]
     ):
-        if board_id is None:
-            message = f"Need to provide board id"
-            raise TaskException(message)
-        if issue_keys is None:
-            issue_keys = []
         try:
             current_sprint = self.get_active_sprint(
                 board_id=board_id
@@ -176,10 +167,8 @@ class JiraHandler(BaseHandler):
     def move_to_backlog(
             self,
             *,
-            issue_keys=None
+            issue_keys: list[str]
     ):
-        if issue_keys is None:
-            issue_keys = []
         try:
             return self._connection.move_to_backlog(
                 issue_keys=issue_keys
@@ -192,21 +181,14 @@ class JiraHandler(BaseHandler):
     def add_comment_for_issue(
             self,
             *,
-            issue_keys: str | None = None,
-            comments: str | None = None,
+            issue_key: str,
+            comments: str
     ):
         try:
-            if issue_keys is None:
-                message = f"Issue Key is not empty"
-                raise TaskException(message)
-            elif comments is None:
-                message = f"Comments is not empty"
-                raise TaskException(message)
-            else:
-                return self._connection.add_comment(
-                    issue=issue_keys,
-                    body=comments
-                )
+            return self._connection.add_comment(
+                issue=issue_key,
+                body=comments
+            )
         except Exception as ex:
             message = f"Comments added failed! {ex}"
             logger.error(message)
