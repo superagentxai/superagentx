@@ -12,9 +12,6 @@ class LLMType(str, Enum):
     GROQ_CLIENT = 'groq'
     ANTHROPIC_CLIENT = 'anthropic'
 
-    # Azure Open AI Version - Default
-    DEFAULT_AZURE_API_VERSION = "2024-02-01"
-
     @classmethod
     def has_member_key(cls, key):
         return key in cls.__members__
@@ -38,3 +35,6 @@ OPENAI_MODELS = [
     "gpt-4o-mini",
     "gpt-3.5-turbo"
 ]
+
+# Azure Open AI Version - Default
+DEFAULT_AZURE_API_VERSION = "2024-02-01"
