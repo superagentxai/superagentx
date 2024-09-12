@@ -20,3 +20,6 @@ class Neo4jVector(BaseVectorDatabase):
 
     def update(self, *args, **kwargs):
         pass
+
+    def exists(self, *args, ** kwargs):
+        pass
