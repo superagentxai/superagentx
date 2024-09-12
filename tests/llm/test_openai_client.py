@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def openai_client_init() -> dict:
     llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai', 'async_mode': False}
 
-    llm_client: LLMClient = LLMClient(model='openai', llm_config=llm_config)
+    llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
 
@@ -69,7 +69,6 @@ class TestOpenAIClient:
         ]
 
         params = ChatCompletionParams(
-            # model='gpt-3.5-turbo',
             messages=messages,
             seed=34,
             tools=tools,

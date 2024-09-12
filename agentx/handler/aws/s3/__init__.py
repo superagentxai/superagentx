@@ -6,7 +6,7 @@ import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
 from agentx.exceptions import InvalidType
-from agentx.handler.aws_s3.exceptions import ListFilesFailed, FileUploadFailed, FileDownloadFailed
+from agentx.handler.aws.exceptions import ListFilesFailed, FileUploadFailed, FileDownloadFailed
 from agentx.handler.base import BaseHandler
 from agentx.utils.helper import sync_to_async
 
