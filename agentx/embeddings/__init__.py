@@ -1,6 +1,6 @@
 import os
 
-from openai import AsyncOpenAI, OpenAI
+from openai import AsyncOpenAI, OpenAI, AsyncAzureOpenAI, AzureOpenAI
 
 from agentx.embeddings.types.base import EmbeddingConfig
 from agentx.exceptions import InvalidType
@@ -41,6 +41,30 @@ class Embeddings:
 
                 # Initialize the client with the API key
                 cli = client_class(api_key=api_key)
+
+                # Set the model attribute
+                cli.model = self.embed_config.model
+
+                # Assign the client to self.client
+                self.client = OpenAIEmbedding(cli)
+            case EmbedType.AZURE_OPENAI_CLIENT:
+
+                # Set the parameters from pydantic model class or from environment variables.
+                api_key = self.embed_config.api_key or os.getenv("AZURE_OPENAI_API_KEY")
+                base_url = self.embed_config.base_url or os.getenv("AZURE_ENDPOINT")
+                azure_deployment = self.embed_config.model or os.getenv("AZURE_DEPLOYMENT")
+                api_version = self.embed_config.api_version or os.getenv("API_VERSION")
+
+                # Determine the client class based on async_mode
+                client_class = AsyncAzureOpenAI if self.embed_config.async_mode else AzureOpenAI
+
+                # Initialize the client with the gathered configuration
+                cli = client_class(
+                    api_key=api_key,
+                    azure_endpoint=base_url,
+                    azure_deployment=azure_deployment,
+                    api_version=api_version
+                )
 
                 # Set the model attribute
                 cli.model = self.embed_config.model
