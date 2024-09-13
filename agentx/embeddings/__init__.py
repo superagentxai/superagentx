@@ -54,4 +54,4 @@ class Embeddings:
             self,
             **kwargs
     ):
-        self.client.embed(**kwargs)
+        return self.client.embed(**kwargs)
