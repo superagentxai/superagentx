@@ -7,7 +7,7 @@ class BaseVectorStore(metaclass=ABCMeta):
         super().__init__()
 
     @abstractmethod
-    def create(self, *args, **kwargs):
+    def create_collection(self, *args, **kwargs):
         """Creating a new collection"""
         raise NotImplementedError
 
@@ -24,6 +24,11 @@ class BaseVectorStore(metaclass=ABCMeta):
     @abstractmethod
     def delete(self, *args, **kwargs):
         """Delete a vector"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get(self, name, vector_id):
+        """Retrieve a vector by ID."""
         raise NotImplementedError
 
     @abstractmethod

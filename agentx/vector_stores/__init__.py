@@ -2,13 +2,14 @@ import logging
 from enum import Enum
 
 from agentx.vector_stores.neo4j import Neo4jVector
+from agentx.vector_stores.chroma import ChromaDB
 from agentx.exceptions import InvalidType
-
 
 logger = logging.getLogger(__name__)
 
 
 class VectorDatabaseType(str, Enum):
+    CHROMA = "chroma"
     NEO4J = "neo4j"
     ELASTICSEARCH = "elasticsearch"
     OPENSEARCH = "opensearch"
@@ -21,12 +22,11 @@ class VectorDatabaseType(str, Enum):
 
 class VectorStore:
 
-    """"""
-
     def __init__(
             self,
             *,
             vector_database_type: str,
+            embed_config: dict | None = None,
             url: str | None = None,
             host: str | None = None,
             port: int | None = None,
@@ -34,6 +34,7 @@ class VectorStore:
             password: str | None = None
     ):
         self.vector_type = vector_database_type.lower()
+        self.embed_config = embed_config
         self.url = url
         self.host = host or "localhost"
         self.port = port
@@ -49,18 +50,26 @@ class VectorStore:
             logger.error(_msg)
             raise ValueError(_msg)
 
+        if self.embed_config is None:
+            self.embed_config = {
+                "model": "text-embedding-ada-002",
+                "api_type": "openai",
+            }
+
         _params = self.__dict__
 
         match self.vector_type:
             case VectorDatabaseType.NEO4J:
                 self.cli = Neo4jVector(**_params)
+            case VectorDatabaseType.CHROMA:
+                self.cli = ChromaDB(**_params)
 
     def create(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.create(*args, **kwargs)
+        return self.cli.create_collection(*args, **kwargs)
 
     def search(
             self,
@@ -74,4 +83,25 @@ class VectorStore:
             *args,
             **kwargs
     ):
-        pass
+        return self.cli.insert(*args, **kwargs)
+
+    def delete(
+            self,
+            *args,
+            **kwargs
+    ):
+        return self.cli.delete(*args, **kwargs)
+
+    def get(
+            self,
+            *args,
+            **kwargs
+    ):
+        return self.cli.get(*args, **kwargs)
+
+    def update(
+            self,
+            *args,
+            **kwargs
+    ):
+        return self.cli.update(*args, **kwargs)
