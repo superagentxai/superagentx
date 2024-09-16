@@ -43,7 +43,7 @@ class LLMClient:
             case LLMType.OPENAI_CLIENT:  # OPEN AI Client Type
 
                 # Set the API Key from pydantic model class or from environment variables.
-                api_key =(
+                api_key = (
                     self.llm_config_model.api_key
                     if self.llm_config_model.api_key else os.getenv("OPENAI_API_KEY")
                 )
