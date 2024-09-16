@@ -46,7 +46,7 @@ class EmbeddingConfig(BaseModel):
 
     @model_validator(mode="after")
     def __validate_variables__(self) -> Self:
-        if not EmbedType.has_member_value(self.llm_type):
+        if not EmbedType.has_member_value(self.embed_type):
             _msg = (
                 f'Embed embed_type is should be one of the following '
                 f'{", ".join(map(lambda member: member.value, EmbedType))}'
@@ -54,16 +54,16 @@ class EmbeddingConfig(BaseModel):
             logger.error(_msg)
             raise ValueError(_msg)
 
-        elif EmbedType.AZURE_OPENAI_CLIENT.value == self.llm_type and not self.api_version:
+        elif EmbedType.AZURE_OPENAI_CLIENT.value == self.embed_type and not self.api_version:
             raise ValueError('API Version should not be empty for Azure OpenAI')
         return self
 
     @model_validator(mode="after")
     def __validate_model_name__(self) -> Self:
         # Validate for Open AI. Azure OpenAI deployment model can be custom name. Hence validation not required!!!
-        if self.llm_type == EmbedType.OPENAI_CLIENT.value:
+        if self.embed_type == EmbedType.OPENAI_CLIENT.value:
             if not self.model:
-                self.model = 'gpt-4o'
+                self.model = 'text-embedding-ada-002'
             elif self.model not in OPENAI_MODELS:
                 _msg = (
                     f'Invalid Open AI or Azure Open AI Model - '

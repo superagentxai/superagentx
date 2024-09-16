@@ -15,7 +15,7 @@ class Embeddings:
 
        embed_config = {
         "model": "text-embedding-ada-002",
-        "api_type": "openai",
+        "embed_type": "openai",
       }
 
     """
@@ -79,3 +79,9 @@ class Embeddings:
             **kwargs
     ):
         return self.client.embed(**kwargs)
+
+    def aembed(
+            self,
+            **kwargs
+    ):
+        return self.client.aembed(**kwargs)

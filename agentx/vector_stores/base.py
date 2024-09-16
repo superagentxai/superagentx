@@ -22,20 +22,44 @@ class BaseVectorStore(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def delete(self, *args, **kwargs):
-        """Delete a vector"""
-        raise NotImplementedError
-
-    @abstractmethod
-    def get(self, name, vector_id):
-        """Retrieve a vector by ID."""
-        raise NotImplementedError
-
-    @abstractmethod
     def update(self, *args, **kwargs):
         """Update a vector"""
         raise NotImplementedError
 
     @abstractmethod
-    def exists(self, *args, ** kwargs):
+    def exists(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_collection(self, *args, **kwargs):
+        """Delete a collection."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def acreate_collection(self, *args, **kwargs):
+        """Creating a new collection"""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def ainsert(self, *args, **kwargs):
+        """Insert Vectors into a collection"""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def asearch(self, *args, **kwargs):
+        """Search for similar vectors"""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def aupdate(self, *args, **kwargs):
+        """Update a vector"""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def aexists(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def adelete_collection(self, *args, **kwargs):
+        """Delete a collection."""
         raise NotImplementedError

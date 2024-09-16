@@ -18,7 +18,6 @@ class OpenAIEmbedding(BaseEmbeddings):
         self.client = client
 
         self.client.model = self.client.model or "text-embedding-3-small"
-        self.client.embedding_dims = self.client.embedding_dims or 1536
 
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
@@ -30,7 +29,7 @@ class OpenAIEmbedding(BaseEmbeddings):
             )
             super().__init__()
 
-    def embed(self, text):
+    def embed(self, text: str, **kwargs):
         """
         Get the embedding for the given text using OpenAI.
 
@@ -43,10 +42,32 @@ class OpenAIEmbedding(BaseEmbeddings):
         text = text.replace("\n", " ")
         model = getattr(self.client, 'model')
         return (
-            self.client.embeddings.create(input=[text], model=model)
+            self.client.embeddings.create(
+                input=[text],
+                model=model,
+                **kwargs
+            )
             .data[0]
             .embedding
         )
+
+    async def aembed(self, text: str, **kwargs):
+        """
+        Get the embedding for the given text using OpenAI.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        text = text.replace("\n", " ")
+        model = getattr(self.client, 'model')
+        response = await self.client.embeddings.create(
+            input=[text],
+            model=model,
+        )
+        return response.data[0].embedding
 
     @staticmethod
     def is_valid_api_key(api_key: str) -> bool:
