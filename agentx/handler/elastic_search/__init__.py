@@ -14,6 +14,7 @@ from agentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
+
 class ElasticsearchAction(str, Enum):
     SEARCH = "search"
     CREATE = "create"
@@ -121,12 +122,12 @@ class ElasticsearchHandler(BaseHandler):
                     size(int):  The number of hits to return.
         """
         result = await sync_to_async(self._conn.search,
-            index=index_name,
-            filter_path=['hits'],
-            from_=start_index,
-            size=size,
-            query=query
-        )
+                                     index=index_name,
+                                     filter_path=['hits'],
+                                     from_=start_index,
+                                     size=size,
+                                     query=query
+                                     )
         return result
 
     def create(
@@ -151,7 +152,6 @@ class ElasticsearchHandler(BaseHandler):
         except elasticsearch.ConnectionTimeout as ex:
             logger.error(f"Elasticsearch error! {ex}")
             return {}
-
 
     async def acreate(
             self,
