@@ -770,6 +770,22 @@ files = [
 ]
 
 [[package]]
+name = "exa-py"
+version = "1.1.4"
+description = "Python SDK for Exa API."
+optional = false
+python-versions = "*"
+files = [
+    {file = "exa_py-1.1.4-py3-none-any.whl", hash = "sha256:487923f568670bb40a2d9b97b6bedf4e5fecba2957779d318f8bfbb17817ddc3"},
+    {file = "exa_py-1.1.4.tar.gz", hash = "sha256:78d85b3cbaf850a4629967be3c362aee4b99e9d4e93d8c11799a992fd1eba68c"},
+]
+
+[package.dependencies]
+openai = ">=1.10.0"
+requests = "*"
+typing-extensions = "*"
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.2"
 description = "Backport of PEP 654 (exception groups)"
@@ -3165,4 +3181,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<=3.13"
-content-hash = "4089a089f59813eafbf91f24b3ec1bdde179b1cc7b4e3f42e30eb28a7f5db7d3"
+content-hash = "3113b0577571ba5711872f3649941e296c50ec6de0a452ef365f4c7f28d32513"

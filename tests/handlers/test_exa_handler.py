@@ -13,27 +13,28 @@ import pytest
 
 @pytest.fixture
 def exasearch_client_init() -> ExaHandler:
+
+    # Set the exa api key in environment variable as EXA_API_KEY
     exa_handler = ExaHandler()
     return exa_handler
+
 
 class TestExasearch:
 
     def test_exa_handler(self, exasearch_client_init: ExaHandler):
         exa = exasearch_client_init.handle(action="search_contents",
-                                 query="Topics in AI",
-                                 use_autoprompt=True,
-                                 type="auto",
-                                 num_results=5,
-                                 )
-        print(exa)
-
+                                           query="Topics in AI",
+                                           use_autoprompt=True,
+                                           type="auto",
+                                           num_results=5,
+                                           )
+        assert isinstance(exa, SearchResponse)
 
     async def test_aexa_handler(self, exasearch_client_init: ExaHandler):
         exa = await exasearch_client_init.ahandle(action="search_contents",
-                                 query="Topics in AI",
-                                 type="auto",
-                                 use_autoprompt=True,
-                                 num_results=5,
-                                 )
-        print(exa)
-
+                                                  query="Topics in AI",
+                                                  type="auto",
+                                                  use_autoprompt=True,
+                                                  num_results=5,
+                                                  )
+        assert isinstance(exa, SearchResponse)
