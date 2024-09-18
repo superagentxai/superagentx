@@ -169,7 +169,7 @@ class ElasticsearchHandler(BaseHandler):
                 which you want to retrieve term vectors.
         """
         try:
-            return await self._conn.create(
+            return await self._aconn.create(
                 index=index_name,
                 document=document
             )
