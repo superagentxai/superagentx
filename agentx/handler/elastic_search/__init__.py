@@ -1,6 +1,3 @@
-import uuid
-from token import ASYNC
-
 import elasticsearch
 import logging
 
@@ -13,6 +10,7 @@ from agentx.handler.base import BaseHandler
 from agentx.handler.elastic_search.exceptions import InvalidElasticsearchAction
 
 logger = logging.getLogger(__name__)
+
 
 class ElasticsearchAction(str, Enum):
     SEARCH = "search"
@@ -158,7 +156,6 @@ class ElasticsearchHandler(BaseHandler):
         except elasticsearch.ConnectionTimeout as ex:
             logger.error(f"Elasticsearch error! {ex}")
             return {}
-
 
     async def acreate(
             self,
