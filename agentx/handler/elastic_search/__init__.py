@@ -1,4 +1,5 @@
 import uuid
+from token import ASYNC
 
 import elasticsearch
 import logging
@@ -6,11 +7,10 @@ import logging
 from enum import Enum
 from typing import Any
 
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, AsyncElasticsearch
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.elastic_search.exceptions import InvalidElasticsearchAction
-from agentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,13 @@ class ElasticsearchHandler(BaseHandler):
             cacert: str | None = None
     ):
         self._conn = Elasticsearch(
+            hosts=addresses,
+            cloud_id=cloud_id or None,
+            api_key=api_key or None,
+            basic_auth=(username, password),
+            ca_certs=cacert or None
+        )
+        self._aconn = AsyncElasticsearch(
             hosts=addresses,
             cloud_id=cloud_id or None,
             api_key=api_key or None,
@@ -120,7 +127,7 @@ class ElasticsearchHandler(BaseHandler):
                     start_index(int): Starting document offset.
                     size(int):  The number of hits to return.
         """
-        result = await sync_to_async(self._conn.search,
+        result = await self._aconn.search(
             index=index_name,
             filter_path=['hits'],
             from_=start_index,
