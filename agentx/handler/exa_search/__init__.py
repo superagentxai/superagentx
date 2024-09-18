@@ -1,15 +1,14 @@
-import os
 from enum import Enum
 from typing import Any
 
 from exa_py import Exa
 
 from agentx.handler.base import BaseHandler
-from agentx.handler.exa_search.exceptions import InvalidEXAAction
+from agentx.handler.exa_search.exceptions import InvalidExaAction
 from agentx.utils.helper import sync_to_async
 
 
-class EXAAction(str, Enum):
+class ExaAction(str, Enum):
     SEARCH_CONTENTS = "search_contents"
 
 
@@ -20,7 +19,6 @@ class ExaHandler(BaseHandler):
             api_key: str | None = None
     ):
 
-        api_key = api_key if api_key else os.getenv("EXA_API_KEY")
         self.exa = Exa(api_key=api_key)
 
     def handle(
@@ -39,10 +37,10 @@ class ExaHandler(BaseHandler):
         if isinstance(action, str):
             action = action.lower()
         match action:
-            case EXAAction.SEARCH_CONTENTS:
+            case ExaAction.SEARCH_CONTENTS:
                 return self.search_contents(**kwargs)
             case _:
-                raise InvalidEXAAction(f"Invalid exa action '{action}'")
+                raise InvalidExaAction(f"Invalid exa action '{action}'")
 
     async def ahandle(
             self,
@@ -61,18 +59,18 @@ class ExaHandler(BaseHandler):
         if isinstance(action, str):
             action = action.lower()
         match action:
-            case EXAAction.SEARCH_CONTENTS:
+            case ExaAction.SEARCH_CONTENTS:
                 return await self.asearch_contents(**kwargs)
             case _:
-                raise InvalidEXAAction(f"Invalid exa action '{action}'")
+                raise InvalidExaAction(f"Invalid exa action '{action}'")
 
     def search_contents(
             self,
             *,
             query: str,
             use_autoprompt: bool,
-            num_results: int,
-            type: str | None = None
+            num_results: int | None = 10,
+            search_type: str | None = None
 
     ):
         """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
@@ -84,12 +82,12 @@ class ExaHandler(BaseHandler):
             type (str, optional): The type of search, 'keyword' or 'neural'. Defaults to "auto".
 
         """
-        if type is None:
-            type = "auto"
+        if search_type is None:
+            search_type = "auto"
 
         result = self.exa.search_and_contents(
             query=query,
-            type=type,
+            type=search_type,
             use_autoprompt=use_autoprompt,
             num_results=num_results
         )
@@ -100,8 +98,8 @@ class ExaHandler(BaseHandler):
             *,
             query: str,
             use_autoprompt: bool,
-            num_results: int,
-            type: str | None = None
+            num_results: int | None = 10,
+            search_type: str | None = None
     ):
         """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
 
@@ -112,13 +110,14 @@ class ExaHandler(BaseHandler):
                type (str, optional): The type of search, 'keyword' or 'neural'. Defaults to "auto".
 
         """
-        if type is None:
-            type = "auto"
+        if search_type is None:
+            search_type = "auto"
 
-        result = await sync_to_async(self.exa.search_and_contents,
-                                     query=query,
-                                     type=type,
-                                     use_autoprompt=use_autoprompt,
-                                     num_results=num_results,
-                                     )
+        result = await sync_to_async(
+            self.exa.search_and_contents,
+            query=query,
+            type=search_type,
+            use_autoprompt=use_autoprompt,
+            num_results=num_results,
+            )
         return result

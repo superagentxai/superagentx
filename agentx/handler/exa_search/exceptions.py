@@ -1,2 +1,2 @@
-class InvalidEXAAction(Exception):
+class InvalidExaAction(Exception):
     pass
