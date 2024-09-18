@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class Documents(BaseModel):
-    id: Optional[str]  # memory id
-    score: Optional[float]  # distance
-    payload: Optional[Dict]  # metadata
+    id: str  # memory id
+    score: float  # distance
+    payload: dict  # metadata
 
 
 class ChromaDB(BaseVectorStore):
@@ -25,7 +25,7 @@ class ChromaDB(BaseVectorStore):
             self,
             *,
             collection_name: str,
-            client: Optional[chromadb.Client] = None,
+            client: chromadb.Client = None,
             host: Optional[str] = None,
             port: Optional[int] = None,
             path: Optional[str] = None,

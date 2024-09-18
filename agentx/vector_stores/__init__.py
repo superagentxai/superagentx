@@ -42,15 +42,6 @@ class VectorStore:
         self.password = password
         self.collection_name = collection_name
 
-        vector_enum_list = VectorDatabaseType.list()
-        if self.vector_type not in vector_enum_list:
-            _msg = (
-                f'Invalid Vector data type - '
-                f'{self.vector_type}. It should be one of the following {", ".join(vector_enum_list)}'
-            )
-            logger.error(_msg)
-            raise ValueError(_msg)
-
         if self.embed_config is None:
             self.embed_config = {
                 "model": "text-embedding-ada-002",
@@ -64,6 +55,14 @@ class VectorStore:
                 self.cli = Neo4jVector(**_params)
             case VectorDatabaseType.CHROMA:
                 self.cli = ChromaDB(**_params)
+            case _:
+                vector_enum_list = VectorDatabaseType.list()
+                _msg = (
+                    f'Invalid Vector data type - '
+                    f'{self.vector_type}. It should be one of the following {", ".join(vector_enum_list)}'
+                )
+                logger.error(_msg)
+                raise ValueError(_msg)
 
     def create(
             self,
