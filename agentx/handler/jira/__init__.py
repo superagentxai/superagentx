@@ -96,14 +96,15 @@ class JiraHandler(BaseHandler):
             *,
             board_id: int,
             start: int | None = 0,
-            size: int | None = 1
+            size: int | None = 1,
+            state: str | None = 'active'
     ):
         try:
             return self._connection.sprints(
                 board_id=board_id,
                 startAt=start,
                 maxResults=size,
-                state='active'
+                state=state
             )
         except Exception as ex:
             message = f"Active Sprint Not Found! {ex}"

@@ -1,18 +1,29 @@
+import pytest
+
 from agentx.handler.wikipedia import WikipediaHandler
 
-search = WikipediaHandler(
-    action="",
-    query="",
-    sentences=5
-)
+
+'''
+ Run Pytest:  
+
+   1.pytest --log-cli-level=INFO tests/handlers/test_wikipedia.py::TestWikipedia::test_search
+   
+'''
 
 
-def test_search():
-    search.handle(
-        action="summary",
-        query="story about titanic movie",
-        sentences=20
-    )
+@pytest.fixture
+def wikipedia_client_init() -> WikipediaHandler:
+    search = WikipediaHandler()
+    return search
+
+class TestWikipedia:
+    def test_search(self, wikipedia_client_init:WikipediaHandler):
+        res = wikipedia_client_init.handle(
+            action="summary",
+            query="story about titanic movie",
+            sentences=20
+        )
+        assert "Titanic" in res
 
     # search.handle(
     #     action="search",

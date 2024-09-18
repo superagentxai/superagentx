@@ -47,11 +47,11 @@ class AWSS3Handler(BaseHandler):
 
         match action:
             case AWSS3HandlerEnum.LIST_BUCKET:
-                self.list_bucket()
+                return self.list_bucket()
             case AWSS3HandlerEnum.UPLOAD_FILE:
-                self.upload_file(**kwargs)
+                return self.upload_file(**kwargs)
             case AWSS3HandlerEnum.DOWNLOAD_FILE:
-                self.download_file(**kwargs)
+                return self.download_file(**kwargs)
             case _:
                 raise InvalidType(f"Invalid action {action}")
 
@@ -117,6 +117,6 @@ class AWSS3Handler(BaseHandler):
             case AWSS3HandlerEnum.UPLOAD_FILE:
                 return await sync_to_async(self.upload_file, **kwargs)
             case AWSS3HandlerEnum.DOWNLOAD_FILE:
-                return sync_to_async(self.download_file, **kwargs)
+                return await sync_to_async(self.download_file, **kwargs)
             case _:
                 raise InvalidType(f"Invalid action {action}")

@@ -15,16 +15,6 @@ class SearchAction(str, Enum):
 
 class WikipediaHandler(BaseHandler):
 
-    def __init__(
-            self,
-            action: str,
-            query: str,
-            sentences: int
-    ):
-        self.action = action
-        self.query = query
-        self.sentences = sentences
-
     def handle(
             self,
             action: str | Enum,

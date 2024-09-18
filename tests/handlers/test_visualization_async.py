@@ -1,9 +1,19 @@
+import pytest
+
 from agentx.visualization import Visualize
 
-obj = Visualize()
+'''
+ Run Pytest:  
 
-chart_data = [
-    {
+  1.pytest --log-cli-level=INFO tests/handlers/test_visualization_async.py::TestVisualization::test_visualization
+
+'''
+
+@pytest.fixture
+def visualize_client_init() -> dict:
+    obj = Visualize()
+    chart_data = [
+        {
         "Apples": 5,
         "Pears": 3,
         "Nectarines": 4,
@@ -19,7 +29,9 @@ chart_data = [
         "Grapes": 9,
         "Strawberries": 21
     }
-]
+    ]
+    response = {"visualization": obj, "data": chart_data}
+    return response
 
 
 # chart_data = {
@@ -42,7 +54,9 @@ chart_data = [
 #     }
 # ]
 
+class TestVisualization:
 
-async def test_visualization():
-    await obj.arender_charts(chart_type="pie", data=chart_data, output_type="html", show_output=True)
-    # obj.verticalBar(data=chart_data, output_type="html", show_output=True)
+    async def test_visualization(self, visualize_client_init: dict):
+        obj = visualize_client_init.get("visualization")
+        await obj.arender_charts(chart_type="pie", data=visualize_client_init.get("data"), show_output=True)
+        # obj.verticalBar(data=chart_data, output_type="html", show_output=True)
