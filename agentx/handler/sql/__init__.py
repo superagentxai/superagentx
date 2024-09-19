@@ -111,6 +111,12 @@ class SQLHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+
+        """
+           params:
+               action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:
@@ -136,6 +142,11 @@ class SQLHandler(BaseHandler):
             *,
             query: str
     ):
+
+        """
+           params:
+               query(str):Filter groups by name with this string.
+        """
         with self._engine.connect() as conn:
             return conn.execute(text(query)).all()
 
@@ -145,6 +156,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+
+        """
+           params:
+               stmt(str):Filter groups by name with this string.
+               values(List(dict)):Given values.
+        """
         return self._stat_begin(
             stmt=stmt,
             values=values
@@ -156,6 +173,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
         return self._stat_begin(
             stmt=stmt,
             values=values
@@ -167,6 +190,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
         return self._stat_begin(
             stmt=stmt,
             values=values
@@ -177,6 +206,12 @@ class SQLHandler(BaseHandler):
             *,
             stmt: str
     ):
+
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+
+        """
         with self._engine.begin() as conn:
             return conn.execute(
                 text(stmt)
@@ -187,6 +222,12 @@ class SQLHandler(BaseHandler):
             *,
             stmt: str
     ):
+
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+
+        """
         with self._engine.begin() as conn:
             return conn.execute(
                 text(stmt)
@@ -198,6 +239,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
         return self._stat_begin(
             stmt=stmt,
             values=values
@@ -209,6 +256,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
         with self._engine.begin() as conn:
             return conn.execute(
                 text(stmt),
@@ -247,6 +300,11 @@ class SQLHandler(BaseHandler):
             *,
             query: str
     ):
+        """
+           params:
+               query(str):Filter groups by name with this string.
+        """
+
         async with self._aengine.connect() as conn:
             res = await conn.execute(text(query))
             return res.all()
@@ -257,6 +315,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
+
         return await self._astat_begin(
             stmt=stmt,
             values=values
@@ -268,6 +332,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
+
         return await self._astat_begin(
             stmt=stmt,
             values=values
@@ -279,6 +349,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
+
         return await self._astat_begin(
             stmt=stmt,
             values=values
@@ -289,6 +365,11 @@ class SQLHandler(BaseHandler):
             *,
             stmt: str
     ):
+        """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
+           params:
+                stmt(str):Filter groups by name with this string.
+        """
+
         async with self._aengine.begin() as conn:
             return await conn.execute(
                 text(stmt)
@@ -299,6 +380,11 @@ class SQLHandler(BaseHandler):
             *,
             stmt: str
     ):
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+        """
+
         async with self._aengine.begin() as conn:
             return await conn.execute(
                 text(stmt)
@@ -310,6 +396,12 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
+
         return await self._astat_begin(
             stmt=stmt,
             values=values
@@ -321,6 +413,11 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+           params:
+                stmt(str):Filter groups by name with this string.
+                values(List(dict)):Given values.
+        """
         async with self._aengine.begin() as conn:
             return await conn.execute(
                 text(stmt),

@@ -57,6 +57,12 @@ class JiraHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+
+        """
+           params:
+               action(str): Give a action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:
@@ -99,6 +105,15 @@ class JiraHandler(BaseHandler):
             size: int | None = 1,
             state: str | None = 'active'
     ):
+        """
+           params:
+               board_id(int):The board to get sprints from.
+               start(int):The index of the first sprint to return (0 based).
+               size(int):The maximum number of sprints to return.
+               state(int):Filters results to sprints in specified states. Valid values: `future`, `active`, `closed`.
+              You can define multiple states separated by commas.
+        """
+
         try:
             return self._connection.sprints(
                 board_id=board_id,
@@ -120,6 +135,16 @@ class JiraHandler(BaseHandler):
             end_date: Any | None = None,
             description: str | None = None
     ):
+        """
+            params:
+            name(str):The name to update your sprint to.
+            board_id(int):The board to get sprints from.
+            start_date(Optional[Any]):The start date for the sprint
+            end_date(Optional[Any]):The start date for the sprint
+            description(str):The goal of the sprint
+
+        """
+
         try:
             return self._connection.create_sprint(
                 name=name,
@@ -138,6 +163,10 @@ class JiraHandler(BaseHandler):
             *,
             issue_id: str
     ):
+        """
+            params:
+                issue_id(str):ID or key of the issue to get.
+        """
         try:
             return self._connection.issue(id=issue_id).raw
         except Exception as ex:
@@ -151,6 +180,12 @@ class JiraHandler(BaseHandler):
             board_id: int,
             issue_keys: list[str]
     ):
+        """
+            params:
+                board_id(int):The board to get sprints from.
+                issue_keys(List[str]):The issues to add to the sprint.
+        """
+
         try:
             current_sprint = self.get_active_sprint(
                 board_id=board_id
@@ -170,6 +205,10 @@ class JiraHandler(BaseHandler):
             *,
             issue_keys: list[str]
     ):
+        """
+            params:
+                issue_keys(list[str]):The issues to add to the sprint.
+        """
         try:
             return self._connection.move_to_backlog(
                 issue_keys=issue_keys
@@ -185,6 +224,11 @@ class JiraHandler(BaseHandler):
             issue_key: str,
             comments: str
     ):
+        """
+            params:
+                issue_keys(str):The issues to add to the sprint.
+                comments(str): Text of the comment to add.
+        """
         try:
             return self._connection.add_comment(
                 issue=issue_key,
@@ -201,6 +245,12 @@ class JiraHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+
+        """
+            params:
+                action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:

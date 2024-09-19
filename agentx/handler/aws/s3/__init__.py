@@ -42,6 +42,12 @@ class AWSS3Handler(BaseHandler):
             *,
             action: str | Enum, **kwargs
     ) -> Any:
+
+        """
+           params:
+               action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
 
@@ -70,6 +76,13 @@ class AWSS3Handler(BaseHandler):
             file_name: str,
             object_name: str | None = None
     ):
+
+        """
+           params:
+               file_name(str):File to upload.
+               object_name(str):S3 object name. If not specified then file_name is used
+        """
+
         if object_name is None:
             object_name = file_name
         try:
@@ -88,6 +101,13 @@ class AWSS3Handler(BaseHandler):
             object_name: str,
             file_name: str | None = None
     ):
+
+        """
+           params:
+               file_name(str):File to upload.
+               object_name(str):S3 object name. If not specified then file_name is used
+        """
+
         if file_name is None:
             file_name = object_name
         try:
@@ -108,6 +128,12 @@ class AWSS3Handler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+
+        """
+            params:
+                action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
 

@@ -113,6 +113,16 @@ class WeatherHandler(BaseHandler):
             daily:bool,
             hourly: bool
     ):
+
+        """
+           params:
+               location(str):Give your location or city.
+               start_date(str):The start date for the sprint
+               end_date(str):The start date for the sprint
+               daily(bool):Give the value in True or False.
+               hourly(bool):Give the value in True or False.
+        """
+
         params = get_default_params(location)
         params['start_date'] =start_date,
         params['end_date'] = end_date,
@@ -152,6 +162,16 @@ class WeatherHandler(BaseHandler):
             daily:bool,
             hourly: bool
     ):
+        """
+           params:
+               location(str):Give your location or city.
+               start_date(str):The start date for the sprint
+               end_date(str):The start date for the sprint
+               daily(bool):Give the value in True or False.
+               hourly(bool):Give the value in True or False.
+        """
+
+
         params = get_default_params(location)
         response = {}
         if forecast_days and 0 < forecast_days:
@@ -200,6 +220,16 @@ class WeatherHandler(BaseHandler):
             end_date: str,
             daily: bool
     ):
+        """
+           params:
+               location(str):Give your location or city.
+               start_date(str):The start date for the sprint
+               end_date(str):The start date for the sprint
+               daily(bool):Give the value in True or False.
+               hourly(bool):Give the value in True or False.
+        """
+
+
         params = get_default_params(location)
         params['start_date'] = start_date,
         params['end_date'] = end_date,
@@ -231,6 +261,17 @@ class WeatherHandler(BaseHandler):
             daily: bool,
             hourly: bool
     ):
+        """
+           params:
+               location(str):Give your location or city.
+               forecast_day(int):The result of the process of predicting
+               past_days(int):Give the past days.
+               current(bool):Give the value in True or False.
+               daily(bool):Give the value in True or False.
+               hourly(bool):Give the value in True or False.
+        """
+
+
         params = get_default_params(location)
         response = {}
         if forecast_days and 0 < forecast_days:
@@ -278,6 +319,16 @@ class WeatherHandler(BaseHandler):
             current: bool,
             hourly: bool
     ):
+        """
+           params:
+               location(str):Give your location or city.
+               forecast_days(int):The result of the process of predicting
+               past_days(int):Give the past days.
+               current(bool):Give the value in True or False.
+               hourly(bool):Give the value in True or False.
+        """
+
+
         params = get_default_params(location)
         response = {}
         if forecast_days and 0<forecast_days:
@@ -315,6 +366,15 @@ class WeatherHandler(BaseHandler):
             past_days: int,
             daily: bool
     ):
+        """
+           params:
+               location(str):Give your location or city.
+               forecast_days(int):The result of the process of predicting
+               past_days(int):Give the past days.
+               daily(bool):Give the value in True or False.
+        """
+
+
         params = get_default_params(location)
         params['models'] = FLOOD_MODELS_STATUS_VARIABLE
         response = {}
@@ -344,6 +404,12 @@ class WeatherHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+
+        """
+           params:
+               action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:
@@ -368,6 +434,12 @@ class WeatherHandler(BaseHandler):
             *args,
             **kwargs
     ) -> Any:
+
+        """
+           params:
+               action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:

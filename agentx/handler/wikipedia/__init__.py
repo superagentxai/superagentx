@@ -21,6 +21,12 @@ class WikipediaHandler(BaseHandler):
             *args,
             **kwargs
     ) -> Any:
+
+        """
+            params:
+                action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:
@@ -37,6 +43,15 @@ class WikipediaHandler(BaseHandler):
             sentences: int | None = None,
             language: str | None = None
     ):
+
+        """
+            params:
+                query(str):Filter groups by name with this string.
+                sentences(int):if set, return the first `sentences` sentences (can be no greater than 10).
+                language(str):Set `prefix` to one of the two letter prefixes found
+        """
+
+
         if language:
             wikipedia.set_lang(language)
 
@@ -49,6 +64,15 @@ class WikipediaHandler(BaseHandler):
             results: int | None = None,
             language: str | None = None
     ):
+
+        """
+            params:
+                query(str):Filter groups by name with this string.
+                results(int):the maximum number of results returned
+                language(str):Set `prefix` to one of the two letter prefixes found
+
+        """
+
         if language:
             wikipedia.set_lang(language)
 
@@ -60,6 +84,13 @@ class WikipediaHandler(BaseHandler):
             *,
             action: str | Enum, **kwargs
     ) -> Any:
+
+        """
+            params:
+                action(str): Give an action what has given in the Enum.
+        """
+
+
         if isinstance(action, str):
             action = action.lower()
         match action:

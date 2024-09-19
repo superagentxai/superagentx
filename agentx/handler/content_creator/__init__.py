@@ -31,6 +31,12 @@ class ContentCreatorHandler(BaseHandler, ABC):
             action: str | Enum,
             **kwargs
     ) -> Any:
+
+        """
+            params:
+                action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:
@@ -67,6 +73,12 @@ class ContentCreatorHandler(BaseHandler, ABC):
             action: str | Enum,
             **kwargs
     ) -> Any:
+
+        """
+            params:
+                action(str): Give an action what has given in the Enum.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:
