@@ -10,7 +10,7 @@ class PromptTemplate:
     ):
         self.prompt_type = prompt_type
 
-    async def get_message(
+    async def get_messages(
             self,
             *,
             input_prompt: str,
