@@ -5,6 +5,7 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from agentx.exceptions import InvalidType
+from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 from agentx.llm.types.base import LLMModelConfig
 from agentx.utils.llm_config import LLMType
@@ -90,20 +91,14 @@ class LLMClient:
 
     def chat_completion(
             self,
-            *args,
-            **kwargs
+            *,
+            chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        return self.client.chat_completion(
-            *args,
-            **kwargs
-        )
+        return self.client.chat_completion(chat_completion_params=chat_completion_params)
 
     async def achat_completion(
             self,
-            *args,
-            **kwargs
+            *,
+            chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        return await self.client.achat_completion(
-            *args,
-            **kwargs
-        )
+        return await self.client.achat_completion(chat_completion_params=chat_completion_params)
