@@ -4,7 +4,7 @@ import pytest
 from openai.types.chat.chat_completion import ChatCompletion
 
 from agentx.llm import LLMClient
-from agentx.llm.openai import ChatCompletionParams
+from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 
 logger = logging.getLogger(__name__)
@@ -68,13 +68,13 @@ class TestOpenAIClient:
             }
         ]
 
-        params = ChatCompletionParams(
+        chat_completion_params = ChatCompletionParams(
             messages=messages,
             seed=34,
             tools=tools,
-        ).model_dump(exclude_none=True)
+        )
 
-        response = llm_client.chat_completion(params=params)
+        response = llm_client.chat_completion(chat_completion_params=chat_completion_params)
         logger.info(f"Open AI ChatCompletion Response {response}")
         assert isinstance(response, ChatCompletion)
         assert isinstance(openai_client_init.get('llm'), LLMClient)
@@ -93,9 +93,9 @@ class TestOpenAIClient:
             }
         ]
 
-        params = ChatCompletionParams(
+        chat_completion_params = ChatCompletionParams(
             messages=messages,
-        ).model_dump(exclude_none=True)
-        response = await llm_client.achat_completion(params=params)
+        )
+        response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
         logger.info(f"Open AI Async ChatCompletion Response {response}")
         assert isinstance(response, ChatCompletion)

@@ -1,14 +1,12 @@
 import logging
 import re
-import uuid
-from typing import Any
-from typing import List, Dict, Union
+from typing import Union
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
-from pydantic import BaseModel, Field, conlist, conint
 
+from agentx.llm import ChatCompletionParams
 from agentx.llm.client import Client
 from agentx.llm.constants import OPENAI_PRICE1K
 from agentx.utils.helper import sync_to_async
@@ -22,102 +20,6 @@ _ASSISTANTS_NAME = 'assistants'
 _ASSISTANTS_KEY_NAME = 'name'
 _ASSISTANTS_KEY_INSTRUCTIONS = 'instructions'
 _TOOLS_KEY_NAME = 'tools'
-
-
-class Message(BaseModel):
-    role: str = Field(
-        description='the role of the messenger (either system, user, assistant or tool)',
-        default='system'
-    )
-    content: str = Field(
-        description='the content of the message (e.g., Write me a beautiful poem)'
-    )
-    name: str | None = Field(
-        description='Messages can also contain an optional name field, which give the messenger a name',
-        default=None
-    )
-
-
-class ChatCompletionParams(BaseModel):
-    # Required parameters
-    model: str | None = Field(
-        description='the name of the model you want to use (e.g., gpt-3.5-turbo, gpt-4, gpt-3.5-turbo-16k-1106)',
-        default=None
-    )
-    messages: conlist(Message, min_length=1) = Field(
-        description='the content of the message (e.g., Write me a beautiful poem)'
-    )
-    # Optional parameters
-    frequency_penalty: float | None = Field(
-        description='Penalizes tokens based on their frequency, reducing repetition.',
-        default=None
-    )
-    logit_bias: Dict[str, float] | None = Field(
-        description='Modifies likelihood of specified tokens with bias values.',
-        default=None
-    )
-    logprobs: bool | None = Field(
-        description='Returns log probabilities of output tokens if true.',
-        default=False
-    )
-    top_logprobs: conint(ge=0) | None = Field(
-        description='Specifies the number of most likely tokens to return at each position.',
-        default=None
-    )
-    max_tokens: int | None = Field(
-        description='Sets the maximum number of generated tokens in chat completion.',
-        default=None
-    )
-    n: int | None = Field(
-        description='Generates a specified number of chat completion choices for each input.',
-        default=1
-    )
-    presence_penalty: float | None = Field(
-        description='Penalizes new tokens based on their presence in the text.',
-        default=0
-    )
-    response_format: str | None = Field(
-        description='Specifies the output format, e.g., JSON mode.',
-        default=None
-    )
-    seed: int | None = Field(
-        description='Ensures deterministic sampling with a specified seed.',
-        default=None
-    )
-    service_tier: str | None = Field(
-        description='Specifies the latency tier to use for processing the request. '
-                    'This parameter is relevant for customers subscribed to the scale'
-                    ' tier service:',
-        default=None
-    )
-    stop: Union[str, List[str]] | None = Field(
-        description='Specifies up to 4 sequences where the API should stop generating tokens.',
-        default=None
-    )
-    stream: bool | None = Field(
-        description='Sends partial message deltas as tokens become available.',
-        default=False
-    )
-    temperature: float | None = Field(
-        description='Sets the sampling temperature between 0 and 2.',
-        default=None
-    )
-    top_p: float | None = Field(
-        description='Uses nucleus sampling; considers tokens with top_p probability mass.',
-        default=None
-    )
-    tools: List[dict] | None = Field(
-        description='Lists functions the model may call.',
-        default=None
-    )
-    tool_choice: str | None = Field(
-        description='Controls the model function calls (none/auto/function).',
-        default=None
-    )
-    user: str = Field(
-        description="Unique identifier for end-user monitoring and abuse detection.",
-        default=f'{uuid.uuid4()}'
-    )
 
 
 class OpenAIClient(Client):
@@ -142,8 +44,10 @@ class OpenAIClient(Client):
 
     def chat_completion(
             self,
-            params: Dict[str, Any] = None
+            *,
+            chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
+        params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
         response = self.client.chat.completions.create(**params)
         cost = OpenAIClient.cost(response=response)
@@ -152,8 +56,10 @@ class OpenAIClient(Client):
 
     async def achat_completion(
             self,
-            params: Dict[str, Any]
+            *,
+            chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
+        params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
         response = await self.client.chat.completions.create(**params)
         cost = await sync_to_async(
