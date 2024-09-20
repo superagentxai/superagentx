@@ -72,7 +72,7 @@ class OpenAIClient(Client):
 
     @staticmethod
     def _get_embeddings(response: CreateEmbeddingResponse):
-        if len(response.data) > 0:
+        if response and len(response.data) > 0:
             return response.data[0].embedding
 
     def embed(self, text: str, **kwargs) -> List[float]:
