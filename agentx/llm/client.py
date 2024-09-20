@@ -21,3 +21,29 @@ class Client(metaclass=ABCMeta):
             **kwargs
     ):
         pass
+
+    @abstractmethod
+    def embed(self, text, **kwargs):
+        """
+        Get the embedding for the given text using OpenAI.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def aembed(self, text, **kwargs):
+        """
+        Get the embedding for the given text using OpenAI.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        raise NotImplementedError

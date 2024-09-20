@@ -163,6 +163,46 @@ class OpenAIClient(Client):
         logger.debug(f"Usage Cost : {cost}")
         return response
 
+    def embed(self, text: str, **kwargs):
+        """
+        Get the embedding for the given text using OpenAI.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        text = text.replace("\n", " ")
+        model = getattr(self.client, 'model')
+        return (
+            self.client.embeddings.create(
+                input=[text],
+                model=model,
+                **kwargs
+            )
+            .data[0]
+            .embedding
+        )
+
+    async def aembed(self, text: str, **kwargs):
+        """
+        Get the embedding for the given text using OpenAI.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        text = text.replace("\n", " ")
+        model = getattr(self.client, 'model')
+        response = await self.client.embeddings.create(
+            input=[text],
+            model=model,
+        )
+        return response.data[0].embedding
+
     @staticmethod
     def is_valid_api_key(api_key: str) -> bool:
         """Determine if input is valid OpenAI API key.

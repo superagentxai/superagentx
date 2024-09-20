@@ -6,9 +6,10 @@ import chromadb
 from chromadb.api.models import Collection
 from chromadb.config import Settings
 
-from agentx.embeddings import Embeddings
+from agentx.llm import LLMClient
 from agentx.vector_stores.base import BaseVectorStore
 from agentx.utils.helper import sync_to_async, iter_to_aiter
+from agentx.llm.client import Client
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class ChromaDB(BaseVectorStore):
             host: Optional[str] = None,
             port: Optional[int] = None,
             path: Optional[str] = None,
-            embed_config: dict | None = None,
+            embed_cli: Client = None,
             **kwargs
     ):
         """
@@ -41,15 +42,15 @@ class ChromaDB(BaseVectorStore):
             host (str, optional): Host address for chromadb server. Defaults to None.
             port (int, optional): Port for chromadb server. Defaults to None.
             path (str, optional): Path for local chromadb database. Defaults to None.
-            embed_config (dict): Agentx embedding configuration. Defaults to None.
+            embed_cli (dict): Agentx openai-client/huggingface client configuration. Defaults to None.
         """
-
-        if embed_config is None:
+        self.embed_cli = embed_cli
+        if self.embed_cli is None:
             embed_config = {
                 "model": "text-embedding-ada-002",
                 "embed_type": "openai"
             }
-        self.embeddings = Embeddings(embed_config=embed_config)
+            self.embed_cli = LLMClient(llm_config=embed_config)
 
         if client:
             self.client = client
@@ -109,7 +110,7 @@ class ChromaDB(BaseVectorStore):
             payloads (Optional[List[Dict]], optional): List of payloads corresponding to vectors. Defaults to None.
             ids (Optional[List[str]], optional): List of IDs corresponding to vectors. Defaults to None.
         """
-        vectors = [self.embeddings.embed(text=text) for text in texts]
+        vectors = [self.embed_cli.embed(text=text) for text in texts]
         logger.info(f"Inserting {len(vectors)} vectors into collection {self.collection_name}")
         self.collection.add(
             ids=ids,
@@ -134,7 +135,7 @@ class ChromaDB(BaseVectorStore):
         Returns:
             List[OutputData]: Search results.
         """
-        query_vector = self.embeddings.embed(text=query)
+        query_vector = self.embed_cli.embed(text=query)
         results = self.collection.query(
             query_embeddings=query_vector, where=filters, n_results=limit
         )

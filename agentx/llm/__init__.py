@@ -107,3 +107,23 @@ class LLMClient:
             *args,
             **kwargs
         )
+
+    def embed(
+            self,
+            *args,
+            **kwargs
+    ):
+        return self.client.embed(
+            *args,
+            **kwargs
+        )
+
+    async def aembed(
+            self,
+            *args,
+            **kwargs
+    ):
+        return await self.client.aembed(
+            *args,
+            **kwargs
+        )
