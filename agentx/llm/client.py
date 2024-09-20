@@ -25,7 +25,7 @@ class Client(metaclass=ABCMeta):
     @abstractmethod
     def embed(self, text, **kwargs):
         """
-        Get the embedding for the given text using OpenAI.
+        Get the embedding for the given text using Client.
 
         Args:
             text (str): The text to embed.
@@ -38,7 +38,7 @@ class Client(metaclass=ABCMeta):
     @abstractmethod
     async def aembed(self, text, **kwargs):
         """
-        Get the embedding for the given text using OpenAI.
+        Get the embedding for the given text using Client.
 
         Args:
             text (str): The text to embed.

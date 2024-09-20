@@ -1,8 +1,9 @@
 import logging
 import re
-from typing import Union
+from typing import Union, List
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
+from openai.types import CreateEmbeddingResponse
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
 
@@ -69,9 +70,14 @@ class OpenAIClient(Client):
         logger.debug(f"Usage Cost : {cost}")
         return response
 
-    def embed(self, text: str, **kwargs):
+    @staticmethod
+    def _get_embeddings(response: CreateEmbeddingResponse):
+        if len(response.data) > 0:
+            return response.data[0].embedding
+
+    def embed(self, text: str, **kwargs) -> List[float]:
         """
-        Get the embedding for the given text using OpenAI.
+        Get the embedding for the given text using OpenAI | AzureOpenAI.
 
         Args:
             text (str): The text to embed.
@@ -81,19 +87,16 @@ class OpenAIClient(Client):
         """
         text = text.replace("\n", " ")
         model = getattr(self.client, 'model')
-        return (
-            self.client.embeddings.create(
+        response = self.client.embeddings.create(
                 input=[text],
                 model=model,
                 **kwargs
             )
-            .data[0]
-            .embedding
-        )
+        return self._get_embeddings(response)
 
-    async def aembed(self, text: str, **kwargs):
+    async def aembed(self, text: str, **kwargs) -> List[float]:
         """
-        Get the embedding for the given text using OpenAI.
+        Get the embedding for the given text using AsyncOpenAI | AsyncAzureOpenAI.
 
         Args:
             text (str): The text to embed.
@@ -107,7 +110,7 @@ class OpenAIClient(Client):
             input=[text],
             model=model,
         )
-        return response.data[0].embedding
+        return await sync_to_async(self._get_embeddings, response)
 
     @staticmethod
     def is_valid_api_key(api_key: str) -> bool:
