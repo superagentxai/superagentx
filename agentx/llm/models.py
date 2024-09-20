@@ -1,5 +1,4 @@
 import uuid
-from typing import Union
 
 from pydantic import BaseModel, Field, conlist, conint
 
@@ -70,7 +69,7 @@ class ChatCompletionParams(BaseModel):
                     ' tier service:',
         default=None
     )
-    stop: Union[str, list[str]] | None = Field(
+    stop: str | list[str] | None = Field(
         description='Specifies up to 4 sequences where the API should stop generating tokens.',
         default=None
     )
