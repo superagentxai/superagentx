@@ -3,6 +3,8 @@ from enum import Enum
 
 from agentx.vector_stores.neo4j import Neo4jVector
 from agentx.vector_stores.chroma import ChromaDB
+from agentx.llm import LLMClient
+from agentx.vector_stores.constants import DEFAULT_EMBED_TYPE, DEFAULT_EMBED_MODEL, EmbedTypeEnum
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +36,6 @@ class VectorStore:
             collection_name: str | None = None
     ):
         self.vector_type = vector_database_type.lower()
-        self.embed_config = embed_config
         self.url = url
         self.host = host or "localhost"
         self.port = port
@@ -42,11 +43,19 @@ class VectorStore:
         self.password = password
         self.collection_name = collection_name
 
-        if self.embed_config is None:
-            self.embed_config = {
-                "model": "text-embedding-ada-002",
-                "embed_type": "openai",
+        if embed_config is None:
+            embed_config = {
+                "model": DEFAULT_EMBED_MODEL,
+                "embed_type": DEFAULT_EMBED_TYPE,
             }
+
+        match embed_config.get("embed_type"):
+            case EmbedTypeEnum.OPENAI:
+                embed_config["llm_type"] = embed_config.get("embed_type")
+                embed_config.pop("embed_type")
+                self.embed_cli = LLMClient(llm_config=embed_config)
+            case _:
+                raise ValueError(f"Invalid type: {embed_config.get('embed_type')}")
 
         _params = self.__dict__
 

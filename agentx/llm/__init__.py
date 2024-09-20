@@ -102,3 +102,23 @@ class LLMClient:
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         return await self.client.achat_completion(chat_completion_params=chat_completion_params)
+
+    def embed(
+            self,
+            text: str,
+            **kwargs
+    ):
+        return self.client.embed(
+            text,
+            **kwargs
+        )
+
+    async def aembed(
+            self,
+            text: str,
+            **kwargs
+    ):
+        return await self.client.aembed(
+            text,
+            **kwargs
+        )
