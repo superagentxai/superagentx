@@ -2,6 +2,11 @@ from abc import ABC, abstractmethod
 
 
 class MemoryBase(ABC):
+
+    @abstractmethod
+    def add(self, *args, **kwargs):
+        pass
+
     @abstractmethod
     def get(self, memory_id):
         """

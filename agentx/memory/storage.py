@@ -81,28 +81,28 @@ class SQLiteManager:
                     role TEXT,
                     message TEXT,
                     event TEXT,
-                    is_deleted INTEGER
+                    is_deleted BOOLEAN
                 )
             """
             )
 
     def add_history(
-        self,
-        user_id,
-        chat_id,
-        message_id,
-        event,
-        role,
-        message,
-        created_at=None,
-        updated_at=None,
-        is_deleted=0,
+            self,
+            user_id,
+            chat_id,
+            message_id,
+            event,
+            role,
+            message,
+            created_at=None,
+            updated_at=None,
+            is_deleted=False,
     ):
         with self.connection:
             self.connection.execute(
                 """
                 INSERT INTO history (id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     str(uuid.uuid4()),
@@ -144,6 +144,19 @@ class SQLiteManager:
             }
             for row in rows
         ]
+
+    def _get_user_by_id(self, user_id):
+        cursor = self.connection.execute(
+            """
+            SELECT id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted
+            FROM history
+            WHERE user_id = ?
+            ORDER BY updated_at ASC
+        """,
+            (user_id,),
+        )
+        rows = cursor.fetchall()
+        return rows
 
     def reset(self):
         with self.connection:

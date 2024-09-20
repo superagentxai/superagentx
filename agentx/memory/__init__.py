@@ -28,7 +28,10 @@ class Memory(MemoryBase):
             raise
         return cls(_config)
 
-    def get(self, memory_id):
+    def add(self, *args, **kwargs):
+        return self.db.add_history(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
         pass
 
     def get_all(self):
