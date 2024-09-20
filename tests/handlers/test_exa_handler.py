@@ -21,6 +21,7 @@ def exasearch_client_init() -> ExaHandler:
 
 class TestExasearch:
 
+    # Test sync exa handler - search_contents method
     def test_exa_handler(self, exasearch_client_init: ExaHandler):
         exa = exasearch_client_init.handle(action="search_contents",
                                            query="Topics in AI",
@@ -30,6 +31,7 @@ class TestExasearch:
                                            )
         assert isinstance(exa, SearchResponse)
 
+    # Test async exa handler - search_contents method
     async def test_aexa_handler(self, exasearch_client_init: ExaHandler):
         exa = await exasearch_client_init.ahandle(action="search_contents",
                                                   query="Topics in AI",
