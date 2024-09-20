@@ -64,8 +64,10 @@ class Engine:
         else:
             async for _tool in iter_to_aiter(self.tools):
                 if isinstance(_tool, str):
+                    # TODO: extract func props from str func
                     pass
                 elif isinstance(_tool, dict):
+                    # TODO: extract func props from dict func props
                     pass
         return _tools
 
