@@ -10,6 +10,7 @@ from agentx.llm import LLMClient
 from agentx.vector_stores.base import BaseVectorStore
 from agentx.utils.helper import sync_to_async, iter_to_aiter
 from agentx.llm.client import Client
+from agentx.vector_stores.constants import DEFAULT_EMBED_TYPE, DEFAULT_EMBED_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +48,8 @@ class ChromaDB(BaseVectorStore):
         self.embed_cli = embed_cli
         if self.embed_cli is None:
             embed_config = {
-                "model": "text-embedding-ada-002",
-                "embed_type": "openai"
+                "model": DEFAULT_EMBED_MODEL,
+                "embed_type": DEFAULT_EMBED_TYPE
             }
             self.embed_cli = LLMClient(llm_config=embed_config)
 

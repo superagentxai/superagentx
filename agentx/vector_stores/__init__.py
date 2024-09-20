@@ -4,6 +4,7 @@ from enum import Enum
 from agentx.vector_stores.neo4j import Neo4jVector
 from agentx.vector_stores.chroma import ChromaDB
 from agentx.llm import LLMClient
+from agentx.vector_stores.constants import DEFAULT_EMBED_TYPE, DEFAULT_EMBED_MODEL, EmbedTypeEnum
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +19,6 @@ class VectorDatabaseType(str, Enum):
     @staticmethod
     def list():
         return list(map(lambda c: c.value, VectorDatabaseType))
-
-
-class EmbedTypeEnum(str, Enum):
-    OPENAI = "openai"
 
 
 class VectorStore:
@@ -48,8 +45,8 @@ class VectorStore:
 
         if embed_config is None:
             embed_config = {
-                "model": "text-embedding-ada-002",
-                "embed_type": "openai",
+                "model": DEFAULT_EMBED_MODEL,
+                "embed_type": DEFAULT_EMBED_TYPE,
             }
 
         match embed_config.get("embed_type"):
