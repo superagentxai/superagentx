@@ -1,10 +1,18 @@
 import sqlite3
 import uuid
+from os import PathLike
 
 
 class SQLiteManager:
-    def __init__(self, db_path=":memory:"):
-        self.connection = sqlite3.connect(db_path, check_same_thread=False)
+
+    def __init__(
+            self,
+            db_path: str | bytes | PathLike[str] | PathLike[bytes] = ":memory:"
+    ):
+        self.connection = sqlite3.connect(
+            database=db_path,
+            check_same_thread=False
+        )
         self._migrate_history_table()
         self._create_history_table()
 

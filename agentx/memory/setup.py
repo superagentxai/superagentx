@@ -1,6 +1,4 @@
-import json
 import os
-import uuid
 
 # Set up the directory path
 home_dir = os.path.expanduser("~")
