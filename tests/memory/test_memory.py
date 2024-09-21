@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 import uuid
 import logging
@@ -11,7 +13,8 @@ logger = logging.getLogger(__name__)
 Run Pytest:  
     
    1. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_add_history
-
+   2. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_get_history
+   3. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_reset
 """
 llm_config = {
     "model": "gpt-4o",
@@ -25,8 +28,8 @@ llm_client = LLMClient(llm_config=llm_config)
 def test_memory_init() -> dict:
     memory_client: Memory = Memory()
     datas = {
-        "user_id": str(uuid.uuid4().hex),
-        "chat_id": str(uuid.uuid4().hex)
+        "user_id": "55e497f4010d4eda909691272eaf31fb",
+        "chat_id": "915ec91bc2654f8da3af800c0bf6eca9"
     }
     response = {
         "data": datas,
@@ -37,36 +40,60 @@ def test_memory_init() -> dict:
 
 class TestMemory:
 
-    # def test_conversation(self):
-    #     exit_conditions = (":q", "quit", "exit")
-    #     while True:
-    #         query = input("> ")
-    #         role = "user"
-    #         if query in exit_conditions:
-    #             break
-    #         else:
-    #             messages = [
-    #                 {
-    #                     "role": "user"
-    #                 }
-    #             ]
-    #             chat_completion_params = ChatCompletionParams(
-    #                 messages=messages,
-    #                 seed=34,
-    #                 tools=tools,
-    #             )
-    #             llm_client.chat_completion()
-
     def test_add_history(self, test_memory_init: dict):
         datas = test_memory_init.get("data")
         client: Memory = test_memory_init.get("client")
         user_input = "Tell me about a Agentic AI Framework"
         role = "user"
+        logger.info(f"User Id: {datas.get('user_id')}")
+        logger.info(f"Chat Id: {datas.get('chat_id')}")
         client.add(
             user_id=datas.get("user_id"),
             chat_id=datas.get("chat_id"),
-            message_id=str(uuid.uuid4().hex)
+            message_id=str(uuid.uuid4().hex),
+            event="ADD",
+            role=role,
+            message=user_input,
+            created_at=datetime.datetime.now(),
+            updated_at=datetime.datetime.now(),
+            is_deleted=False
         )
+        messages = [
+            {
+                "role": "assistant",
+                "content": user_input
+            }
+        ]
+        role = "assistant"
+        chat_completion_params = ChatCompletionParams(
+                        messages=messages
+        )
+        response = llm_client.chat_completion(chat_completion_params=chat_completion_params)
+        result = response.choices[0].message.content
+        client.add(
+            user_id=datas.get("user_id"),
+            chat_id=datas.get("chat_id"),
+            message_id=str(uuid.uuid4().hex),
+            event="ADD",
+            role=role,
+            message=result,
+            created_at=datetime.datetime.now(),
+            updated_at=datetime.datetime.now(),
+            is_deleted=False
+        )
+
+    def test_get_history(self, test_memory_init: dict):
+        datas = test_memory_init.get("data")
+        client: Memory = test_memory_init.get("client")
+        response = client.get(
+            user_id=datas.get('user_id'),
+            chat_id=datas.get('chat_id')
+        )
+        logger.info(f"Result History: {response}")
+
+    def test_reset(self, test_memory_init: dict):
+        client: Memory = test_memory_init.get("client")
+        client.delete()
 
 
 

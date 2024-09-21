@@ -32,7 +32,7 @@ class Memory(MemoryBase):
         return self.db.add_history(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        pass
+        return self.db.get_history(*args, **kwargs)
 
     def get_all(self):
         pass
@@ -40,5 +40,5 @@ class Memory(MemoryBase):
     def update(self, memory_id, data):
         pass
 
-    def delete(self, memory_id):
-        pass
+    def delete(self, *args, **kwargs):
+        self.db.reset()
