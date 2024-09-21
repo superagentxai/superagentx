@@ -1,7 +1,7 @@
 
 import pytest
 from agentx.io.console import IOConsole
-
+from agentx.utils.console_color import ConsoleColorType
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class TestIOConsole:
     async def test_openai_client(self, console_io: IOConsole):
         logging.info(f"IO Console Print & Input Test.")
 
-        console_io.print("\033[32m", end="")
+        console_io.print(ConsoleColorType.CYELLOW2.value, end="")
         console_io.print("Hello, Super AgentX World!", flush=True)
 
         # Getting input from the console
