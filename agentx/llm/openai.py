@@ -1,6 +1,5 @@
 import logging
 import re
-from typing import Union
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat.chat_completion import ChatCompletion
@@ -83,7 +82,7 @@ class OpenAIClient(Client):
         return bool(re.fullmatch(api_key_re, api_key))
 
     @staticmethod
-    def cost(response: Union[ChatCompletion, Completion]) -> float:
+    def cost(response: ChatCompletion | Completion) -> float:
         """Calculate the cost of the response."""
         model = response.model
         if model not in OPENAI_PRICE1K:
