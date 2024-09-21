@@ -1,15 +1,22 @@
 from agentx.handler.sql import SQLHandler
 
-sql_handler = SQLHandler(database_type="sqlite", database="/tmp/sample.db")
+
+sql_handler = SQLHandler(
+    database_type="sqlite",
+    database="/tmp/sample.db"
+)
 
 
-def test_sqlite_1():
-    res = sql_handler.handle(action="CREATE_TABLE", stmt="CREATE TABLE test (x int, y int)")
+async def test_create_table():
+    res = await sql_handler.ahandle(
+        action="CREATE_TABLE",
+        stmt="CREATE TABLE test (x int, y int)"
+    )
     print("Create table res => ", res)
 
 
-def test_sqlite_2():
-    res = sql_handler.handle(
+async def test_insert_table():
+    res = await sql_handler.ahandle(
         action="INSERT",
         stmt="INSERT INTO test (x, y) VALUES (:x, :y)",
         values=[{'x': 1, 'y': 2}, {'x': 2, 'y': 4}]
@@ -17,8 +24,8 @@ def test_sqlite_2():
     print("Insert row res => ", res)
 
 
-def test_sqlite_3():
-    res = sql_handler.handle(
+async def test_select_table():
+    res = await sql_handler.ahandle(
         action="SELECT",
         query="SELECT * from test"
     )
@@ -26,8 +33,8 @@ def test_sqlite_3():
     assert len(res) > 0
 
 
-def test_sqlite_4():
-    res = sql_handler.handle(
+async def test_drop_table():
+    res = await sql_handler.ahandle(
         action="DROP_TABLE",
         stmt="DROP TABLE test"
     )

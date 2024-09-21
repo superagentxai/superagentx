@@ -1,0 +1,2 @@
+class InvalidAction(Exception):
+    pass
