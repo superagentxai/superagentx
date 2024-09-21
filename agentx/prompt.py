@@ -38,14 +38,6 @@ class PromptTemplate:
             case _:
                 raise InvalidType(f"Invalid Prompt type: {self.prompt_type}")
 
-    async def _construct_message(self, string_format: str) -> list[dict]:
-        content = {
-            "role": "user",
-            "content": string_format
-        }
-        self.prompt.append(content)
-        return self.prompt
-
     async def get_messages(
             self,
             *,
@@ -60,5 +52,9 @@ class PromptTemplate:
             kwargs (dict): Format the variable's value in the given prompt.
         """
         format_string = input_prompt.format(**kwargs)
-        message = await self._construct_message(format_string)
-        return message
+        content = {
+            "role": "user",
+            "content": format_string
+        }
+        self.prompt.append(content)
+        return self.prompt
