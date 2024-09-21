@@ -43,12 +43,26 @@ class Engine:
                     "description": f"The {param.replace('_', ' ')}."
                 }
         return {
+            'type': 'function',
             'function': {
                 'name': _func_name,
                 'description': _doc_str,
-                'parameters': _properties
+                'parameters': {
+                    "llm_type": "object",
+                    "properties": _properties,
+                    "required": list(_properties.keys()),
+                    "additionalProperties": False
+                }
             }
         }
+
+    async def _construct_funcs_props(self, funcs: list[str]) -> list[dict]:
+        _funcs_props: list[dict] = []
+        async for func_name in iter_to_aiter(funcs):
+            _func = getattr(self.handler, func_name)
+            if inspect.isfunction(_func):
+                _funcs_props.append(await self._construct_func_props(func=_func))
+        return _funcs_props
 
     async def _construct_tools(self) -> list[dict]:
         funcs = dir(self.handler)
@@ -56,12 +70,7 @@ class Engine:
             raise InvalidHandler(str(self.handler))
 
         _tools: list[dict] = []
-        if not self.tools:
-            async for func_name in iter_to_aiter(funcs):
-                _func = getattr(self.handler, func_name)
-                if inspect.isfunction(_func):
-                    _tools.append(await self._construct_func_props(func=_func))
-        else:
+        if self.tools:
             async for _tool in iter_to_aiter(self.tools):
                 if isinstance(_tool, str):
                     # TODO: extract func props from str func
@@ -69,9 +78,11 @@ class Engine:
                 elif isinstance(_tool, dict):
                     # TODO: extract func props from dict func props
                     pass
+        if not _tools:
+            _tools = await self._construct_funcs_props(funcs=funcs)
         return _tools
 
-    async def start(self):
+    async def start(self) -> typing.Any:
         prompt_messages = await self.prompt_template.get_messages(
             input_prompt=self.input_prompt,
             **self.kwargs
@@ -84,3 +95,4 @@ class Engine:
         resp = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
+
