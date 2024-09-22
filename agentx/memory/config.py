@@ -1,8 +1,9 @@
+import os
 from typing import Optional
 
 from pydantic import BaseModel, Field
+
 from agentx.memory.setup import mem_dir
-import os
 
 
 class MemoryConfig(BaseModel):

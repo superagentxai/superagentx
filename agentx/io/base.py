@@ -1,21 +1,32 @@
 
+import logging
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Any, Iterator, Optional, Protocol, runtime_checkable
 
-import logging
 logger = logging.getLogger(__name__)
 
 
 @runtime_checkable
 class OutputStream(Protocol):
-    async def print(self, *objects: Any, sep: str = " ", end: str = "\n", flush: bool = False) -> None:
+    async def print(
+            self,
+            *objects: Any,
+            sep: str = " ",
+            end: str = "\n",
+            flush: bool = False
+    ) -> None:
         """Print data to the output stream."""
 
 
 @runtime_checkable
 class InputStream(Protocol):
-    async def input(self, prompt: str = "", *, password: bool = False) -> str:
+    async def input(
+            self,
+            prompt: str = "",
+            *,
+            password: bool = False
+    ) -> str:
         """Read a line from the input stream."""
 
 

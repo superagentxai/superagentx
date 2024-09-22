@@ -16,7 +16,12 @@ class IOConsole(IOStream):
             end (str, optional): The end of the output. Defaults to "\n".
             flush (bool, optional): Whether to flush the output. Defaults to False.
         """
-        print(*objects, sep=sep, end=end, flush=flush)
+        print(
+            *objects,
+            sep=sep,
+            end=end,
+            flush=flush
+        )
 
     async def input(self, prompt: str = "", *, password: bool = False) -> str:
         """Read a line from the input stream.

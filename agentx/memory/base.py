@@ -3,7 +3,10 @@ from abc import ABC, abstractmethod
 
 class MemoryBase(ABC):
     @abstractmethod
-    def get(self, memory_id):
+    def get(
+            self,
+            memory_id: str
+    ):
         """
         Retrieve a memory by ID.
 
@@ -26,7 +29,11 @@ class MemoryBase(ABC):
         pass
 
     @abstractmethod
-    def update(self, memory_id, data):
+    def update(
+            self,
+            memory_id: str,
+            data: dict
+    ):
         """
         Update a memory by ID.
 
@@ -40,7 +47,10 @@ class MemoryBase(ABC):
         pass
 
     @abstractmethod
-    def delete(self, memory_id):
+    def delete(
+            self,
+            memory_id: str
+    ):
         """
         Delete a memory by ID.
 
