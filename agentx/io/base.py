@@ -9,13 +9,13 @@ logger = logging.getLogger(__name__)
 
 @runtime_checkable
 class OutputStream(Protocol):
-    def print(self, *objects: Any, sep: str = " ", end: str = "\n", flush: bool = False) -> None:
+    async def print(self, *objects: Any, sep: str = " ", end: str = "\n", flush: bool = False) -> None:
         """Print data to the output stream."""
 
 
 @runtime_checkable
 class InputStream(Protocol):
-    def input(self, prompt: str = "", *, password: bool = False) -> str:
+    async def input(self, prompt: str = "", *, password: bool = False) -> str:
         """Read a line from the input stream."""
 
 
@@ -49,7 +49,7 @@ class IOStream(InputStream, OutputStream, Protocol):
 
     @staticmethod
     @contextmanager
-    def override_default_io_stream(stream: Optional["IOStream"]) -> Iterator[None]:
+    async def override_default_io_stream(stream: Optional["IOStream"]) -> Iterator[None]:
         """Temporarily override the default IO stream for the current context."""
         token = IOStream._default_io_stream.set(stream)
         try:

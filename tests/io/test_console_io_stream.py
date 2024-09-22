@@ -21,9 +21,9 @@ class TestIOConsole:
     async def test_openai_client(self, console_io: IOConsole):
         logging.info(f"IO Console Print & Input Test.")
 
-        console_io.print(ConsoleColorType.CYELLOW2.value, end="")
-        console_io.print("Hello, Super AgentX World!", flush=True)
+        await console_io.print(ConsoleColorType.CYELLOW2.value, end="")
+        await console_io.print("Hello, Super AgentX World!", flush=True)
 
         # Getting input from the console
-        data = console_io.input("Enter something: ")
-        console_io.print(f"You entered: {data}", flush=True)
+        data = await console_io.input("Enter something: ")
+        await console_io.print(f"You entered: {data}", flush=True)
