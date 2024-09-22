@@ -11,33 +11,28 @@ class Agent:
     def __init__(
             self,
             *,
-            engines: list[Engine],
-            invoke_type: LiteralString[SEQUENCE, PARALLEL] = SEQUENCE,
             name: str | None = None,
             description: str | None = None,
             role: str | None = None,
             goal: str | None = None,
-            max_retry: int | None = 5
+            max_retry: int = 5
     ):
-        self.engines = engines
-        self.invoke_type = invoke_type
+        self.engines: list[Engine | list[Engine]] = []
         self.name = name
         self.description = description
         self.role = role
         self.goal = goal
         self.max_retry = max_retry
 
-    async def start(self):
+    async def execute(self):
         pass
 
-    async def sequence(
+    async def add(
             self,
-            *engines: tuple[Engine]
+            execute_type: LiteralString[SEQUENCE, PARALLEL] = SEQUENCE,
+            *engines: Engine
     ):
-        pass
-
-    async def parallel(
-            self,
-            *engines: tuple[Engine]
-    ):
-        pass
+        if execute_type == SEQUENCE:
+            self.engines += engines
+        else:
+            self.engines.append(list(engines))
