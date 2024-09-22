@@ -49,9 +49,9 @@ class OpenAIClient(Client):
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
         response = self.client.chat.completions.create(**params)
-        cost = OpenAIClient.cost(response=response)
-        logger.debug(f"Usage Cost : {cost}")
-        return self.client.chat.completions.create(**params)
+        # cost = OpenAIClient.cost(response=response)
+        # logger.info(f"Usage Cost : {response} {cost}")
+        return response
 
     async def achat_completion(
             self,
@@ -61,11 +61,11 @@ class OpenAIClient(Client):
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
         response = await self.client.chat.completions.create(**params)
-        cost = await sync_to_async(
-            OpenAIClient.cost,
-            response=response
-        )
-        logger.debug(f"Usage Cost : {cost}")
+        # cost = await sync_to_async(
+        #     OpenAIClient.cost,
+        #     response=response
+        # )
+        # logger.debug(f"Usage Cost : {cost}")
         return response
 
     @staticmethod

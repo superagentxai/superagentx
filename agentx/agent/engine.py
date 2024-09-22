@@ -31,7 +31,7 @@ class Engine:
         self.kwargs = kwargs
 
     @staticmethod
-    async def _construct_func_props(func: typing.Callable) -> dict:
+    async def __func_props(func: typing.Callable) -> dict:
         _func_name = func.__name__
         _doc_str = inspect.getdoc(func)
         _properties = {}
@@ -56,12 +56,18 @@ class Engine:
             }
         }
 
-    async def _construct_funcs_props(self, funcs: list[str]) -> list[dict]:
+    async def __funcs_props(self, funcs: list[str] | list[dict]) -> list[dict]:
         _funcs_props: list[dict] = []
-        async for func_name in iter_to_aiter(funcs):
-            _func = getattr(self.handler, func_name)
+        async for _func_name in iter_to_aiter(funcs):
+            _func = None
+            if isinstance(_func_name, str):
+                _func_name = _func_name.split('.')[-1]
+                _func = getattr(self.handler, _func_name)
+            else:
+                # TODO: Needs to fix this for tools contains list of dict
+                pass
             if inspect.isfunction(_func):
-                _funcs_props.append(await self._construct_func_props(func=_func))
+                _funcs_props.append(await self.__func_props(func=_func))
         return _funcs_props
 
     async def _construct_tools(self) -> list[dict]:
@@ -71,15 +77,9 @@ class Engine:
 
         _tools: list[dict] = []
         if self.tools:
-            async for _tool in iter_to_aiter(self.tools):
-                if isinstance(_tool, str):
-                    # TODO: extract func props from str func
-                    pass
-                elif isinstance(_tool, dict):
-                    # TODO: extract func props from dict func props
-                    pass
+            _tools = await self.__funcs_props(funcs=self.tools)
         if not _tools:
-            _tools = await self._construct_funcs_props(funcs=funcs)
+            _tools = await self.__funcs_props(funcs=funcs)
         return _tools
 
     async def start(self) -> typing.Any:
