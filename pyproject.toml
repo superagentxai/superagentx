@@ -8,9 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
 pydantic = "^2.8.2"
-langchain = "^0.2.14"
 boto3 = "^1.35.8"
-langchain-openai = "0.1.23"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.32"}
 psycopg2-binary = "^2.9.9"
 pymysql = "^1.1.1"
