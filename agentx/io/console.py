@@ -7,7 +7,13 @@ from agentx.io.base import IOStream
 class IOConsole(IOStream):
     """A console input/output stream."""
 
-    def print(self, *objects: Any, sep: str = " ", end: str = "\n", flush: bool = False) -> None:
+    async def write(
+            self,
+            *objects: Any,
+            sep: str | None = None,
+            end: str | None = None,
+            flush: bool = False
+    ) -> None:
         """Print data to the output stream.
 
         Args:
@@ -16,9 +22,21 @@ class IOConsole(IOStream):
             end (str, optional): The end of the output. Defaults to "\n".
             flush (bool, optional): Whether to flush the output. Defaults to False.
         """
-        print(*objects, sep=sep, end=end, flush=flush)
+        sep = sep or " "
+        end = end or "\n"
+        print(
+            *objects,
+            sep=sep,
+            end=end,
+            flush=flush
+        )
 
-    def input(self, prompt: str = "", *, password: bool = False) -> str:
+    async def read(
+            self,
+            prompt: str | None = None,
+            *,
+            password: bool = False
+    ) -> str:
         """Read a line from the input stream.
 
         Args:
@@ -29,7 +47,8 @@ class IOConsole(IOStream):
             str: The line read from the input stream.
 
         """
+        prompt = prompt or ""
 
         if password:
-            return getpass.getpass(prompt if prompt != "" else "Password: ")
+            return getpass.getpass(prompt if prompt else "Password: ")
         return input(prompt)

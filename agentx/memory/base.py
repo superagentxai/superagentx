@@ -49,6 +49,7 @@ class MemoryBase(ABC):
 
     @abstractmethod
     async def delete(self, memory_id):
+
         """
         Delete a memory by ID.
 

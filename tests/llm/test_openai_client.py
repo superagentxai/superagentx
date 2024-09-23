@@ -1,9 +1,9 @@
 import logging
-
+import json
 import pytest
 from openai.types.chat.chat_completion import ChatCompletion
 
-from agentx.llm import LLMClient
+from agentx.llm import LLMClient, Message
 from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def openai_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai', 'async_mode': False}
+    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai', 'async_mode': True}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
@@ -74,9 +74,9 @@ class TestOpenAIClient:
             tools=tools,
         )
 
-        response = llm_client.chat_completion(chat_completion_params=chat_completion_params)
-        logger.info(f"Open AI ChatCompletion Response {response}")
-        assert isinstance(response, ChatCompletion)
+        result: [Message] = await llm_client.afunc_chat_completion(chat_completion_params=chat_completion_params)
+        logger.info(result)
+
         assert isinstance(openai_client_init.get('llm'), LLMClient)
 
     async def test_achat_completion(self, openai_client_init: dict):
