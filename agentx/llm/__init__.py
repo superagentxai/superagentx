@@ -133,10 +133,6 @@ class LLMClient:
 
                 # Extract token details from usage
                 usage_data = response.usage
-                completion_tokens = usage_data.completion_tokens
-                prompt_tokens = usage_data.prompt_tokens
-                total_tokens = usage_data.total_tokens
-                reasoning_tokens = usage_data.completion_tokens_details.get('reasoning_tokens')
 
                 # Create a Message instance with parsed values
                 message_instance = Message(
@@ -144,10 +140,10 @@ class LLMClient:
                     model=response.model,
                     content=choice.message.content,
                     tool_calls=tool_calls_data if tool_calls_data else None,
-                    completion_tokens=completion_tokens,
-                    prompt_tokens=prompt_tokens,
-                    total_tokens=total_tokens,
-                    reasoning_tokens=reasoning_tokens,
+                    completion_tokens=usage_data.completion_tokens,
+                    prompt_tokens=usage_data.prompt_tokens,
+                    total_tokens=usage_data.total_tokens,
+                    reasoning_tokens=usage_data.completion_tokens_details.get('reasoning_tokens'),
                     created=response.created
                 )
 
@@ -155,4 +151,3 @@ class LLMClient:
                 message_instances.append(message_instance)
 
         return message_instances
-
