@@ -27,10 +27,10 @@ class ExaHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
-        """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
+        """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
 
         params:
-            action(str): Give a action what has given in the Enum.
+            action(str): Give an action what has given in the Enum.
 
         """
 
@@ -49,10 +49,10 @@ class ExaHandler(BaseHandler):
             **kwargs
     ) -> Any:
 
-        """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
+        """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
 
            params:
-               action(str): Give a action what has given in the Enum.
+               action(str): Give an action what has given in the Enum.
 
         """
 
@@ -73,7 +73,7 @@ class ExaHandler(BaseHandler):
             search_type: str | None = None
 
     ):
-        """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
+        """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
 
         params:
             query (str): The query string.
@@ -101,7 +101,7 @@ class ExaHandler(BaseHandler):
             num_results: int | None = 10,
             search_type: str | None = None
     ):
-        """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
+        """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
 
            params:
                query (str): The query string.
