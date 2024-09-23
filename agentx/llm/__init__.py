@@ -1,21 +1,24 @@
+import json
 import logging
 import os
-import json
-
 from typing import List
 
+import boto3
+from botocore.config import Config
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from agentx.exceptions import InvalidType
+from agentx.llm.bedrock import BedrockClient
 from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 from agentx.llm.types.base import LLMModelConfig
 from agentx.llm.types.response import Message, Tools
 from agentx.utils.llm_config import LLMType
 
-
 logger = logging.getLogger(__name__)
+
+_retries = 5
 
 
 class LLMClient:
@@ -90,6 +93,28 @@ class LLMClient:
 
                 # Assign the client to self.client
                 self.client = OpenAIClient(cli)
+
+            case LLMType.BEDROCK_CLIENT:
+
+                aws_region = self.llm_config_model.aws_region or os.getenv("AWS_REGION")
+
+                if aws_region is None:
+                    raise ValueError("Region is required to use the Amazon Bedrock API.")
+
+                aws_access_key = self.llm_config_model.aws_access_key or os.getenv("AWS_ACCESS_KEY")
+                aws_secret_key = self.llm_config_model.aws_secret_key or os.getenv("AWS_SECRET_KEY")
+
+                # Initialize Bedrock client, session, and runtime
+                bedrock_config = Config(
+                    region_name=aws_region,
+                    signature_version="v4",
+                    retries={"max_attempts": _retries, "mode": "standard"},
+                )
+
+                # Assign Bedrock client to self.client
+                aws_cli = boto3.client(service_name="bedrock-runtime", aws_access_key_id=aws_access_key,
+                                       aws_secret_access_key=aws_secret_key, config=bedrock_config)
+                self.client = BedrockClient(aws_cli)
 
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
