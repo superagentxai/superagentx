@@ -92,7 +92,6 @@ class Engine:
             messages=prompt_messages,
             tools=tools
         )
-        resp = await self.llm.achat_completion(
+        messages = await self.llm.afunc_chat_completion(
             chat_completion_params=chat_completion_params
         )
-
