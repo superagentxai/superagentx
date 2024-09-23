@@ -5,6 +5,7 @@ from agentx.vector_stores.neo4j import Neo4jVector
 from agentx.vector_stores.chroma import ChromaDB
 from agentx.llm import LLMClient
 from agentx.vector_stores.constants import DEFAULT_EMBED_TYPE, DEFAULT_EMBED_MODEL, EmbedTypeEnum
+from agentx.vector_stores.opensearch import Opensearch
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,8 @@ class VectorStore:
                 self.cli = Neo4jVector(**_params)
             case VectorDatabaseType.CHROMA:
                 self.cli = ChromaDB(**_params)
+            case VectorDatabaseType.OPENSEARCH:
+                self.cli = Opensearch(**_params)
             case _:
                 vector_enum_list = VectorDatabaseType.list()
                 _msg = (
@@ -101,11 +104,19 @@ class VectorStore:
     ):
         return self.cli.update(*args, **kwargs)
 
-    def exists(self):
-        return self.cli.exists()
+    def exists(
+            self,
+            *args,
+            **kwargs
+    ):
+        return self.cli.exists(*args, **kwargs)
 
-    def delete_collection(self):
-        return self.cli.delete_collection()
+    def delete_collection(
+            self,
+            *args,
+            **kwargs
+    ):
+        return self.cli.delete_collection(*args, **kwargs)
 
     async def acreate(
             self,
@@ -135,8 +146,16 @@ class VectorStore:
     ):
         return await self.cli.aupdate(*args, **kwargs)
 
-    async def aexists(self):
-        return await self.cli.aexists()
+    async def aexists(
+            self,
+            *args,
+            **kwargs
+    ):
+        return await self.cli.aexists(*args,**kwargs)
 
-    async def adelete_collection(self):
-        return await self.cli.adelete_collection()
+    async def adelete_collection(
+            self,
+            *args,
+            **kwargs
+    ):
+        return await self.cli.adelete_collection(*args,**kwargs)

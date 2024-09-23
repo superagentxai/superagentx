@@ -27,7 +27,6 @@ class ChromaDB(BaseVectorStore):
             self,
             *,
             collection_name: str,
-            client: chromadb.Client = None,
             host: Optional[str] = None,
             port: Optional[int] = None,
             path: Optional[str] = None,
@@ -53,23 +52,20 @@ class ChromaDB(BaseVectorStore):
             }
             self.embed_cli = LLMClient(llm_config=embed_config)
 
-        if client:
-            self.client = client
+        self.settings = Settings(anonymized_telemetry=False)
+
+        if host and port:
+            self.settings.chroma_server_host = host
+            self.settings.chroma_server_http_port = port
+            self.settings.chroma_api_impl = "chromadb.api.fastapi.FastAPI"
         else:
-            self.settings = Settings(anonymized_telemetry=False)
+            if path is None:
+                path = "db"
 
-            if host and port:
-                self.settings.chroma_server_host = host
-                self.settings.chroma_server_http_port = port
-                self.settings.chroma_api_impl = "chromadb.api.fastapi.FastAPI"
-            else:
-                if path is None:
-                    path = "db"
+        self.settings.persist_directory = path
+        self.settings.is_persistent = True
 
-            self.settings.persist_directory = path
-            self.settings.is_persistent = True
-
-            self.client = chromadb.Client(self.settings)
+        self.client = chromadb.Client(self.settings)
 
         self.collection_name = collection_name
         self.collection = self.create_collection(collection_name)

@@ -326,3 +326,14 @@ class SQLHandler(BaseHandler):
                 text(stmt),
                 values
             )
+
+    def __dir__(self):
+        return (
+            'aselect',
+            'ainsert',
+            'aupdate',
+            'adelete',
+            'acreate_table',
+            'adrop_table',
+            'aalter_table'
+        )

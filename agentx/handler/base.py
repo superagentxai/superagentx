@@ -1,26 +1,10 @@
 import abc
-from abc import abstractmethod
-from enum import Enum
-from typing import Any
+from typing import Sequence
 
 
 # Base Class
-class BaseHandler (abc.ABC):
+class BaseHandler(abc.ABC):
 
-    @abstractmethod
-    def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-        raise NotImplementedError("Subclasses should implement this method.")
-
-    @abstractmethod
-    async def ahandle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-        raise NotImplementedError("Subclasses should implement this method.")
+    @abc.abstractmethod
+    def __dir__(self):
+        raise NotImplementedError

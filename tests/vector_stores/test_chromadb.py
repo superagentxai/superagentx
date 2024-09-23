@@ -26,18 +26,18 @@ def chromadb_client_init() -> VectorStore:
 
 class TestChroma:
 
-    async def test_chromadb_client(self, chromadb_client_init: VectorStore):
+    def test_chromadb_client(self, chromadb_client_init: VectorStore):
         chromadb_client: ChromaDB = chromadb_client_init.cli
         logger.info(f"ChromDB Object testing....")
         assert isinstance(chromadb_client, ChromaDB)
 
-    async def test_collection_exists(self, chromadb_client_init: VectorStore):
+    def test_collection_exists(self, chromadb_client_init: VectorStore):
         if chromadb_client_init.exists():
             assert True
         else:
             assert False
 
-    async def test_document_insert(self, chromadb_client_init: VectorStore):
+    def test_document_insert(self, chromadb_client_init: VectorStore):
         documents = [
             "This is a document about pineapple",
             "This is a document about oranges"
@@ -50,7 +50,7 @@ class TestChroma:
             logger.error(f"Document Insertion Error: {ex}")
             assert "Failed"
 
-    async def test_search(self, chromadb_client_init: VectorStore):
+    def test_search(self, chromadb_client_init: VectorStore):
         _search = chromadb_client_init.search(
             query="This is a query document about hawaii",
             limit=2,
@@ -59,7 +59,7 @@ class TestChroma:
         logger.info(_search)
         assert isinstance(_search, list)
 
-    async def test_update(self, chromadb_client_init: VectorStore):
+    def test_update(self, chromadb_client_init: VectorStore):
         try:
             _update = chromadb_client_init.update(
                 vector_id="id1",
@@ -72,7 +72,7 @@ class TestChroma:
             logger.error(f"Update Failed: {ex}")
             assert "Failed"
 
-    async def test_delete_collection(self, chromadb_client_init: VectorStore):
+    def test_delete_collection(self, chromadb_client_init: VectorStore):
         try:
             _delete = chromadb_client_init.delete_collection()
             assert _delete is None
