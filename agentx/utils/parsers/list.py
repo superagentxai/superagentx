@@ -1,11 +1,12 @@
-from agentx.utils.parsers.base import BaseParser
-from typing import List
 import re
+
+from agentx.utils.helper import iter_to_aiter
+from agentx.utils.parsers.base import BaseParser
 
 
 class CommaSeparatedListOutputParser(BaseParser):
 
-    async def parse(self, text: str) -> List[str]:
+    async def parse(self, text: str) -> list[str]:
         """Parse the output of an LLM call.
 
           Args:
@@ -14,7 +15,7 @@ class CommaSeparatedListOutputParser(BaseParser):
           Returns:
                A list of strings.
          """
-        return [part.strip() for part in text.split(",")]
+        return [part.strip() async for part in iter_to_aiter(text.split(","))]
 
     async def get_format_instructions(self) -> str:
         """Return the format instructions for the comma-separated list output."""
@@ -30,13 +31,13 @@ class NumberedListOutputParser(BaseParser):
     pattern: str = r"\d+\.\s([^\n]+)"
     """The pattern to match a numbered list item."""
 
-    def get_format_instructions(self) -> str:
+    async def get_format_instructions(self) -> str:
         return (
             "Your response should be a numbered list with each item on a new line. "
             "For example: \n\n1. foo\n\n2. bar\n\n3. baz"
         )
 
-    def parse(self, text: str) -> List[str]:
+    async def parse(self, text: str) -> list[str]:
         """Parse the output of an LLM call.
 
         Args:
@@ -54,11 +55,11 @@ class MarkdownListOutputParser(BaseParser):
     pattern: str = r"^\s*[-*]\s([^\n]+)$"
     """The pattern to match a Markdown list item."""
 
-    def get_format_instructions(self) -> str:
+    async def get_format_instructions(self) -> str:
         """Return the format instructions for the Markdown list output."""
         return "Your response should be a markdown list, " "eg: `- foo\n- bar\n- baz`"
 
-    def parse(self, text: str) -> List[str]:
+    async def parse(self, text: str) -> list[str]:
         """Parse the output of an LLM call.
 
         Args:

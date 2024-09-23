@@ -38,238 +38,45 @@ class SQLHandler(BaseHandler):
         match self.database_type:
             case "postgres":
                 self._conn_str = self._postgres_conn_str()
-                self._aconn_str = self._apostgres_conn_str()
             case "mysql" | "mariadb":
                 self._conn_str = self._mysql_or_mariadb_conn_str()
-                self._aconn_str = self._amysql_or_mariadb_conn_str()
             case "sqlite":
                 self._conn_str = self._sqlite_conn_str()
-                self._aconn_str = self._asqlite_conn_str()
             case "oracle":
                 self._conn_str = self._oracle_conn_str()
-                self._aconn_str = self._aoracle_conn_str()
             case "mssql":
                 self._conn_str = self._mssql_conn_str()
-                self._aconn_str = self._amssql_conn_str()
             case _:
                 raise InvalidDatabase(f"Invalid database type `{self.database_type}`")
 
-        self._engine = create_engine(url=self._conn_str)
-        self._aengine = create_async_engine(url=self._aconn_str)
+
+        self._engine = create_async_engine(url=self._conn_str)
 
     def _postgres_conn_str(self):
         if not self.port:
             self.port = 5432
-        return f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
-
-    def _apostgres_conn_str(self):
-        if not self.port:
-            self.port = 5432
         return f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
 
-    def _mysql_or_mariadb_conn_str(self):
-        if not self.port:
-            self.port = 3306
-        return (f"mysql+pymysql://{self.username}:{self.password}@"
-                f"{self.host}:{self.port}/{self.database}?charset=utf8mb4")
 
-    def _amysql_or_mariadb_conn_str(self):
+    def _mysql_or_mariadb_conn_str(self):
         if not self.port:
             self.port = 3306
         return (f"mysql+aiomysql://{self.username}:{self.password}@"
                 f"{self.host}:{self.port}/{self.database}?charset=utf8mb4")
 
     def _sqlite_conn_str(self):
-        return f"sqlite+pysqlite:///{self.database}"
-
-    def _asqlite_conn_str(self):
         return f"sqlite+aiosqlite:///{self.database}"
 
     def _oracle_conn_str(self):
-        if not self.port:
-            self.port = 1521
-        return (f"oracle+oracledb://{self.username}:{self.password}@{self.host}:{self.port}"
-                f"/?service_name={self.database}")
-
-    def _aoracle_conn_str(self):
         return self._oracle_conn_str()
 
     def _mssql_conn_str(self):
         if not self.port:
             self.port = 1433
-        return f"mssql+pyodbc://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?charset=utf8"
-
-    def _amssql_conn_str(self):
-        if not self.port:
-            self.port = 1433
         return f"mssql+aioodbc://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?charset=utf8"
 
     @final
-    def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-
-        """
-           params:
-               action(str): Give an action what has given in the Enum.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case SQLAction.SELECT:
-                return self.select(**kwargs)
-            case SQLAction.INSERT:
-                return self.insert(**kwargs)
-            case SQLAction.UPDATE:
-                return self.update(**kwargs)
-            case SQLAction.DELETE:
-                return self.delete(**kwargs)
-            case SQLAction.CREATE_TABLE:
-                return self.create_table(**kwargs)
-            case SQLAction.DROP_TABLE:
-                return self.drop_table(**kwargs)
-            case SQLAction.ALTER_TABLE:
-                return self.alter_table(**kwargs)
-            case _:
-                raise InvalidSQLAction(f"Invalid sql action `{action}`")
-
-    def select(
-            self,
-            *,
-            query: str
-    ):
-
-        """
-           params:
-               query(str):Filter groups by name with this string.
-        """
-        with self._engine.connect() as conn:
-            return conn.execute(text(query)).all()
-
-    def insert(
-            self,
-            *,
-            stmt: str,
-            values: list[dict]
-    ):
-
-        """
-           params:
-               stmt(str):Filter groups by name with this string.
-               values(List(dict)):Given values.
-        """
-        return self._stat_begin(
-            stmt=stmt,
-            values=values
-        )
-
-    def update(
-            self,
-            *,
-            stmt: str,
-            values: list[dict]
-    ):
-
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-        return self._stat_begin(
-            stmt=stmt,
-            values=values
-        )
-
-    def delete(
-            self,
-            *,
-            stmt: str,
-            values: list[dict]
-    ):
-
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-        return self._stat_begin(
-            stmt=stmt,
-            values=values
-        )
-
-    def create_table(
-            self,
-            *,
-            stmt: str
-    ):
-
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-
-        """
-        with self._engine.begin() as conn:
-            return conn.execute(
-                text(stmt)
-            )
-
-    def drop_table(
-            self,
-            *,
-            stmt: str
-    ):
-
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-
-        """
-        with self._engine.begin() as conn:
-            return conn.execute(
-                text(stmt)
-            )
-
-    def alter_table(
-            self,
-            *,
-            stmt: str,
-            values: list[dict]
-    ):
-
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-        return self._stat_begin(
-            stmt=stmt,
-            values=values
-        )
-
-    def _stat_begin(
-            self,
-            *,
-            stmt: str,
-            values: list[dict]
-    ):
-
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-        with self._engine.begin() as conn:
-            return conn.execute(
-                text(stmt),
-                values
-            )
-
-    @final
-    async def ahandle(
+    async def handle(
             self,
             *,
             action: str | Enum,
@@ -279,147 +86,114 @@ class SQLHandler(BaseHandler):
             action = action.lower()
         match action:
             case SQLAction.SELECT:
-                return await self.aselect(**kwargs)
+                return await self.select(**kwargs)
             case SQLAction.INSERT:
-                return await self.ainsert(**kwargs)
+                return await self.insert(**kwargs)
             case SQLAction.UPDATE:
-                return await self.aupdate(**kwargs)
+                return await self.update(**kwargs)
             case SQLAction.DELETE:
-                return await self.adelete(**kwargs)
+                return await self.delete(**kwargs)
             case SQLAction.CREATE_TABLE:
-                return await self.acreate_table(**kwargs)
+                return await self.create_table(**kwargs)
             case SQLAction.DROP_TABLE:
-                return await self.adrop_table(**kwargs)
+                return await self.drop_table(**kwargs)
             case SQLAction.ALTER_TABLE:
-                return await self.aalter_table(**kwargs)
+                return await self.alter_table(**kwargs)
             case _:
                 raise InvalidSQLAction(f"Invalid sql action `{action}`")
 
-    async def aselect(
+    async def select(
             self,
             *,
             query: str
     ):
-        """
-           params:
-               query(str):Filter groups by name with this string.
-        """
-
-        async with self._aengine.connect() as conn:
+        async with self._engine.connect() as conn:
             res = await conn.execute(text(query))
             return res.all()
 
-    async def ainsert(
+    async def insert(
             self,
             *,
             stmt: str,
             values: list[dict]
     ):
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-
-        return await self._astat_begin(
+        return await self._stat_begin(
             stmt=stmt,
             values=values
         )
 
-    async def aupdate(
+    async def update(
             self,
             *,
             stmt: str,
             values: list[dict]
     ):
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-
-        return await self._astat_begin(
+        return await self._stat_begin(
             stmt=stmt,
             values=values
         )
 
-    async def adelete(
+    async def delete(
             self,
             *,
             stmt: str,
             values: list[dict]
     ):
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-
-        return await self._astat_begin(
+        return await self._stat_begin(
             stmt=stmt,
             values=values
         )
 
-    async def acreate_table(
+    async def create_table(
             self,
             *,
             stmt: str
     ):
-        """Perform a search with a Exa prompt-engineered query and retrieve a list of relevant results.
-           params:
-                stmt(str):Filter groups by name with this string.
-        """
-
-        async with self._aengine.begin() as conn:
+        async with self._engine.begin() as conn:
             return await conn.execute(
                 text(stmt)
             )
 
-    async def adrop_table(
+    async def drop_table(
             self,
             *,
             stmt: str
     ):
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-        """
-
-        async with self._aengine.begin() as conn:
+        async with self._engine.begin() as conn:
             return await conn.execute(
                 text(stmt)
             )
 
-    async def aalter_table(
+    async def alter_table(
             self,
             *,
             stmt: str,
             values: list[dict]
     ):
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-
-        return await self._astat_begin(
+        return await self._stat_begin(
             stmt=stmt,
             values=values
         )
 
-    async def _astat_begin(
+    async def _stat_begin(
             self,
             *,
             stmt: str,
             values: list[dict]
     ):
-        """
-           params:
-                stmt(str):Filter groups by name with this string.
-                values(List(dict)):Given values.
-        """
-        async with self._aengine.begin() as conn:
+        async with self._engine.begin() as conn:
             return await conn.execute(
                 text(stmt),
                 values
             )
+
+    def __dir__(self):
+        return (
+            'select',
+            'insert',
+            'update',
+            'delete',
+            'create_table',
+            'drop_table',
+            'alter_table'
+        )

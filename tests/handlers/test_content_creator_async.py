@@ -24,6 +24,6 @@ def content_creator_init() -> ContentCreatorHandler:
 class TestContentCreator:
 
     async def test_text_content_creator(self, content_creator_init: ContentCreatorHandler):
-        result = await content_creator_init.ahandle(action="TEXT")
+        result = await content_creator_init.handle(action="TEXT")
         assert "digital marketing" in result
 
