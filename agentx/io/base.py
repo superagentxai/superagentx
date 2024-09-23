@@ -2,18 +2,18 @@
 import logging
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import Any, Iterator, Optional, Protocol, runtime_checkable
+from typing import Any, Iterator, Optional, Protocol, runtime_checkable, Self
 
 logger = logging.getLogger(__name__)
 
 
 @runtime_checkable
 class OutputStream(Protocol):
-    async def print(
+    async def write(
             self,
             *objects: Any,
-            sep: str = " ",
-            end: str = "\n",
+            sep: str | None = None,
+            end: str | None = None,
             flush: bool = False
     ) -> None:
         """Print data to the output stream."""
@@ -21,9 +21,9 @@ class OutputStream(Protocol):
 
 @runtime_checkable
 class InputStream(Protocol):
-    async def input(
+    async def read(
             self,
-            prompt: str = "",
+            prompt: str | None = None,
             *,
             password: bool = False
     ) -> str:
@@ -34,8 +34,8 @@ class InputStream(Protocol):
 class IOStream(InputStream, OutputStream, Protocol):
     """A protocol for input/output streams."""
 
-    _default_io_stream: ContextVar[Optional["IOStream"]] = ContextVar("default_iostream", default=None)
-    _global_default: Optional["IOStream"] = None
+    _default_io_stream: ContextVar[Self | None] = ContextVar("default_iostream", default=None)
+    _global_default: Self | None = None
 
     @staticmethod
     def set_global_io_stream(stream: "IOStream") -> None:
