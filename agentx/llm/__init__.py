@@ -11,7 +11,7 @@ from agentx.exceptions import InvalidType
 from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 from agentx.llm.types.base import LLMModelConfig
-from agentx.llm.types.response import Message, Tools
+from agentx.llm.types.response import Message, Tool
 from agentx.utils.llm_config import LLMType
 
 
@@ -124,7 +124,7 @@ class LLMClient:
                 tool_calls_data = []
                 if choice.message.tool_calls:
                     tool_calls_data = [
-                        Tools(
+                        Tool(
                             tool_type=tool_call.type,
                             name=tool_call.function.name,
                             arguments=json.loads(tool_call.function.arguments)  # Use json.loads for safer parsing
