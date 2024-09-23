@@ -29,10 +29,12 @@ class Memory(MemoryBase):
         return cls(_config)
 
     async def add(self, *args, **kwargs):
-        return await self.db.add_history(*args, **kwargs)
+        async with self.db as db:
+            return await db.add_history(*args, **kwargs)
 
     async def get(self, *args, **kwargs):
-        return await self.db.get_history(*args, **kwargs)
+        async with self.db as db:
+            return await db.get_history(*args, **kwargs)
 
     async def get_all(self):
         pass

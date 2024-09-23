@@ -40,14 +40,14 @@ def test_memory_init() -> dict:
 
 class TestMemory:
 
-    def test_add_history(self, test_memory_init: dict):
+    async def test_add_history(self, test_memory_init: dict):
         datas = test_memory_init.get("data")
         client: Memory = test_memory_init.get("client")
         user_input = "Tell me about a Agentic AI Framework"
         role = "user"
         logger.info(f"User Id: {datas.get('user_id')}")
         logger.info(f"Chat Id: {datas.get('chat_id')}")
-        client.add(
+        await client.add(
             user_id=datas.get("user_id"),
             chat_id=datas.get("chat_id"),
             message_id=str(uuid.uuid4().hex),
@@ -70,7 +70,7 @@ class TestMemory:
         )
         response = llm_client.chat_completion(chat_completion_params=chat_completion_params)
         result = response.choices[0].message.content
-        client.add(
+        await client.add(
             user_id=datas.get("user_id"),
             chat_id=datas.get("chat_id"),
             message_id=str(uuid.uuid4().hex),
@@ -82,18 +82,18 @@ class TestMemory:
             is_deleted=False
         )
 
-    def test_get_history(self, test_memory_init: dict):
+    async def test_get_history(self, test_memory_init: dict):
         datas = test_memory_init.get("data")
         client: Memory = test_memory_init.get("client")
-        response = client.get(
+        response = await client.get(
             user_id=datas.get('user_id'),
             chat_id=datas.get('chat_id')
         )
         logger.info(f"Result History: {response}")
 
-    def test_reset(self, test_memory_init: dict):
+    async def test_reset(self, test_memory_init: dict):
         client: Memory = test_memory_init.get("client")
-        client.delete()
+        await client.delete()
 
 
 

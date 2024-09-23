@@ -9,7 +9,7 @@ from agentx.io import IOConsole
 from agentx.llm import LLMClient, ChatCompletionParams
 from agentx.memory import Memory
 from agentx.utils.console_color import ConsoleColorType
-from agentx.utils.helper import sync_to_async, iter_to_aiter
+from agentx.utils.helper import iter_to_aiter
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +47,11 @@ class TestConversationAgent:
             "role": "system",
             "content": "You are a helpful assistant."
         }]
+        message = system + messages
+        logger.info(f"Message: {message}")
 
         chat_completion_params = ChatCompletionParams(
-            messages=system + messages
+            messages=message
         )
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
         result = response.choices[0].message.content
@@ -81,16 +83,16 @@ class TestConversationAgent:
 
         logging.info(f"IO Console Print & Input Test.")
 
-        io_console.print(ConsoleColorType.CYELLOW2.value, end="")
-        io_console.print("Hello, Super AgentX World!", flush=True)
+        await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
+        await io_console.write("Hello, Super AgentX World!", flush=True)
 
         user_id = "55e497f4010d4eda909691272eaf31fb"
         chat_id = "915ec91bc2654f8da3af800c0bf6eca9"
 
         while True:
             # Getting input from the console
-            io_console.print(ConsoleColorType.CYELLOW2.value, end="")
-            data = io_console.input("User: ")
+            await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
+            data = await io_console.read("User: ")
             await memory_client.add(
                 user_id=user_id,
                 chat_id=chat_id,
@@ -103,7 +105,6 @@ class TestConversationAgent:
                 is_deleted=False
             )
             get_message = await self._get_history(user_id, chat_id, memory_client)
-            logger.info(f"Message: {get_message}")
             llm_res = await self._llm_response(get_message, llm_client)
             await memory_client.add(
                 user_id=user_id,
@@ -119,5 +120,5 @@ class TestConversationAgent:
             if data in exit_conditions:
                 break
             else:
-                io_console.print(ConsoleColorType.CGREEN2.value, end="")
-                io_console.print(f"Assistant: {llm_res}", flush=True)
+                await io_console.write(ConsoleColorType.CGREEN2.value, end="")
+                await io_console.write(f"Assistant: {llm_res}", flush=True)
