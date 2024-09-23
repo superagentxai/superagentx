@@ -8,7 +8,7 @@ sql_handler = SQLHandler(
 
 
 async def test_create_table():
-    res = await sql_handler.ahandle(
+    res = await sql_handler.handle(
         action="CREATE_TABLE",
         stmt="CREATE TABLE test (x int, y int)"
     )
@@ -16,7 +16,7 @@ async def test_create_table():
 
 
 async def test_insert_table():
-    res = await sql_handler.ahandle(
+    res = await sql_handler.handle(
         action="INSERT",
         stmt="INSERT INTO test (x, y) VALUES (:x, :y)",
         values=[{'x': 1, 'y': 2}, {'x': 2, 'y': 4}]
@@ -25,7 +25,7 @@ async def test_insert_table():
 
 
 async def test_select_table():
-    res = await sql_handler.ahandle(
+    res = await sql_handler.handle(
         action="SELECT",
         query="SELECT * from test"
     )
@@ -34,7 +34,7 @@ async def test_select_table():
 
 
 async def test_drop_table():
-    res = await sql_handler.ahandle(
+    res = await sql_handler.handle(
         action="DROP_TABLE",
         stmt="DROP TABLE test"
     )

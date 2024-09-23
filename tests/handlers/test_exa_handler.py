@@ -6,12 +6,12 @@ import pytest
  Run Pytest:  
 
    pytest --log-cli-level=INFO tests/handlers/test_exa_handler.py::TestExasearch::test_exa_handler
-   pytest --log-cli-level=INFO tests/handlers/test_exa_handler.py::TestExasearch::test_aexa_handler
 
 '''
 
 
 @pytest.fixture
+
 def exasearch_client_init() -> ExaHandler:
 
     # Set the exa api key in environment variable as EXA_API_KEY
@@ -21,19 +21,9 @@ def exasearch_client_init() -> ExaHandler:
 
 class TestExasearch:
 
-    # Test sync exa handler - search_contents method
-    def test_exa_handler(self, exasearch_client_init: ExaHandler):
-        exa = exasearch_client_init.handle(action="search_contents",
-                                           query="Topics in AI",
-                                           use_autoprompt=True,
-                                           type="auto",
-                                           num_results=5,
-                                           )
-        assert isinstance(exa, SearchResponse)
-
     # Test async exa handler - search_contents method
-    async def test_aexa_handler(self, exasearch_client_init: ExaHandler):
-        exa = await exasearch_client_init.ahandle(action="search_contents",
+    async def test_exa_handler(self, exasearch_client_init: ExaHandler):
+        exa = await exasearch_client_init.handle(action="search_contents",
                                                   query="Topics in AI",
                                                   type="auto",
                                                   use_autoprompt=True,

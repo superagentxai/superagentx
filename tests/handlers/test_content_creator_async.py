@@ -10,7 +10,8 @@ content_creator_handler = ContentCreatorHandler(
 )
 
 
-async def test_handle_1():
-    result = await content_creator_handler.ahandle(action="TEXT")
+async def test_handle():
+    # Test async content creator handle - test creation method
+    result = await content_creator_handler.handle(action="TEXT")
     assert "digital marketing" in result
 

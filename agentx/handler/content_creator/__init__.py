@@ -25,17 +25,29 @@ class ContentCreatorHandler(BaseHandler, ABC):
         self.prompt = prompt
         self.llm = llm
 
-    def handle(
+    async def handle(
             self,
             *,
             action: str | Enum,
             **kwargs
     ) -> Any:
+        """
+            Asynchronously handles the given action, which can be a string or an Enum, while processing additional keyword arguments.
+            sExecutes the appropriate logic based on the action and provided parameters.
+
+            parameters:
+            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing the action.
+            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
+
+            Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
+        """
+
         if isinstance(action, str):
             action = action.lower()
         match action:
             case ContentCreatorType.TEXT:
-                return self.text_creation()
+                return await self.text_creation()
             case ContentCreatorType.IMAGE:
                 raise NotImplementedError(f"{action} will be implement in future ")
             case ContentCreatorType.VIDEO:
@@ -43,43 +55,14 @@ class ContentCreatorHandler(BaseHandler, ABC):
             case _:
                 raise InvalidType(f"{action} is not supported")
 
-    def text_creation(self):
-        messages = self.prompt
-        if isinstance(self.llm, ChatOpenAI):
-            messages = [
-                (
-                    "human",
-                    self.prompt
-                )
-            ]
-        chain = self.llm.invoke(messages)
-        return chain.content
+    async def text_creation(
+            self
+    ):
+        """
+           Asynchronously generates or creates text based on predefined logic or input data.
+           This method manages the process of text creation without requiring additional parameters.
+        """
 
-    def video_creation(self):
-        pass
-
-    def image_creation(self):
-        pass
-
-    async def ahandle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case ContentCreatorType.TEXT:
-                return await self.atext_creation()
-            case ContentCreatorType.IMAGE:
-                raise NotImplementedError(f"{action} will be implement in future ")
-            case ContentCreatorType.VIDEO:
-                raise NotImplementedError(f"{action} will be implement in future ")
-            case _:
-                raise InvalidType(f"{action} is not supported")
-
-    async def atext_creation(self):
         messages = self.prompt
         if isinstance(self.llm, ChatOpenAI):
             messages = [
@@ -91,8 +74,30 @@ class ContentCreatorHandler(BaseHandler, ABC):
         chain = await self.llm.ainvoke(messages)
         return chain.content
 
-    async def avideo_creation(self):
+    async def video_creation(
+            self
+    ):
+        """
+            Asynchronously creates or generates video content based on internal logic or preset parameters.
+            This method handles the video creation process without requiring external inputs.
+        """
+
         pass
 
-    async def aimage_creation(self):
+    async def image_creation(
+            self
+    ):
+        """
+           Asynchronously generates or creates images using predefined settings or internal logic.
+           This method manages the image creation process without needing external parameters.
+        """
+
         pass
+
+    def __dir__(self):
+        return (
+            'text_creation',
+            'video_creation',
+            'image_creation'
+        )
+
