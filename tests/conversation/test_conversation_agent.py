@@ -49,7 +49,7 @@ class TestConversationAgent:
         }]
 
         chat_completion_params = ChatCompletionParams(
-            messages=system+messages
+            messages=system + messages
         )
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
         result = response.choices[0].message.content
@@ -58,8 +58,7 @@ class TestConversationAgent:
     @staticmethod
     async def _get_history(user_id: str, chat_id: str, memory_client: Memory) -> list[dict]:
         messages = []
-        response = await sync_to_async(
-            memory_client.get,
+        response = await memory_client.get(
             user_id=user_id,
             chat_id=chat_id
         )
@@ -85,14 +84,14 @@ class TestConversationAgent:
         io_console.print(ConsoleColorType.CYELLOW2.value, end="")
         io_console.print("Hello, Super AgentX World!", flush=True)
 
+        user_id = "55e497f4010d4eda909691272eaf31fb"
+        chat_id = "915ec91bc2654f8da3af800c0bf6eca9"
+
         while True:
             # Getting input from the console
             io_console.print(ConsoleColorType.CYELLOW2.value, end="")
             data = io_console.input("User: ")
-            user_id = "55e497f4010d4eda909691272eaf31fb"
-            chat_id = "915ec91bc2654f8da3af800c0bf6eca9"
-            await sync_to_async(
-                memory_client.add,
+            await memory_client.add(
                 user_id=user_id,
                 chat_id=chat_id,
                 message_id=str(uuid.uuid4().hex),
@@ -106,8 +105,7 @@ class TestConversationAgent:
             get_message = await self._get_history(user_id, chat_id, memory_client)
             logger.info(f"Message: {get_message}")
             llm_res = await self._llm_response(get_message, llm_client)
-            await sync_to_async(
-                memory_client.add,
+            await memory_client.add(
                 user_id=user_id,
                 chat_id=chat_id,
                 message_id=str(uuid.uuid4().hex),

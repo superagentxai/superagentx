@@ -28,17 +28,17 @@ class Memory(MemoryBase):
             raise
         return cls(_config)
 
-    def add(self, *args, **kwargs):
-        return self.db.add_history(*args, **kwargs)
+    async def add(self, *args, **kwargs):
+        return await self.db.add_history(*args, **kwargs)
 
-    def get(self, *args, **kwargs):
-        return self.db.get_history(*args, **kwargs)
+    async def get(self, *args, **kwargs):
+        return await self.db.get_history(*args, **kwargs)
 
-    def get_all(self):
+    async def get_all(self):
         pass
 
-    def update(self, memory_id, data):
+    async def update(self, memory_id, data):
         pass
 
-    def delete(self, *args, **kwargs):
-        self.db.reset()
+    async def delete(self, *args, **kwargs):
+        pass

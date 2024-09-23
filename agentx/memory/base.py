@@ -4,11 +4,14 @@ from abc import ABC, abstractmethod
 class MemoryBase(ABC):
 
     @abstractmethod
-    def add(self, *args, **kwargs):
+    async def add(self, *args, **kwargs):
+        """
+        Add the data.
+        """
         pass
 
     @abstractmethod
-    def get(self, memory_id):
+    async def get(self, memory_id):
         """
         Retrieve a memory by ID.
 
@@ -21,7 +24,7 @@ class MemoryBase(ABC):
         pass
 
     @abstractmethod
-    def get_all(self):
+    async def get_all(self):
         """
         List all memories.
 
@@ -31,7 +34,7 @@ class MemoryBase(ABC):
         pass
 
     @abstractmethod
-    def update(self, memory_id, data):
+    async def update(self, memory_id, data):
         """
         Update a memory by ID.
 
@@ -45,7 +48,7 @@ class MemoryBase(ABC):
         pass
 
     @abstractmethod
-    def delete(self, memory_id):
+    async def delete(self, memory_id):
         """
         Delete a memory by ID.
 
