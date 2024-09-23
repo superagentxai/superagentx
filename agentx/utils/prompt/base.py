@@ -1,4 +1,3 @@
-from langchain.prompts import PromptTemplate
 
 COT_INSTRUCTION = """Solve a question answering task by having a Thought, then Finish with your answer. Thought can reason about the current situation. Finish[answer] returns the answer and finishes the task. You will be given context that you should use to help you answer the question.
 Here are some examples:
@@ -126,15 +125,3 @@ react_agent_prompt = PromptTemplate(
     input_variables=["examples", "question", "scratchpad"],
     template=REACT_INSTRUCTION,
 )
-
-react_reflect_agent_prompt = PromptTemplate(
-    input_variables=["examples", "reflections", "question", "scratchpad"],
-    template=REACT_REFLECT_INSTRUCTION,
-)
-
-reflect_prompt = PromptTemplate(
-    input_variables=["examples", "question", "scratchpad"],
-    template=REFLECT_INSTRUCTION,
-)
-
-print(cot_simple_agent_prompt)
