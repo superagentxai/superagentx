@@ -2,11 +2,16 @@ from abc import ABC, abstractmethod
 
 
 class MemoryBase(ABC):
+
     @abstractmethod
-    def get(
-            self,
-            memory_id: str
-    ):
+    async def add(self, *args, **kwargs):
+        """
+        Add the data.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get(self, memory_id):
         """
         Retrieve a memory by ID.
 
@@ -16,24 +21,10 @@ class MemoryBase(ABC):
         Returns:
             dict: Retrieved memory.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def get_all(self):
-        """
-        List all memories.
-
-        Returns:
-            list: List of all memories.
-        """
-        pass
-
-    @abstractmethod
-    def update(
-            self,
-            memory_id: str,
-            data: dict
-    ):
+    async def update(self, memory_id, data):
         """
         Update a memory by ID.
 
@@ -44,17 +35,15 @@ class MemoryBase(ABC):
         Returns:
             dict: Updated memory.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def delete(
-            self,
-            memory_id: str
-    ):
+    async def delete(self, memory_id):
+
         """
         Delete a memory by ID.
 
         Args:
             memory_id (str): ID of the memory to delete.
         """
-        pass
+        raise NotImplementedError

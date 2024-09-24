@@ -33,7 +33,10 @@ OPENAI_MODELS = [
     "gpt-4",
     "gpt-4o-mini-2024-07-18",
     "gpt-4o-mini",
-    "gpt-3.5-turbo"
+    "gpt-3.5-turbo",
+    "text-embedding-ada-002",
+    "text-embedding-3-small",
+    "text-embedding-3-large"
 ]
 
 # Azure Open AI Version - Default
