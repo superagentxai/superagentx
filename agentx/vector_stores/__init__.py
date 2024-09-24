@@ -1,7 +1,6 @@
 import logging
 from enum import StrEnum
 
-from agentx.vector_stores.neo4j import Neo4jVector
 from agentx.vector_stores.chroma import ChromaDB
 from agentx.llm import LLMClient
 from agentx.vector_stores.constants import DEFAULT_EMBED_TYPE, DEFAULT_EMBED_MODEL, EmbedTypeEnum
