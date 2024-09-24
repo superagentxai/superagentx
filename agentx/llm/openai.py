@@ -61,7 +61,7 @@ class OpenAIClient(Client):
 
     @staticmethod
     def _get_embeddings(response: CreateEmbeddingResponse):
-        if response and len(response.data) > 0:
+        if response and response.data:
             return response.data[0].embedding
 
     def embed(
@@ -107,7 +107,10 @@ class OpenAIClient(Client):
             input=[text],
             model=model,
         )
-        return await sync_to_async(self._get_embeddings, response=response)
+        return await sync_to_async(
+            self._get_embeddings,
+            response=response
+        )
 
     @staticmethod
     def is_valid_api_key(api_key: str) -> bool:

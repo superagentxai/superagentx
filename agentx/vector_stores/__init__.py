@@ -39,7 +39,7 @@ class VectorStore:
         self.password = password
         self.collection_name = collection_name
 
-        if embed_config is None:
+        if not embed_config:
             embed_config = {
                 "model": DEFAULT_EMBED_MODEL,
                 "embed_type": DEFAULT_EMBED_TYPE,
