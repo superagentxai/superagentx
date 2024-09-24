@@ -16,9 +16,9 @@ from agentx.handler.elastic_search import ElasticsearchHandler
 @pytest.fixture
 def elasticsearch_client_init() -> ElasticsearchHandler:
     elasticsearch_handler = ElasticsearchHandler(
-        address="<URL>",
-        username="<USER_NAME>",
-        password="<PASSWORD>"
+        address="<url>",
+        username="",
+        password=""
     )
     return elasticsearch_handler
 
@@ -35,13 +35,11 @@ class TestElasticsearch:
     # Test async elasticsearch handler - create method
     async def test_elasticsearch_create(self, elasticsearch_client_init: ElasticsearchHandler):
         elasticsearch = await elasticsearch_client_init.handle(action="create",
-                                                          index_name="index_name",
+                                                          index_name="python_test",
+                                                          id="python",
                                                           document={
                                                               "@timestamp": "2099-11-15T13:12:00",
                                                               "message": "GET /search HTTP/1.1 200 1070000",
-                                                              "user": {
-                                                                  "id": "kimchy"
-                                                              }
                                                           },
 
                                                           )

@@ -4,7 +4,7 @@ import logging
 from enum import Enum
 from typing import Any
 
-from elasticsearch import Elasticsearch, AsyncElasticsearch
+from elasticsearch import  AsyncElasticsearch
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.elastic_search.exceptions import InvalidElasticsearchAction
@@ -18,6 +18,11 @@ class ElasticsearchAction(str, Enum):
 
 
 class ElasticsearchHandler(BaseHandler):
+    """
+    A handler class for managing interactions with an Elasticsearch instance.
+    This class extends the BaseHandler and provides methods to perform various operations
+    on an Elasticsearch index, such as creating, searching, updating, and deleting documents.
+    """
 
     def __init__(
             self,
@@ -35,28 +40,7 @@ class ElasticsearchHandler(BaseHandler):
             basic_auth=(username, password),
             ca_certs=cacert or None
         )
-    #
-    # def handle(
-    #         self,
-    #         *,
-    #         action: str | Enum,
-    #         **kwargs
-    # ) -> Any:
-    #
-    #     """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
-    #        params:
-    #            action(str): Give an action what has given in the Enum.
-    #     """
-    #
-    #     if isinstance(action, str):
-    #         action = action.lower()
-    #     match action:
-    #         case ElasticsearchAction.SEARCH:
-    #             return self.search(**kwargs)
-    #         case ElasticsearchAction.CREATE:
-    #             return self.create(**kwargs)
-    #         case _:
-    #             raise InvalidElasticsearchAction(f"Invalid Elasticsearch Action '{action}'")
+
 
     async def handle(
             self,
@@ -65,9 +49,18 @@ class ElasticsearchHandler(BaseHandler):
             **kwargs
     ) -> Any:
 
-        """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
-           params:
-               action(str): Give an action what has given in the Enum.
+
+        """
+        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
+        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
+
+        parameters:
+            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
+            the action.
+            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
+
+        Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
         """
 
         if isinstance(action, str):
@@ -79,30 +72,7 @@ class ElasticsearchHandler(BaseHandler):
                 return await self.create(**kwargs)
             case _:
                 raise InvalidElasticsearchAction(f"Invalid Elasticsearch Action '{action}'")
-    #
-    # def search(
-    #         self,
-    #         index_name: str,
-    #         query: dict | None = None,
-    #         start_index: int = 0,
-    #         size: int = 20
-    # ):
-    #     """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
-    #             params:
-    #                 query (dict): The query dict.
-    #                 index_name(str): Given an index name.
-    #                 start_index(int): Starting document offset.
-    #                 size(int):  The number of hits to return.
-    #      """
-    #
-    #     result = self._conn.search(
-    #         index=index_name,
-    #         filter_path=['hits'],
-    #         from_=start_index,
-    #         size=size,
-    #         query=query
-    #     )
-    #     return result
+
 
     async def search(
             self,
@@ -111,12 +81,17 @@ class ElasticsearchHandler(BaseHandler):
             start_index: int = 0,
             size: int = 20
     ):
-        """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
-                params:
-                    query (dict): The query dict.
-                    index_name(str): Given an index name.
-                    start_index(int): Starting document offset.
-                    size(int):  The number of hits to return.
+        """
+         Asynchronously performs a search operation on the specified index.This function executes a query against
+         the specified index and retrieves a set of results based on the query criteria.
+
+        parameters:
+            index_name(str):The name of the index to search in.
+            query(dict or None, optional):The search query, formatted as a dictionary. If no query is provided,
+            it defaults to None and performs a match-all search.
+            start_index(int, optional):The starting index for the search results, used for pagination. Defaults to 0.
+            size(int, optional):The number of results to retrieve. Defaults to 20.
+
         """
         result = await self._conn.search(
             index=index_name,
@@ -127,44 +102,30 @@ class ElasticsearchHandler(BaseHandler):
         )
         return result
 
-    # def create(
-    #         self,
-    #         index_name: str,
-    #         document: dict
-    # ):
-    #     """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
-    #             params:
-    #                 index_name(str): Given an index name.
-    #                 document(str):An artificial document (a document not present in the index) for
-    #                 which you want to retrieve term vectors.
-    #     """
-    #     try:
-    #         return self._conn.create(
-    #             index=index_name,
-    #             document=document
-    #         )
-    #     except elasticsearch.BadRequestError as ex:
-    #         logger.error('Elasticsearch error!', exc_info=ex)
-    #         return {}
-    #     except elasticsearch.ConnectionTimeout as ex:
-    #         logger.error(f"Elasticsearch error! {ex}")
-    #         return {}
+
 
     async def create(
             self,
             index_name: str,
-            document: dict
+            document: dict,
+            id: str
     ):
-        """Perform a search with an Exa prompt-engineered query and retrieve a list of relevant results.
-            params:
-                index_name(str): Given an index name.
-                document(str):An artificial document (a document not present in the index) for
-                which you want to retrieve term vectors.
+        """
+        Asynchronously creates a new document in the specified index.This method adds a document to the given
+        index with a specified identifier. If a document with the same identifier already exists,
+        it may be updated or replaced based on the implementation.
+
+        parameter:
+            index_name(str):The name of the index where the document should be created.
+            document(dict):A dictionary representing the document to be indexed, containing the data to be stored.
+            id(str):The unique identifier for the document. This ID is used to reference the document in future operations.
+
         """
         try:
             return await self._conn.create(
                 index=index_name,
-                document=document
+                document=document,
+                id=id
             )
         except elasticsearch.BadRequestError as ex:
             logger.error('Elasticsearch error!', exc_info=ex)
@@ -172,3 +133,9 @@ class ElasticsearchHandler(BaseHandler):
         except elasticsearch.ConnectionTimeout as ex:
             logger.error(f"Elasticsearch error! {ex}")
             return {}
+
+    def __dir__(self):
+        return(
+            'search',
+            'create'
+        )
