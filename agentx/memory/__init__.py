@@ -19,14 +19,14 @@ class Memory(MemoryBase):
         self.memory_config = memory_config
         self.db = SQLiteManager(self.memory_config.db_path)
 
-    @classmethod
-    def from_config(cls, config_dict: dict[str, Any]):
+    @staticmethod
+    def _from_config(config_dict: dict[str, Any]):
         try:
             _config = MemoryConfig(**config_dict)
         except ValidationError as e:
             logger.error(f"Configuration validation error: {e}")
             raise
-        return cls(_config)
+        return _config
 
     @final
     async def add(self, *args, **kwargs):
