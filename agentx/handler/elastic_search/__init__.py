@@ -12,6 +12,8 @@ from agentx.handler.elastic_search.exceptions import InvalidElasticsearchAction
 
 logger = logging.getLogger(__name__)
 
+_TYPE_HOSTS = str | Sequence[Union[str, Mapping[str, Union[str, int]], NodeConfig]]
+
 
 class ElasticsearchAction(StrEnum):
     SEARCH = "search"
@@ -27,7 +29,7 @@ class ElasticsearchHandler(BaseHandler):
 
     def __init__(
             self,
-            hosts: str | Sequence[Union[str, Mapping[str, Union[str, int]], NodeConfig]] = None,
+            hosts: _TYPE_HOSTS | None = None,
             cloud_id: str | None = None,
             api_key: str | None = None,
             username: str | None = None,
