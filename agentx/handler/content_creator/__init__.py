@@ -1,18 +1,9 @@
 from abc import ABC
-from enum import Enum
-from typing import Any
 
 from langchain_core.language_models.chat_models import BaseLanguageModel
 from langchain_openai.chat_models import ChatOpenAI
 
-from agentx.exceptions import InvalidType
 from agentx.handler.base import BaseHandler
-
-
-class ContentCreatorType(str, Enum):
-    TEXT = "text"
-    VIDEO = "video"
-    IMAGE = "image"
 
 
 class ContentCreatorHandler(BaseHandler, ABC):
@@ -30,35 +21,6 @@ class ContentCreatorHandler(BaseHandler, ABC):
         self.prompt = prompt
         self.llm = llm
 
-    async def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-        """
-            Asynchronously handles the given action, which can be a string or an Enum, while processing additional keyword arguments.
-            sExecutes the appropriate logic based on the action and provided parameters.
-
-            parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-            Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case ContentCreatorType.TEXT:
-                return await self.text_creation()
-            case ContentCreatorType.IMAGE:
-                raise NotImplementedError(f"{action} will be implement in future ")
-            case ContentCreatorType.VIDEO:
-                raise NotImplementedError(f"{action} will be implement in future ")
-            case _:
-                raise InvalidType(f"{action} is not supported")
 
     async def text_creation(
             self

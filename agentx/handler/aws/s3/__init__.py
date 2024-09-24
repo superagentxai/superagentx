@@ -1,22 +1,13 @@
 import logging
-from enum import Enum
-from typing import Any
 
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
-from agentx.exceptions import InvalidType
 from agentx.handler.aws.exceptions import ListFilesFailed, FileUploadFailed, FileDownloadFailed
 from agentx.handler.base import BaseHandler
 from agentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
-
-
-class AWSS3HandlerEnum(str, Enum):
-    LIST_BUCKET = "list_bucket"
-    UPLOAD_FILE = "upload_file"
-    DOWNLOAD_FILE = "download_file"
 
 
 class AWSS3Handler(BaseHandler):
@@ -41,39 +32,6 @@ class AWSS3Handler(BaseHandler):
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key
         )
-
-    async def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-
-        """
-        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
-        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
-
-        parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
-                                the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-        Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-
-        match action:
-            case AWSS3HandlerEnum.LIST_BUCKET:
-                return await self.list_bucket()
-            case AWSS3HandlerEnum.UPLOAD_FILE:
-                return await self.upload_file(**kwargs)
-            case AWSS3HandlerEnum.DOWNLOAD_FILE:
-                return await self.download_file(**kwargs)
-            case _:
-                raise InvalidType(f"Invalid action {action}")
 
     async def list_bucket(self):
         """
@@ -107,7 +65,7 @@ class AWSS3Handler(BaseHandler):
            If None, the object name will default to the file name. Defaults to None.
         """
 
-        if object_name is None:
+        if not object_name:
             object_name = file_name
         try:
             await sync_to_async(self._storage.upload_file,
@@ -135,7 +93,7 @@ class AWSS3Handler(BaseHandler):
            object_name (str | None, optional): The name to assign to the object in the S3 bucket.
         """
 
-        if file_name is None:
+        if not file_name:
             file_name = object_name
         try:
             await sync_to_async(self._storage.download_file,

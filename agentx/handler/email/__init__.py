@@ -4,18 +4,11 @@ from email import encoders
 from email.message import EmailMessage
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
-from enum import Enum
 from ssl import SSLContext
-from typing import Any
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.email.exceptions import SendEmailFailed, InvalidEmailAction
 from agentx.utils.helper import sync_to_async
-
-
-class EmailAction(str, Enum):
-    SEND = "send"
-    READ = "read"
 
 
 class EmailHandler(BaseHandler):
@@ -51,36 +44,6 @@ class EmailHandler(BaseHandler):
                 host=host,
                 port=port
             )
-
-    async def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-
-        """
-        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
-        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
-
-        parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
-                                the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-        Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case EmailAction.SEND:
-                return await self.send_email(**kwargs)
-            case EmailAction.READ:
-                raise NotImplementedError
-            case _:
-                raise InvalidEmailAction(f"Invalid email action `{action}`")
 
     async def send_email(
             self,
@@ -118,31 +81,39 @@ class EmailHandler(BaseHandler):
             msg['Bcc'] = ', '.join(bcc) if bcc else ''
             msg['Subject'] = subject
 
-            await sync_to_async(msg.attach,MIMEText(body, 'plain'))
+            await sync_to_async(msg.attach, MIMEText(body, 'plain'))
 
             if attachment_path:
                 attachment_name = os.path.basename(attachment_path)
                 async with open(attachment_path, "rb") as attachment:
                     part = MIMEBase('application', 'octet-stream')
-                    await sync_to_async(part.set_payload,await attachment.read())
-                    await sync_to_async(encoders.encode_base64,part)
+                    await sync_to_async(part.set_payload, await attachment.read())
+                    await sync_to_async(encoders.encode_base64, part)
                     await sync_to_async(
                         part.add_header,
                         'Content-Disposition',
                         f"attachment; filename= {attachment_name}"
                     )
-                    await sync_to_async(msg.attach,part)
+                    await sync_to_async(
+                        msg.attach,
+                        part
+                    )
 
             all_recipients = to + (cc or []) + (bcc or [])
 
             if self.username and self.password:
-                await sync_to_async(self._conn.login,user=self.username, password=self.password)
+                await sync_to_async(
+                    self._conn.login,
+                    user=self.username,
+                    password=self.password
+                )
 
-            res = await sync_to_async(self._conn.sendmail,
+            res = await sync_to_async(
+                self._conn.sendmail,
                 from_addr=sender,
                 to_addrs=all_recipients,
                 msg=await sync_to_async(msg.as_string)
-            )
+                )
             await sync_to_async(self._conn.close)
             return res
         except Exception as e:

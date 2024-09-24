@@ -1,20 +1,8 @@
-from enum import Enum
-from typing import Any, final
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.sql.exceptions import InvalidDatabase, InvalidSQLAction
-from sqlalchemy import create_engine, text
-from sqlalchemy.ext.asyncio import create_async_engine
-
-
-class SQLAction(str, Enum):
-    SELECT = "select"
-    INSERT = "insert"
-    UPDATE = "update"
-    DELETE = "delete"
-    CREATE_TABLE = "create_table"
-    DROP_TABLE = "drop_table"
-    ALTER_TABLE = "alter_table"
 
 
 class SQLHandler(BaseHandler):
@@ -80,44 +68,6 @@ class SQLHandler(BaseHandler):
             self.port = 1433
         return f"mssql+aioodbc://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?charset=utf8"
 
-    @final
-    async def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-        """
-         Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
-         keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
-
-        parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
-                                the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-        Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-        """
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case SQLAction.SELECT:
-                return await self.select(**kwargs)
-            case SQLAction.INSERT:
-                return await self.insert(**kwargs)
-            case SQLAction.UPDATE:
-                return await self.update(**kwargs)
-            case SQLAction.DELETE:
-                return await self.delete(**kwargs)
-            case SQLAction.CREATE_TABLE:
-                return await self.create_table(**kwargs)
-            case SQLAction.DROP_TABLE:
-                return await self.drop_table(**kwargs)
-            case SQLAction.ALTER_TABLE:
-                return await self.alter_table(**kwargs)
-            case _:
-                raise InvalidSQLAction(f"Invalid sql action `{action}`")
 
     async def select(
             self,

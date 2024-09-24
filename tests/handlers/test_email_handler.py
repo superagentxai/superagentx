@@ -20,5 +20,5 @@ def email_client_init() -> EmailHandler:
 class TestEmail:
 
     async def test_email(self, email_client_init: EmailHandler):
-        res = await email_client_init.handle(action="SEND", **{})
+        res = await email_client_init.send_email(**{})
         assert isinstance(res, object)

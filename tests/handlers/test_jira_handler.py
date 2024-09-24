@@ -1,10 +1,11 @@
-import pytest
 import logging
+
+import pytest
 from jira.client import ResultList
 from jira.resources import Sprint, Comment
 from requests.models import Response
 
-from agentx.handler.jira import JiraHandler, JiraActions
+from agentx.handler.jira import JiraHandler
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +36,7 @@ class TestJira:
 
 
     async def test_get_all_projects(self, jira_client_init:JiraHandler):
-        res = await jira_client_init.handle(
-            action=JiraActions.PROJECT
-        )
+        res = await jira_client_init.get_list_projects()
         logger.info(f"Projects: {res}")
         assert isinstance(res, list)
         assert len(res) > 0
@@ -45,8 +44,7 @@ class TestJira:
 
     async def test_get_active_sprint(self, jira_client_init:JiraHandler):
         # get active Sprint
-        res = await jira_client_init.handle(
-            action=JiraActions.ACTIVE_SPRINT,
+        res = await jira_client_init.get_active_sprint(
             board_id=1,
             start=0,
             size=50
@@ -59,21 +57,18 @@ class TestJira:
 
     async def test_create_sprint(self, jira_client_init:JiraHandler):
         # create Sprint
-        res = await jira_client_init.handle(
-            action=JiraActions.CREATE_SPRINT,
+        res = await jira_client_init.create_sprint(
             board_id=1,
             name='DFPS Sprint Testing',
             description='Description of the sprint'
         )
+
         assert isinstance(res, Sprint)
 
 
     async def test_get_issue(self, jira_client_init:JiraHandler):
         # get issue
-        res = await jira_client_init.handle(
-            action=JiraActions.GET_ISSUE,
-            issue_id='DFPS-520'
-        )
+        res = await jira_client_init.get_issue(issue_id='DFPS-520')
         logger.info(f"Get Issue: {res}")
         assert isinstance(res, dict)
         assert len(res) > 0
@@ -81,29 +76,29 @@ class TestJira:
 
     async def test_add_issue_to_active_sprint(self, jira_client_init:JiraHandler):
         # create Sprint
-        res = await jira_client_init.handle(
-            action=JiraActions.ADD_ISSUE_TO_SPRINT,
+        res = await jira_client_init.add_issue_to_sprint(
             board_id=1,
             issue_keys=['DFPS-520']
         )
+
         assert isinstance(res, Response)
 
 
     async def test_move_issue_to_backlog(self, jira_client_init:JiraHandler):
         # move issue to backlog
-        res = await jira_client_init.handle(
-            action=JiraActions.MOVE_TO_BACKLOG,
+        res = await jira_client_init.move_to_backlog(
             issue_keys=['DFPS-520']
-        )
+            )
+
         assert isinstance(res, Response)
 
 
     async def test_add_comment_issue(self, jira_client_init:JiraHandler):
         # move issue to backlog
-        res = await jira_client_init.handle(
-            action=JiraActions.ADD_COMMENT,
+        res = await jira_client_init.add_comment_for_issue(
             issue_key='DFPS-520',
             comments="K8s auto restart"
-        )
+          )
+
         logger.info(f"Add Comment Issue: {res}")
         assert isinstance(res, Comment)

@@ -1,27 +1,13 @@
 import logging
-from enum import Enum
 from typing import Any
 
 from jira import JIRA
 
 from agentx.handler.base import BaseHandler
-from agentx.handler.exceptions import InvalidAction
 from agentx.handler.jira.exceptions import SprintException, AuthException, ProjectException, TaskException
-from agentx.utils.helper import sync_to_async, iter_to_aiter
+from agentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
-
-
-class JiraActions(str, Enum):
-    PROJECT = 'project'
-    ACTIVE_SPRINT = 'active_sprint'
-    CREATE_SPRINT = 'create_sprint'
-    GET_ISSUE = 'get_issue'
-    ADD_ISSUE_TO_SPRINT = 'add_issue_to_sprint'
-    MOVE_TO_BACKLOG = 'move_to_backlog'
-    ADD_COMMENT = 'add_comment'
-    CREATE_ISSUE = 'create_issue'
-    ASSIGN_ISSUE = 'assign_issue'
 
 
 class JiraHandler(BaseHandler):
@@ -56,51 +42,6 @@ class JiraHandler(BaseHandler):
             logger.error(message, exc_info=ex)
             raise AuthException(message)
 
-    async def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-
-        """
-        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
-        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
-
-        parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
-                                the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-        Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case JiraActions.PROJECT:
-                return await self.get_list_projects()
-            case JiraActions.ACTIVE_SPRINT:
-                return await self.get_active_sprint(**kwargs)
-            case JiraActions.CREATE_SPRINT:
-                return await self.create_sprint(**kwargs)
-            case JiraActions.GET_ISSUE:
-                return await self.get_issue(**kwargs)
-            case JiraActions.ADD_ISSUE_TO_SPRINT:
-                return await self.add_issue_to_sprint(**kwargs)
-            case JiraActions.MOVE_TO_BACKLOG:
-                return await self.move_to_backlog(**kwargs)
-            case JiraActions.ADD_COMMENT:
-                return await self.add_comment_for_issue(**kwargs)
-            case JiraActions.CREATE_ISSUE:
-                raise NotImplementedError
-            case JiraActions.ASSIGN_ISSUE:
-                raise NotImplementedError
-            case _:
-                message = f'Invalid Jira action {action}!'
-                logger.error(message)
-                raise InvalidAction(message)
 
     async def get_list_projects(self):
         try:

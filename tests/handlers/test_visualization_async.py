@@ -37,5 +37,5 @@ class TestVisualization:
 
     async def test_visualization(self, visualize_client_init: dict):
         obj: Visualize = visualize_client_init.get("visualization")
-        await obj.render_charts(chart_type="pie", data=visualize_client_init.get("data"), show_output=True)
+        await obj.pie_chart(data=visualize_client_init.get("data"), show_output=True)
         # obj.verticalBar(data=chart_data, output_type="html", show_output=True)

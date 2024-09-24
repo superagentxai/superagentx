@@ -14,9 +14,8 @@ def wikipedia_client_init() -> WikipediaHandler:
 
 
 class TestWikipedia:
-    async def test_search(self, wikipedia_client_init:WikipediaHandler):
-        res = await wikipedia_client_init.handle(
-            action="summary",
+    async def test_summary(self, wikipedia_client_init:WikipediaHandler):
+        res = await wikipedia_client_init.get_summary(
             query="story about titanic movie",
             sentences=20
         )

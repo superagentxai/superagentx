@@ -26,11 +26,11 @@ def aws_s3_client_init() -> AWSS3Handler:
 class TestAWSS3:
 
     async def test_s3_handler_upload(self, aws_s3_client_init: AWSS3Handler):
-        await aws_s3_client_init.handle(action="upload_file", file_name="<file_path>")
+        await aws_s3_client_init.upload_file(file_name="<file_path>")
 
     async def test_s3_handler_list_bucket(self, aws_s3_client_init: AWSS3Handler):
-        s3_handler = await aws_s3_client_init.handle(action="list_bucket")
+        s3_handler = await aws_s3_client_init.list_bucket()
         assert isinstance(s3_handler, dict)
 
     async def test_s3_handler_download(self, aws_s3_client_init: AWSS3Handler):
-        await aws_s3_client_init.handle(action="upload_file", file_name="<file_path>")
+        await aws_s3_client_init.download_file(file_name="<file_path>", object_name="")

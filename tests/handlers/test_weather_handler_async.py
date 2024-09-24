@@ -28,14 +28,13 @@ def weather_client_init() -> WeatherHandler:
 
 class TestWeatherHandler:
     async def test_forecast_weather(self, weather_client_init:WeatherHandler):
-        res = await weather_client_init.handle(
+        res = await weather_client_init.get_forecast_weather(
             location="Chennai",
             forecast_days=7,
             past_days=0,
             current=True,
             daily=True,
             hourly=True,
-            action='forecast'
         )
         logger.info(f"Result: {res}")
         assert isinstance(res, dict)
@@ -43,8 +42,7 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_historical_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.handle(
-            action="historical",
+        res = await  weather_client_init.get_historical_weather(
             location="chennai",
             start_date="2024-08-14",
             end_date="2024-08-28",
@@ -57,12 +55,11 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_climate_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.handle(
+        res = await  weather_client_init.get_climate_weather(
             location="chennai",
             start_date="2024-08-14",
             end_date="2024-08-28",
             daily=True,
-            action="climate"
         )
         logger.info(f"Result: {res}")
         assert isinstance(res, dict)
@@ -70,12 +67,11 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_flood_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.handle(
+        res = await  weather_client_init.get_flood_weather(
             location="chennai",
             forecast_days=3,
             past_days=0,
             daily=True,
-            action="flood"
         )
         logger.info(f"Result: {res}")
         assert isinstance(res, dict)
@@ -83,13 +79,12 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_air_quality_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.handle(
+        res = await  weather_client_init.get_air_quality_weather(
             location="chennai",
             forecast_days=3,
             past_days=0,
             current=True,
             hourly=True,
-            action="air_quality"
         )
         logger.info(f"Result: {res}")
         assert isinstance(res, dict)
@@ -97,14 +92,13 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_marine_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.handle(
+        res = await  weather_client_init.get_marine_weather(
             location="chennai",
             forecast_days=3,
             past_days=0,
             current=True,
             daily=True,
             hourly=True,
-            action="marine"
         )
         logger.info(f"Result: {res}")
         assert isinstance(res, dict)

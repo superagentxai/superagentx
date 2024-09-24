@@ -1,7 +1,7 @@
-from enum import Enum
-from typing import Any
-
 import pandas as pd
+from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
+
 from agentx.handler.base import BaseHandler
 from agentx.handler.weather.base import WeatherBase
 from agentx.handler.weather.constants import MARINE_CURRENT_STATUS_VARIABLE, MARINE_DAILY_STATUS_VARIABLE, \
@@ -12,22 +12,6 @@ from agentx.handler.weather.constants import MARINE_CURRENT_STATUS_VARIABLE, MAR
     HISTORICAL_API_URL, CLIMATE_API_URL, MARINE_API_URL, AIR_API_URL, FLOOD_API_URL
 from agentx.handler.weather.exception import InvalidWeatherAction, InvalidLocation, InvalidResponseType
 from agentx.utils.helper import sync_to_async
-from geopy.geocoders import Nominatim
-from timezonefinder import TimezoneFinder
-
-
-class ResponseType(str, Enum):
-    current = 'current'
-    daily = 'daily'
-    hourly = 'hourly'
-
-class ReportType(str, Enum):
-    historical = 'historical'
-    forecast = 'forecast'
-    climate = 'climate'
-    marine = 'marine'
-    air_quality = 'air_quality'
-    flood = 'flood'
 
 
 async def get_longitude(location):
@@ -427,41 +411,6 @@ class WeatherHandler(BaseHandler):
             )
         return response
 
-    async def handle(
-            self,
-            action: str | Enum,
-            *args,
-            **kwargs
-    ) -> Any:
-
-        """
-        Asynchronously processes the specified action, which can be a string or an Enum.
-        Additional positional arguments (*args) and keyword arguments (**kwargs) are passed to customize the handling logic.
-
-         parameter:
-            action (str | Enum): The action to be handled, which defines the operation to execute.
-            *args: Additional positional arguments to pass into the action handler.
-            **kwargs: Additional keyword arguments to pass into the action handler.
-
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case ReportType.forecast:
-                return await self.get_forecast_weather(**kwargs)
-            case ReportType.historical:
-                return await self.get_historical_weather(**kwargs)
-            case ReportType.climate:
-                return self.get_climate_weather(**kwargs)
-            case ReportType.flood:
-                return self.get_flood_weather(**kwargs)
-            case ReportType.air_quality:
-                return self.get_air_quality_weather(**kwargs)
-            case ReportType.marine:
-                return self.get_marine_weather(**kwargs)
-            case _:
-                raise InvalidWeatherAction(f"Invalid report type of weather `{action}`")
 
     def __dir__(self):
         return (

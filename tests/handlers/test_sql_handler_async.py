@@ -31,9 +31,7 @@ class TestSql:
 
         async def test_create_table(self, sql_client_init: SQLHandler):
             stmt = "CREATE TABLE test9 (x int, y int)"
-            res = await sql_client_init.handle(action="CREATE_TABLE",
-                                         stmt=stmt
-                                         )
+            res = await sql_client_init.create_table( stmt=stmt)
             res_dict = res.context.__dict__
             logger.info(f"Create Table: {res.context.__dict__}")
             assert isinstance(res, CursorResult)
@@ -42,27 +40,25 @@ class TestSql:
         async def test_insert_table(self, sql_client_init: SQLHandler):
             stmt = "INSERT INTO test9 (x, y) VALUES (:x, :y)"
             values = [{'x': 1, 'y': 2}, {'x': 2, 'y': 4}]
-            res = await sql_client_init.handle(
-                action="INSERT",
+            res = await sql_client_init.insert(
                 stmt=stmt,
                 values=values
             )
+
             res_dict = res.context.__dict__
             logger.info(f"Insert Table: {res.context.__dict__}")
             assert isinstance(res, CursorResult)
             assert len(values) == res_dict.get("_rowcount")
 
         async def test_select_table(self, sql_client_init: SQLHandler):
-            res = await sql_client_init.handle(
-                action="SELECT",
+            res = await sql_client_init.select(
                 query="SELECT * from test9"
             )
             logger.info(f"Query Result: {res}")
             assert len(res) > 0
 
         async def test_drop_table(self, sql_client_init: SQLHandler):
-            res = await sql_client_init.handle(
-                action="DROP_TABLE",
+            res = await sql_client_init.drop_table(
                 stmt="DROP TABLE test9"
             )
             res_dict = res.context.__dict__

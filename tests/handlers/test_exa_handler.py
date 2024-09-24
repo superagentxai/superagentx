@@ -25,10 +25,10 @@ class TestExasearch:
 
     # Test async exa handler - search_contents method
     async def test_exa_handler(self, exasearch_client_init: ExaHandler):
-        exa = await exasearch_client_init.handle(action="search_contents",
-                                                  query="Topics in AI",
-                                                  type="auto",
-                                                  use_autoprompt=True,
-                                                  num_results=5,
-                                                  )
+        exa = await exasearch_client_init.search_contents(
+            query="Topics in AI",
+            search_type="auto",
+            use_autoprompt=True,
+            num_results=5,
+         )
         assert isinstance(exa, SearchResponse)

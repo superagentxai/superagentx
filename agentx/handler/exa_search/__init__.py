@@ -1,15 +1,9 @@
-from enum import Enum
-from typing import Any
-
 from exa_py import Exa
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.exa_search.exceptions import InvalidExaAction
+from agentx.handler.exa_search.exceptions import InvalidExaAction
 from agentx.utils.helper import sync_to_async
-
-
-class ExaAction(str, Enum):
-    SEARCH_CONTENTS = "search_contents"
 
 
 class ExaHandler(BaseHandler):
@@ -26,32 +20,6 @@ class ExaHandler(BaseHandler):
 
         self.exa = Exa(api_key=api_key)
 
-    async def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-        """
-        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
-        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
-
-        parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
-                                the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-        Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case ExaAction.SEARCH_CONTENTS:
-                return await self.search_contents(**kwargs)
-            case _:
-                raise InvalidExaAction(f"Invalid exa action '{action}'")
 
     async def search_contents(
             self,

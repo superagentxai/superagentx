@@ -1,16 +1,8 @@
-from enum import Enum
-from typing import Any
-
 import wikipedia
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.wikipedia.exceptions import InvalidAction
 from agentx.utils.helper import sync_to_async
-
-
-class SearchAction(str, Enum):
-    SUMMARY = "summary"
-    SEARCH = "search"
 
 
 class WikipediaHandler(BaseHandler):
@@ -20,36 +12,6 @@ class WikipediaHandler(BaseHandler):
         from Wikipedia, including searching articles, fetching summaries, and accessing structured data.
     """
 
-    async def handle(
-            self,
-            action: str | Enum,
-            *args,
-            **kwargs
-    ) -> Any:
-
-        """
-        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
-        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
-
-        parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
-            the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-        Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case SearchAction.SUMMARY:
-                return await self.get_summary(**kwargs)
-            case SearchAction.SEARCH:
-                return await self.get_search(**kwargs)
-            case _:
-                raise InvalidAction(f'Invalid Action `{action}`')
 
     @staticmethod
     async def get_summary(
