@@ -61,8 +61,6 @@ class VectorStore:
         _params = self.__dict__
 
         match self.vector_type:
-            case VectorDatabaseType.NEO4J:
-                self.cli = Neo4jVector(**_params)
             case VectorDatabaseType.CHROMA:
                 self.cli = ChromaDB(**_params)
             case VectorDatabaseType.OPENSEARCH:
@@ -76,86 +74,62 @@ class VectorStore:
                 logger.error(_msg)
                 raise ValueError(_msg)
 
-    def create(
+    async def create(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.create_collection(*args, **kwargs)
+        return await self.cli.create(
+            *args,
+            **kwargs
+        )
 
-    def search(
+    async def search(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.search(*args, **kwargs)
+        return await self.cli.search(
+            *args,
+            **kwargs
+        )
 
-    def insert(
+    async def insert(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.insert(*args, **kwargs)
+        return await self.cli.insert(
+            *args,
+            **kwargs
+        )
 
-    def update(
+    async def update(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.update(*args, **kwargs)
+        return await self.cli.update(
+            *args,
+            **kwargs
+        )
 
-    def exists(
+    async def exists(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.exists(*args, **kwargs)
+        return await self.cli.exists(
+            *args,
+            **kwargs
+        )
 
-    def delete_collection(
+    async def delete_collection(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.delete_collection(*args, **kwargs)
-
-    async def acreate(
-            self,
+        return await self.cli.delete_collection(
             *args,
             **kwargs
-    ):
-        return await self.cli.acreate_collection(*args, **kwargs)
-
-    async def asearch(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.asearch(*args, **kwargs)
-
-    async def ainsert(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.ainsert(*args, **kwargs)
-
-    async def aupdate(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.aupdate(*args, **kwargs)
-
-    async def aexists(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.aexists(*args,**kwargs)
-
-    async def adelete_collection(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.adelete_collection(*args,**kwargs)
+        )
