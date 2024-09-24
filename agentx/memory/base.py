@@ -8,7 +8,7 @@ class MemoryBase(ABC):
         """
         Add the data.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     async def get(self, memory_id):
@@ -21,17 +21,7 @@ class MemoryBase(ABC):
         Returns:
             dict: Retrieved memory.
         """
-        pass
-
-    @abstractmethod
-    async def get_all(self):
-        """
-        List all memories.
-
-        Returns:
-            list: List of all memories.
-        """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     async def update(self, memory_id, data):
@@ -45,7 +35,7 @@ class MemoryBase(ABC):
         Returns:
             dict: Updated memory.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     async def delete(self, memory_id):
@@ -56,4 +46,4 @@ class MemoryBase(ABC):
         Args:
             memory_id (str): ID of the memory to delete.
         """
-        pass
+        raise NotImplementedError

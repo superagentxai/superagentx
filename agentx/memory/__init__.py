@@ -36,11 +36,9 @@ class Memory(MemoryBase):
         async with self.db as db:
             return await db.get_history(*args, **kwargs)
 
-    async def get_all(self):
-        pass
-
     async def update(self, memory_id, data):
         pass
 
     async def delete(self, *args, **kwargs):
-        pass
+        async with self.db as db:
+            return await db.reset()
