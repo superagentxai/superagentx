@@ -52,13 +52,15 @@ class TestOpensearch:
     async def test_insert(self, opensearch_client_init: VectorStore):
         res = await opensearch_client_init.insert(
             index_name="python-test",
+            id="1",
             document={
                 'title': 'Moneyball',
                 'director': 'Bennett Miller',
                 'year': '2011'
             }
         )
-        print(res)
+        logger.info(f"Result: {res}")
+        assert isinstance(res, dict)
 
     async def test_search(self, opensearch_client_init: VectorStore):
         q = 'miller'
@@ -75,24 +77,34 @@ class TestOpensearch:
             query=query,
             index_name="python-test6"
         )
-        print(res)
+        logger.info(f"Result: {res}")
+        assert isinstance(res, dict)
 
     async def test_update(self, opensearch_client_init: VectorStore):
         res = await opensearch_client_init.update(
             index_name="python-test",
-            id="1",
-            query="miller"
+            vector_id="1",
+            body={
+                "doc": {
+                    'title': 'Miller',
+                    'director': 'Bennett Miller',
+                    'year': '2011'
+                }
+            }
+
         )
-        print(res)
+        logger.info(f"Result: {res}")
+        assert isinstance(res, dict)
 
     async def test_exists(self, opensearch_client_init: VectorStore):
         res = await opensearch_client_init.exists(
-            index="python-test"
+            index_name="python-test"
         )
-        print(res)
+        logger.info(f"Resul: {res}")
+        assert isinstance(res, bool)
 
     async def test_delete_collection(self, opensearch_client_init: VectorStore):
         res = await opensearch_client_init.delete(
             index_name="python-test"
         )
-        print(res)
+        assert isinstance(res, dict)

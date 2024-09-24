@@ -144,7 +144,7 @@ class Opensearch(BaseVectorStore):
                 bool: True if the index exists, False otherwise.
 
         """
-        return await self.client.exists(
+        return await self.client.indices.exists(
             index=index_name
         )
 
@@ -168,7 +168,7 @@ class Opensearch(BaseVectorStore):
                 None
 
         """
-        response = self.client.update(
+        response = await self.client.update(
             index=index_name,
             id=vector_id,
             body=body,
