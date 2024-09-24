@@ -2,7 +2,7 @@
 name = "agentx"
 version = "0.1.0"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
-authors = ["DecisionFacts AI <prabhu@decisionfacts.io>"]
+authors = ["SuperAgentX AI <prabhu@decisionfacts.io>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

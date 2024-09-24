@@ -1,14 +1,16 @@
+import inspect
 import logging
 import re
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
+from pydantic import typing
 
 from agentx.llm import ChatCompletionParams
 from agentx.llm.client import Client
 from agentx.llm.constants import OPENAI_PRICE1K
-from agentx.utils.helper import sync_to_async
+from agentx.utils.helper import sync_to_async, iter_to_aiter
 
 logger = logging.getLogger(__name__)
 _OPEN_API_BASE_URL_PREFIX = "https://api.openai.com"
@@ -80,6 +82,30 @@ class OpenAIClient(Client):
         """
         api_key_re = re.compile(r"^sk-([A-Za-z0-9]+(-+[A-Za-z0-9]+)*-)?[A-Za-z0-9]{32,}$")
         return bool(re.fullmatch(api_key_re, api_key))
+
+    async def get_tool_json(self, func: typing.Callable) -> dict:
+        _func_name = func.__name__
+        _doc_str = inspect.getdoc(func)
+        _properties = {}
+        _type_hints = typing.get_type_hints(func)
+        async for param, param_type in iter_to_aiter(_type_hints.items()):
+            if param != 'return':
+                _properties[param] = {
+                    "type": param_type.__name__,
+                    "description": f"The {param.replace('_', ' ')}."
+                }
+        return {
+            'type': 'function',
+            'function': {
+                'name': _func_name,
+                'description': _doc_str,
+                'parameters': {
+                    "type": "object",
+                    "properties": _properties,
+                    "required": list(_properties.keys()),
+                }
+            }
+        }
 
     @staticmethod
     def cost(response: ChatCompletion | Completion) -> float:
