@@ -19,6 +19,12 @@ class EmailAction(str, Enum):
 
 
 class EmailHandler(BaseHandler):
+    """
+     A handler class for managing email operations.
+    This class extends BaseHandler and provides methods for sending emails, managing recipients,
+    and handling attachments, facilitating efficient email communication.
+
+    """
 
     def __init__(
             self,
@@ -46,7 +52,7 @@ class EmailHandler(BaseHandler):
                 port=port
             )
 
-    def handle(
+    async def handle(
             self,
             *,
             action: str | Enum,
@@ -54,21 +60,29 @@ class EmailHandler(BaseHandler):
     ) -> Any:
 
         """
-            params:
-                action(str): Give an action what has given in the Enum.
+        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
+        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
+
+        parameters:
+            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
+                                the action.
+            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
+
+        Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
         """
 
         if isinstance(action, str):
             action = action.lower()
         match action:
             case EmailAction.SEND:
-                return self.send_email(**kwargs)
+                return await self.send_email(**kwargs)
             case EmailAction.READ:
                 raise NotImplementedError
             case _:
                 raise InvalidEmailAction(f"Invalid email action `{action}`")
 
-    def send_email(
+    async def send_email(
             self,
             *,
             sender: str,
@@ -82,17 +96,18 @@ class EmailHandler(BaseHandler):
     ):
 
         """
-            params:
-               sender(str):The from address is what your recipients will see.
-               to(list[str]):The TO field is the most obvious recipient field.
-               subject(str):The headline of an email, the copy that appears in a recipient's email inbox.
-               body(str):where the sender writes their main message,
-                         including all the text, images, links, and anything else you could possibly think of.
-               from_name(str):The sender’s name.
-               cc(list[str]):The CC or "carbon copy" field it means that a copy of the email you are sending will
-                       also be sent to that address.
-               bcc(list[str]):BCC stands for “blind carbon copy.” Just like CC, BCC is a way of sending copies of an email to other people.
-               attachment_path(str):This is typically used as a simple method to share documents and images.
+        Asynchronously sends an email with specified parameters, including sender, recipients, subject, and body.
+        This method also supports optional fields such as CC, BCC, and attachments for comprehensive email communication.
+
+        parameter:
+            sender (str): The email address of the sender.
+            to (list[str]): A list of recipient email addresses to whom the email will be sent.
+            subject (str): The subject line of the email.
+            body (str): The content of the email.
+            from_name (str | None, optional): The name of the sender to display in the email. Defaults to None.
+            cc (list[str] | None, optional): A list of email addresses to be included in the CC field. Defaults to None.
+            bcc (list[str] | None, optional): A list of email addresses to be included in the BCC field. Defaults to None.
+            attachment_path (str | None, optional): The file path of any attachment to be included with the email. Defaults to None.
         """
 
         try:
@@ -103,51 +118,37 @@ class EmailHandler(BaseHandler):
             msg['Bcc'] = ', '.join(bcc) if bcc else ''
             msg['Subject'] = subject
 
-            msg.attach(MIMEText(body, 'plain'))
+            await sync_to_async(msg.attach,MIMEText(body, 'plain'))
 
             if attachment_path:
                 attachment_name = os.path.basename(attachment_path)
-                with open(attachment_path, "rb") as attachment:
+                async with open(attachment_path, "rb") as attachment:
                     part = MIMEBase('application', 'octet-stream')
-                    part.set_payload(attachment.read())
-                    encoders.encode_base64(part)
-                    part.add_header('Content-Disposition', f"attachment; filename= {attachment_name}")
-                    msg.attach(part)
+                    await sync_to_async(part.set_payload,await attachment.read())
+                    await sync_to_async(encoders.encode_base64,part)
+                    await sync_to_async(
+                        part.add_header,
+                        'Content-Disposition',
+                        f"attachment; filename= {attachment_name}"
+                    )
+                    await sync_to_async(msg.attach,part)
 
             all_recipients = to + (cc or []) + (bcc or [])
 
             if self.username and self.password:
-                self._conn.login(user=self.username, password=self.password)
+                await sync_to_async(self._conn.login,user=self.username, password=self.password)
 
-            res = self._conn.sendmail(
+            res = await sync_to_async(self._conn.sendmail,
                 from_addr=sender,
                 to_addrs=all_recipients,
-                msg=msg.as_string()
+                msg=await sync_to_async(msg.as_string)
             )
-            self._conn.close()
+            await sync_to_async(self._conn.close)
             return res
         except Exception as e:
             raise SendEmailFailed(f"Failed to send email!\n{e}")
 
-    async def ahandle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-
-        """
-            params:
-                action(str): Give an action what has given in the Enum.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case EmailAction.SEND:
-                return await sync_to_async(self.send_email, **kwargs)
-            case EmailAction.READ:
-                raise NotImplementedError
-            case _:
-                raise InvalidEmailAction(f"Invalid email action `{action}`")
-
+    def __dir__(self):
+        return (
+            "send_email"
+        )

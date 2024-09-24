@@ -16,6 +16,11 @@ class ContentCreatorType(str, Enum):
 
 
 class ContentCreatorHandler(BaseHandler, ABC):
+    """
+       An abstract handler class for managing content creation operations.
+       This class extends BaseHandler and defines the interface for creating various types of content,
+       such as text, images, and videos. Subclasses must implement specific methods for content generation and processing.
+    """
 
     def __init__(
             self,

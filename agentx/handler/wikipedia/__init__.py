@@ -14,8 +14,13 @@ class SearchAction(str, Enum):
 
 
 class WikipediaHandler(BaseHandler):
+    """
+        A handler class for managing interactions with the Wikipedia API.
+        This class extends BaseHandler and provides methods for retrieving and processing content
+        from Wikipedia, including searching articles, fetching summaries, and accessing structured data.
+    """
 
-    def handle(
+    async def handle(
             self,
             action: str | Enum,
             *args,
@@ -23,80 +28,81 @@ class WikipediaHandler(BaseHandler):
     ) -> Any:
 
         """
-            params:
-                action(str): Give an action what has given in the Enum.
+        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
+        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
+
+        parameters:
+            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
+            the action.
+            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
+
+        Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
         """
 
         if isinstance(action, str):
             action = action.lower()
         match action:
             case SearchAction.SUMMARY:
-                return self.get_summary(**kwargs)
+                return await self.get_summary(**kwargs)
             case SearchAction.SEARCH:
-                return self.get_search(**kwargs)
+                return await self.get_search(**kwargs)
             case _:
                 raise InvalidAction(f'Invalid Action `{action}`')
 
     @staticmethod
-    def get_summary(
+    async def get_summary(
             query: str | None = None,
             sentences: int | None = None,
             language: str | None = None
     ):
 
         """
-            params:
-                query(str):Filter groups by name with this string.
-                sentences(int):if set, return the first `sentences` sentences (can be no greater than 10).
-                language(str):Set `prefix` to one of the two letter prefixes found
+        Asynchronously retrieves a summary of a specified topic or content.
+        This method condenses information into a concise format, making it easier to understand key points at a glance.
+
+        parameter:
+            query (str | None, optional): The search query to retrieve relevant information. Defaults to None.
+            sentences (int | None, optional): The maximum number of sentences to return in the response. Defaults to None.
+            language (str | None, optional): The language code for the response content. Defaults to None.
+
         """
 
 
         if language:
-            wikipedia.set_lang(language)
+            await sync_to_async(wikipedia.set_lang,language)
 
-        result = wikipedia.summary(query, sentences=sentences)
+        result = await sync_to_async(wikipedia.summary,query, sentences=sentences)
         return result
 
     @staticmethod
-    def get_search(
+    async def get_search(
             query: str | None = None,
             results: int | None = None,
             language: str | None = None
     ):
 
         """
-            params:
-                query(str):Filter groups by name with this string.
-                results(int):the maximum number of results returned
-                language(str):Set `prefix` to one of the two letter prefixes found
+        Asynchronously performs a search operation based on the specified parameters.
+        This method retrieves relevant results based on the query and other filters, such as language and result limits.
+
+        parameter:
+            query (str | None, optional): The search query to retrieve relevant information. Defaults to None.
+            results (int | None, optional): The maximum number of results to return. Defaults to None, indicating
+            no limit on the number of results.
+            language (str | None, optional): The language code for the response content. Defaults to None.
 
         """
 
         if language:
-            wikipedia.set_lang(language)
+            await sync_to_async(wikipedia.set_lang,language)
 
-        results = wikipedia.search(query, results=results)
+        results = await sync_to_async(wikipedia.search, query, results=results)
         return results
 
-    async def ahandle(
-            self,
-            *,
-            action: str | Enum, **kwargs
-    ) -> Any:
-
-        """
-            params:
-                action(str): Give an action what has given in the Enum.
-        """
-
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case SearchAction.SUMMARY:
-                return await sync_to_async(self.get_summary, **kwargs)
-            case SearchAction.SEARCH:
-                return await sync_to_async(self.get_search, **kwargs)
-            case _:
-                raise InvalidAction(f'Invalid Action `{action}`')
+    def __dir__(self):
+        return(
+            'get_summary',
+            'get_search'
+        )

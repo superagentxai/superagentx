@@ -18,6 +18,11 @@ class SQLAction(str, Enum):
 
 
 class SQLHandler(BaseHandler):
+    """
+        A handler class for managing SQL database operations.
+        This class extends BaseHandler and provides methods to execute various SQL queries, such as creating,
+        updating, deleting, and retrieving records from the database.
+    """
 
     def __init__(
             self,
@@ -82,6 +87,18 @@ class SQLHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
+        """
+         Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
+         keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
+
+        parameters:
+            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
+                                the action.
+            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
+
+        Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
+        """
         if isinstance(action, str):
             action = action.lower()
         match action:
@@ -107,6 +124,19 @@ class SQLHandler(BaseHandler):
             *,
             query: str
     ):
+        """
+            Asynchronously retrieves data based on the specified query string.
+            This method executes a selection operation, returning relevant information according to the query criteria.
+
+            parameters:
+                 query (str):The main search query used to retrieve content. This is a required field and should be a
+                descriptive string that accurately represents what content is being searched for.
+                **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
+
+            Returns:
+                Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
+        """
         async with self._engine.connect() as conn:
             res = await conn.execute(text(query))
             return res.all()
@@ -117,6 +147,22 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+
+        """
+            Asynchronously inserts data into a database using the specified SQL statement and a list of value dictionaries.
+            This method handles the execution of the insertion operation based on the provided parameters.
+
+            parameters:
+                 stmt (str): The SQL statement to be executed for the insertion, which should include placeholders
+                 for values.
+                 values (list[dict]): A list of dictionaries containing the values to be inserted, where each dictionary
+                 represents a set of values corresponding to the placeholders in the SQL statement.
+
+            Returns:
+                Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
+        """
+
         return await self._stat_begin(
             stmt=stmt,
             values=values
@@ -128,6 +174,20 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+
+        """
+        Asynchronously updates records in a database based on the provided SQL statement and a list of value
+        dictionaries.This method manages the execution of the update operation to modify existing entries as specified.
+
+        parameters:
+                 stmt (str): The SQL statement to be executed for the insertion, which should include placeholders
+                 for values.
+                 values (list[dict]): A list of dictionaries containing the values to be inserted, where each dictionary
+                 represents a set of values corresponding to the placeholders in the SQL statement.
+
+            Returns:
+                Any: The result of handling the action. The return type may vary depending on the specific action handled.
+        """
         return await self._stat_begin(
             stmt=stmt,
             values=values
@@ -139,6 +199,23 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+
+         Asynchronously deletes records from a database using the specified SQL statement and a list of value dictionaries.
+         This method executes the deletion operation based on the provided parameters to remove specified entries.
+
+         parameters:
+                 stmt (str): The SQL statement to be executed for the insertion, which should include placeholders
+                 for values.
+                 values (list[dict]): A list of dictionaries containing the values to be inserted, where each dictionary
+                 represents a set of values corresponding to the placeholders in the SQL statement.
+
+            Returns:
+                Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
+        """
+
+
         return await self._stat_begin(
             stmt=stmt,
             values=values
@@ -149,6 +226,19 @@ class SQLHandler(BaseHandler):
             *,
             stmt: str
     ):
+
+        """
+        Asynchronously creates a new database table using the specified SQL statement.
+        This method executes the table creation operation based on the provided SQL command.
+
+         parameters:
+            stmt (str): The SQL statement to be executed for the insertion, which should include placeholders
+            for values.
+
+        Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
+        """
         async with self._engine.begin() as conn:
             return await conn.execute(
                 text(stmt)
@@ -159,6 +249,18 @@ class SQLHandler(BaseHandler):
             *,
             stmt: str
     ):
+        """
+        Asynchronously drops an existing database table using the specified SQL statement.
+        This method executes the table removal operation based on the provided SQL command.
+
+         parameters:
+            stmt (str): The SQL statement to be executed for the insertion, which should include placeholders
+            for values.
+
+         Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
+        """
         async with self._engine.begin() as conn:
             return await conn.execute(
                 text(stmt)
@@ -170,6 +272,21 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+        Asynchronously alters an existing database table using the specified SQL statement and a list of value dictionaries.
+        This method executes the alteration operation to modify the table structure as defined by the provided parameters.
+
+        parameters:
+             stmt (str): The SQL statement to be executed for the insertion, which should include placeholders
+             for values.
+             values (list[dict]): A list of dictionaries containing the values to be inserted, where each dictionary
+             represents a set of values corresponding to the placeholders in the SQL statement.
+
+        Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
+        """
+
         return await self._stat_begin(
             stmt=stmt,
             values=values
@@ -181,6 +298,21 @@ class SQLHandler(BaseHandler):
             stmt: str,
             values: list[dict]
     ):
+        """
+        Asynchronously begins a statistical operation using the specified SQL statement and a list of value dictionaries.
+        This method sets up the context for performing statistical analysis based on the provided parameters.
+
+        parameters:
+             stmt (str): The SQL statement to be executed for the insertion, which should include placeholders
+             for values.
+             values (list[dict]): A list of dictionaries containing the values to be inserted, where each dictionary
+             represents a set of values corresponding to the placeholders in the SQL statement.
+
+        Returns:
+            Any: The result of handling the action. The return type may vary depending on the specific action handled.
+
+        """
+
         async with self._engine.begin() as conn:
             return await conn.execute(
                 text(stmt),

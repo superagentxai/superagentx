@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
 
-   1.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py:: TestWeatherHandler::test_forecast_weather
-   2.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py:: TestWeatherHandler::test_historical_weather
-   3.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py:: TestWeatherHandler::test_climate_weather
-   4.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py:: TestWeatherHandler::test_flood_weather
-   5.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py:: TestWeatherHandler::test_air_quality_weather
-   6.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py:: TestWeatherHandler::test_marine_weather
+   1.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_forecast_weather
+   2.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_historical_weather
+   3.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_climate_weather
+   4.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_flood_weather
+   5.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_air_quality_weather
+   6.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_marine_weather
 
 '''
 
@@ -28,7 +28,7 @@ def weather_client_init() -> WeatherHandler:
 
 class TestWeatherHandler:
     async def test_forecast_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.ahandle(
+        res = await weather_client_init.handle(
             location="Chennai",
             forecast_days=7,
             past_days=0,
@@ -43,7 +43,7 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_historical_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.ahandle(
+        res = await  weather_client_init.handle(
             action="historical",
             location="chennai",
             start_date="2024-08-14",
@@ -57,7 +57,7 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_climate_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.ahandle(
+        res = await  weather_client_init.handle(
             location="chennai",
             start_date="2024-08-14",
             end_date="2024-08-28",
@@ -70,7 +70,7 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_flood_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.ahandle(
+        res = await  weather_client_init.handle(
             location="chennai",
             forecast_days=3,
             past_days=0,
@@ -83,7 +83,7 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_air_quality_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.ahandle(
+        res = await  weather_client_init.handle(
             location="chennai",
             forecast_days=3,
             past_days=0,
@@ -97,7 +97,7 @@ class TestWeatherHandler:
             assert isinstance(_res, DataFrame)
 
     async def test_marine_weather(self, weather_client_init:WeatherHandler):
-        res = await  weather_client_init.ahandle(
+        res = await  weather_client_init.handle(
             location="chennai",
             forecast_days=3,
             past_days=0,

@@ -6,16 +6,10 @@ from agentx.handler.aws.s3 import AWSS3Handler
 
 '''
  Run Pytest:  
- 
-   # sync  
+
    1.pytest --log-cli-level=INFO tests/handlers/test_aws_s3.py::TestAWSS3::test_s3_handler_upload
    2.pytest --log-cli-level=INFO tests/handlers/test_aws_s3.py::TestAWSS3::test_s3_handler_list_bucket
    3.pytest --log-cli-level=INFO tests/handlers/test_aws_s3.py::TestAWSS3::test_s3_handler_download
-   
-   #async
-   4.pytest --log-cli-level=INFO tests/handlers/test_aws_s3.py::TestAWSS3::test_s3_ahandler_upload
-   5.pytest --log-cli-level=INFO tests/handlers/test_aws_s3.py::TestAWSS3::test_s3_ahandler_list_bucket
-   6.pytest --log-cli-level=INFO tests/handlers/test_aws_s3.py::TestAWSS3::test_s3_ahandler_download
  
 '''
 
@@ -31,22 +25,12 @@ def aws_s3_client_init() -> AWSS3Handler:
 
 class TestAWSS3:
 
-    def test_s3_handler_upload(self, aws_s3_client_init: AWSS3Handler):
-        aws_s3_client_init.handle(action="upload_file", file_name="<file_path>")
+    async def test_s3_handler_upload(self, aws_s3_client_init: AWSS3Handler):
+        await aws_s3_client_init.handle(action="upload_file", file_name="<file_path>")
 
-    def test_s3_handler_list_bucket(self, aws_s3_client_init: AWSS3Handler):
-        s3_handler = aws_s3_client_init.handle(action="list_bucket")
+    async def test_s3_handler_list_bucket(self, aws_s3_client_init: AWSS3Handler):
+        s3_handler = await aws_s3_client_init.handle(action="list_bucket")
         assert isinstance(s3_handler, dict)
 
-    def test_s3_handler_download(self, aws_s3_client_init: AWSS3Handler):
-        aws_s3_client_init.handle(action="download_file", object_name="<file_path>")
-
-    def test_s3_ahandler_upload(self, aws_s3_client_init: AWSS3Handler):
-        aws_s3_client_init.handle(action="upload_file", file_name="<file_path>")
-
-    def test_s3_ahandler_list_bucket(self, aws_s3_client_init: AWSS3Handler):
-        s3_handler = aws_s3_client_init.ahandle(action="list_bucket")
-        assert isinstance(s3_handler, dict)
-
-    def test_s3_ahandler_download(self, aws_s3_client_init: AWSS3Handler):
-        s3_handler = aws_s3_client_init.handle(action="upload_file", file_name="<file_path>")
+    async def test_s3_handler_download(self, aws_s3_client_init: AWSS3Handler):
+        await aws_s3_client_init.handle(action="upload_file", file_name="<file_path>")

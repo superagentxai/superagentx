@@ -30,28 +30,28 @@ class ReportType(str, Enum):
     flood = 'flood'
 
 
-def get_longitude(location):
+async def get_longitude(location):
     if location:
         geolocator = Nominatim(user_agent="WeatherTest")
-        location = geolocator.geocode(location)
+        location = await sync_to_async(geolocator.geocode,location)
         return location.longitude
     else:
         raise InvalidLocation(f"Location {location} is not valid")
 
 
-def get_latitude(location):
+async def get_latitude(location):
     if location:
         geolocator = Nominatim(user_agent="WeatherTest")
-        location = geolocator.geocode(location)
+        location = await sync_to_async(geolocator.geocode,location)
         return location.latitude
     else:
         raise InvalidLocation(f"Location {location} is not valid")
 
 
-def get_default_params(location: str) -> dict:
+async def get_default_params(location: str) -> dict:
     tz = TimezoneFinder()
-    lat = get_latitude(location)
-    lng = get_longitude(location)
+    lat = await get_latitude(location)
+    lng = await get_longitude(location)
     param = {
         "latitude": lat,
         "longitude":lng,
@@ -59,7 +59,7 @@ def get_default_params(location: str) -> dict:
     }
     return param
 
-def get_result_parser(
+async def get_result_parser(
         *,
         response,
         variables,
@@ -96,6 +96,11 @@ def get_result_parser(
 
 
 class WeatherHandler(BaseHandler):
+    """
+        A handler class for managing various weather-related data operations.
+        This class extends BaseHandler and provides methods to retrieve different types of weather information,
+        such as forecasts, historical data, air quality, marine conditions, and climate trends.
+    """
 
     def __init__(
             self,
@@ -104,7 +109,7 @@ class WeatherHandler(BaseHandler):
         self.api_key = api_key
 
 
-    def get_historical_weather(
+    async def get_historical_weather(
             self,
             *,
             location: str,
@@ -115,15 +120,19 @@ class WeatherHandler(BaseHandler):
     ):
 
         """
-           params:
-               location(str):Give your location or city.
-               start_date(str):The start date for the sprint
-               end_date(str):The start date for the sprint
-               daily(bool):Give the value in True or False.
-               hourly(bool):Give the value in True or False.
+        Asynchronously retrieves historical weather data for a specified location.
+        This method provides past weather conditions, including temperature, precipitation, and other relevant metrics.
+
+        parameter:
+            location (str): The location for which the scheduling or event is being created.
+            start_date (str): The start date of the event, formatted as a string (e.g., 'YYYY-MM-DD').
+            end_date (str): The end date of the event, formatted as a string (e.g., 'YYYY-MM-DD').
+            daily (bool): A flag indicating whether the event recurs daily.
+            hourly (bool): A flag indicating whether the event recurs hourly.
+
         """
 
-        params = get_default_params(location)
+        params = await get_default_params(location)
         params['start_date'] =start_date,
         params['end_date'] = end_date,
         response = {}
@@ -139,20 +148,20 @@ class WeatherHandler(BaseHandler):
         )
         res = obj.get_weather_report()
         if daily:
-            response['daily'] = get_result_parser(
+            response['daily'] = await get_result_parser(
                 response=res,
                 variables=HISTORICAL_DAILY_STATUS_VARIABLE,
                 res_type=ResponseType.daily
             )
         if hourly:
-            response['hourly'] = get_result_parser(
+            response['hourly'] = await get_result_parser(
                 response=res,
                 variables=HISTORICAL_HOURLY_STATUS_VARIABLE,
                 res_type=ResponseType.hourly
             )
         return response
 
-    def get_forecast_weather(
+    async def get_forecast_weather(
             self,
             *,
             location: str,
@@ -163,16 +172,21 @@ class WeatherHandler(BaseHandler):
             hourly: bool
     ):
         """
-           params:
-               location(str):Give your location or city.
-               start_date(str):The start date for the sprint
-               end_date(str):The start date for the sprint
-               daily(bool):Give the value in True or False.
-               hourly(bool):Give the value in True or False.
+        Asynchronously retrieves weather forecast data for a specified location.
+        This method provides upcoming weather conditions, including temperature, precipitation, and wind predictions.
+
+        parameter:
+            location (str): The location for which the weather data is being requested.
+            forecast_days (int): The number of days for which to retrieve the weather forecast.
+            past_days (int): The number of past days for which to retrieve historical weather data.
+            current (bool): A flag indicating whether to include current weather conditions in the response.
+            daily (bool): A flag indicating whether to retrieve daily weather data.
+            hourly (bool): A flag indicating whether to retrieve hourly weather data.
+
         """
 
 
-        params = get_default_params(location)
+        params = await get_default_params(location)
         response = {}
         if forecast_days and 0 < forecast_days:
             params['forecast_days'] = forecast_days,
@@ -191,28 +205,28 @@ class WeatherHandler(BaseHandler):
             url=FORCAST_API_URL,
             api_key=self.api_key
         )
-        res = obj.get_weather_report()
+        res = await sync_to_async(obj.get_weather_report)
         if current:
-            response['current'] = get_result_parser(
+            response['current'] = await get_result_parser(
                 response=res,
                 variables=FORCAST_CURRENT_STATUS_VARIABLE,
                 res_type=ResponseType.current
             )
         if daily:
-            response['daily'] = get_result_parser(
+            response['daily'] = await get_result_parser(
                 response=res,
                 variables=FORECAST_DAILY_STATUS_VARIABLE,
                 res_type=ResponseType.daily
             )
         if hourly:
-            response['hourly'] = get_result_parser(
+            response['hourly'] = await get_result_parser(
                 response=res,
                 variables=FORECAST_HOURLY_STATUS_VARIABLE,
                 res_type=ResponseType.hourly
             )
         return response
 
-    def get_climate_weather(
+    async def get_climate_weather(
             self,
             *,
             location: str,
@@ -221,16 +235,19 @@ class WeatherHandler(BaseHandler):
             daily: bool
     ):
         """
-           params:
-               location(str):Give your location or city.
-               start_date(str):The start date for the sprint
-               end_date(str):The start date for the sprint
-               daily(bool):Give the value in True or False.
-               hourly(bool):Give the value in True or False.
+         Asynchronously retrieves climate-related weather data for a specified region.
+         This method provides long-term climate trends and patterns, including temperature and precipitation data.
+
+        parameter:
+            location (str): The location for which the weather data is being requested.
+            start_date (str): The start date of the event, formatted as a string (e.g., 'YYYY-MM-DD').
+            end_date (str): The end date of the event, formatted as a string (e.g., 'YYYY-MM-DD').
+            daily (bool): A flag indicating whether to retrieve daily weather data.
+
         """
 
 
-        params = get_default_params(location)
+        params = await get_default_params(location)
         params['start_date'] = start_date,
         params['end_date'] = end_date,
         params['models'] = CLIMATE_MODELS_STATUS_VARIABLE,
@@ -242,16 +259,16 @@ class WeatherHandler(BaseHandler):
             url=CLIMATE_API_URL,
             api_key=self.api_key
         )
-        res = obj.get_weather_report()
+        res = await sync_to_async(obj.get_weather_report)
         if daily:
-            response['daily'] = get_result_parser(
+            response['daily'] = await get_result_parser(
                 response=res,
                 variables=CLIMATE_DAILY_STATUS_VARIABLE,
                 res_type=ResponseType.daily
             )
         return response
 
-    def get_marine_weather(
+    async def get_marine_weather(
             self,
             *,
             location: str,
@@ -262,17 +279,21 @@ class WeatherHandler(BaseHandler):
             hourly: bool
     ):
         """
-           params:
-               location(str):Give your location or city.
-               forecast_day(int):The result of the process of predicting
-               past_days(int):Give the past days.
-               current(bool):Give the value in True or False.
-               daily(bool):Give the value in True or False.
-               hourly(bool):Give the value in True or False.
+        Asynchronously retrieves marine weather data for a specified coastal or oceanic location.
+        This method provides information on sea conditions, tides, and weather impacting marine environments.
+
+        parameter:
+            location (str): The location for which to retrieve weather data.
+            forecast_days (int): The number of days to include in the weather forecast.
+            past_days (int): The number of past days for which to gather historical weather data.
+            current (bool): A flag indicating whether to include current weather conditions.
+            daily (bool): A flag indicating whether to fetch daily weather data.
+            hourly (bool): A flag indicating whether to fetch hourly weather data.
+
         """
 
 
-        params = get_default_params(location)
+        params = await sync_to_async(get_default_params, location)
         response = {}
         if forecast_days and 0 < forecast_days:
             params['forecast_days'] = forecast_days,
@@ -310,7 +331,7 @@ class WeatherHandler(BaseHandler):
             )
         return response
 
-    def get_air_quality_weather(
+    async def get_air_quality_weather(
             self,
             *,
             location: str,
@@ -320,16 +341,20 @@ class WeatherHandler(BaseHandler):
             hourly: bool
     ):
         """
-           params:
-               location(str):Give your location or city.
-               forecast_days(int):The result of the process of predicting
-               past_days(int):Give the past days.
-               current(bool):Give the value in True or False.
-               hourly(bool):Give the value in True or False.
+        Asynchronously retrieves air quality data for a specified location.
+        This method provides information on current air quality levels and related weather conditions.
+
+        parameter:
+            location (str): The location for which to retrieve weather data.
+            forecast_days (int): The number of days to include in the weather forecast.
+            past_days (int): The number of past days for which to gather historical weather data.
+            current (bool): A flag indicating whether to include current weather conditions.
+            hourly (bool): A flag indicating whether to fetch hourly weather data.
+
         """
 
 
-        params = get_default_params(location)
+        params = await sync_to_async(get_default_params,location)
         response = {}
         if forecast_days and 0<forecast_days:
             params['forecast_days'] = forecast_days,
@@ -359,7 +384,7 @@ class WeatherHandler(BaseHandler):
             )
         return response
 
-    def get_flood_weather(
+    async def get_flood_weather(
             self,
             location: str,
             forecast_days: int,
@@ -367,15 +392,19 @@ class WeatherHandler(BaseHandler):
             daily: bool
     ):
         """
-           params:
-               location(str):Give your location or city.
-               forecast_days(int):The result of the process of predicting
-               past_days(int):Give the past days.
-               daily(bool):Give the value in True or False.
+        Asynchronously retrieves flood-related weather information for the specified location.
+        This method provides updates on flood risks and weather conditions contributing to potential flooding.
+
+        parameter:
+            location (str): The location for which to retrieve weather data.
+            forecast_days (int): The number of days to include in the weather forecast.
+            past_days (int): The number of past days for which to gather historical weather data.
+            daily (bool): A flag indicating whether to fetch daily weather data.
+
         """
 
 
-        params = get_default_params(location)
+        params = await sync_to_async(get_default_params,location)
         params['models'] = FLOOD_MODELS_STATUS_VARIABLE
         response = {}
         if forecast_days and 0 < forecast_days:
@@ -398,37 +427,7 @@ class WeatherHandler(BaseHandler):
             )
         return response
 
-    async def ahandle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-
-        """
-           params:
-               action(str): Give an action what has given in the Enum.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case ReportType.forecast:
-                return await sync_to_async(self.get_forecast_weather, **kwargs)
-            case ReportType.historical:
-                return await sync_to_async(self.get_historical_weather, **kwargs)
-            case ReportType.climate:
-                return await sync_to_async(self.get_climate_weather, **kwargs)
-            case ReportType.flood:
-                return await sync_to_async(self.get_flood_weather, **kwargs)
-            case ReportType.air_quality:
-                return await sync_to_async(self.get_air_quality_weather, **kwargs)
-            case ReportType.marine:
-                return await sync_to_async(self.get_marine_weather, **kwargs)
-            case _:
-                raise InvalidWeatherAction(f"Invalid report type of weather `{action}`")
-
-    def handle(
+    async def handle(
             self,
             action: str | Enum,
             *args,
@@ -436,17 +435,23 @@ class WeatherHandler(BaseHandler):
     ) -> Any:
 
         """
-           params:
-               action(str): Give an action what has given in the Enum.
+        Asynchronously processes the specified action, which can be a string or an Enum.
+        Additional positional arguments (*args) and keyword arguments (**kwargs) are passed to customize the handling logic.
+
+         parameter:
+            action (str | Enum): The action to be handled, which defines the operation to execute.
+            *args: Additional positional arguments to pass into the action handler.
+            **kwargs: Additional keyword arguments to pass into the action handler.
+
         """
 
         if isinstance(action, str):
             action = action.lower()
         match action:
             case ReportType.forecast:
-                return self.get_forecast_weather(**kwargs)
+                return await self.get_forecast_weather(**kwargs)
             case ReportType.historical:
-                return self.get_historical_weather(**kwargs)
+                return await self.get_historical_weather(**kwargs)
             case ReportType.climate:
                 return self.get_climate_weather(**kwargs)
             case ReportType.flood:
@@ -457,3 +462,14 @@ class WeatherHandler(BaseHandler):
                 return self.get_marine_weather(**kwargs)
             case _:
                 raise InvalidWeatherAction(f"Invalid report type of weather `{action}`")
+
+    def __dir__(self):
+        return (
+            'forecast_weather',
+            'historical_weather',
+            'climate_weather',
+            'flood_weather',
+            'air_quality_weather',
+            'marine_weather'
+        )
+

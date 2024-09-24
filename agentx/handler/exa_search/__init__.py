@@ -13,10 +13,15 @@ class ExaAction(str, Enum):
 
 
 class ExaHandler(BaseHandler):
+    """
+       A handler class for managing interactions with an Exa database.
+       This class extends BaseHandler and provides methods to perform various database operations,
+       such as executing queries, managing tables, and handling data transactions in an Exa environment.
+    """
 
     def __init__(
             self,
-            api_key: str | None = None
+            api_key: str
     ):
 
         self.exa = Exa(api_key=api_key)
@@ -28,11 +33,12 @@ class ExaHandler(BaseHandler):
             **kwargs
     ) -> Any:
         """
-         Asynchronously handles the given action, which can be a string or an Enum, while processing additional keyword arguments.
-         sExecutes the appropriate logic based on the action and provided parameters.
+        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
+        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
 
         parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing the action.
+            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
+                                the action.
             **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
 
         Returns:
@@ -61,9 +67,12 @@ class ExaHandler(BaseHandler):
 
         Parameters:
             query (str): The search query string used to find relevant content.
-            use_autoprompt (bool): If True, the method will leverage autoprompt suggestions to enhance the search results.
-            num_results (int | None, optional): The maximum number of search results to return. Defaults to 10. If set to None, all available results may be returned.
-            search_type (str | None, optional): Specifies the type of search to perform. Defaults to None, in which case a general search is performed.
+            use_autoprompt (bool): If True, the method will leverage autoprompt suggestions to enhance the search
+            results.
+            num_results (int | None, optional): The maximum number of search results to return. Defaults to 10.
+            If set to None, all available results may be returned.
+            search_type (str | None, optional): Specifies the type of search to perform. Defaults to None,
+            in which case a general search is performed.
 
         Returns:
             Any: The search results, which may vary depending on the search type and query.

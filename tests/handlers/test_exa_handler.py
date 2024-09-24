@@ -1,3 +1,5 @@
+import os
+
 from agentx.handler.exa_search import ExaHandler
 from exa_py.api import SearchResponse
 import pytest
@@ -15,7 +17,7 @@ import pytest
 def exasearch_client_init() -> ExaHandler:
 
     # Set the exa api key in environment variable as EXA_API_KEY
-    exa_handler = ExaHandler()
+    exa_handler = ExaHandler(api_key=os.getenv("EXA_API_KEY"))
     return exa_handler
 
 

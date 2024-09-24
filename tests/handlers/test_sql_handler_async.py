@@ -1,41 +1,68 @@
+import pytest
+import logging
+
 from agentx.handler.sql import SQLHandler
+from sqlalchemy.engine.cursor import CursorResult
 
+logger = logging.getLogger(__name__)
 
-sql_handler = SQLHandler(
-    database_type="sqlite",
-    database="/tmp/sample.db"
-)
+'''
+ Run Pytest:  
 
+    1.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_create_table
+    2.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_insert_table
+    3.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_select_table
+    4.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_drop_table
+    
+'''
 
-async def test_create_table():
-    res = await sql_handler.handle(
-        action="CREATE_TABLE",
-        stmt="CREATE TABLE test (x int, y int)"
+@pytest.fixture
+def sql_client_init() -> SQLHandler:
+    sql_handler = SQLHandler(
+        database_type="mysql",
+        database="test",
+        username="root",
+        password="df_12345"
     )
-    print("Create table res => ", res)
+    return sql_handler
 
 
-async def test_insert_table():
-    res = await sql_handler.handle(
-        action="INSERT",
-        stmt="INSERT INTO test (x, y) VALUES (:x, :y)",
-        values=[{'x': 1, 'y': 2}, {'x': 2, 'y': 4}]
-    )
-    print("Insert row res => ", res)
+class TestSql:
 
+        async def test_create_table(self, sql_client_init: SQLHandler):
+            stmt = "CREATE TABLE test9 (x int, y int)"
+            res = await sql_client_init.handle(action="CREATE_TABLE",
+                                         stmt=stmt
+                                         )
+            res_dict = res.context.__dict__
+            logger.info(f"Create Table: {res.context.__dict__}")
+            assert isinstance(res, CursorResult)
+            assert stmt == res_dict.get("statement")
 
-async def test_select_table():
-    res = await sql_handler.handle(
-        action="SELECT",
-        query="SELECT * from test"
-    )
-    print(res)
-    assert len(res) > 0
+        async def test_insert_table(self, sql_client_init: SQLHandler):
+            stmt = "INSERT INTO test9 (x, y) VALUES (:x, :y)"
+            values = [{'x': 1, 'y': 2}, {'x': 2, 'y': 4}]
+            res = await sql_client_init.handle(
+                action="INSERT",
+                stmt=stmt,
+                values=values
+            )
+            res_dict = res.context.__dict__
+            logger.info(f"Insert Table: {res.context.__dict__}")
+            assert isinstance(res, CursorResult)
+            assert len(values) == res_dict.get("_rowcount")
 
+        async def test_select_table(self, sql_client_init: SQLHandler):
+            res = await sql_client_init.handle(
+                action="SELECT",
+                query="SELECT * from test9"
+            )
+            logger.info(f"Query Result: {res}")
+            assert len(res) > 0
 
-async def test_drop_table():
-    res = await sql_handler.handle(
-        action="DROP_TABLE",
-        stmt="DROP TABLE test"
-    )
-    print(res)
+        async def test_drop_table(self, sql_client_init: SQLHandler):
+            res = await sql_client_init.handle(
+                action="DROP_TABLE",
+                stmt="DROP TABLE test9"
+            )
+            res_dict = res.context.__dict__
