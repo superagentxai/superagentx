@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any
+from typing import Any, final
 
 from pydantic import ValidationError
 
@@ -14,13 +14,13 @@ class Memory(MemoryBase):
 
     def __init__(
             self,
-            mem_config: MemoryConfig = MemoryConfig()
+            memory_config: MemoryConfig = MemoryConfig()
     ):
-        self.config = mem_config
-        self.db = SQLiteManager(self.config.db_path)
+        self.memory_config = memory_config
+        self.db = SQLiteManager(self.memory_config.db_path)
 
     @classmethod
-    def from_config(cls, config_dict: Dict[str, Any]):
+    def from_config(cls, config_dict: dict[str, Any]):
         try:
             _config = MemoryConfig(**config_dict)
         except ValidationError as e:
@@ -28,17 +28,21 @@ class Memory(MemoryBase):
             raise
         return cls(_config)
 
+    @final
     async def add(self, *args, **kwargs):
         async with self.db as db:
             return await db.add_history(*args, **kwargs)
 
+    @final
     async def get(self, *args, **kwargs):
         async with self.db as db:
             return await db.get_history(*args, **kwargs)
 
+    @final
     async def update(self, memory_id, data):
         pass
 
+    @final
     async def delete(self, *args, **kwargs):
         async with self.db as db:
             return await db.reset()

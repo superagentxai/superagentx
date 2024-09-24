@@ -1,6 +1,7 @@
 import datetime
 import uuid
 from enum import Enum
+from pathlib import Path
 
 import aiosqlite
 
@@ -15,9 +16,12 @@ class SQLiteManager:
     to an SQLite database, either in memory or from a file.
 
     """
-    def __init__(self, db_path=":memory:"):
+    def __init__(
+            self,
+            db_path: str | Path = ":memory:"
+    ):
         self.db_path = db_path
-        self.connection = None
+        self.connection: aiosqlite.Connection | None = None
         """
         Parameters:
             db_path : str, optional
@@ -26,11 +30,19 @@ class SQLiteManager:
         """
 
     async def __aenter__(self):
-        self.connection = await aiosqlite.connect(self.db_path, check_same_thread=False)
+        self.connection = await aiosqlite.connect(
+            database=self.db_path,
+            check_same_thread=False
+        )
         await self.create_table()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+            self,
+            exc_type,
+            exc_val,
+            exc_tb
+    ):
         await self.connection.close()
 
     async def create_table(self):
@@ -129,9 +141,7 @@ class SQLiteManager:
             """,
                 (user_id,),
         )
-        rows = await cursor.fetchall()
-        if rows:
-            return rows
+        return await cursor.fetchall()
 
     async def reset(self):
         """
@@ -150,8 +160,8 @@ class SQLiteManager:
             event: str,
             role: str | Enum,
             message: str,
-            created_at: datetime = None,
-            updated_at: datetime = None,
+            created_at: datetime.datetime | None = None,
+            updated_at: datetime.datetime | None = None,
             is_deleted: bool = False,
     ):
         """
