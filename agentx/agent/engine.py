@@ -1,11 +1,12 @@
 import inspect
 import typing
 
+from agentx.exceptions import ToolError
 from agentx.handler.base import BaseHandler
 from agentx.handler.exceptions import InvalidHandler
 from agentx.llm import LLMClient, ChatCompletionParams
 from agentx.prompt import PromptTemplate
-from agentx.utils.helper import iter_to_aiter
+from agentx.utils.helper import iter_to_aiter, sync_to_async
 from agentx.utils.parsers.base import BaseParser
 
 
@@ -92,7 +93,29 @@ class Engine:
             messages=prompt_messages,
             tools=tools
         )
-        resp = await self.llm.achat_completion(
+        messages = await self.llm.afunc_chat_completion(
             chat_completion_params=chat_completion_params
         )
+        if not messages:
+            raise ToolError("Tool not found for the inputs!")
 
+        # TODO: If it has multiple messages
+        # async for tool in iter_to_aiter(message):
+        #     pass
+
+        # Assume we will get only one message
+        message = messages[0]
+        for tool in message.tool_calls:
+            if tool.tool_type == 'function':
+                func = getattr(self.handler, tool.name)
+                if func and inspect.isfunction(func):
+                    _kwargs = tool.arguments or {}
+                    if inspect.iscoroutinefunction(func):
+                        res = await func(**_kwargs)
+                    else:
+                        res = await sync_to_async(func, **_kwargs)
+
+                    if not self.output_parser:
+                        return res
+
+                    # TODO: OutputParser.parse
