@@ -1,16 +1,25 @@
 import os
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from agentx.memory.setup import mem_dir
+
+def _db_path():
+    _db_dir = os.environ.get('AGENTX_MEMORY_DIR')
+    if not _db_dir:
+        _db_dir = Path().home()
+    else:
+        _db_dir = Path(_db_dir)
+    return _db_dir / 'history.db'
 
 
 class MemoryConfig(BaseModel):
 
-    db_path: str = Field(
+    db_path: Path = Field(
         description="Path to the database",
-        default=os.path.join(mem_dir, "history.db"),
+        default_factory=_db_path
+        # default=os.path.join(mem_dir, "history.db"),
     )
 
     version: str = Field(
