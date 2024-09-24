@@ -3,9 +3,6 @@ from abc import ABCMeta, abstractmethod
 
 class BaseVectorStore(metaclass=ABCMeta):
 
-    def __init__(self):
-        super().__init__()
-
     @abstractmethod
     async def create(self, *args, **kwargs):
         """Creating a new collection or index"""

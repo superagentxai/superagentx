@@ -1,6 +1,5 @@
 import logging
 import re
-from typing import List
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types import CreateEmbeddingResponse
@@ -41,7 +40,6 @@ class OpenAIClient(Client):
             logger.info(
                 "OpenAI or Azure hosted Open AI client, is not valid!"
             )
-            super().__init__()
 
     def chat_completion(
             self,
@@ -50,10 +48,7 @@ class OpenAIClient(Client):
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
-        response = self.client.chat.completions.create(**params)
-        # cost = OpenAIClient.cost(response=response)
-        # logger.info(f"Usage Cost : {response} {cost}")
-        return response
+        return self.client.chat.completions.create(**params)
 
     async def achat_completion(
             self,
@@ -62,20 +57,18 @@ class OpenAIClient(Client):
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
-        response = await self.client.chat.completions.create(**params)
-        # cost = await sync_to_async(
-        #     OpenAIClient.cost,
-        #     response=response
-        # )
-        # logger.debug(f"Usage Cost : {cost}")
-        return response
+        return await self.client.chat.completions.create(**params)
 
     @staticmethod
     def _get_embeddings(response: CreateEmbeddingResponse):
         if response and len(response.data) > 0:
             return response.data[0].embedding
 
-    def embed(self, text: str, **kwargs) -> List[float]:
+    def embed(
+            self,
+            text: str,
+            **kwargs
+    ) -> list[float]:
         """
         Get the embedding for the given text using OpenAI | AzureOpenAI.
 
@@ -94,7 +87,11 @@ class OpenAIClient(Client):
             )
         return self._get_embeddings(response)
 
-    async def aembed(self, text: str, **kwargs) -> List[float]:
+    async def aembed(
+            self,
+            text: str,
+            **kwargs
+    ) -> list[float]:
         """
         Get the embedding for the given text using AsyncOpenAI | AsyncAzureOpenAI.
 
@@ -110,7 +107,7 @@ class OpenAIClient(Client):
             input=[text],
             model=model,
         )
-        return await sync_to_async(self._get_embeddings, response)
+        return await sync_to_async(self._get_embeddings, response=response)
 
     @staticmethod
     def is_valid_api_key(api_key: str) -> bool:

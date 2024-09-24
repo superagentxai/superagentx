@@ -57,8 +57,6 @@ class Opensearch(BaseVectorStore):
             **kwargs
         )
 
-        super().__init__()
-
     async def create(
             self,
             index_name: str,
@@ -79,11 +77,10 @@ class Opensearch(BaseVectorStore):
 
         """
 
-        response = await self.client.indices.create(
+        return await self.client.indices.create(
             index=index_name,
             body=index_body
         )
-        return response
 
     async def insert(
             self,
@@ -105,12 +102,11 @@ class Opensearch(BaseVectorStore):
               Returns:
                    dict: A response from the OpenSearch server containing the result of the insertion.
         """
-        response = await self.client.index(
+        return await self.client.index(
             index=index_name,
             body=document,
             **kwargs
         )
-        return response
 
     async def search(
             self,
@@ -129,11 +125,10 @@ class Opensearch(BaseVectorStore):
                 list: A list of results matching the search query from the specified index.
         """
 
-        response = await self.client.search(
+        return await self.client.search(
             body=query,
             index=index_name
         )
-        return response
 
     async def exists(
             self,
@@ -149,15 +144,14 @@ class Opensearch(BaseVectorStore):
                 bool: True if the index exists, False otherwise.
 
         """
-        response = await self.client.exists(
+        return await self.client.exists(
             index=index_name
         )
-        return response
 
     async def update(
             self,
             index_name: str,
-            id: int,
+            vector_id: str,
             body: dict,
             **kwargs
     ):
@@ -166,7 +160,7 @@ class Opensearch(BaseVectorStore):
 
             Parameters:
                 index_name (str): The name of the index where the document is stored.
-                id (int): The unique identifier of the document to be updated.
+                vector_id (str): The unique identifier of the document to be updated.
                 body (dict): The body string specifying the update operation to be applied.
                 **kwargs: Additional optional parameters for the update operation.
 
@@ -176,7 +170,7 @@ class Opensearch(BaseVectorStore):
         """
         response = self.client.update(
             index=index_name,
-            id=id,
+            id=vector_id,
             body=body,
             **kwargs
         )
@@ -196,7 +190,6 @@ class Opensearch(BaseVectorStore):
                 bool: True if the collection was successfully deleted, False otherwise.
         """
 
-        response = await self.client.indices.delete(
+        return await self.client.indices.delete(
             index=index_name
         )
-        return response
