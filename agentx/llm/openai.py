@@ -32,6 +32,7 @@ class OpenAIClient(Client):
     ):
 
         self.client = client
+        self._model = getattr(self.client, 'model')
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)
@@ -47,7 +48,7 @@ class OpenAIClient(Client):
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
-        params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
+        params['model'] = self._model  # Get model name from client object attribute and set
         return self.client.chat.completions.create(**params)
 
     async def achat_completion(
@@ -56,7 +57,7 @@ class OpenAIClient(Client):
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
-        params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
+        params['model'] = self._model  # Get model name from client object attribute and set
         return await self.client.chat.completions.create(**params)
 
     @staticmethod
@@ -79,10 +80,9 @@ class OpenAIClient(Client):
             list: The embedding vector.
         """
         text = text.replace("\n", " ")
-        model = getattr(self.client, 'model')
         response = self.client.embeddings.create(
                 input=[text],
-                model=model,
+                model=self._model,
                 **kwargs
             )
         return self._get_embeddings(response)
@@ -102,10 +102,9 @@ class OpenAIClient(Client):
             list: The embedding vector.
         """
         text = text.replace("\n", " ")
-        model = getattr(self.client, 'model')
         response = await self.client.embeddings.create(
             input=[text],
-            model=model,
+            model=self._model,
         )
         return await sync_to_async(
             self._get_embeddings,
