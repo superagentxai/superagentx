@@ -40,7 +40,7 @@ class Opensearch(BaseVectorStore):
         """
 
         self.embed_cli = embed_cli
-        if self.embed_cli is None:
+        if not self.embed_cli:
             embed_config = {
                 "model": DEFAULT_EMBED_MODEL,
                 "embed_type": DEFAULT_EMBED_TYPE
