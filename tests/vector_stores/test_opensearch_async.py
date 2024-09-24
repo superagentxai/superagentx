@@ -1,6 +1,8 @@
 import pytest
 import logging
 
+from elastic_transport import ApiResponse
+
 from agentx.vector_stores import VectorStore
 
 logger = logging.getLogger(__name__)
@@ -45,10 +47,11 @@ class TestOpensearch:
             }
         )
         logger.info(f"Result: {res}")
+        assert isinstance(res, ApiResponse)
 
     async def test_insert(self, opensearch_client_init: VectorStore):
         res = await opensearch_client_init.insert(
-            index_name="python-test6",
+            index_name="python-test",
             document={
                 'title': 'Moneyball',
                 'director': 'Bennett Miller',
@@ -76,7 +79,7 @@ class TestOpensearch:
 
     async def test_update(self, opensearch_client_init: VectorStore):
         res = await opensearch_client_init.update(
-            index_name="python-test6",
+            index_name="python-test",
             id="1",
             query="miller"
         )
@@ -84,12 +87,12 @@ class TestOpensearch:
 
     async def test_exists(self, opensearch_client_init: VectorStore):
         res = await opensearch_client_init.exists(
-            index=""
+            index="python-test"
         )
         print(res)
 
     async def test_delete_collection(self, opensearch_client_init: VectorStore):
-        res = await opensearch_client_init.delete_collection(
-            index_name=""
+        res = await opensearch_client_init.delete(
+            index_name="python-test"
         )
         print(res)

@@ -1,5 +1,5 @@
 import logging
-from enum import Enum
+from enum import StrEnum
 
 from agentx.vector_stores.neo4j import Neo4jVector
 from agentx.vector_stores.chroma import ChromaDB
@@ -10,16 +10,12 @@ from agentx.vector_stores.opensearch import Opensearch
 logger = logging.getLogger(__name__)
 
 
-class VectorDatabaseType(str, Enum):
+class VectorDatabaseType(StrEnum):
     CHROMA = "chroma"
     NEO4J = "neo4j"
     ELASTICSEARCH = "elasticsearch"
     OPENSEARCH = "opensearch"
     QDRANT = "qdrant"
-
-    @staticmethod
-    def list():
-        return list(map(lambda c: c.value, VectorDatabaseType))
 
 
 class VectorStore:
@@ -66,10 +62,11 @@ class VectorStore:
             case VectorDatabaseType.OPENSEARCH:
                 self.cli = Opensearch(**_params)
             case _:
-                vector_enum_list = VectorDatabaseType.list()
                 _msg = (
                     f'Invalid Vector data type - '
-                    f'{self.vector_type}. It should be one of the following {", ".join(vector_enum_list)}'
+                    f'{self.vector_type}. It should be one of the following {", ".join(
+                        list(map(lambda c: c.value, VectorDatabaseType))
+                    )}'
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
@@ -124,7 +121,7 @@ class VectorStore:
             **kwargs
         )
 
-    async def delete_collection(
+    async def delete(
             self,
             *args,
             **kwargs
