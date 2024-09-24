@@ -41,36 +41,6 @@ class ElasticsearchHandler(BaseHandler):
             ca_certs=ca_certs
         )
 
-    async def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-
-        """
-        Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
-        keyword arguments. This method executes the corresponding logic based on the provided action and parameters.
-
-        parameters:
-            action (str | Enum): The action to be performed. This can either be a string or an Enum value representing
-            the action.
-            **kwargs: Additional keyword arguments that may be passed to customize the behavior of the handler.
-
-        Returns:
-            Any: The result of handling the action. The return type may vary depending on the specific action handled.
-        """
-
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case ElasticsearchAction.SEARCH:
-                return await self.search(**kwargs)
-            case ElasticsearchAction.CREATE:
-                return await self.create(**kwargs)
-            case _:
-                raise InvalidElasticsearchAction(f"Invalid Elasticsearch Action '{action}'")
-
     async def search(
             self,
             index_name: str,
