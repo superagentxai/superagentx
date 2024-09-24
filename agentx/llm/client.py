@@ -3,9 +3,6 @@ from abc import ABCMeta, abstractmethod
 
 class Client(metaclass=ABCMeta):
 
-    def __init__(self):
-        super().__init__()
-
     @abstractmethod
     def chat_completion(
             self,
@@ -23,7 +20,11 @@ class Client(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def embed(self, text, **kwargs):
+    def embed(
+            self,
+            text: str,
+            **kwargs
+    ):
         """
         Get the embedding for the given text using Client.
 
@@ -36,7 +37,11 @@ class Client(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def aembed(self, text, **kwargs):
+    async def aembed(
+            self,
+            text: str,
+            **kwargs
+    ):
         """
         Get the embedding for the given text using Client.
 

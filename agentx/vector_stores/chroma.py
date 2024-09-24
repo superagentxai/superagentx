@@ -27,25 +27,23 @@ class ChromaDB(BaseVectorStore):
             self,
             *,
             collection_name: str,
-            host: Optional[str] = None,
-            port: Optional[int] = None,
-            path: Optional[str] = None,
-            embed_cli: Client = None,
-            **kwargs
+            host: str | None = None,
+            port: int | None = None,
+            path: str | None = None,
+            embed_cli: Client | None = None
     ):
         """
         Initialize the Chromadb vector store.
 
         Args:
             collection_name (str): Name of the collection.
-            client (chromadb.Client, optional): Existing chromadb client instance. Defaults to None.
             host (str, optional): Host address for chromadb server. Defaults to None.
             port (int, optional): Port for chromadb server. Defaults to None.
             path (str, optional): Path for local chromadb database. Defaults to None.
             embed_cli (dict): Agentx openai-client/huggingface client configuration. Defaults to None.
         """
         self.embed_cli = embed_cli
-        if self.embed_cli is None:
+        if self.embed_cli:
             embed_config = {
                 "model": DEFAULT_EMBED_MODEL,
                 "embed_type": DEFAULT_EMBED_TYPE
@@ -69,22 +67,27 @@ class ChromaDB(BaseVectorStore):
 
         self.collection_name = collection_name
 
-        super().__init__()
-
-    async def _get_or_create_collection(self, name: str, **kwargs):
+    async def _get_or_create_collection(
+            self,
+            name: str,
+            **kwargs
+    ):
         # Skip creating collection if already exists
         collections = await self.list_cols()
         async for collection in iter_to_aiter(collections):
             if collection.name == name:
                 logger.debug(f"Collection {name} already exists. Skipping creation.")
-        collection = await sync_to_async(
+        return await sync_to_async(
             self.client.get_or_create_collection,
             name=name,
             **kwargs
         )
-        return collection
 
-    async def create(self, name: str, **kwargs) -> Collection:
+    async def create(
+            self,
+            name: str,
+            **kwargs
+    ) -> Collection:
         """
         Create a new collection.
 
@@ -102,9 +105,9 @@ class ChromaDB(BaseVectorStore):
 
     async def insert(
             self,
-            texts: List[str],
-            payloads: Optional[List[Dict]] = None,
-            ids: Optional[List[str]] = None
+            texts: list[str],
+            payloads: list[dict] | None = None,
+            ids: list[str] | None = None
     ):
         """
         Insert vectors into a collection.
@@ -129,8 +132,8 @@ class ChromaDB(BaseVectorStore):
             self,
             query: str,
             limit: int = 5,
-            filters: Optional[Dict] = None
-    ) -> List[Documents]:
+            filters: dict | None = None
+    ) -> list[Documents]:
         """
         Search for similar vectors.
 
@@ -150,14 +153,13 @@ class ChromaDB(BaseVectorStore):
             where=filters,
             n_results=limit
         )
-        final_results = await self._parse_output(results)
-        return final_results
+        return await self._parse_output(results)
 
     async def update(
             self,
             vector_id: str,
-            vector: Optional[List[float]] = None,
-            payload: Optional[Dict] = None
+            vector: list[float] | None = None,
+            payload: dict | None = None
     ):
         """
         Update a vector and its payload.
@@ -182,7 +184,7 @@ class ChromaDB(BaseVectorStore):
                 self.collection_name
             )
             return True
-        except:
+        except Exception as ex:
             return False
 
     async def list_cols(self) -> Sequence[chromadb.Collection]:
@@ -198,10 +200,13 @@ class ChromaDB(BaseVectorStore):
         """
         Delete a collection.
         """
-        await sync_to_async(self.client.delete_collection, name=self.collection_name)
+        await sync_to_async(
+            self.client.delete_collection,
+            name=self.collection_name
+        )
 
     @staticmethod
-    async def _parse_output(data: Dict) -> List[Documents]:
+    async def _parse_output(data: dict) -> list[Documents]:
         """
         Parse the output data.
 
@@ -216,7 +221,7 @@ class ChromaDB(BaseVectorStore):
 
         async for key in iter_to_aiter(keys):
             value = data.get(key, [])
-            if isinstance(value, list) and value and isinstance(value[0], list):
+            if value and  isinstance(value, list) and isinstance(value[0], list):
                 value = value[0]
             values.append(value)
 
