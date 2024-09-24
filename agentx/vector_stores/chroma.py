@@ -68,11 +68,23 @@ class ChromaDB(BaseVectorStore):
         self.client = chromadb.Client(self.settings)
 
         self.collection_name = collection_name
-        self.collection = self.create_collection(collection_name)
 
         super().__init__()
 
-    def create_collection(self, name: str, **kwargs) -> Collection:
+    async def _get_or_create_collection(self, name: str, **kwargs):
+        # Skip creating collection if already exists
+        collections = await self.list_cols()
+        async for collection in iter_to_aiter(collections):
+            if collection.name == name:
+                logger.debug(f"Collection {name} already exists. Skipping creation.")
+        collection = await sync_to_async(
+            self.client.get_or_create_collection,
+            name=name,
+            **kwargs
+        )
+        return collection
+
+    async def create(self, name: str, **kwargs) -> Collection:
         """
         Create a new collection.
 
@@ -83,17 +95,12 @@ class ChromaDB(BaseVectorStore):
             chromadb.Collection: The created or retrieved collection.
         """
         # Skip creating collection if already exists
-        collections = self.list_cols()
-        for collection in collections:
-            if collection.name == name:
-                logger.debug(f"Collection {name} already exists. Skipping creation.")
-        collection = self.client.get_or_create_collection(
+        return await self._get_or_create_collection(
             name=name,
             **kwargs
         )
-        return collection
 
-    def insert(
+    async def insert(
             self,
             texts: List[str],
             payloads: Optional[List[Dict]] = None,
@@ -107,15 +114,18 @@ class ChromaDB(BaseVectorStore):
             payloads (Optional[List[Dict]], optional): List of payloads corresponding to vectors. Defaults to None.
             ids (Optional[List[str]], optional): List of IDs corresponding to vectors. Defaults to None.
         """
-        vectors = [self.embed_cli.embed(text=text) for text in texts]
+
+        vectors = [self.embed_cli.aembed(text=text) async for text in iter_to_aiter(texts)]
         logger.info(f"Inserting {len(vectors)} vectors into collection {self.collection_name}")
-        self.collection.add(
+        collection = await self._get_or_create_collection(name=self.collection_name)
+        await sync_to_async(
+            collection.add,
             ids=ids,
             embeddings=vectors,
             metadatas=payloads
         )
 
-    def search(
+    async def search(
             self,
             query: str,
             limit: int = 5,
@@ -132,14 +142,18 @@ class ChromaDB(BaseVectorStore):
         Returns:
             List[OutputData]: Search results.
         """
-        query_vector = self.embed_cli.embed(text=query)
-        results = self.collection.query(
-            query_embeddings=query_vector, where=filters, n_results=limit
+        query_vector = await self.embed_cli.aembed(text=query)
+        collection = await self._get_or_create_collection(name=self.collection_name)
+        results = await sync_to_async(
+            collection.query,
+            query_embeddings=query_vector,
+            where=filters,
+            n_results=limit
         )
-        final_results = self._parse_output(results)
+        final_results = await self._parse_output(results)
         return final_results
 
-    def update(
+    async def update(
             self,
             vector_id: str,
             vector: Optional[List[float]] = None,
@@ -153,128 +167,41 @@ class ChromaDB(BaseVectorStore):
             vector (Optional[List[float]], optional): Updated vector. Defaults to None.
             payload (Optional[Dict], optional): Updated payload. Defaults to None.
         """
-        self.collection.update(
+        collection = await self._get_or_create_collection(name=self.collection_name)
+        await sync_to_async(
+            collection.update,
             ids=vector_id,
             embeddings=vector,
             metadatas=payload
         )
 
-    def exists(self):
+    async def exists(self):
         try:
-            coll = self.client.get_collection(self.collection_name)
+            await sync_to_async(
+                self.client.get_collection,
+                self.collection_name
+            )
             return True
         except:
             return False
 
-    def list_cols(self) -> Sequence[chromadb.Collection]:
+    async def list_cols(self) -> Sequence[chromadb.Collection]:
         """
         List all collections.
 
         Returns:
             List[chromadb.Collection]: List of collections.
         """
-        return self.client.list_collections()
+        return await sync_to_async(self.client.list_collections)
 
-    def delete_collection(self):
+    async def delete_collection(self):
         """
         Delete a collection.
         """
-        self.client.delete_collection(name=self.collection_name)
-
-    async def acreate_collection(self, name: str, **kwargs):
-        """
-        Create a new collection.
-
-        Args:
-            name (str): Name of the collection.
-
-        Returns:
-            chromadb.Collection: The created or retrieved collection.
-        """
-        return await sync_to_async(
-            self.create_collection,
-            name,
-            **kwargs
-        )
-
-    async def ainsert(
-            self,
-            texts: List[str],
-            payloads: Optional[List[Dict]] = None,
-            ids: Optional[List[str]] = None
-    ):
-        """
-        Insert vectors into a collection.
-
-        Args:
-            texts (List[str]): List of text to insert.
-            payloads (Optional[List[Dict]], optional): List of payloads corresponding to vectors. Defaults to None.
-            ids (Optional[List[str]], optional): List of IDs corresponding to vectors. Defaults to None.
-        """
-        await sync_to_async(
-            self.insert,
-            texts=texts,
-            payloads=payloads,
-            ids=ids
-        )
-
-    async def asearch(
-            self,
-            query: str,
-            limit: int = 5,
-            filters: Optional[Dict] = None
-    ) -> List[Documents]:
-        """
-        Search for similar vectors.
-
-        Args:
-            query (str): The query to embed.
-            limit (int, optional): Number of results to return. Defaults to 5.
-            filters (Optional[Dict], optional): Filters to apply to the search. Defaults to None.
-
-        Returns:
-            List[OutputData]: Search results.
-        """
-
-        return await sync_to_async(
-            self.search,
-            query=query,
-            limit=limit,
-            filters=filters
-        )
-
-    async def aupdate(
-            self,
-            vector_id: str,
-            vector: Optional[List[float]] = None,
-            payload: Optional[Dict] = None
-    ):
-        """
-        Update a vector and its payload.
-
-        Args:
-            vector_id (str): ID of the vector to update.
-            vector (Optional[List[float]], optional): Updated vector. Defaults to None.
-            payload (Optional[Dict], optional): Updated payload. Defaults to None.
-        """
-        await sync_to_async(
-            self.collection.update,
-            ids=vector_id,
-            embeddings=vector,
-            metadatas=payload
-        )
-
-    async def aexists(self):
-        return await sync_to_async(self.exists, self.collection_name)
-
-    async def adelete_collection(self, *args, **kwargs):
-        """
-        Delete a collection.
-        """
-        await sync_to_async(self.delete_collection)
+        await sync_to_async(self.client.delete_collection, name=self.collection_name)
 
     @staticmethod
-    def _parse_output(data: Dict) -> List[Documents]:
+    async def _parse_output(data: Dict) -> List[Documents]:
         """
         Parse the output data.
 
@@ -282,12 +209,12 @@ class ChromaDB(BaseVectorStore):
             data (Dict): Output data.
 
         Returns:
-            List[OutputData]: Parsed output data.
+            List[Documents]: Parsed output data.
         """
         keys = ["ids", "distances", "metadatas"]
         values = []
 
-        for key in keys:
+        async for key in iter_to_aiter(keys):
             value = data.get(key, [])
             if isinstance(value, list) and value and isinstance(value[0], list):
                 value = value[0]
@@ -295,11 +222,11 @@ class ChromaDB(BaseVectorStore):
 
         ids, distances, metadatas = values
         max_length = max(
-            len(v) for v in values if isinstance(v, list) and v is not None
+            len(v) async for v in iter_to_aiter(values) if isinstance(v, list) and v is not None
         )
 
         result = []
-        for i in range(max_length):
+        async for i in iter_to_aiter(range(max_length)):
             entry = Documents(
                 id=ids[i] if isinstance(ids, list) and ids and i < len(ids) else None,
                 score=(

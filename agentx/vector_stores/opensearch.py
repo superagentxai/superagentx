@@ -1,11 +1,13 @@
-from opensearchpy import OpenSearch, AsyncOpenSearch
+from typing import Any
+
+from opensearchpy import AsyncOpenSearch
 
 from agentx.llm import LLMClient
 from agentx.vector_stores import DEFAULT_EMBED_MODEL, DEFAULT_EMBED_TYPE
 from agentx.vector_stores.base import BaseVectorStore
 
-class Opensearch(BaseVectorStore):
 
+class Opensearch(BaseVectorStore):
     """
         A class for interacting with an OpenSearch instance as a vector store.
 
@@ -45,16 +47,11 @@ class Opensearch(BaseVectorStore):
             }
             self.embed_cli = LLMClient(llm_config=embed_config)
 
-        self.client = OpenSearch(
+        auth = (username, password)
+
+        self.client = AsyncOpenSearch(
             hosts=[{'host': host, 'port': port}],
-            http_auth=(username, password),
-            use_ssl=True,
-            verify_certs=False,
-            **kwargs
-        )
-        self.aclient = AsyncOpenSearch(
-            hosts=[{'host': host, 'port': port}],
-            http_auth=(username, password),
+            http_auth=auth,
             use_ssl=True,
             verify_certs=False,
             **kwargs
@@ -62,159 +59,7 @@ class Opensearch(BaseVectorStore):
 
         super().__init__()
 
-    def create_collection(
-            self,
-            index_name: str,
-            index_body: list[dict]
-    ):
-        """
-            Creates a new collection (index) in the OpenSearch database.
-
-            This method initializes a collection with the specified name and body configuration,
-            allowing for structured data storage and retrieval.
-
-            Args
-                index_name (str): The name of the index to be created. Must be unique within the OpenSearch instance.
-                index_body (list[dict]): A list of dictionaries defining the index's mapping and settings.
-
-            Returns:
-                bool: True if the collection was successfully created, False otherwise.
-
-        """
-
-        response = self.client.indices.create(
-            index=index_name,
-            body=index_body
-        )
-        return response
-
-
-    def insert(
-            self,
-            index_name: str,
-            document: dict,
-            **kwargs
-    ):
-        """
-           Inserts a document into the specified index in the OpenSearch database.
-
-           This method adds a new document or updates an existing document in the specified index,
-           allowing for efficient data storage and retrieval.
-
-           Parameters:
-               index_name (str): The name of the index where the document will be inserted.
-               document (dict): The document to be inserted, represented as a dictionary.
-               **kwargs: Additional optional parameters for insertion, such as document ID or refresh options.
-
-           Returns:
-                dict: A response from the OpenSearch server containing the result of the insertion.
-        """
-
-        response = self.client.index(
-            index=index_name,
-            body=document,
-            **kwargs
-        )
-        return response
-
-
-    def search(
-            self,
-            query: str,
-            index_name: str
-    ):
-        """
-            Searches for a specified query in the given index.
-
-             Parameters:
-                query (str): The search term or phrase to look for.
-                index_name (str): The name of the index where the search will be performed.
-
-            Returns:
-                list: A list of results matching the search query from the specified index.
-        """
-
-        query = {
-            'size': 5,
-            'query': {
-                'multi_match': {
-                    'query': query,
-                    'fields': ['title^2', 'director']
-                }
-            }
-        }
-        response = self.client.search(
-            body=query,
-            index=index_name
-        )
-        return response
-
-    def update(
-            self,
-            index_name: str,
-            id: int,
-            body: dict,
-           **kwargs
-    ):
-        """
-            Updates a document in the specified index with the given ID based on the query provided.
-
-            Parameters:
-                index_name (str): The name of the index where the document is stored.
-                id (int): The unique identifier of the document to be updated.
-                body (dict): The body string specifying the update operation to be applied.
-                **kwargs: Additional optional parameters for the update operation.
-
-            Returns:
-                None
-
-        """
-        response = self.client.update(
-            index=index_name,
-            id=id,
-            body=body,
-            **kwargs
-        )
-        return response
-
-    def exists(
-            self,
-            index: str
-    ):
-        """
-            Checks if the specified index exists.
-
-            Parameters:
-                index (str): The name of the index to check for existence.
-
-            Returns:
-                bool: True if the index exists, False otherwise.
-
-        """
-        response = self.client.indices.exists(
-            index=index
-        )
-        return response
-
-    def delete_collection(
-            self,
-            index_name: str
-    ):
-        """
-            Deletes the entire collection (index) specified by the index name.
-
-            Parameters:
-                index_name (str): The name of the index (collection) to be deleted.
-
-            Returns:
-                bool: True if the collection was successfully deleted, False otherwise.
-        """
-        response = self.client.indices.delete(
-            index = index_name
-        )
-        return response
-
-    async def acreate_collection(
+    async def create(
             self,
             index_name: str,
             index_body: list[dict]
@@ -234,13 +79,13 @@ class Opensearch(BaseVectorStore):
 
         """
 
-        response = await self.aclient.indices.create(
+        response = await self.client.indices.create(
             index=index_name,
             body=index_body
         )
         return response
 
-    async def ainsert(
+    async def insert(
             self,
             index_name: str,
             document: dict,
@@ -260,44 +105,37 @@ class Opensearch(BaseVectorStore):
               Returns:
                    dict: A response from the OpenSearch server containing the result of the insertion.
         """
-        response =  await self.aclient.index(
+        response = await self.client.index(
             index=index_name,
             body=document,
             **kwargs
         )
         return response
 
-    async def asearch(
+    async def search(
             self,
-            query: str,
-            index_name: str
+            query: Any,
+            index_name: str,
+            **kwargs
     ):
         """
             Searches for a specified query in the given index.
 
              Parameters:
-                query (str): The search term or phrase to look for.
+                query (Any): The search definition using the Query DSL
                 index_name (str): The name of the index where the search will be performed.
 
             Returns:
                 list: A list of results matching the search query from the specified index.
         """
-        query = {
-            'size': 5,
-            'query': {
-                'multi_match': {
-                    'query': query,
-                    'fields': ['title^2', 'director']
-                }
-            }
-        }
-        response = await self.aclient.search(
+
+        response = await self.client.search(
             body=query,
             index=index_name
         )
         return response
 
-    async def aexists(
+    async def exists(
             self,
             index_name: str
     ):
@@ -311,12 +149,12 @@ class Opensearch(BaseVectorStore):
                 bool: True if the index exists, False otherwise.
 
         """
-        response = await self.aclient.exists(
+        response = await self.client.exists(
             index=index_name
         )
         return response
 
-    async def aupdate(
+    async def update(
             self,
             index_name: str,
             id: int,
@@ -344,7 +182,7 @@ class Opensearch(BaseVectorStore):
         )
         return response
 
-    async def adelete_collection(
+    async def delete_collection(
             self,
             index_name: str
     ):
@@ -358,7 +196,7 @@ class Opensearch(BaseVectorStore):
                 bool: True if the collection was successfully deleted, False otherwise.
         """
 
-        response = await self.aclient.indices.delete(
+        response = await self.client.indices.delete(
             index=index_name
         )
         return response

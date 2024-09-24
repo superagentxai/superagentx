@@ -1,6 +1,8 @@
 import pytest
 import logging
 
+from elastic_transport import ApiResponse
+
 from agentx.vector_stores import VectorStore
 
 logger = logging.getLogger(__name__)
@@ -17,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 '''
 
+
 @pytest.fixture
 def opensearch_client_init() -> VectorStore:
     opensearch = {
@@ -29,25 +32,27 @@ def opensearch_client_init() -> VectorStore:
     search: VectorStore = VectorStore(**opensearch)
     return search
 
+
 class TestOpensearch:
 
     async def test_create_collection(self, opensearch_client_init: VectorStore):
-        res = await opensearch_client_init.acreate(
+        res = await opensearch_client_init.create(
             index_name="python-test6",
             index_body={
-              'settings': {
-                'index': {
-                  'number_of_shards': 4
+                'settings': {
+                    'index': {
+                        'number_of_shards': 4
+                    }
                 }
-              }
             }
         )
         logger.info(f"Result: {res}")
+        assert isinstance(res, ApiResponse)
 
     async def test_insert(self, opensearch_client_init: VectorStore):
-        res = await opensearch_client_init.ainsert(
-            index_name="python-test6",
-            document= {
+        res = await opensearch_client_init.insert(
+            index_name="python-test",
+            document={
                 'title': 'Moneyball',
                 'director': 'Bennett Miller',
                 'year': '2011'
@@ -57,28 +62,37 @@ class TestOpensearch:
 
     async def test_search(self, opensearch_client_init: VectorStore):
         q = 'miller'
-        res =await opensearch_client_init.asearch(
-            query=q,
-            index_name= "python-test6"
+        query = {
+            'size': 5,
+            'query': {
+                'multi_match': {
+                    'query': q,
+                    'fields': ['title^2', 'director']
+                }
+            }
+        }
+        res = await opensearch_client_init.search(
+            query=query,
+            index_name="python-test6"
         )
         print(res)
 
     async def test_update(self, opensearch_client_init: VectorStore):
-        res = await opensearch_client_init.aupdate(
-            index_name= "python-test6",
-            id= "1",
+        res = await opensearch_client_init.update(
+            index_name="python-test",
+            id="1",
             query="miller"
         )
         print(res)
 
     async def test_exists(self, opensearch_client_init: VectorStore):
-        res = await opensearch_client_init.aexists(
-            index=""
+        res = await opensearch_client_init.exists(
+            index="python-test"
         )
         print(res)
 
     async def test_delete_collection(self, opensearch_client_init: VectorStore):
-        res = await opensearch_client_init.adelete_collection(
-            index_name=""
+        res = await opensearch_client_init.delete(
+            index_name="python-test"
         )
         print(res)

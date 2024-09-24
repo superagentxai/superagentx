@@ -1,5 +1,5 @@
 import logging
-from enum import Enum
+from enum import StrEnum
 
 from agentx.vector_stores.neo4j import Neo4jVector
 from agentx.vector_stores.chroma import ChromaDB
@@ -10,16 +10,12 @@ from agentx.vector_stores.opensearch import Opensearch
 logger = logging.getLogger(__name__)
 
 
-class VectorDatabaseType(str, Enum):
+class VectorDatabaseType(StrEnum):
     CHROMA = "chroma"
     NEO4J = "neo4j"
     ELASTICSEARCH = "elasticsearch"
     OPENSEARCH = "opensearch"
     QDRANT = "qdrant"
-
-    @staticmethod
-    def list():
-        return list(map(lambda c: c.value, VectorDatabaseType))
 
 
 class VectorStore:
@@ -61,101 +57,76 @@ class VectorStore:
         _params = self.__dict__
 
         match self.vector_type:
-            case VectorDatabaseType.NEO4J:
-                self.cli = Neo4jVector(**_params)
             case VectorDatabaseType.CHROMA:
                 self.cli = ChromaDB(**_params)
             case VectorDatabaseType.OPENSEARCH:
                 self.cli = Opensearch(**_params)
             case _:
-                vector_enum_list = VectorDatabaseType.list()
                 _msg = (
                     f'Invalid Vector data type - '
-                    f'{self.vector_type}. It should be one of the following {", ".join(vector_enum_list)}'
+                    f'{self.vector_type}. It should be one of the following {", ".join(
+                        list(map(lambda c: c.value, VectorDatabaseType))
+                    )}'
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
 
-    def create(
+    async def create(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.create_collection(*args, **kwargs)
+        return await self.cli.create(
+            *args,
+            **kwargs
+        )
 
-    def search(
+    async def search(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.search(*args, **kwargs)
+        return await self.cli.search(
+            *args,
+            **kwargs
+        )
 
-    def insert(
+    async def insert(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.insert(*args, **kwargs)
+        return await self.cli.insert(
+            *args,
+            **kwargs
+        )
 
-    def update(
+    async def update(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.update(*args, **kwargs)
+        return await self.cli.update(
+            *args,
+            **kwargs
+        )
 
-    def exists(
+    async def exists(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.exists(*args, **kwargs)
+        return await self.cli.exists(
+            *args,
+            **kwargs
+        )
 
-    def delete_collection(
+    async def delete(
             self,
             *args,
             **kwargs
     ):
-        return self.cli.delete_collection(*args, **kwargs)
-
-    async def acreate(
-            self,
+        return await self.cli.delete_collection(
             *args,
             **kwargs
-    ):
-        return await self.cli.acreate_collection(*args, **kwargs)
-
-    async def asearch(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.asearch(*args, **kwargs)
-
-    async def ainsert(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.ainsert(*args, **kwargs)
-
-    async def aupdate(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.aupdate(*args, **kwargs)
-
-    async def aexists(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.aexists(*args,**kwargs)
-
-    async def adelete_collection(
-            self,
-            *args,
-            **kwargs
-    ):
-        return await self.cli.adelete_collection(*args,**kwargs)
+        )
