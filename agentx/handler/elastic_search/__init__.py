@@ -1,10 +1,11 @@
 import elasticsearch
 import logging
 
-from enum import Enum
-from typing import Any
+from enum import Enum, StrEnum
+from typing import Any, Union, Mapping, Sequence
 
-from elasticsearch import  AsyncElasticsearch
+from elastic_transport import NodeConfig
+from elasticsearch import AsyncElasticsearch
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.elastic_search.exceptions import InvalidElasticsearchAction
@@ -12,7 +13,7 @@ from agentx.handler.elastic_search.exceptions import InvalidElasticsearchAction
 logger = logging.getLogger(__name__)
 
 
-class ElasticsearchAction(str, Enum):
+class ElasticsearchAction(StrEnum):
     SEARCH = "search"
     CREATE = "create"
 
@@ -26,21 +27,20 @@ class ElasticsearchHandler(BaseHandler):
 
     def __init__(
             self,
-            address: str | None = None,
+            hosts: str | Sequence[Union[str, Mapping[str, Union[str, int]], NodeConfig]] = None,
             cloud_id: str | None = None,
             api_key: str | None = None,
             username: str | None = None,
             password: str | None = None,
-            cacert: str | None = None
+            ca_certs: str | None = None
     ):
         self._conn = AsyncElasticsearch(
-            hosts=address,
-            cloud_id=cloud_id or None,
-            api_key=api_key or None,
+            hosts=hosts,
+            cloud_id=cloud_id,
+            api_key=api_key,
             basic_auth=(username, password),
-            ca_certs=cacert or None
+            ca_certs=ca_certs
         )
-
 
     async def handle(
             self,
@@ -48,7 +48,6 @@ class ElasticsearchHandler(BaseHandler):
             action: str | Enum,
             **kwargs
     ) -> Any:
-
 
         """
         Asynchronously processes the specified action, which can be a string or an Enum, along with any additional
@@ -72,7 +71,6 @@ class ElasticsearchHandler(BaseHandler):
                 return await self.create(**kwargs)
             case _:
                 raise InvalidElasticsearchAction(f"Invalid Elasticsearch Action '{action}'")
-
 
     async def search(
             self,
@@ -102,13 +100,11 @@ class ElasticsearchHandler(BaseHandler):
         )
         return result
 
-
-
     async def create(
             self,
             index_name: str,
             document: dict,
-            id: str
+            document_id: str
     ):
         """
         Asynchronously creates a new document in the specified index.This method adds a document to the given
@@ -118,24 +114,23 @@ class ElasticsearchHandler(BaseHandler):
         parameter:
             index_name(str):The name of the index where the document should be created.
             document(dict):A dictionary representing the document to be indexed, containing the data to be stored.
-            id(str):The unique identifier for the document. This ID is used to reference the document in future operations.
+            document_id(str):The unique identifier for the document. This ID is used to reference the document in future operations.
 
         """
         try:
             return await self._conn.create(
                 index=index_name,
                 document=document,
-                id=id
+                id=document_id
             )
         except elasticsearch.BadRequestError as ex:
             logger.error('Elasticsearch error!', exc_info=ex)
-            return {}
         except elasticsearch.ConnectionTimeout as ex:
             logger.error(f"Elasticsearch error! {ex}")
-            return {}
+        return {}
 
     def __dir__(self):
-        return(
+        return (
             'search',
             'create'
         )

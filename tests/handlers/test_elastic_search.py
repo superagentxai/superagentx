@@ -16,7 +16,7 @@ from agentx.handler.elastic_search import ElasticsearchHandler
 @pytest.fixture
 def elasticsearch_client_init() -> ElasticsearchHandler:
     elasticsearch_handler = ElasticsearchHandler(
-        address="<url>",
+        hosts="",
         username="",
         password=""
     )
@@ -28,19 +28,19 @@ class TestElasticsearch:
     # Test async elasticsearch handler - search method
     async def test_elasticsearch_search(self, elasticsearch_client_init: ElasticsearchHandler):
         elasticsearch = await elasticsearch_client_init.handle(action="search",
-                                                                index_name="index_name",
-                                                                )
+                                                               index_name="index_name",
+                                                               )
         assert isinstance(elasticsearch, object)
 
     # Test async elasticsearch handler - create method
     async def test_elasticsearch_create(self, elasticsearch_client_init: ElasticsearchHandler):
         elasticsearch = await elasticsearch_client_init.handle(action="create",
-                                                          index_name="python_test",
-                                                          id="python",
-                                                          document={
-                                                              "@timestamp": "2099-11-15T13:12:00",
-                                                              "message": "GET /search HTTP/1.1 200 1070000",
-                                                          },
+                                                               index_name="python_test",
+                                                               document_id="python",
+                                                               document={
+                                                                   "@timestamp": "2099-11-15T13:12:00",
+                                                                   "message": "GET /search HTTP/1.1 200 1070000",
+                                                               },
 
-                                                          )
+                                                               )
         assert isinstance(elasticsearch, object)
