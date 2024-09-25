@@ -26,7 +26,7 @@ class CalenderHandler(BaseHandler, ABC):
             credentials: dict
     ):
         self.creds = None
-        logger.info(f'Google client initialization')
+        logger.info(f'Calendar client initialization')
         self.credentials = credentials or {}
         self.service = self._connect()
 
@@ -59,7 +59,7 @@ class CalenderHandler(BaseHandler, ABC):
             logger.info("Authenticate Success")
             return service
         except Exception as ex:
-            message = f'Google Sheets Handler Authentication Problem {ex}'
+            message = f'Google Calendar Authentication Problem {ex}'
             logger.error(message, exc_info=ex)
             raise AuthException(message)
 
@@ -153,7 +153,7 @@ class CalenderHandler(BaseHandler, ABC):
                 parsed_events = json.dumps(events_results)
                 return parsed_events
         except Exception as ex:
-            message = f"Error while Getting Profile"
+            message = f"Error while Getting Events"
             logger.error(message, exc_info=ex)
             raise
 
@@ -193,7 +193,7 @@ class CalenderHandler(BaseHandler, ABC):
                 logger.info(parsed_events)
                 return parsed_events
         except Exception as ex:
-            message = f"Error while Getting Event"
+            message = f"Error while Getting Events"
             logger.error(message, exc_info=ex)
             raise
 
