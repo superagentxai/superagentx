@@ -1,0 +1,2 @@
+class InvalidExaAction(Exception):
+    pass

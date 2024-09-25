@@ -1,9 +1,8 @@
-import elasticsearch
 import logging
+from enum import StrEnum
+from typing import Union, Mapping, Sequence
 
-from enum import Enum, StrEnum
-from typing import Any, Union, Mapping, Sequence
-
+import elasticsearch
 from elastic_transport import NodeConfig
 from elasticsearch import AsyncElasticsearch
 
