@@ -75,7 +75,7 @@ class GmailHandler(BaseHandler, ABC):
             to the authenticated user.
 
             Args:
-                user_id (str | None): The ID of the user whose profile is to be
+                user_id (str): The ID of the user whose profile is to be
                     retrieved. Use "me" to refer to the authenticated user.
                     Defaults to "me".
 
@@ -111,9 +111,9 @@ class GmailHandler(BaseHandler, ABC):
                 from_address (str): The email address of the sender.
                 to (str): The recipient's email address.
                 subject (str): The subject of the email.
-                user_id (str | None): The ID of the user sending the email.
+                user_id (str): The ID of the user sending the email.
                     Use "me" to refer to the authenticated user. Defaults to "me".
-                content (str | None): The body content of the email. Defaults
+                content (str): The body content of the email. Defaults
                     to "This is automated content".
 
             Returns:
@@ -154,11 +154,11 @@ class GmailHandler(BaseHandler, ABC):
             Args:
                 from_address (str): The email address of the sender.
                 to (str): The recipient's email address.
-                subject (str | None): The subject of the draft email. Defaults
+                subject (str): The subject of the draft email. Defaults
                     to "Automated draft".
-                user_id (str | None): The ID of the user creating the draft.
+                user_id (str): The ID of the user creating the draft.
                     Use "me" to refer to the authenticated user. Defaults to "me".
-                content (str | None): The body content of the draft email.
+                content (str): The body content of the draft email.
                     Defaults to "This is automated draft mail".
 
             Returns:

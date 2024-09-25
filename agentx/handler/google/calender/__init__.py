@@ -116,8 +116,8 @@ class CalenderHandler(BaseHandler, ABC):
             to 1 day. The method utilizes the Google Calendar API to retrieve events.
 
             Args:
-                days (int | None): The number of days to retrieve events for.
-                                   If set to None, the method will return events
+                days (int): The number of days to retrieve events for.
+                                   the method will return events
                                    without day filtering, defaulting to 1 day.
 
             Returns:
