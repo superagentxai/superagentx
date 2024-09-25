@@ -2,10 +2,8 @@ import asyncio
 from typing import LiteralString
 
 from agentx.agent.engine import Engine
+from agentx.constants import SEQUENCE, PARALLEL
 from agentx.utils.helper import iter_to_aiter
-
-SEQUENCE = 'SEQUENCE'
-PARALLEL = 'PARALLEL'
 
 
 class Agent:
@@ -28,8 +26,8 @@ class Agent:
 
     async def add(
             self,
-            execute_type: LiteralString[SEQUENCE, PARALLEL] = SEQUENCE,
-            *engines: Engine
+            *engines: Engine,
+            execute_type: LiteralString[SEQUENCE, PARALLEL] = SEQUENCE
     ):
         if execute_type == SEQUENCE:
             self.engines += engines
@@ -43,7 +41,9 @@ class Agent:
         results = []
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
-                _res = await asyncio.gather(*[_engine.start() async for _engine in iter_to_aiter(_engines)])
+                _res = await asyncio.gather(
+                    *[_engine.start() async for _engine in iter_to_aiter(_engines)]
+                )
             else:
                 _res = await _engines.start()
             results.append(_res)
