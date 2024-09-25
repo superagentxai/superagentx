@@ -56,9 +56,8 @@ class GmailHandler(BaseHandler, ABC):
             if not self.creds or not self.creds.valid:
                 flow = InstalledAppFlow.from_client_secrets_file(self.credentials, SCOPES)
                 self.creds = flow.run_local_server(port=0)
-            service = build("gmail", "v1", credentials=self.creds)
             logger.info("Authenticate Success")
-            return service
+            return build("gmail", "v1", credentials=self.creds)
         except Exception as ex:
             message = f'Gmail Handler Authentication Problem {ex}'
             logger.error(message, exc_info=ex)
@@ -66,7 +65,7 @@ class GmailHandler(BaseHandler, ABC):
 
     async def get_user_profile(
             self,
-            user_id: str | None = "me"
+            user_id: str = "me"
     ):
         """
             Retrieve the Gmail profile information for a specified user using the Gmail API.
@@ -87,8 +86,7 @@ class GmailHandler(BaseHandler, ABC):
 
             """
         try:
-            result = self.service.users().getProfile(userId=user_id).execute()
-            return result
+            return self.service.users().getProfile(userId=user_id).execute()
         except Exception as ex:
             message = f"Error while Getting Profile"
             logger.error(message, exc_info=ex)
@@ -100,8 +98,8 @@ class GmailHandler(BaseHandler, ABC):
             from_address: str,
             to: str,
             subject: str,
-            user_id: str | None = "me",
-            content: str | None = "This is automated content",
+            user_id: str = "me",
+            content: str = "This is automated content",
     ):
         """
             Send an email using the Gmail API.
@@ -130,8 +128,8 @@ class GmailHandler(BaseHandler, ABC):
             message["Subject"] = subject
             encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             create_message = {"raw": encoded_message}
-            result = self.service.users().messages().send(userId=user_id, body=create_message).execute()
-            logger.info(f"Message Sends Successfully =>> {result["id"]}")
+            logger.info("Message Sends Successfully")
+            return self.service.users().messages().send(userId=user_id, body=create_message).execute()
         except Exception as ex:
             message = f"Error while Send Email"
             logger.error(message, exc_info=ex)
@@ -142,9 +140,9 @@ class GmailHandler(BaseHandler, ABC):
             *,
             from_address: str,
             to: str,
-            subject: str | None = "Automated draft",
-            user_id: str | None = "me",
-            content: str | None = "This is automated draft mail",
+            subject: str = "Automated draft",
+            user_id: str = "me",
+            content: str = "This is automated draft mail",
     ):
         """
             Create a draft email using the Gmail API.
@@ -176,8 +174,8 @@ class GmailHandler(BaseHandler, ABC):
             message["Subject"] = subject
             encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             create_message = {"message": {"raw": encoded_message}}
-            result = self.service.users().drafts().create(userId=user_id, body=create_message).execute()
-            logger.info(f"Draft message saved successfully {result["id"]}")
+            logger.info("Draft message saved successfully")
+            return self.service.users().drafts().create(userId=user_id, body=create_message).execute()
         except Exception as ex:
             message = f"Error while Create Draft Email"
             logger.error(message, exc_info=ex)

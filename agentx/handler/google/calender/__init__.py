@@ -55,9 +55,8 @@ class CalenderHandler(BaseHandler, ABC):
             if not self.creds or not self.creds.valid:
                 flow = InstalledAppFlow.from_client_secrets_file(self.credentials, SCOPES)
                 self.creds = flow.run_local_server(port=0)
-            service = build("calendar", "v3", credentials=self.creds)
             logger.info("Authenticate Success")
-            return service
+            return build("calendar", "v3", credentials=self.creds)
         except Exception as ex:
             message = f'Google Calendar Authentication Problem {ex}'
             logger.error(message, exc_info=ex)
@@ -75,8 +74,7 @@ class CalenderHandler(BaseHandler, ABC):
                 including fields such as timezone, status, and other
                 relevant details for today
             """
-        today_events = await self.get_events_by_days(days=1)
-        return today_events
+        return await self.get_events_by_days(days=1)
 
     async def get_week_events(self):
         """
@@ -90,8 +88,7 @@ class CalenderHandler(BaseHandler, ABC):
                       including fields such as timezone, status, and other
                       relevant details for the week.
             """
-        week_events = await self.get_events_by_days(days=7)
-        return week_events
+        return await self.get_events_by_days(days=7)
 
     async def get_month_events(self):
         """
@@ -105,12 +102,11 @@ class CalenderHandler(BaseHandler, ABC):
                       including fields such as timezone, status, and other
                       relevant details for the month.
             """
-        month_events = await self.get_events_by_days(days=30)
-        return month_events
+        return await self.get_events_by_days(days=30)
 
     async def get_events_by_days(
             self,
-            days: int | None = 1
+            days: int = 1
     ):
         """
             Retrieve upcoming events from Google Calendar for a specified number of days.
@@ -150,8 +146,7 @@ class CalenderHandler(BaseHandler, ABC):
                     singleEvents=True,
                     orderBy='startTime'
                 ).execute()
-                parsed_events = json.dumps(events_results)
-                return parsed_events
+                return json.dumps(events_results)
         except Exception as ex:
             message = f"Error while Getting Events"
             logger.error(message, exc_info=ex)
@@ -160,7 +155,7 @@ class CalenderHandler(BaseHandler, ABC):
     async def get_events_by_type(
             self,
             *,
-            eventType: str | None = "default"
+            event_type: str = "default"
     ):
         """
             Retrieve events of a specified type from the Google calendar API.
@@ -170,7 +165,7 @@ class CalenderHandler(BaseHandler, ABC):
             "birthday". This allows for filtering events based on user preferences.
 
             Args:
-                eventType (str, optional): The type of events to retrieve.
+                event_type (str, optional): The type of events to retrieve.
                                             Defaults to "default".
                                             Valid types may include "focusTime",
                                             "workingLocation", "birthday" , etc.
@@ -184,14 +179,12 @@ class CalenderHandler(BaseHandler, ABC):
                 Exception: If there is an issue connecting to the calendar API.
             """
         try:
-            if eventType:
+            if event_type:
                 events_results = self.service.events().list(
                     calendarId='primary',
-                    eventTypes=eventType,
+                    eventTypes=event_type,
                 ).execute()
-                parsed_events = json.dumps(events_results)
-                logger.info(parsed_events)
-                return parsed_events
+                return json.dumps(events_results)
         except Exception as ex:
             message = f"Error while Getting Events"
             logger.error(message, exc_info=ex)
