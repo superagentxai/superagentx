@@ -1,27 +1,49 @@
+import logging
+import pytest
+
 from agentx.handler.google.calender import CalenderHandler
 
-calender_handler = CalenderHandler(
-    credentials="/Users/arulvivek/Desktop/Agentx/credentials.json"
-)
+logger = logging.getLogger(__name__)
+
+'''
+ Run Pytest:  
+
+   1.pytest --log-cli-level=INFO tests/handlers/test_calender_handler.py::TestCalendar::test_today_events
+   2.pytest --log-cli-level=INFO tests/handlers/test_calender_handler.py::TestCalendar::test_week_events
+   3.pytest --log-cli-level=INFO tests/handlers/test_calender_handler.py::TestCalendar::test_month_events
+   4.pytest --log-cli-level=INFO tests/handlers/test_calender_handler.py::TestCalendar::test_get_events_by_type
+
+'''
 
 
-async def test_today_events():
-    res = await calender_handler.get_today_events()
-    print(res)
-
-
-def test_week_events():
-    res = calender_handler.get_week_events()
-    print(res)
-
-
-def test_month_events():
-    res = calender_handler.get_month_events()
-    print(res)
-
-
-def test_get_events_by_type():
-    res = calender_handler.get_events_by_type(
-        eventType="default"
+@pytest.fixture
+def google_calender_init() -> CalenderHandler:
+    calender_handler = CalenderHandler(
+        credentials=""
     )
-    print(res)
+    return calender_handler
+
+
+class TestCalendar:
+
+    async def test_today_events(self, google_calender_init: CalenderHandler):
+        res = await google_calender_init.get_today_events()
+        logger.info(f"Result: {res}")
+        assert "items" in res
+
+    async def test_week_events(self, google_calender_init: CalenderHandler):
+        res = await google_calender_init.get_week_events()
+        logger.info(f"Result: {res}")
+        assert "items" in res
+
+    async def test_month_events(self, google_calender_init: CalenderHandler):
+        res = await google_calender_init.get_month_events()
+        logger.info(f"Result: {res}")
+        assert "items" in res
+
+    async def test_get_events_by_type(self, google_calender_init: CalenderHandler):
+        res = await google_calender_init.get_events_by_type(
+            eventType="default"
+        )
+        logger.info(f"Result: {res}")
+        assert "items" in res
