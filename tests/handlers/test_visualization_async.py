@@ -30,8 +30,10 @@ def visualize_client_init() -> dict:
         "Strawberries": 21
     }
     ]
-    response = {"visualization": obj, "data": chart_data}
-    return response
+    return {
+        "visualization": obj,
+        "data": chart_data
+    }
 
 class TestVisualization:
 

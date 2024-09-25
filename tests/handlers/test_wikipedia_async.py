@@ -1,5 +1,6 @@
-from agentx.handler.wikipedia import WikipediaHandler
 import pytest
+
+from agentx.handler.wikipedia import WikipediaHandler
 
 '''
  Run Pytest:  
@@ -14,6 +15,7 @@ def wikipedia_client_init() -> WikipediaHandler:
 
 
 class TestWikipedia:
+
     async def test_summary(self, wikipedia_client_init:WikipediaHandler):
         res = await wikipedia_client_init.get_summary(
             query="story about titanic movie",

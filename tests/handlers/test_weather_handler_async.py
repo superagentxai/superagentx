@@ -1,9 +1,9 @@
-import asyncio
-import pytest
 import logging
 
-from agentx.handler.weather import WeatherHandler
+import pytest
 from pandas.core.frame import DataFrame
+
+from agentx.handler.weather import WeatherHandler
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 def weather_client_init() -> WeatherHandler:
     w_handler = WeatherHandler()
     return w_handler
+
 
 class TestWeatherHandler:
     async def test_forecast_weather(self, weather_client_init:WeatherHandler):
