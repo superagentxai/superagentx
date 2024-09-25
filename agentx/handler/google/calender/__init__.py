@@ -136,13 +136,13 @@ class CalenderHandler(BaseHandler, ABC):
                 raise ValueError(message)
             else:
                 today = datetime.datetime.today()
-                startDate = (datetime.datetime(today.year, today.month, today.day, 00, 00)).isoformat() + 'Z'
+                start_date = (datetime.datetime(today.year, today.month, today.day, 00, 00)).isoformat() + 'Z'
                 tomorrow = today + datetime.timedelta(days=days)
-                endDate = (datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 00, 00)).isoformat() + 'Z'
+                end_date = (datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 00, 00)).isoformat() + 'Z'
                 events_results = self.service.events().list(
                     calendarId='primary',
-                    timeMin=startDate,
-                    timeMax=endDate,
+                    timeMin=start_date,
+                    timeMax=end_date,
                     singleEvents=True,
                     orderBy='startTime'
                 ).execute()
