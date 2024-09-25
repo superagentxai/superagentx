@@ -2,9 +2,11 @@ import datetime
 import json
 import logging
 from abc import ABC
-from agentx.handler.base import BaseHandler
-from googleapiclient.discovery import build
+
 from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+
+from agentx.handler.base import BaseHandler
 from agentx.handler.google.exceptions import AuthException
 
 logger = logging.getLogger(__name__)
