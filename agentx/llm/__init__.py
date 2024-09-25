@@ -11,7 +11,7 @@ from agentx.exceptions import InvalidType
 from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 from agentx.llm.types.base import LLMModelConfig
-from agentx.llm.types.response import Message, Tools
+from agentx.llm.types.response import Message, Tool
 from agentx.utils.llm_config import LLMType
 
 
@@ -108,6 +108,26 @@ class LLMClient:
     ) -> ChatCompletion:
         return await self.client.achat_completion(chat_completion_params=chat_completion_params)
 
+    def embed(
+            self,
+            text: str,
+            **kwargs
+    ):
+        return self.client.embed(
+            text,
+            **kwargs
+        )
+
+    async def aembed(
+            self,
+            text: str,
+            **kwargs
+    ):
+        return await self.client.aembed(
+            text,
+            **kwargs
+        )
+
     async def afunc_chat_completion(
             self,
             *,
@@ -124,7 +144,7 @@ class LLMClient:
                 tool_calls_data = []
                 if choice.message.tool_calls:
                     tool_calls_data = [
-                        Tools(
+                        Tool(
                             tool_type=tool_call.type,
                             name=tool_call.function.name,
                             arguments=json.loads(tool_call.function.arguments)  # Use json.loads for safer parsing
@@ -133,26 +153,20 @@ class LLMClient:
 
                 # Extract token details from usage
                 usage_data = response.usage
-                completion_tokens = usage_data.completion_tokens
-                prompt_tokens = usage_data.prompt_tokens
-                total_tokens = usage_data.total_tokens
-                reasoning_tokens = usage_data.completion_tokens_details.get('reasoning_tokens')
-
-                # Create a Message instance with parsed values
-                message_instance = Message(
-                    role=choice.message.role,
-                    model=response.model,
-                    content=choice.message.content,
-                    tool_calls=tool_calls_data if tool_calls_data else None,
-                    completion_tokens=completion_tokens,
-                    prompt_tokens=prompt_tokens,
-                    total_tokens=total_tokens,
-                    reasoning_tokens=reasoning_tokens,
-                    created=response.created
-                )
 
                 # Add the created Message instance to the list
-                message_instances.append(message_instance)
+                message_instances.append(
+                    Message(
+                        role=choice.message.role,
+                        model=response.model,
+                        content=choice.message.content,
+                        tool_calls=tool_calls_data if tool_calls_data else None,
+                        completion_tokens=usage_data.completion_tokens,
+                        prompt_tokens=usage_data.prompt_tokens,
+                        total_tokens=usage_data.total_tokens,
+                        reasoning_tokens=usage_data.completion_tokens_details.get('reasoning_tokens'),
+                        created=response.created
+                    )
+                )
 
         return message_instances
-

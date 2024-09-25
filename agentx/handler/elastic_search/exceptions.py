@@ -1,0 +1,3 @@
+
+class InvalidElasticsearchAction(Exception):
+    pass

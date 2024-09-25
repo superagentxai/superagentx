@@ -1,6 +1,8 @@
+import asyncio
 from typing import LiteralString
 
 from agentx.agent.engine import Engine
+from agentx.utils.helper import iter_to_aiter
 
 SEQUENCE = 'SEQUENCE'
 PARALLEL = 'PARALLEL'
@@ -24,9 +26,6 @@ class Agent:
         self.goal = goal
         self.max_retry = max_retry
 
-    async def execute(self):
-        pass
-
     async def add(
             self,
             execute_type: LiteralString[SEQUENCE, PARALLEL] = SEQUENCE,
@@ -36,3 +35,19 @@ class Agent:
             self.engines += engines
         else:
             self.engines.append(list(engines))
+
+    async def _verify_goal(self):
+        pass
+
+    async def execute(self):
+        results = []
+        async for _engines in iter_to_aiter(self.engines):
+            if isinstance(_engines, list):
+                _res = await asyncio.gather(*[_engine.start() async for _engine in iter_to_aiter(_engines)])
+            else:
+                _res = await _engines.start()
+            results.append(_res)
+        # TODO: Needs to fix for agent out
+        # TODO: Needs to verify its goal after all set
+        # TODO: Needs to retry if it fails
+        return results
