@@ -37,6 +37,7 @@ chromadb = "^0.5.5"
 opensearch-py = "^2.7.1"
 elasticsearch = "^8.15.1"
 google-auth-oauthlib = "^1.2.1"
+google-api-python-client = "^2.147.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
