@@ -1,3 +1,5 @@
+from enum import StrEnum
+
 import pandas as pd
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
@@ -12,6 +14,12 @@ from agentx.handler.weather.constants import MARINE_CURRENT_STATUS_VARIABLE, MAR
     HISTORICAL_API_URL, CLIMATE_API_URL, MARINE_API_URL, AIR_API_URL, FLOOD_API_URL
 from agentx.handler.weather.exception import InvalidWeatherAction, InvalidLocation, InvalidResponseType
 from agentx.utils.helper import sync_to_async
+
+
+class ResponseType(StrEnum):
+    current = 'current'
+    daily = 'daily'
+    hourly = 'hourly'
 
 
 async def get_longitude(location):

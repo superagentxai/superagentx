@@ -35,8 +35,7 @@ class WikipediaHandler(BaseHandler):
         if language:
             await sync_to_async(wikipedia.set_lang,language)
 
-        result = await sync_to_async(wikipedia.summary,query, sentences=sentences)
-        return result
+        return await sync_to_async(wikipedia.summary,query, sentences=sentences)
 
     @staticmethod
     async def get_search(
@@ -60,8 +59,7 @@ class WikipediaHandler(BaseHandler):
         if language:
             await sync_to_async(wikipedia.set_lang,language)
 
-        results = await sync_to_async(wikipedia.search, query, results=results)
-        return results
+        return await sync_to_async(wikipedia.search, query, results=results)
 
     def __dir__(self):
         return(

@@ -55,9 +55,9 @@ class JiraHandler(BaseHandler):
             self,
             *,
             board_id: int,
-            start: int | None = 0,
-            size: int | None = 1,
-            state: str | None = 'active'
+            start: int = 0,
+            size: int = 1,
+            state: str = 'active'
     ):
         """
         Asynchronously retrieves the active sprint for a specified board, allowing optional pagination and state filtering.

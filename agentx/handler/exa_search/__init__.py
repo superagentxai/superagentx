@@ -26,7 +26,7 @@ class ExaHandler(BaseHandler):
             *,
             query: str,
             use_autoprompt: bool,
-            num_results: int | None = 10,
+            num_results: int = 10,
             search_type: str | None = None
     ):
         """
@@ -46,17 +46,16 @@ class ExaHandler(BaseHandler):
             Any: The search results, which may vary depending on the search type and query.
 
         """
-        if search_type is None:
+        if not search_type:
             search_type = "auto"
 
-        result = await sync_to_async(
+        return await sync_to_async(
             self.exa.search_and_contents,
             query=query,
             type=search_type,
             use_autoprompt=use_autoprompt,
             num_results=num_results,
             )
-        return result
 
     def __dir__(self):
         return (

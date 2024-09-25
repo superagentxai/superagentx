@@ -2,7 +2,6 @@ import os
 import webbrowser
 from datetime import datetime
 from enum import Enum
-from itertools import dropwhile
 from math import pi
 from os import PathLike
 from pathlib import Path
