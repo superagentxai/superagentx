@@ -50,14 +50,16 @@ class BedrockClient(Client):
             # Get model name from client object attribute and set,
             model_id = ''.join(getattr(self.client, 'model'))
 
-            inference_config = {
-                "temperature": chat_completion_params.temperature,
-                "maxTokens": chat_completion_params.max_tokens,
-                "topP": chat_completion_params.top_p
-            }
-            for key, value in list(inference_config.items()):
-                if value is None:
-                    del inference_config[key]
+            inference_config = {}
+
+            if chat_completion_params.temperature:
+                inference_config["temperature"] = chat_completion_params.temperature
+
+            if chat_completion_params.max_tokens:
+                inference_config["maxTokens"] = chat_completion_params.max_tokens
+
+            if chat_completion_params.top_p:
+                inference_config["topP"] = chat_completion_params.top_p
 
             if tools:
                 messages = chat_completion_params.messages
@@ -111,14 +113,16 @@ class BedrockClient(Client):
             # Get model name from client object attribute and set,
             model_id = ''.join(getattr(self.client, 'model'))
 
-            inference_config = {
-                "temperature": chat_completion_params.temperature,
-                "maxTokens": chat_completion_params.max_tokens,
-                "topP": chat_completion_params.top_p
-            }
-            async for key, value in iter_to_aiter(inference_config.items()):
-                if value is None:
-                    del inference_config[key]
+            inference_config = {}
+
+            if chat_completion_params.temperature:
+                inference_config["temperature"] = chat_completion_params.temperature
+
+            if chat_completion_params.max_tokens:
+                inference_config["maxTokens"] = chat_completion_params.max_tokens
+
+            if chat_completion_params.top_p:
+                inference_config["topP"] = chat_completion_params.top_p
 
             if tools:
                 messages = chat_completion_params.messages
@@ -133,7 +137,7 @@ class BedrockClient(Client):
                     # Convert from synchronous to asynchronous mode and invoke Bedrock client!
                     response = await sync_to_async(
                         self.client.converse,
-                        odelId=model_id,
+                        modelId=model_id,
                         messages=conversations,
                         inferenceConfig=inference_config,
                         toolConfig=tools_config,
