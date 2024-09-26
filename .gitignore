@@ -166,3 +166,4 @@ cython_debug/
 .idea
 
 .cache*
+*.db
