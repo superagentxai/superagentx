@@ -4,20 +4,20 @@ from email import encoders
 from email.message import EmailMessage
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
-from enum import Enum
 from ssl import SSLContext
-from typing import Any
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.email.exceptions import SendEmailFailed, InvalidEmailAction
-
-
-class EmailAction(str, Enum):
-    SEND = "send"
-    READ = "read"
+from agentx.utils.helper import sync_to_async
 
 
 class EmailHandler(BaseHandler):
+    """
+     A handler class for managing email operations.
+    This class extends BaseHandler and provides methods for sending emails, managing recipients,
+    and handling attachments, facilitating efficient email communication.
+
+    """
 
     def __init__(
             self,
@@ -45,23 +45,7 @@ class EmailHandler(BaseHandler):
                 port=port
             )
 
-    def handle(
-            self,
-            *,
-            action: str | Enum,
-            **kwargs
-    ) -> Any:
-        if isinstance(action, str):
-            action = action.lower()
-        match action:
-            case EmailAction.SEND:
-                return self.send_email(**kwargs)
-            case EmailAction.READ:
-                raise NotImplementedError
-            case _:
-                raise InvalidEmailAction(f"Invalid email action `{action}`")
-
-    def send_email(
+    async def send_email(
             self,
             *,
             sender: str,
@@ -73,6 +57,22 @@ class EmailHandler(BaseHandler):
             bcc: list[str] | None = None,
             attachment_path: str | None = None
     ):
+
+        """
+        Asynchronously sends an email with specified parameters, including sender, recipients, subject, and body.
+        This method also supports optional fields such as CC, BCC, and attachments for comprehensive email communication.
+
+        parameter:
+            sender (str): The email address of the sender.
+            to (list[str]): A list of recipient email addresses to whom the email will be sent.
+            subject (str): The subject line of the email.
+            body (str): The content of the email.
+            from_name (str | None, optional): The name of the sender to display in the email. Defaults to None.
+            cc (list[str] | None, optional): A list of email addresses to be included in the CC field. Defaults to None.
+            bcc (list[str] | None, optional): A list of email addresses to be included in the BCC field. Defaults to None.
+            attachment_path (str | None, optional): The file path of any attachment to be included with the email. Defaults to None.
+        """
+
         try:
             msg = EmailMessage()
             msg['From'] = f"{from_name} <{sender}>"
@@ -81,28 +81,45 @@ class EmailHandler(BaseHandler):
             msg['Bcc'] = ', '.join(bcc) if bcc else ''
             msg['Subject'] = subject
 
-            msg.attach(MIMEText(body, 'plain'))
+            await sync_to_async(msg.attach, MIMEText(body, 'plain'))
 
             if attachment_path:
                 attachment_name = os.path.basename(attachment_path)
-                with open(attachment_path, "rb") as attachment:
+                async with open(attachment_path, "rb") as attachment:
                     part = MIMEBase('application', 'octet-stream')
-                    part.set_payload(attachment.read())
-                    encoders.encode_base64(part)
-                    part.add_header('Content-Disposition', f"attachment; filename= {attachment_name}")
-                    msg.attach(part)
+                    await sync_to_async(part.set_payload, await attachment.read())
+                    await sync_to_async(encoders.encode_base64, part)
+                    await sync_to_async(
+                        part.add_header,
+                        'Content-Disposition',
+                        f"attachment; filename= {attachment_name}"
+                    )
+                    await sync_to_async(
+                        msg.attach,
+                        part
+                    )
 
             all_recipients = to + (cc or []) + (bcc or [])
 
             if self.username and self.password:
-                self._conn.login(user=self.username, password=self.password)
+                await sync_to_async(
+                    self._conn.login,
+                    user=self.username,
+                    password=self.password
+                )
 
-            res = self._conn.sendmail(
+            res = await sync_to_async(
+                self._conn.sendmail,
                 from_addr=sender,
                 to_addrs=all_recipients,
-                msg=msg.as_string()
-            )
-            self._conn.close()
+                msg=await sync_to_async(msg.as_string)
+                )
+            await sync_to_async(self._conn.close)
             return res
         except Exception as e:
             raise SendEmailFailed(f"Failed to send email!\n{e}")
+
+    def __dir__(self):
+        return (
+            "send_email"
+        )

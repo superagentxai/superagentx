@@ -5,9 +5,6 @@ from pydantic import typing
 
 class Client(metaclass=ABCMeta):
 
-    def __init__(self):
-        super().__init__()
-
     @abstractmethod
     def chat_completion(
             self,
@@ -28,5 +25,38 @@ class Client(metaclass=ABCMeta):
     async def get_tool_json(
             self,
             func: typing.Callable) -> dict:
-
         pass
+
+    @abstractmethod
+    def embed(
+            self,
+            text: str,
+            **kwargs
+    ):
+        """
+        Get the embedding for the given text using Client.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def aembed(
+            self,
+            text: str,
+            **kwargs
+    ):
+        """
+        Get the embedding for the given text using Client.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        raise NotImplementedError
