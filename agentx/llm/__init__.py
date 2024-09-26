@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import typing
 from typing import List
 
 import boto3
@@ -137,6 +138,10 @@ class LLMClient:
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         return await self.client.achat_completion(chat_completion_params=chat_completion_params)
+
+    async def get_tool_json(self,
+                            func: typing.Callable) -> dict:
+        return await self.get_tool_json(func=func)
 
     def embed(
             self,

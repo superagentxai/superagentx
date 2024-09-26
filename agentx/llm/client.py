@@ -11,7 +11,7 @@ class Client(metaclass=ABCMeta):
             *args,
             **kwargs
     ):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     async def achat_completion(
@@ -19,13 +19,13 @@ class Client(metaclass=ABCMeta):
             *args,
             **kwargs
     ):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     async def get_tool_json(
             self,
             func: typing.Callable) -> dict:
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def embed(
