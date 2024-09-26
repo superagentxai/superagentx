@@ -68,7 +68,7 @@ class Engine:
                 # TODO: Needs to fix this for tools contains list of dict
                 pass
             if inspect.isfunction(_func):
-                _funcs_props.append(await self.__func_props(func=_func))
+                _funcs_props.append(await self.llm.get_tool_json(func=_func))
         return _funcs_props
 
     async def _construct_tools(self) -> list[dict]:

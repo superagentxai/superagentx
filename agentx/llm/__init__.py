@@ -147,12 +147,16 @@ class LLMClient:
     ) -> ChatCompletion:
         return await self.client.achat_completion(chat_completion_params=chat_completion_params)
 
-    async def get_tool_json(self,
-                            func: typing.Callable) -> dict:
+    async def get_tool_json(
+            self,
+            *,
+            func: typing.Callable
+    ) -> dict:
         return await self.get_tool_json(func=func)
 
     def embed(
             self,
+            *,
             text: str,
             **kwargs
     ):
@@ -163,6 +167,7 @@ class LLMClient:
 
     async def aembed(
             self,
+            *,
             text: str,
             **kwargs
     ):
