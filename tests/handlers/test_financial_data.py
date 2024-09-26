@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from agentx.handler.financial_data import FinancialHandler
@@ -14,7 +16,7 @@ from agentx.handler.financial_data import FinancialHandler
 @pytest.fixture
 def financial_client_init() -> FinancialHandler:
     financial_handler = FinancialHandler(
-        api_key='YtUuWJUxHrrYp6H28rYj4kOghLD49g14',
+        api_key=os.getenv("FINANCIAL_MODELING_PREP_API_KEY"),
         symbol='AA'
     )
     return financial_handler
