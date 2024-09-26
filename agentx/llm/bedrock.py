@@ -307,3 +307,11 @@ class BedrockClient(Client):
             formatted_messages.append(f"\n\n{role}: {content}")
 
         return "".join(formatted_messages) + "\n\nAssistant:"
+
+
+def embed(self, text: str, **kwargs):
+    pass
+
+
+async def aembed(self, text: str, **kwargs):
+    pass
