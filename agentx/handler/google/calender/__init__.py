@@ -159,10 +159,9 @@ class CalenderHandler(BaseHandler, ABC):
                     singleEvents=True,
                     orderBy='startTime'
                 )
-                events_results = await sync_to_async(
+                return await sync_to_async(
                     events_list.execute
                 )
-                return json.dumps(events_results)
         except Exception as ex:
             message = f"Error while Getting Events"
             logger.error(message, exc_info=ex)
@@ -204,8 +203,9 @@ class CalenderHandler(BaseHandler, ABC):
                     calendarId='primary',
                     eventTypes=event_type,
                 )
-                events_results = await sync_to_async(events_list.execute)
-                return json.dumps(events_results)
+                return await sync_to_async(
+                    events_list.execute
+                )
         except Exception as ex:
             message = f"Error while Getting Events"
             logger.error(message, exc_info=ex)
