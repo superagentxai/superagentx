@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+from pydantic import typing
+
 
 class Client(metaclass=ABCMeta):
 
@@ -17,6 +19,12 @@ class Client(metaclass=ABCMeta):
             *args,
             **kwargs
     ):
+        pass
+
+    @abstractmethod
+    async def get_tool_json(
+            self,
+            func: typing.Callable) -> dict:
         pass
 
     @abstractmethod

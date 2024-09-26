@@ -1,21 +1,25 @@
+import json
 import logging
 import os
-import json
-
 from typing import List
 
+import boto3
+from botocore.config import Config
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from agentx.exceptions import InvalidType
+from agentx.llm.bedrock import BedrockClient
 from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 from agentx.llm.types.base import LLMModelConfig
 from agentx.llm.types.response import Message, Tool
+from agentx.utils.helper import iter_to_aiter
 from agentx.utils.llm_config import LLMType
 
-
 logger = logging.getLogger(__name__)
+
+_retries = 5
 
 
 class LLMClient:
@@ -39,12 +43,13 @@ class LLMClient:
 
     def __init__(
             self,
-            llm_config: dict
+            *,
+            llm_config: dict,
+            **kwargs
     ):
         self.llm_config_model = LLMModelConfig(**llm_config)
-        llm_type = self.llm_config_model.llm_type
 
-        match llm_type:
+        match self.llm_config_model.llm_type:
 
             case LLMType.OPENAI_CLIENT:  # OPEN AI Client Type
 
@@ -64,7 +69,7 @@ class LLMClient:
                 cli.model = self.llm_config_model.model
 
                 # Assign the client to self.client
-                self.client = OpenAIClient(cli)
+                self.client = OpenAIClient(client=cli)
 
             case LLMType.AZURE_OPENAI_CLIENT:
 
@@ -89,7 +94,40 @@ class LLMClient:
                 cli.model = self.llm_config_model.model
 
                 # Assign the client to self.client
-                self.client = OpenAIClient(cli)
+                self.client = OpenAIClient(client=cli)
+
+            case LLMType.BEDROCK_CLIENT:
+
+                aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
+
+                if aws_region is None:
+                    raise ValueError("Region is required to use the Amazon Bedrock API.")
+
+                aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY")
+                aws_secret_key = kwargs.get("aws_secret_key", None) or os.getenv("AWS_SECRET_KEY")
+
+                # Initialize Bedrock client, session, and runtime
+                bedrock_config = Config(
+                    region_name=aws_region,
+                    signature_version="v4",
+                    retries={
+                        "max_attempts": _retries,
+                        "mode": "standard"
+                    },
+                )
+
+                # Assign Bedrock client to self.client
+                aws_cli = boto3.client(
+                    service_name="bedrock-runtime",
+                    aws_access_key_id=aws_access_key,
+                    aws_secret_access_key=aws_secret_key,
+                    config=bedrock_config
+                )
+
+                # Set the model attribute
+                aws_cli.model = self.llm_config_model.model
+
+                self.client = BedrockClient(client=aws_cli)
 
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
@@ -133,6 +171,16 @@ class LLMClient:
             *,
             chat_completion_params: ChatCompletionParams
     ) -> List[Message]:
+
+        stream = bool(chat_completion_params.stream)
+
+        # Most models don't support streaming with tool use
+        if stream:
+            logger.warning(
+                "Streaming is not currently supported, streaming will be disabled.",
+            )
+            chat_completion_params.stream = False
+
         response: ChatCompletion = await self.client.achat_completion(chat_completion_params=chat_completion_params)
 
         # List to store multiple Message instances
@@ -140,7 +188,7 @@ class LLMClient:
 
         if response:
             # Iterate over each choice and create a Message instance
-            for choice in response.choices:
+            async for choice in iter_to_aiter(response.choices):
                 tool_calls_data = []
                 if choice.message.tool_calls:
                     tool_calls_data = [
@@ -148,7 +196,7 @@ class LLMClient:
                             tool_type=tool_call.type,
                             name=tool_call.function.name,
                             arguments=json.loads(tool_call.function.arguments)  # Use json.loads for safer parsing
-                        ) for tool_call in choice.message.tool_calls
+                        ) async for tool_call in iter_to_aiter(choice.message.tool_calls)
                     ]
 
                 # Extract token details from usage
@@ -164,7 +212,7 @@ class LLMClient:
                         completion_tokens=usage_data.completion_tokens,
                         prompt_tokens=usage_data.prompt_tokens,
                         total_tokens=usage_data.total_tokens,
-                        reasoning_tokens=usage_data.completion_tokens_details.get('reasoning_tokens'),
+                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens if usage_data.completion_tokens_details else 0,
                         created=response.created
                     )
                 )
