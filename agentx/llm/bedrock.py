@@ -61,7 +61,7 @@ class BedrockClient(Client):
 
             if tools:
                 messages = chat_completion_params.messages
-                conversations = BedrockClient._construct_message(messages)
+                conversations = self._construct_message(messages)
 
                 tools_config = {"tools": tools}
 
@@ -84,7 +84,7 @@ class BedrockClient(Client):
                     with ThreadPoolExecutor(1) as pool:
                         chat_completion: ChatCompletion = pool.submit(
                             lambda: asyncio.run(
-                                BedrockClient.__prepare_bedrock_formatted_output_(
+                                self.__prepare_bedrock_formatted_output_(
                                     response=response,
                                     model_id=model_id,
                                     is_async=True
@@ -123,7 +123,7 @@ class BedrockClient(Client):
             if tools:
                 messages = chat_completion_params.messages
                 conversations = await sync_to_async(
-                    BedrockClient._construct_message,
+                    self._construct_message,
                     messages
                 )
 
@@ -144,7 +144,7 @@ class BedrockClient(Client):
                 if response is None:
                     raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
 
-                chat_completion: ChatCompletion = await BedrockClient.__prepare_bedrock_formatted_output_(
+                chat_completion: ChatCompletion = await self.__prepare_bedrock_formatted_output_(
                     response=response,
                     model_id=model_id,
                     is_async=True
@@ -221,32 +221,6 @@ class BedrockClient(Client):
             object="chat.completion",
             usage=usage,
         )
-
-    async def __prepare_input_(
-            self,
-            *,
-            chat_completion_params: ChatCompletionParams
-    ):
-        if chat_completion_params:
-            tools = chat_completion_params.tools
-
-            # Get model name from client object attribute and set,
-            model_id = ''.join(getattr(self.client, 'model'))
-
-            if tools:
-                messages = chat_completion_params.messages
-                conversations = await sync_to_async(BedrockClient._construct_message, messages)
-
-                inference_config = {
-                    "temperature": chat_completion_params.temperature,
-                    "maxTokens": chat_completion_params.max_tokens,
-                    "topP": chat_completion_params.top_p
-                }
-                async for key, value in iter_to_aiter(inference_config.items()):
-                    if value is None:
-                        del inference_config[key]
-
-                tools_config = {"tools": tools}
 
     async def get_tool_json(
             self,
