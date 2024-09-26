@@ -24,7 +24,8 @@ class Client(metaclass=ABCMeta):
     @abstractmethod
     async def get_tool_json(
             self,
-            func: typing.Callable) -> dict:
+            func: typing.Callable
+    ) -> dict:
         raise NotImplementedError
 
     @abstractmethod
