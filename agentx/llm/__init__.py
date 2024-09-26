@@ -42,7 +42,8 @@ class LLMClient:
 
     def __init__(
             self,
-            llm_config: dict
+            llm_config: dict,
+            **kwargs
     ):
         self.llm_config_model = LLMModelConfig(**llm_config)
         llm_type = self.llm_config_model.llm_type
@@ -96,13 +97,13 @@ class LLMClient:
 
             case LLMType.BEDROCK_CLIENT:
 
-                aws_region = self.llm_config_model.aws_region or os.getenv("AWS_REGION")
+                aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
 
                 if aws_region is None:
                     raise ValueError("Region is required to use the Amazon Bedrock API.")
 
-                aws_access_key = self.llm_config_model.aws_access_key or os.getenv("AWS_ACCESS_KEY")
-                aws_secret_key = self.llm_config_model.aws_secret_key or os.getenv("AWS_SECRET_KEY")
+                aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY")
+                aws_secret_key = kwargs.get("aws_secret_key", None) or os.getenv("AWS_SECRET_KEY")
 
                 # Initialize Bedrock client, session, and runtime
                 bedrock_config = Config(
@@ -114,10 +115,15 @@ class LLMClient:
                 # Assign Bedrock client to self.client
                 aws_cli = boto3.client(service_name="bedrock-runtime", aws_access_key_id=aws_access_key,
                                        aws_secret_access_key=aws_secret_key, config=bedrock_config)
+
+                # Set the model attribute
+                aws_cli.model = self.llm_config_model.model
+
                 self.client = BedrockClient(aws_cli)
 
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
+
 
     def chat_completion(
             self,
@@ -138,6 +144,16 @@ class LLMClient:
             *,
             chat_completion_params: ChatCompletionParams
     ) -> List[Message]:
+
+        stream = bool(chat_completion_params.stream)
+
+        # Most models don't support streaming with tool use
+        if stream:
+            logger.warning(
+                "Streaming is not currently supported, streaming will be disabled.",
+            )
+            chat_completion_params.stream = False
+
         response: ChatCompletion = await self.client.achat_completion(chat_completion_params=chat_completion_params)
 
         # List to store multiple Message instances
@@ -169,7 +185,7 @@ class LLMClient:
                         completion_tokens=usage_data.completion_tokens,
                         prompt_tokens=usage_data.prompt_tokens,
                         total_tokens=usage_data.total_tokens,
-                        reasoning_tokens=usage_data.completion_tokens_details.get('reasoning_tokens'),
+                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens if usage_data.completion_tokens_details else 0,
                         created=response.created
                     )
                 )
