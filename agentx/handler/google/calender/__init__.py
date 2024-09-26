@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.google.exceptions import AuthException
+from agentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +26,12 @@ class CalenderHandler(BaseHandler, ABC):
             *,
             credentials: dict
     ):
+        self.service = None
         self.creds = None
         logger.info(f'Calendar client initialization')
         self.credentials = credentials or {}
-        self.service = self._connect()
-
+        self._service = self._connect()
+        
     def _connect(self):
         """
             Establish a connection to the Gmail API.
@@ -53,10 +55,17 @@ class CalenderHandler(BaseHandler, ABC):
         """
         try:
             if not self.creds or not self.creds.valid:
-                flow = InstalledAppFlow.from_client_secrets_file(self.credentials, SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    client_secrets_file=self.credentials,
+                    scopes=SCOPES
+                )
                 self.creds = flow.run_local_server(port=0)
             logger.info("Authenticate Success")
-            return build("calendar", "v3", credentials=self.creds)
+            return build(
+                serviceName="calendar",
+                version="v3",
+                credentials=self.creds
+            )
         except Exception as ex:
             message = f'Google Calendar Authentication Problem {ex}'
             logger.error(message, exc_info=ex)
@@ -139,13 +148,20 @@ class CalenderHandler(BaseHandler, ABC):
                 start_date = (datetime.datetime(today.year, today.month, today.day, 00, 00)).isoformat() + 'Z'
                 tomorrow = today + datetime.timedelta(days=days)
                 end_date = (datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 00, 00)).isoformat() + 'Z'
-                events_results = self.service.events().list(
+                events = await sync_to_async(
+                    self._service.events
+                )
+                events_list = await sync_to_async(
+                    events.list,
                     calendarId='primary',
                     timeMin=start_date,
                     timeMax=end_date,
                     singleEvents=True,
                     orderBy='startTime'
-                ).execute()
+                )
+                events_results = await sync_to_async(
+                    events_list.execute
+                )
                 return json.dumps(events_results)
         except Exception as ex:
             message = f"Error while Getting Events"
@@ -180,10 +196,15 @@ class CalenderHandler(BaseHandler, ABC):
             """
         try:
             if event_type:
-                events_results = self.service.events().list(
+                events = await sync_to_async(
+                    self._service.events
+                )
+                events_list = await sync_to_async(
+                    events.list,
                     calendarId='primary',
                     eventTypes=event_type,
-                ).execute()
+                )
+                events_results = await sync_to_async(events_list.execute)
                 return json.dumps(events_results)
         except Exception as ex:
             message = f"Error while Getting Events"

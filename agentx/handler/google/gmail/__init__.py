@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.google.exceptions import AuthException
+from agentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class GmailHandler(BaseHandler, ABC):
         self.creds = None
         logger.info(f'Gmail client initialization')
         self.credentials = credentials or {}
-        self.service = self._connect()
+        self._service = self._connect()
 
     def _connect(self):
         """
@@ -57,7 +58,11 @@ class GmailHandler(BaseHandler, ABC):
                 flow = InstalledAppFlow.from_client_secrets_file(self.credentials, SCOPES)
                 self.creds = flow.run_local_server(port=0)
             logger.info("Authenticate Success")
-            return build("gmail", "v1", credentials=self.creds)
+            return build(
+                "gmail",
+                "v1",
+                credentials=self.creds
+            )
         except Exception as ex:
             message = f'Gmail Handler Authentication Problem {ex}'
             logger.error(message, exc_info=ex)
@@ -86,7 +91,16 @@ class GmailHandler(BaseHandler, ABC):
 
             """
         try:
-            return self.service.users().getProfile(userId=user_id).execute()
+            events = await sync_to_async(
+                self._service.users
+            )
+            service_profile = await sync_to_async(
+                events.getProfile,
+                userId=user_id
+            )
+            return await sync_to_async(
+                service_profile.execute,
+            )
         except Exception as ex:
             message = f"Error while Getting Profile"
             logger.error(message, exc_info=ex)
@@ -129,7 +143,20 @@ class GmailHandler(BaseHandler, ABC):
             encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             create_message = {"raw": encoded_message}
             logger.info("Message Sends Successfully")
-            return self.service.users().messages().send(userId=user_id, body=create_message).execute()
+            events = await sync_to_async(
+                self._service.users
+            )
+            events_messages = await sync_to_async(
+                events.messages
+            )
+            events_send = await sync_to_async(
+                events_messages.send,
+                userId=user_id,
+                body=create_message
+            )
+            return await sync_to_async(
+                events_send.execute,
+            )
         except Exception as ex:
             message = f"Error while Send Email"
             logger.error(message, exc_info=ex)
@@ -175,7 +202,20 @@ class GmailHandler(BaseHandler, ABC):
             encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             create_message = {"message": {"raw": encoded_message}}
             logger.info("Draft message saved successfully")
-            return self.service.users().drafts().create(userId=user_id, body=create_message).execute()
+            events = await sync_to_async(
+                self._service.users
+            )
+            events_draft = await sync_to_async(
+                events.drafts
+            )
+            events_draft_create = await sync_to_async(
+                events_draft.create,
+                userId=user_id,
+                body=create_message
+            )
+            return await sync_to_async(
+                events_draft_create.execute,
+            )
         except Exception as ex:
             message = f"Error while Create Draft Email"
             logger.error(message, exc_info=ex)

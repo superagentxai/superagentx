@@ -44,7 +44,7 @@ class TestCalendar:
 
     async def test_get_events_by_type(self, google_calender_init: CalenderHandler):
         res = await google_calender_init.get_events_by_type(
-            eventType="default"
+            event_type="default"
         )
         logger.info(f"Result: {res}")
         assert "items" in res

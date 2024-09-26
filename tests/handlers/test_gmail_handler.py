@@ -32,18 +32,18 @@ class TestGmailHandler:
 
     async def test_send_email(self, gmail_handler_init: GmailHandler):
         res = await gmail_handler_init.send_email(
-            from_address="",
-            to="",
-            subject="",
-            content=""
+            from_address="arul@decisionfacts.io",
+            to="syed@decisionfacts.io",
+            subject="Test Email",
+            content="Hi anna this is test email from handler"
         )
         logger.info(f"Result: {res}")
         assert res
 
     async def test_create_draft_email(self, gmail_handler_init: GmailHandler):
         res = await gmail_handler_init.create_draft_email(
-            from_address="",
-            to="",
+            from_address="arul@decisionfacts.io",
+            to="syed@decisionfacts.io"
         )
         logger.info(f"Result: {res}")
         assert res
