@@ -283,17 +283,17 @@ xyzservices = ">=2021.09.1"
 
 [[package]]
 name = "boto3"
-version = "1.35.25"
+version = "1.35.27"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.35.25-py3-none-any.whl", hash = "sha256:b1cfad301184cdd44dfd4805187ccab12de8dd28dd12a11a5cfdace17918c6de"},
-    {file = "boto3-1.35.25.tar.gz", hash = "sha256:5df4e2cbe3409db07d3a0d8d63d5220ce3202a78206ad87afdbb41519b26ce45"},
+    {file = "boto3-1.35.27-py3-none-any.whl", hash = "sha256:3da139ca038032e92086e26d23833b557f0c257520162bfd3d6f580bf8032c86"},
+    {file = "boto3-1.35.27.tar.gz", hash = "sha256:10d0fe15670b83a3f26572ab20d9152a064cee4c54b5ea9a1eeb1f0c3b807a7b"},
 ]
 
 [package.dependencies]
-botocore = ">=1.35.25,<1.36.0"
+botocore = ">=1.35.27,<1.36.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -302,13 +302,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.35.25"
+version = "1.35.27"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.35.25-py3-none-any.whl", hash = "sha256:e58d60260abf10ccc4417967923117c9902a6a0cff9fddb6ea7ff42dc1bd4630"},
-    {file = "botocore-1.35.25.tar.gz", hash = "sha256:76c5706b2c6533000603ae8683a297c887abbbaf6ee31e1b2e2863b74b2989bc"},
+    {file = "botocore-1.35.27-py3-none-any.whl", hash = "sha256:c299c70b5330a8634e032883ce8a72c2c6d9fdbc985d8191199cb86b92e7cbbd"},
+    {file = "botocore-1.35.27.tar.gz", hash = "sha256:f68875c26cd57a9d22c0f7a981ecb1636d7ce4d0e35797e04765b53e7bfed3e7"},
 ]
 
 [package.dependencies]
@@ -613,13 +613,13 @@ numpy = "*"
 
 [[package]]
 name = "chromadb"
-version = "0.5.7"
+version = "0.5.9"
 description = "Chroma."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "chromadb-0.5.7-py3-none-any.whl", hash = "sha256:2358f92804cd198b125de73076ec48f9f55c729df119919a76a6716ad0e465f6"},
-    {file = "chromadb-0.5.7.tar.gz", hash = "sha256:3432865025ef3ceeaee0a59b265a784d8b5978cb7c41593c74ddd2427c776c94"},
+    {file = "chromadb-0.5.9-py3-none-any.whl", hash = "sha256:0e7a05f03e0d27d31135abf8e681913c193c314fcbeeba456adeaa17395d697e"},
+    {file = "chromadb-0.5.9.tar.gz", hash = "sha256:1e47fffe72625e1cddf2af4d570eb39aa06c2613d509dfeb9204ac57d6cf03d9"},
 ]
 
 [package.dependencies]
@@ -867,7 +867,6 @@ files = [
 ]
 
 [[package]]
-
 name = "durationpy"
 version = "0.7"
 description = "Module for converting between datetime.timedelta and Go's Duration strings."
@@ -930,13 +929,13 @@ files = [
 
 [[package]]
 name = "exa-py"
-version = "1.1.7"
+version = "1.1.8"
 description = "Python SDK for Exa API."
 optional = false
 python-versions = "*"
 files = [
-    {file = "exa_py-1.1.7-py3-none-any.whl", hash = "sha256:a8d734ba8153614455e4f6035a29db19a3ef58dc62816a6d90da071dc179e4fd"},
-    {file = "exa_py-1.1.7.tar.gz", hash = "sha256:1f4666e7238e0fad5cfed864ad0ea0c39a444b7be32c53e695135e2238265189"},
+    {file = "exa_py-1.1.8-py3-none-any.whl", hash = "sha256:7ec81bb9a54a61444db10b2732eebff5ea62c726edbab83f5141a96eb99ee8e1"},
+    {file = "exa_py-1.1.8.tar.gz", hash = "sha256:93b1eb7c75b784fa0416a88100d7959cba3c798528afc692f5459aee463ded57"},
 ]
 
 [package.dependencies]
@@ -1205,7 +1204,6 @@ docs = ["Sphinx", "furo"]
 test = ["objgraph", "psutil"]
 
 [[package]]
-
 name = "grpcio"
 version = "1.66.1"
 description = "HTTP/2-based RPC framework"
@@ -1350,7 +1348,6 @@ socks = ["socksio (==1.*)"]
 trio = ["trio (>=0.22.0,<0.26.0)"]
 
 [[package]]
-
 name = "httptools"
 version = "0.6.1"
 description = "A collection of framework independent HTTP protocol utils."
@@ -1424,7 +1421,6 @@ socks = ["socksio (==1.*)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
-
 name = "huggingface-hub"
 version = "0.25.1"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -1934,13 +1930,13 @@ tests = ["pytest (>=4.6)"]
 
 [[package]]
 name = "neo4j"
-version = "5.24.0"
+version = "5.25.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.24.0-py3-none-any.whl", hash = "sha256:5b4705cfe8130020f33e75e31ad3fcfe67ee958e07d0c3c4936e9c8245a1ea58"},
-    {file = "neo4j-5.24.0.tar.gz", hash = "sha256:499ca35135847528f4ee70314bd49c8b08b031e4dfd588bb06c1c2fb35d729e2"},
+    {file = "neo4j-5.25.0-py3-none-any.whl", hash = "sha256:df310eee9a4f9749fb32bb9f1aa68711ac417b7eba3e42faefd6848038345ffa"},
+    {file = "neo4j-5.25.0.tar.gz", hash = "sha256:7c82001c45319092cc0b5df4c92894553b7ab97bd4f59655156fa9acab83aec9"},
 ]
 
 [package.dependencies]
@@ -2030,7 +2026,6 @@ signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
-
 name = "onnxruntime"
 version = "1.19.2"
 description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
@@ -2074,13 +2069,13 @@ sympy = "*"
 
 [[package]]
 name = "openai"
-version = "1.47.1"
+version = "1.48.0"
 description = "The official Python library for the openai API"
 optional = false
 python-versions = ">=3.7.1"
 files = [
-    {file = "openai-1.47.1-py3-none-any.whl", hash = "sha256:34277583bf268bb2494bc03f48ac123788c5e2a914db1d5a23d5edc29d35c825"},
-    {file = "openai-1.47.1.tar.gz", hash = "sha256:62c8f5f478f82ffafc93b33040f8bb16a45948306198bd0cba2da2ecd9cf7323"},
+    {file = "openai-1.48.0-py3-none-any.whl", hash = "sha256:7c4af223f0bf615ce4a12453729952c9a8b04ffe8c78aa77981b12fd970149cf"},
+    {file = "openai-1.48.0.tar.gz", hash = "sha256:1d3b69ea62c287c4885a6f3ce840768564cd5f52c60ac5f890fef80d43cc4799"},
 ]
 
 [package.dependencies]
@@ -2117,13 +2112,13 @@ test = ["bandit[toml] (>=1.7.5)", "black (>=23.10.0)", "check-manifest (>=0.49)"
 
 [[package]]
 name = "openmeteo-sdk"
-version = "1.15.0"
+version = "1.16.0"
 description = "Open-Meteo Python SDK"
 optional = false
 python-versions = ">=3.8.1"
 files = [
-    {file = "openmeteo_sdk-1.15.0-py3-none-any.whl", hash = "sha256:711dcd3464dc8f96949815a6877b69b63272e223717ee78118dc7f6388369ad4"},
-    {file = "openmeteo_sdk-1.15.0.tar.gz", hash = "sha256:f49aa86aa4d8606f4ab9d94e4453699e4df81582979d9bde4759102e66d69fcc"},
+    {file = "openmeteo_sdk-1.16.0-py3-none-any.whl", hash = "sha256:a8d5a3e0e838ee82ed94b8662ef915b83d478d47bd01db3e923cf9b6ad095f58"},
+    {file = "openmeteo_sdk-1.16.0.tar.gz", hash = "sha256:505ccacbc8e6473f863c15abf6c2b711913b73878d90ade74896159569950865"},
 ]
 
 [package.dependencies]
@@ -2500,9 +2495,9 @@ files = [
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -2836,8 +2831,8 @@ files = [
 annotated-types = ">=0.6.0"
 pydantic-core = "2.23.4"
 typing-extensions = [
-    {version = ">=4.6.1", markers = "python_version < \"3.13\""},
     {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
+    {version = ">=4.6.1", markers = "python_version < \"3.13\""},
 ]
 
 [package.extras]
@@ -3824,7 +3819,6 @@ slack = ["slack-sdk"]
 telegram = ["requests"]
 
 [[package]]
-
 name = "typer"
 version = "0.12.5"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
@@ -4296,5 +4290,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<=3.13"
-
-content-hash = "ee20ee401c167e983a6389d79ca1d39f630cba14391bc9a830e246af2f059e50"
+content-hash = "d438c62ae66bbd41f046d4c9d4bd1b284c06fa359d496b700a4766b50483ab6b"
