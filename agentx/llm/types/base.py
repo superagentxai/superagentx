@@ -36,7 +36,7 @@ class LLMModelConfig(BaseModel):
 
     async_mode: bool | None = Field(
         description='Asynchronous mode of OpenAI or Azure OpenAI client',
-        default=None
+        default=True
     )
 
     @model_validator(mode="after")
