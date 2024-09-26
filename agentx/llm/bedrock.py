@@ -20,6 +20,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+_retries = 5
+
 
 class BedrockClient(Client):
 
@@ -29,7 +31,14 @@ class BedrockClient(Client):
 
     def chat_completion(self,
                         *,
-                        chat_completion_params: ChatCompletionParams):
+                        chat_completion_params: ChatCompletionParams) -> ChatCompletion | None:
+        """
+        Chat Completion using Bedrock-runtime in synchronous mode
+
+        @param chat_completion_params:
+        @return ChatCompletion:
+        """
+
         if chat_completion_params:
             tools = chat_completion_params.tools
 
@@ -62,7 +71,7 @@ class BedrockClient(Client):
                     raise RuntimeError(f"Failed to get response from Bedrock: {e}")
 
                 if response is None:
-                    raise RuntimeError(f"Failed to get response from Bedrock after retrying {self._retries} times.")
+                    raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
 
                 try:
                     asyncio.get_running_loop()  # Triggers RuntimeError if no running event loop
@@ -83,6 +92,12 @@ class BedrockClient(Client):
     async def achat_completion(self,
                                *,
                                chat_completion_params: ChatCompletionParams) -> ChatCompletion | None:
+        """
+                Chat Completion using Bedrock-runtime in asynchronous mode
+
+                @param chat_completion_params:
+                @return ChatCompletion:
+                """
         if chat_completion_params:
             tools = chat_completion_params.tools
 
@@ -116,7 +131,7 @@ class BedrockClient(Client):
                     raise RuntimeError(f"Failed to get response from Bedrock: {e}")
 
                 if response is None:
-                    raise RuntimeError(f"Failed to get response from Bedrock after retrying {self._retries} times.")
+                    raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
 
                 chat_completion: ChatCompletion = await BedrockClient.__prepare_bedrock_formatted_output_(
                     response=response,
@@ -308,10 +323,8 @@ class BedrockClient(Client):
 
         return "".join(formatted_messages) + "\n\nAssistant:"
 
+    def embed(self, text: str, **kwargs):
+        pass
 
-def embed(self, text: str, **kwargs):
-    pass
-
-
-async def aembed(self, text: str, **kwargs):
-    pass
+    async def aembed(self, text: str, **kwargs):
+        pass

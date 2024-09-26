@@ -124,7 +124,6 @@ class LLMClient:
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
 
-
     def chat_completion(
             self,
             *,
