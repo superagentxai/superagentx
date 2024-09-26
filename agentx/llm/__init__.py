@@ -14,6 +14,7 @@ from agentx.llm.models import ChatCompletionParams
 from agentx.llm.openai import OpenAIClient
 from agentx.llm.types.base import LLMModelConfig
 from agentx.llm.types.response import Message, Tool
+from agentx.utils.helper import iter_to_aiter
 from agentx.utils.llm_config import LLMType
 
 logger = logging.getLogger(__name__)
@@ -42,13 +43,13 @@ class LLMClient:
 
     def __init__(
             self,
+            *,
             llm_config: dict,
             **kwargs
     ):
         self.llm_config_model = LLMModelConfig(**llm_config)
-        llm_type = self.llm_config_model.llm_type
 
-        match llm_type:
+        match self.llm_config_model.llm_type:
 
             case LLMType.OPENAI_CLIENT:  # OPEN AI Client Type
 
@@ -68,7 +69,7 @@ class LLMClient:
                 cli.model = self.llm_config_model.model
 
                 # Assign the client to self.client
-                self.client = OpenAIClient(cli)
+                self.client = OpenAIClient(client=cli)
 
             case LLMType.AZURE_OPENAI_CLIENT:
 
@@ -93,7 +94,7 @@ class LLMClient:
                 cli.model = self.llm_config_model.model
 
                 # Assign the client to self.client
-                self.client = OpenAIClient(cli)
+                self.client = OpenAIClient(client=cli)
 
             case LLMType.BEDROCK_CLIENT:
 
@@ -109,17 +110,24 @@ class LLMClient:
                 bedrock_config = Config(
                     region_name=aws_region,
                     signature_version="v4",
-                    retries={"max_attempts": _retries, "mode": "standard"},
+                    retries={
+                        "max_attempts": _retries,
+                        "mode": "standard"
+                    },
                 )
 
                 # Assign Bedrock client to self.client
-                aws_cli = boto3.client(service_name="bedrock-runtime", aws_access_key_id=aws_access_key,
-                                       aws_secret_access_key=aws_secret_key, config=bedrock_config)
+                aws_cli = boto3.client(
+                    service_name="bedrock-runtime",
+                    aws_access_key_id=aws_access_key,
+                    aws_secret_access_key=aws_secret_key,
+                    config=bedrock_config
+                )
 
                 # Set the model attribute
                 aws_cli.model = self.llm_config_model.model
 
-                self.client = BedrockClient(aws_cli)
+                self.client = BedrockClient(client=aws_cli)
 
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
@@ -180,7 +188,7 @@ class LLMClient:
 
         if response:
             # Iterate over each choice and create a Message instance
-            for choice in response.choices:
+            async for choice in iter_to_aiter(response.choices):
                 tool_calls_data = []
                 if choice.message.tool_calls:
                     tool_calls_data = [
@@ -188,7 +196,7 @@ class LLMClient:
                             tool_type=tool_call.type,
                             name=tool_call.function.name,
                             arguments=json.loads(tool_call.function.arguments)  # Use json.loads for safer parsing
-                        ) for tool_call in choice.message.tool_calls
+                        ) async for tool_call in iter_to_aiter(choice.message.tool_calls)
                     ]
 
                 # Extract token details from usage

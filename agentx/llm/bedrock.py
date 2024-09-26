@@ -25,13 +25,18 @@ _retries = 5
 
 class BedrockClient(Client):
 
-    def __init__(self, client: boto3.client):
+    def __init__(
+            self,
+            *,
+            client: boto3.client
+    ):
         self.client = client
-        super().__init__()
 
-    def chat_completion(self,
-                        *,
-                        chat_completion_params: ChatCompletionParams) -> ChatCompletion | None:
+    def chat_completion(
+            self,
+            *,
+            chat_completion_params: ChatCompletionParams
+    ) -> ChatCompletion | None:
         """
         Chat Completion using Bedrock-runtime in synchronous mode
 
@@ -70,7 +75,7 @@ class BedrockClient(Client):
                 except Exception as e:
                     raise RuntimeError(f"Failed to get response from Bedrock: {e}")
 
-                if response is None:
+                if not response:
                     raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
 
                 try:
@@ -78,26 +83,28 @@ class BedrockClient(Client):
                     # Create a separate thread so we can block before returning
                     with ThreadPoolExecutor(1) as pool:
                         chat_completion: ChatCompletion = pool.submit(
-                            lambda: asyncio.run(BedrockClient.__prepare_bedrock_formatted_output_(
-                                response=response,
-                                model_id=model_id,
-                                is_async=True))).result()
+                            lambda: asyncio.run(
+                                BedrockClient.__prepare_bedrock_formatted_output_(
+                                    response=response,
+                                    model_id=model_id,
+                                    is_async=True
+                                )
+                            )).result()
                         return chat_completion
                 except RuntimeError as error:
                     logger.error(f'Unable tp process the result from Bedrock response {error} ')
-                    return None
-            else:
-                return None
 
-    async def achat_completion(self,
-                               *,
-                               chat_completion_params: ChatCompletionParams) -> ChatCompletion | None:
+    async def achat_completion(
+            self,
+            *,
+            chat_completion_params: ChatCompletionParams
+    ) -> ChatCompletion | None:
         """
-                Chat Completion using Bedrock-runtime in asynchronous mode
+        Chat Completion using Bedrock-runtime in asynchronous mode
 
-                @param chat_completion_params:
-                @return ChatCompletion:
-                """
+        @param chat_completion_params:
+        @return ChatCompletion:
+        """
         if chat_completion_params:
             tools = chat_completion_params.tools
 
@@ -109,24 +116,28 @@ class BedrockClient(Client):
                 "maxTokens": chat_completion_params.max_tokens,
                 "topP": chat_completion_params.top_p
             }
-            for key, value in list(inference_config.items()):
+            async for key, value in iter_to_aiter(inference_config.items()):
                 if value is None:
                     del inference_config[key]
 
             if tools:
                 messages = chat_completion_params.messages
-                conversations = await sync_to_async(BedrockClient._construct_message, messages)
+                conversations = await sync_to_async(
+                    BedrockClient._construct_message,
+                    messages
+                )
 
                 tools_config = {"tools": tools}
 
                 try:
                     # Convert from synchronous to asynchronous mode and invoke Bedrock client!
-                    response = await sync_to_async(self.client.converse,
-                                                   modelId=model_id,
-                                                   messages=conversations,
-                                                   inferenceConfig=inference_config,
-                                                   toolConfig=tools_config,
-                                                   )
+                    response = await sync_to_async(
+                        self.client.converse,
+                        odelId=model_id,
+                        messages=conversations,
+                        inferenceConfig=inference_config,
+                        toolConfig=tools_config,
+                    )
                 except Exception as e:
                     raise RuntimeError(f"Failed to get response from Bedrock: {e}")
 
@@ -136,37 +147,56 @@ class BedrockClient(Client):
                 chat_completion: ChatCompletion = await BedrockClient.__prepare_bedrock_formatted_output_(
                     response=response,
                     model_id=model_id,
-                    is_async=True)
+                    is_async=True
+                )
                 return chat_completion
-            else:
-                return None
 
     @staticmethod
-    async def __prepare_bedrock_formatted_output_(response, model_id: str, is_async: bool) -> ChatCompletion:
+    async def __prepare_bedrock_formatted_output_(
+            response,
+            model_id: str,
+            is_async: bool
+    ) -> ChatCompletion:
         response_message = response["output"]["message"]
 
         finish_reason = (
-            await sync_to_async(BedrockClient.convert_stop_to_finish_reason, response["stopReason"])
+            await sync_to_async(
+                BedrockClient.convert_stop_to_finish_reason,
+                response["stopReason"]
+            )
             if is_async
-            else BedrockClient.convert_stop_to_finish_reason(response["stopReason"])
+            else await sync_to_async(
+                BedrockClient.convert_stop_to_finish_reason,
+                response["stopReason"]
+            )
         )
 
         if finish_reason == "tool_calls":
             tool_calls = (
-                await sync_to_async(BedrockClient.convert_tool_response_to_openai_format, response_message["content"])
+                await sync_to_async(
+                    BedrockClient.convert_tool_response_to_openai_format,
+                    response_message["content"]
+                )
                 if is_async
-                else BedrockClient.convert_tool_response_to_openai_format(response_message["content"])
+                else await sync_to_async(
+                    BedrockClient.convert_tool_response_to_openai_format,
+                    response_message["content"]
+                )
             )
         else:
             tool_calls = None
 
         text = ""
-        for content in response_message["content"]:
+        async for content in iter_to_aiter(response_message["content"]):
             if "text" in content:
                 text = content["text"]
             # TODO: Images / Videos type need to add in future!!
 
-        message = ChatCompletionMessage(role="assistant", content=text, tool_calls=tool_calls)
+        message = ChatCompletionMessage(
+            role="assistant",
+            content=text,
+            tool_calls=tool_calls
+        )
 
         response_usage = response["usage"]
 
@@ -178,14 +208,25 @@ class BedrockClient(Client):
 
         return ChatCompletion(
             id=response["ResponseMetadata"]["RequestId"],
-            choices=[Choice(finish_reason=finish_reason, index=0, message=message)],
+            choices=
+            [
+                Choice(
+                    finish_reason=finish_reason,
+                    index=0,
+                    message=message
+                )
+            ],
             created=int(time.time()),
             model=model_id,
             object="chat.completion",
             usage=usage,
         )
 
-    async def __prepare_input_(self, *, chat_completion_params: ChatCompletionParams):
+    async def __prepare_input_(
+            self,
+            *,
+            chat_completion_params: ChatCompletionParams
+    ):
         if chat_completion_params:
             tools = chat_completion_params.tools
 
@@ -194,20 +235,24 @@ class BedrockClient(Client):
 
             if tools:
                 messages = chat_completion_params.messages
-                conversations = await BedrockClient._construct_message(messages)
+                conversations = await sync_to_async(BedrockClient._construct_message, messages)
 
                 inference_config = {
                     "temperature": chat_completion_params.temperature,
                     "maxTokens": chat_completion_params.max_tokens,
                     "topP": chat_completion_params.top_p
                 }
-                for key, value in list(inference_config.items()):
+                async for key, value in iter_to_aiter(inference_config.items()):
                     if value is None:
                         del inference_config[key]
 
                 tools_config = {"tools": tools}
 
-    async def get_tool_json(self, func: typing.Callable) -> dict:
+    async def get_tool_json(
+            self,
+            *,
+            func: typing.Callable
+    ) -> dict:
         _func_name = func.__name__
         _doc_str = inspect.getdoc(func)
         _properties = {}
@@ -316,7 +361,7 @@ class BedrockClient(Client):
             str: A formatted string combining all messages, structured with roles capitalized and separated by newlines.
         """
         formatted_messages = []
-        for message in messages:
+        async for message in iter_to_aiter(messages):
             role = message["role"].capitalize()
             content = message["content"]
             formatted_messages.append(f"\n\n{role}: {content}")

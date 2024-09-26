@@ -30,6 +30,7 @@ class OpenAIClient(Client):
 
     def __init__(
             self,
+            *,
             client: OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI
     ):
 
