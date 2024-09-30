@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import LiteralString, Any
+from typing import Literal, Any
 
 from agentx.agent.engine import Engine
 from agentx.constants import SEQUENCE, PARALLEL
@@ -67,7 +67,7 @@ class Agent:
     async def add(
             self,
             *engines: Engine,
-            execute_type: LiteralString[SEQUENCE, PARALLEL] = SEQUENCE
+            execute_type: Literal[SEQUENCE, PARALLEL] = SEQUENCE
     ):
         if execute_type == SEQUENCE:
             self.engines += engines
