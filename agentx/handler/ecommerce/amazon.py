@@ -24,7 +24,6 @@ class AmazonHandler(BaseHandler):
             endpoint: str,
             params: dict
     ):
-
         """
         Asynchronously retrieves data from a specified API endpoint with provided query parameters.
 
@@ -36,9 +35,7 @@ class AmazonHandler(BaseHandler):
         parameter:
         endpoint (str): The API endpoint from which to retrieve data.
         params (dict): A dictionary of query parameters to include in the request.
-
         """
-
 
         _url = f'{self.base_url}/{endpoint.strip("/")}'
         logger.info(f"{_url}")
@@ -58,7 +55,6 @@ class AmazonHandler(BaseHandler):
             self,
             item: list
     ):
-
         """
         Asynchronously constructs and processes data from a given list of items.
 
@@ -74,7 +70,6 @@ class AmazonHandler(BaseHandler):
                 an individual data point or object that will be transformed or processed
                 by the method. The content and type of each list element should conform
                 to the expected format for proper processing.
-
         """
 
         async for item in iter_to_aiter(item):
@@ -93,7 +88,6 @@ class AmazonHandler(BaseHandler):
             *,
             query: str
     ):
-
         """
         Asynchronously searches for a product based on a given query string.
 
@@ -108,7 +102,6 @@ class AmazonHandler(BaseHandler):
                 A string containing the search term or phrase used to find relevant products.
                 This could be the product name, a keyword, or any other search criterion
                 supported by the underlying data source.
-
         """
 
         _endpoint = f"search"
@@ -129,7 +122,6 @@ class AmazonHandler(BaseHandler):
             self,
             asin: str
     ):
-
         """
         Asynchronously retrieves reviews for a specific product identified by its ASIN.
 
@@ -144,7 +136,6 @@ class AmazonHandler(BaseHandler):
                 The Amazon Standard Identification Number (ASIN) of the product whose reviews
                 are to be retrieved. The ASIN is a unique identifier used by Amazon to track
                 products, and it should be a valid string conforming to Amazon's ASIN format.
-
         """
 
         _endpoint = f"product-reviews"
