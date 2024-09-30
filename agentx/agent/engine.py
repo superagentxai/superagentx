@@ -18,42 +18,14 @@ class Engine:
             handler: BaseHandler,
             llm: LLMClient,
             prompt_template: PromptTemplate,
-            input_prompt: str,
             tools: list[dict] | list[str] | None = None,
             output_parser: BaseParser | None = None
     ):
         self.handler = handler
         self.llm = llm
         self.prompt_template = prompt_template
-        self.input_prompt = input_prompt
         self.tools = tools
         self.output_parser = output_parser
-
-    @staticmethod
-    async def __func_props(func: typing.Callable) -> dict:
-        _func_name = func.__name__
-        _doc_str = inspect.getdoc(func)
-        _properties = {}
-        _type_hints = typing.get_type_hints(func)
-        async for param, param_type in iter_to_aiter(_type_hints.items()):
-            if param != 'return':
-                _properties[param] = {
-                    "llm_type": param_type.__name__,
-                    "description": f"The {param.replace('_', ' ')}."
-                }
-        return {
-            'type': 'function',
-            'function': {
-                'name': _func_name,
-                'description': _doc_str,
-                'parameters': {
-                    "llm_type": "object",
-                    "properties": _properties,
-                    "required": list(_properties.keys()),
-                    "additionalProperties": False
-                }
-            }
-        }
 
     async def __funcs_props(self, funcs: list[str] | list[dict]) -> list[dict]:
         _funcs_props: list[dict] = []
@@ -83,12 +55,13 @@ class Engine:
 
     async def start(
             self,
+            input_prompt: str,
             **kwargs
     ) -> list[typing.Any]:
         if not kwargs:
             kwargs = {}
         prompt_messages = await self.prompt_template.get_messages(
-            input_prompt=self.input_prompt,
+            input_prompt=input_prompt,
             **kwargs
         )
         tools = await self._construct_tools()

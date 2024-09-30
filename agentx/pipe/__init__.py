@@ -11,9 +11,9 @@ class AgentXPipe:
     def __init__(
             self,
             *,
-            goal: str,
-            role: str,
-            prompt: str,
+            goal: str | None = None,
+            role: str | None = None,
+            prompt: str | None = None,
             name: str | None = None,
             description: str | None = None
     ):
@@ -40,10 +40,10 @@ class AgentXPipe:
         async for _agents in iter_to_aiter(self.agents):
             if isinstance(_agents, list):
                 _res = await asyncio.gather(
-                    *[_agent.start() async for _agent in iter_to_aiter(_agents)]
+                    *[_agent.execute() async for _agent in iter_to_aiter(_agents)]
                 )
             else:
-                _res = await _agents.start()
+                _res = await _agents.execute()
             results.append(_res)
         # TODO: Needs to fix for pipe out
         # TODO: Needs to verify its goal after all set
