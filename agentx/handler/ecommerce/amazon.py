@@ -12,24 +12,11 @@ class AmazonHandler(BaseHandler):
 
     def __init__(
             self,
-            api_key: str,
-            page: int,
-            country: str,
-            sort_by: str,
-            product_condition: str,
-            is_prime: str,
-            deals_and_discounts: str
+            api_key: str
 
     ):
 
         self.api_key = api_key
-        self.page = page
-        self.country = country
-        self.sort_by = sort_by
-        self.product_condition = product_condition
-        self.is_prime = is_prime
-        self.deals_and_discounts = deals_and_discounts
-
 
     async def _retrieve(
             self,
@@ -65,8 +52,7 @@ class AmazonHandler(BaseHandler):
                         # _review_data.append(data)
         # yield _review_data
 
-
-    async def search_product(self, query:str):
+    async def search_product(self, query: str):
         _endpoint = f"search"
         params = {
             "query": query
@@ -76,7 +62,7 @@ class AmazonHandler(BaseHandler):
             data = res.get("data").get("products")
             return self._construct_data(data)
 
-    async def product_reviews(self, asin:str):
+    async def product_reviews(self, asin: str):
         _endpoint = f"product-reviews"
         params = {
             "asin": asin
@@ -88,6 +74,3 @@ class AmazonHandler(BaseHandler):
             'search_product',
             'product-reviews'
         )
-
-
-
