@@ -25,12 +25,14 @@ class Agent:
             *,
             goal: str,
             role: str,
+            prompt: str,
             name: str | None = None,
             description: str | None = None,
             max_retry: int = 5
     ):
         self.role = role
         self.goal = goal
+        self.prompt = prompt
         self.engines: list[Engine | list[Engine]] = []
         self.name = name
         self.description = description
