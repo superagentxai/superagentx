@@ -8,7 +8,7 @@ from agentx.handler.aws.ec2 import AWSEC2Handler, logger
 
    1.pytest --log-cli-level=INFO tests/handlers/test_aws_ec2.py::TestAWSEC2::test_ec2_handler_get_all_instances
    2.pytest --log-cli-level=INFO tests/handlers/test_aws_ec2.py::TestAWSEC2::test_ec2_handler_start_instance
-   3.pytest --log-cli-level=INFO tests/handlers/test_aws_ec2.py::TestAWSEC2::test_ec2_handler_instance_status
+   3.pytest --log-cli-level=INFO tests/handlers/test_aws_ec2.py::TestAWSEC2::test_ec2_handler_get_instance_status
    4.pytest --log-cli-level=INFO tests/handlers/test_aws_ec2.py::TestAWSEC2::test_ec2_handler_stop_instance
 
 '''

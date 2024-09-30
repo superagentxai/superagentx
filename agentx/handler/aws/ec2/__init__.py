@@ -119,10 +119,9 @@ class AWSEC2Handler(BaseHandler):
             return response
         except NoCredentialsError:
             logging.error("Credentials not available.")
-            return None
         except ClientError as e:
             logging.error(f"Client error: {e}")
-            return None
+        return
 
 
     def __dir__(self):
