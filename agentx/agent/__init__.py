@@ -5,23 +5,37 @@ from agentx.agent.engine import Engine
 from agentx.constants import SEQUENCE, PARALLEL
 from agentx.utils.helper import iter_to_aiter
 
+_GOAL_PROMPT_TEMPLATE = """
+
+
+GOAL:
+    {goal}
+
+ROLE:
+    {role}
+    
+
+"""
+
 
 class Agent:
 
     def __init__(
             self,
             *,
+            goal: str,
+            role: str,
+            prompt: str,
             name: str | None = None,
             description: str | None = None,
-            role: str | None = None,
-            goal: str | None = None,
             max_retry: int = 5
     ):
+        self.role = role
+        self.goal = goal
+        self.prompt = prompt
         self.engines: list[Engine | list[Engine]] = []
         self.name = name
         self.description = description
-        self.role = role
-        self.goal = goal
         self.max_retry = max_retry
 
     async def add(
