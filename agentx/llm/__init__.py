@@ -152,7 +152,7 @@ class LLMClient:
             *,
             func: typing.Callable
     ) -> dict:
-        return await self.get_tool_json(func=func)
+        return await self.client.get_tool_json(func=func)
 
     def embed(
             self,
