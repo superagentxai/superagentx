@@ -11,7 +11,7 @@ from pydantic import typing
 from agentx.llm import ChatCompletionParams
 from agentx.llm.client import Client
 from agentx.llm.constants import OPENAI_PRICE1K
-from agentx.utils.helper import sync_to_async, iter_to_aiter
+from agentx.utils.helper import sync_to_async, iter_to_aiter, ptype_to_json_scheme
 
 logger = logging.getLogger(__name__)
 _OPEN_API_BASE_URL_PREFIX = "https://api.openai.com"
@@ -136,7 +136,7 @@ class OpenAIClient(Client):
         async for param, param_type in iter_to_aiter(_type_hints.items()):
             if param != 'return':
                 _properties[param] = {
-                    "type": param_type.__name__,
+                    "type": await ptype_to_json_scheme(param_type.__name__),
                     "description": f"The {param.replace('_', ' ')}."
                 }
         return {
