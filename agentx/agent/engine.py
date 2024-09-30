@@ -20,8 +20,7 @@ class Engine:
             prompt_template: PromptTemplate,
             input_prompt: str,
             tools: list[dict] | list[str] | None = None,
-            output_parser: BaseParser | None = None,
-            **kwargs
+            output_parser: BaseParser | None = None
     ):
         self.handler = handler
         self.llm = llm
@@ -29,7 +28,6 @@ class Engine:
         self.input_prompt = input_prompt
         self.tools = tools
         self.output_parser = output_parser
-        self.kwargs = kwargs
 
     @staticmethod
     async def __func_props(func: typing.Callable) -> dict:
@@ -83,10 +81,15 @@ class Engine:
             _tools = await self.__funcs_props(funcs=funcs)
         return _tools
 
-    async def start(self) -> list[typing.Any]:
+    async def start(
+            self,
+            **kwargs
+    ) -> list[typing.Any]:
+        if not kwargs:
+            kwargs = {}
         prompt_messages = await self.prompt_template.get_messages(
             input_prompt=self.input_prompt,
-            **self.kwargs
+            **kwargs
         )
         tools = await self._construct_tools()
         chat_completion_params = ChatCompletionParams(
