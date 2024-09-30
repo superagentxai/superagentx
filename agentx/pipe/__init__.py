@@ -1,8 +1,9 @@
 import asyncio
-from typing import LiteralString
+import uuid
+from typing import Literal
 
 from agentx.agent import Agent
-from agentx.constants import SEQUENCE, PARALLEL
+from agentx.constants import SEQUENCE
 from agentx.utils.helper import iter_to_aiter
 
 
@@ -27,7 +28,7 @@ class AgentXPipe:
     async def add(
             self,
             *agents: Agent,
-            execute_type: LiteralString[SEQUENCE, PARALLEL] = SEQUENCE
+            execute_type: Literal['SEQUENCE', 'PARALLEL'] = 'SEQUENCE'
     ):
         if execute_type == SEQUENCE:
             self.agents += agents

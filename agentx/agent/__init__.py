@@ -3,7 +3,7 @@ import uuid
 from typing import Literal, Any
 
 from agentx.agent.engine import Engine
-from agentx.constants import SEQUENCE, PARALLEL
+from agentx.constants import SEQUENCE
 from agentx.llm import LLMClient, ChatCompletionParams
 from agentx.utils.helper import iter_to_aiter
 
@@ -67,7 +67,7 @@ class Agent:
     async def add(
             self,
             *engines: Engine,
-            execute_type: Literal[SEQUENCE, PARALLEL] = SEQUENCE
+            execute_type: Literal['SEQUENCE', 'PARALLEL'] = 'SEQUENCE'
     ):
         if execute_type == SEQUENCE:
             self.engines += engines
