@@ -1,4 +1,5 @@
 import inspect
+import logging
 import typing
 
 from agentx.exceptions import ToolError
@@ -8,6 +9,8 @@ from agentx.llm import LLMClient, ChatCompletionParams
 from agentx.prompt import PromptTemplate
 from agentx.utils.helper import iter_to_aiter, sync_to_async
 from agentx.utils.parsers.base import BaseParser
+
+logger = logging.getLogger(__name__)
 
 
 class Engine:
@@ -34,15 +37,18 @@ class Engine:
             if isinstance(_func_name, str):
                 _func_name = _func_name.split('.')[-1]
                 _func = getattr(self.handler, _func_name)
+                logger.debug(f"Func Name => {_func_name}, Func => {_func}")
             else:
                 # TODO: Needs to fix this for tools contains list of dict
                 pass
-            if inspect.isfunction(_func):
+            if inspect.ismethod(_func) or inspect.isfunction(_func):
+                logger.debug(f"{_func_name} is function!")
                 _funcs_props.append(await self.llm.get_tool_json(func=_func))
         return _funcs_props
 
     async def _construct_tools(self) -> list[dict]:
         funcs = dir(self.handler)
+        logger.debug(f"Handler Funcs => {funcs}")
         if not funcs:
             raise InvalidHandler(str(self.handler))
 
@@ -64,14 +70,18 @@ class Engine:
             input_prompt=input_prompt,
             **kwargs
         )
+        logger.debug(f"Prompt message => {prompt_messages}")
         tools = await self._construct_tools()
+        logger.debug(f"Handler Tools => {tools}")
         chat_completion_params = ChatCompletionParams(
             messages=prompt_messages,
             tools=tools
         )
+        logger.info(f"Chat completion params => {chat_completion_params.model_dump_json(exclude_none=True)}")
         messages = await self.llm.afunc_chat_completion(
             chat_completion_params=chat_completion_params
         )
+        logger.info(f"Func chat completion => {messages}")
         if not messages:
             raise ToolError("Tool not found for the inputs!")
 

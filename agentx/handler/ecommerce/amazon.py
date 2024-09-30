@@ -150,5 +150,5 @@ class AmazonHandler(BaseHandler):
     def __dir__(self):
         return (
             'search_product',
-            'product_reviews'
+            # 'product_reviews'
         )
