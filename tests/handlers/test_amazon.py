@@ -26,7 +26,7 @@ def amazon_client_init() -> AmazonHandler:
 class TestAmazon:
 
     async def test_search_product(self, amazon_client_init: AmazonHandler):
-        async for item in await amazon_client_init.search_product(query="Oneplus"):
+        async for item in await amazon_client_init.product_search(query="Oneplus"):
             logger.info(item)
 
     async def test_product_reviews(self, amazon_client_init: AmazonHandler):

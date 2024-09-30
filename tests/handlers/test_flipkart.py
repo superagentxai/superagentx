@@ -23,7 +23,7 @@ def flipkart_client_init() -> FlipkartHandler:
 class TestFlipkart:
 
     async def test_search_product(self, flipkart_client_init: FlipkartHandler):
-        async for item in await flipkart_client_init.search_product(query="apple"):
+        async for item in await flipkart_client_init.product_search(query="apple"):
             logger.info(item)
 
     async def test_product_reviews(self, flipkart_client_init: FlipkartHandler):

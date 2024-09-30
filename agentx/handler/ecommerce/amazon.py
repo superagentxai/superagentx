@@ -53,7 +53,7 @@ class AmazonHandler(BaseHandler):
 
     async def _construct_data(
             self,
-            item: list
+            data: list
     ):
         """
         Asynchronously constructs and processes data from a given list of items.
@@ -72,18 +72,18 @@ class AmazonHandler(BaseHandler):
                 to the expected format for proper processing.
         """
 
-        async for item in iter_to_aiter(item):
+        async for item in iter_to_aiter(data):
             if item:
                 asin_id = item.get("asin")
                 reviews = await self.product_reviews(asin_id)
                 if reviews:
                     review_data = reviews.get("data")
-                    if review_data and review_data.get("asin") == asin_id:
+                    if review_data and review_data.get("asin", "") == asin_id:
                         _reviews = review_data.get("reviews")
                         item["_reviews"] = _reviews
                         yield item
 
-    async def search_product(
+    async def product_search(
             self,
             *,
             query: str
@@ -149,6 +149,6 @@ class AmazonHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            'search_product',
-            # 'product_reviews'
+            'product_search',
+            'product_reviews'
         )

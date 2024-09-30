@@ -14,7 +14,6 @@ class FlipkartHandler(BaseHandler):
             self,
             api_key: str
     ):
-
         self.api_key = api_key
 
     async def _retrieve(
@@ -52,7 +51,7 @@ class FlipkartHandler(BaseHandler):
 
     async def _construct_data(
             self,
-            item: list
+            data: list
     ):
         """
         Asynchronously constructs and processes data from a given list of items.
@@ -71,16 +70,16 @@ class FlipkartHandler(BaseHandler):
                 to the expected format for proper processing.
         """
 
-        async for item in iter_to_aiter(item):
+        async for item in iter_to_aiter(data):
             if item:
                 pid_id = item.get("pid")
                 reviews = await self.product_reviews(pid_id)
-                if reviews and reviews.get("pid") == pid_id:
+                if reviews and reviews.get("pid", "") == pid_id:
                     _reviews = reviews.get("reviews")
                     item["_reviews"] = _reviews
                     yield item
 
-    async def search_product(
+    async def product_search(
             self,
             *,
             query: str
@@ -136,7 +135,10 @@ class FlipkartHandler(BaseHandler):
         params = {
             "pid": pid
         }
-        return await self._retrieve(endpoint=_endpoint, params=params)
+        return await self._retrieve(
+            endpoint=_endpoint,
+            params=params
+        )
 
     def __dir__(self):
         return (
