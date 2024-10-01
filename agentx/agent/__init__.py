@@ -5,6 +5,7 @@ from typing import Literal, Any
 from agentx.agent.engine import Engine
 from agentx.constants import SEQUENCE
 from agentx.llm import LLMClient, ChatCompletionParams
+from agentx.prompt import PromptTemplate
 from agentx.utils.helper import iter_to_aiter
 
 _GOAL_PROMPT_TEMPLATE = """Review the given output context and make sure
@@ -48,6 +49,7 @@ class Agent:
             goal: str,
             role: str,
             llm: LLMClient,
+            prompt_template: PromptTemplate,
             input_prompt: str | None = None,
             output_format: str | None = None,
             name: str | None = None,
@@ -57,6 +59,7 @@ class Agent:
         self.role = role
         self.goal = goal
         self.llm = llm
+        self.prompt_template = prompt_template
         self.input_prompt = input_prompt
         self.output_format = output_format
         self.name = name or uuid.uuid4().hex
@@ -85,8 +88,11 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
+        prompt_message = await self.prompt_template.get_messages(
+            input_prompt=_prompt
+        )
         chat_completion_params = ChatCompletionParams(
-            messages=_prompt
+            messages=prompt_message
         )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
