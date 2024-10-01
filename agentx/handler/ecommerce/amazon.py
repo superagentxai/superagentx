@@ -24,19 +24,6 @@ class AmazonHandler(BaseHandler):
             endpoint: str,
             params: dict
     ):
-        """
-        Asynchronously retrieves data from a specified API endpoint with provided query parameters.
-
-        This method is designed to interact with an external API, sending a GET request
-        to the specified `endpoint`. It passes the `params` dictionary as query parameters
-        for the API call. The method is asynchronous, meaning it should be awaited to
-        prevent blocking execution in an event-driven or concurrent environment.
-
-        parameter:
-        endpoint (str): The API endpoint from which to retrieve data.
-        params (dict): A dictionary of query parameters to include in the request.
-        """
-
         _url = f'{self.base_url}/{endpoint.strip("/")}'
         logger.info(f"{_url}")
         headers = {
@@ -55,23 +42,6 @@ class AmazonHandler(BaseHandler):
             self,
             data: list
     ):
-        """
-        Asynchronously constructs and processes data from a given list of items.
-
-        This method processes each element in the provided `item` list and transforms it
-        into a specific format or structure. The details of the transformation depend on
-        the business logic defined within the method. Since the method is asynchronous,
-        it is likely interacting with other asynchronous functions or awaiting I/O-bound operations
-        such as network requests or file operations.
-
-        parameter:
-            item (list):
-                A list of items to be processed. Each element in the list represents
-                an individual data point or object that will be transformed or processed
-                by the method. The content and type of each list element should conform
-                to the expected format for proper processing.
-        """
-
         async for item in iter_to_aiter(data):
             if item:
                 asin_id = item.get("asin")
@@ -89,21 +59,18 @@ class AmazonHandler(BaseHandler):
             query: str
     ):
         """
-        Asynchronously searches for a product based on a given query string.
+        Searches for products on Amazon based on the given keyword.
 
-        This method performs a search operation to retrieve product data that matches
-        the input `query`. It sends the query to an external search API or a local database
-        and returns relevant product information based on the search results. Since the
-        method is asynchronous, it likely involves I/O-bound operations such as making
-        network requests to an API or querying a database.
+        This method helps you find products on Amazon by using a search term like "laptop" or
+        "headphones." It will return a list of items that match what you're looking for, along
+        with important details like the product name, price, ratings, comments, and other feedback from customers.
 
-        parameter:
-            query (str):
-                A string containing the search term or phrase used to find relevant products.
-                This could be the product name, a keyword, or any other search criterion
-                supported by the underlying data source.
+        Args:
+            query (str): The word or phrase you want to search for on Amazon.
+
+        Returns:
+            A list of products that match your search term, with information about each item.
         """
-
         _endpoint = f"search"
         params = {
             "query": query
@@ -116,28 +83,26 @@ class AmazonHandler(BaseHandler):
             data = res.get('data')
             if data:
                 products = data.get("products") or []
-                return self._construct_data(products)
+                return [item async for item in self._construct_data(products)]
 
     async def product_reviews(
             self,
             asin: str
     ):
         """
-        Asynchronously retrieves reviews for a specific product identified by its ASIN.
+        Fetches customer reviews for a specific product on Amazon.
 
-        This method fetches reviews related to a product based on its Amazon Standard
-        Identification Number (ASIN). The reviews may be retrieved from an external API
-        or a database that stores customer feedback and ratings. Since the method is
-        asynchronous, it is designed to handle I/O-bound operations such as making network
-        requests or database queries without blocking execution.
+        This method allows you to see what other customers are saying about a product by using
+        its ASIN (Amazon's unique product identifier). You can use it to get a list of reviews,
+        which may include ratings, comments, and other feedback from customers.
 
         Args:
-            asin (str):
-                The Amazon Standard Identification Number (ASIN) of the product whose reviews
-                are to be retrieved. The ASIN is a unique identifier used by Amazon to track
-                products, and it should be a valid string conforming to Amazon's ASIN format.
-        """
+            asin (str): The unique Amazon product ID for the item you're interested in.
 
+        Returns:
+            A list of reviews with details such as customer ratings and comments, helping you
+            understand how others feel about the product.
+        """
         _endpoint = f"product-reviews"
         params = {
             "asin": asin

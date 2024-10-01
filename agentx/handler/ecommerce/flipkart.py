@@ -22,19 +22,6 @@ class FlipkartHandler(BaseHandler):
             endpoint: str,
             params: dict
     ):
-        """
-        Asynchronously retrieves data from a specified API endpoint with provided query parameters.
-
-        This method is designed to interact with an external API, sending a GET request
-        to the specified `endpoint`. It passes the `params` dictionary as query parameters
-        for the API call. The method is asynchronous, meaning it should be awaited to
-        prevent blocking execution in an event-driven or concurrent environment.
-
-        parameter:
-        endpoint (str): The API endpoint from which to retrieve data.
-        params (dict): A dictionary of query parameters to include in the request.
-        """
-
         _url = f'{self.base_url}/{endpoint.strip("/")}'
         logger.info(f"{_url}")
         headers = {
@@ -53,23 +40,6 @@ class FlipkartHandler(BaseHandler):
             self,
             data: list
     ):
-        """
-        Asynchronously constructs and processes data from a given list of items.
-
-        This method processes each element in the provided `item` list and transforms it
-        into a specific format or structure. The details of the transformation depend on
-        the business logic defined within the method. Since the method is asynchronous,
-        it is likely interacting with other asynchronous functions or awaiting I/O-bound operations
-        such as network requests or file operations.
-
-        parameter:
-            item (list):
-                A list of items to be processed. Each element in the list represents
-                an individual data point or object that will be transformed or processed
-                by the method. The content and type of each list element should conform
-                to the expected format for proper processing.
-        """
-
         async for item in iter_to_aiter(data):
             if item:
                 pid_id = item.get("pid")
@@ -85,21 +55,20 @@ class FlipkartHandler(BaseHandler):
             query: str
     ):
         """
-        Asynchronously searches for a product based on a given query string.
+        Performs a search on Flipkart for products matching the given query.
 
-        This method performs a search operation to retrieve product data that matches
-        the input `query` with the reviews. It sends the query to an external search API or a local database
-        and returns relevant product information based on the search results. Since the
-        method is asynchronous, it likely involves I/O-bound operations such as making
-        network requests to an API or querying a database.
+        This method takes a search term (like "laptop" or "smartphone") and looks for relevant
+        products on Flipkart. It returns a list of products that match the search, along with
+        useful information like their prices, ratings, and descriptions.
 
-        parameter:
-        query (str):
-            A string containing the search term or phrase used to find relevant products.
-            This could be the product name, a keyword, or any other search criterion
-            supported by the underlying data source.
+        Args:
+            query (str): The search term you're using to find products on Flipkart.
+
+        Returns:
+            A list of products that match the search query. Each product will include details
+            such as its name, price, and other relevant information from Flipkart.
+
         """
-
         _endpoint = f"product-search"
         params = {
             "q": query
@@ -110,26 +79,25 @@ class FlipkartHandler(BaseHandler):
         )
         if res:
             products = res.get("products") or []
-            return self._construct_data(products)
+            return [item async for item in self._construct_data(products)]
 
     async def product_reviews(
             self,
             pid: str
     ):
         """
-        Asynchronously retrieves reviews for a specific product identified by its product ID (PID).
+        Fetches reviews for a specific product on Flipkart.
 
-        This method fetches reviews related to a product based on its unique product identifier (PID).
-        The reviews can be pulled from an external API, database, or other data sources that store
-        customer feedback and ratings. As the method is asynchronous, it is designed to handle
-        I/O-bound operations without blocking the main execution flow, making it suitable for
-        applications that require non-blocking I/O such as network requests.
+        This method retrieves customer reviews for a product using its product ID (pid). You can
+        use this to see what other people are saying about a product, including their ratings
+        and feedback.
 
-        parameter:
-        pid (str):
-            The product identifier (PID) for which the reviews are to be retrieved.
-            This `pid` should be a valid string that uniquely identifies a product in the
-            system, which could vary based on the platform or database in use.
+        Args:
+            pid (str): The unique identifier for the product you want to get reviews for.
+
+        Returns:
+            A list of reviews, where each review includes the rating, the reviewer's comments,
+            and any other details Flipkart provides.
         """
         _endpoint = f"product-details"
         params = {
