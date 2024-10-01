@@ -51,6 +51,8 @@ class PromptTemplate:
             input_prompt (str): Give the instruction of your expected result.
             kwargs (dict): Format the variable's value in the given prompt.
         """
+        if not kwargs:
+            kwargs = {}
         format_string = input_prompt.format(**kwargs)
         content = {
             "role": "user",

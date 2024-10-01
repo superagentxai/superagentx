@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import uuid
 from typing import Literal, Any
 
@@ -7,6 +8,8 @@ from agentx.constants import SEQUENCE
 from agentx.llm import LLMClient, ChatCompletionParams
 from agentx.prompt import PromptTemplate
 from agentx.utils.helper import iter_to_aiter
+
+logger = logging.getLogger(__name__)
 
 _GOAL_PROMPT_TEMPLATE = """Review the given output context and make sure
 
@@ -28,15 +31,8 @@ Answer should be based on the given output context. Do not try answer by your ow
 
 Make sure generate the result based on the given output format if provided. 
 
-{{
-    "result": {{
-        Set the result based on given output format if output format given. Otherwise set the result as it is.
-    }},
-    "is_goal_satisfied": {{
-        Set boolean 'True' if result satisfied based on the given goal. Otherwise set as 'False'. 
-        Set only 'True' or 'False' boolean
-    }}
-}}
+Set the `result` based on given output format if output format given. Otherwise set the result as it is. 
+Set `is_goal_satisfied` 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
 
 """
 
@@ -110,8 +106,8 @@ class Agent:
                 _res = await _engines.start(input_prompt=self.goal)
             results.append(_res)
         final_result = await self._verify_goal(results=results)
-        print("Final Result =>\n", final_result)
+        logger.info(f"Final Result =>\n, {final_result}")
         # TODO: Needs to fix for agent out
         # TODO: Needs to verify its goal after all set
         # TODO: Needs to retry if it fails
-        return results
+        return final_result
