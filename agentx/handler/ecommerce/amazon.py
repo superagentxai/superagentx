@@ -50,7 +50,7 @@ class AmazonHandler(BaseHandler):
                     review_data = reviews.get("data")
                     if review_data and review_data.get("asin", "") == asin_id:
                         _reviews = review_data.get("reviews")
-                        item["_reviews"] = _reviews
+                        item["reviews"] = _reviews
                         yield item
 
     async def product_search(
