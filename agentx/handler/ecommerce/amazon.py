@@ -83,7 +83,7 @@ class AmazonHandler(BaseHandler):
             data = res.get('data')
             if data:
                 products = data.get("products") or []
-                return self._construct_data(products)
+                return [item async for item in self._construct_data(products)]
 
     async def product_reviews(
             self,
@@ -103,7 +103,6 @@ class AmazonHandler(BaseHandler):
             A list of reviews with details such as customer ratings and comments, helping you
             understand how others feel about the product.
         """
-
         _endpoint = f"product-reviews"
         params = {
             "asin": asin

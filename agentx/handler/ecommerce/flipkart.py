@@ -69,7 +69,6 @@ class FlipkartHandler(BaseHandler):
             such as its name, price, and other relevant information from Flipkart.
 
         """
-
         _endpoint = f"product-search"
         params = {
             "q": query
@@ -80,7 +79,7 @@ class FlipkartHandler(BaseHandler):
         )
         if res:
             products = res.get("products") or []
-            return self._construct_data(products)
+            return [item async for item in self._construct_data(products)]
 
     async def product_reviews(
             self,
@@ -99,7 +98,6 @@ class FlipkartHandler(BaseHandler):
         Returns:
             A list of reviews, where each review includes the rating, the reviewer's comments,
             and any other details Flipkart provides.
-
         """
         _endpoint = f"product-details"
         params = {
