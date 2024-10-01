@@ -16,15 +16,14 @@ Run Pytest:
 @pytest.fixture
 def flipkart_client_init() -> FlipkartHandler:
     flipkart = FlipkartHandler(
-        api_key="<API_KEY>"
+        api_key="af373c6babmshce07fb4b2aaf98fp1e8af3jsn78ccf48eca03"
     )
     return flipkart
 
 class TestFlipkart:
 
     async def test_search_product(self, flipkart_client_init: FlipkartHandler):
-        async for item in await flipkart_client_init.product_search(query="apple"):
-            logger.info(item)
+         logger.info(await flipkart_client_init.product_search(query="apple"))
 
     async def test_product_reviews(self, flipkart_client_init: FlipkartHandler):
         res = await flipkart_client_init.product_reviews(pid='MOBGTAGPTB3VS24W')

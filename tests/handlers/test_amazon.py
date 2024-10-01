@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def amazon_client_init() -> AmazonHandler:
     amazon = AmazonHandler(
-        api_key="<API_KEY>",
+        api_key="16b88a08ebmshc43856073de64e8p15a538jsndc1ed0c51df3",
 
     )
     return amazon
@@ -26,8 +26,7 @@ def amazon_client_init() -> AmazonHandler:
 class TestAmazon:
 
     async def test_search_product(self, amazon_client_init: AmazonHandler):
-        async for item in await amazon_client_init.product_search(query="Oneplus"):
-            logger.info(item)
+        logger.info(await amazon_client_init.product_search(query="Oneplus"))
 
     async def test_product_reviews(self, amazon_client_init: AmazonHandler):
         res = await amazon_client_init.product_reviews(asin='B093YSSN6T')
