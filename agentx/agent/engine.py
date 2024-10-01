@@ -90,7 +90,7 @@ class Engine:
             async for tool in iter_to_aiter(message.tool_calls):
                 if tool.tool_type == 'function':
                     func = getattr(self.handler, tool.name)
-                    if func and inspect.isfunction(func):
+                    if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                         _kwargs = tool.arguments or {}
                         if inspect.iscoroutinefunction(func):
                             res = await func(**_kwargs)
