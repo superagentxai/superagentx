@@ -38,7 +38,8 @@ class TestEcommerceAgent:
         ecom_agent = Agent(
             goal="Get me a best and cheap mobile",
             role="You are the best product searcher",
-            llm=llm_client
+            llm=llm_client,
+            prompt_template=PromptTemplate()
         )
         await ecom_agent.add(ecom_engine)
         result = await ecom_agent.execute()
