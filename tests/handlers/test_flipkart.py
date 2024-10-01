@@ -16,7 +16,7 @@ Run Pytest:
 @pytest.fixture
 def flipkart_client_init() -> FlipkartHandler:
     flipkart = FlipkartHandler(
-        api_key="af373c6babmshce07fb4b2aaf98fp1e8af3jsn78ccf48eca03"
+        api_key="<API_KEY>"
     )
     return flipkart
 

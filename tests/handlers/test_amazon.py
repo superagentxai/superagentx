@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def amazon_client_init() -> AmazonHandler:
     amazon = AmazonHandler(
-        api_key="16b88a08ebmshc43856073de64e8p15a538jsndc1ed0c51df3",
+        api_key="<API_KEY>",
 
     )
     return amazon
