@@ -46,7 +46,7 @@ class FlipkartHandler(BaseHandler):
                 reviews = await self.product_reviews(pid_id)
                 if reviews and reviews.get("pid", "") == pid_id:
                     _reviews = reviews.get("reviews")
-                    item["_reviews"] = _reviews
+                    item["reviews"] = _reviews
                     yield item
 
     async def product_search(
