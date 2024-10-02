@@ -89,7 +89,9 @@ class TestOpenAIClient:
             },
             {
                 "role": "user",
-                "content": "Hi, Tell me about Agentic Framework"
+                "content": "Generate random mobiles products as list. Minimum 25 product items. Strictly "
+                           "format array of string python format."
+                           "[iPhone 14, iPhone 15, iPhone 16 Samsung Galaxy S23, Samsung Galaxy S24, Motorola Edge 40]"
             }
         ]
 

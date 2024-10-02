@@ -3,7 +3,6 @@ import pytest
 
 from agentx.handler.aws.s3 import AWSS3Handler
 
-
 '''
  Run Pytest:  
 
@@ -12,6 +11,7 @@ from agentx.handler.aws.s3 import AWSS3Handler
    3.pytest --log-cli-level=INFO tests/handlers/test_aws_s3.py::TestAWSS3::test_s3_handler_download
  
 '''
+
 
 @pytest.fixture
 def aws_s3_client_init() -> AWSS3Handler:
@@ -22,6 +22,7 @@ def aws_s3_client_init() -> AWSS3Handler:
         region_name="eu-central-1"
     )
     return s3_handler
+
 
 class TestAWSS3:
 
