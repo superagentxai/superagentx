@@ -36,18 +36,21 @@ class FakeProductHandler(BaseHandler):
         messages = [
             {
                 "role": "system",
-                "content": f"You are a best product reviewer. Analyze and generate fake product short description for {model} and its features"
+                "content": f"You are a best product reviewer. Analyze and generate fake product short "
+                           f"description for {model} and its features"
             }
         ]
 
         chat_completion_params = ChatCompletionParams(
             messages=messages,
         )
-        response: ChatCompletion = await self.llm_client.achat_completion(chat_completion_params=chat_completion_params)
-        description = response.choices[0].message.content
-        logger.debug(f"Open AI Async ChatCompletion Response {description}")
-
-        return description
+        response: ChatCompletion = await self.llm_client.achat_completion(
+            chat_completion_params=chat_completion_params
+        )
+        if response and response.choices:
+            description = response.choices[0].message.content
+            logger.debug(f"Open AI Async ChatCompletion Response {description}")
+            return description
 
     async def _generate_data_products(
             self,

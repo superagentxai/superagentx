@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 '''
 
-
 @pytest.fixture
 def fake_products_client_init() -> FakeProductHandler:
     llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
@@ -34,4 +33,3 @@ class TestFakeProducts:
     async def test_search(self, fake_products_client_init: FakeProductHandler):
         res = await fake_products_client_init.search(provider='Myntra')
         logger.info(res)
-
