@@ -13,10 +13,14 @@ class AmazonHandler(BaseHandler):
     def __init__(
             self,
             *,
-            api_key: str
+            api_key: str,
+            top_items: int | None = None
 
     ):
         self.api_key = api_key
+        self.top_items = top_items
+        if not self.top_items:
+            self.top_items = 5
 
     async def _retrieve(
             self,
@@ -50,7 +54,8 @@ class AmazonHandler(BaseHandler):
                     review_data = reviews.get("data")
                     if review_data and review_data.get("asin", "") == asin_id:
                         _reviews = review_data.get("reviews")
-                        item["reviews"] = _reviews
+                        logger.debug(f"Reviews Length: {len(_reviews)}")
+                        item["reviews"] = _reviews[:self.top_items]
                         yield item
 
     async def product_search(
@@ -73,7 +78,8 @@ class AmazonHandler(BaseHandler):
         """
         _endpoint = f"search"
         params = {
-            "query": query
+            "query": query,
+            "sort_by": "RELEVANCE"
         }
         res = await self._retrieve(
             endpoint=_endpoint,
@@ -83,7 +89,8 @@ class AmazonHandler(BaseHandler):
             data = res.get('data')
             if data:
                 products = data.get("products") or []
-                return [item async for item in self._construct_data(products)]
+                logger.debug(f"Product length: {len(products)}")
+                return [item async for item in self._construct_data(products[:self.top_items])]
 
     async def product_reviews(
             self,
@@ -105,7 +112,8 @@ class AmazonHandler(BaseHandler):
         """
         _endpoint = f"product-reviews"
         params = {
-            "asin": asin
+            "asin": asin,
+            "sort_by": "TOP_REVIEWS"
         }
         return await self._retrieve(
             endpoint=_endpoint,
