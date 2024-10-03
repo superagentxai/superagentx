@@ -75,7 +75,7 @@ class FakeProductHandler(BaseHandler):
                 # TODO: Random 5 comments generate using LLM!
         return products_list
 
-    async def search(
+    async def product_search(
             self,
             provider: str
     ):
@@ -95,5 +95,5 @@ class FakeProductHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            "search"
+            "product_search"
         )

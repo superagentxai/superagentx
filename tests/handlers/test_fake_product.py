@@ -1,9 +1,9 @@
 from re import search
 import logging
 
-from agentx.handler.fake_product import FakeProductHandler
 import pytest
 
+from agentx.handler.ecommerce.fake_product import FakeProductHandler
 from agentx.llm import LLMClient
 from examples.ecommerce_data_generator import mobile_phones
 
@@ -31,5 +31,5 @@ def fake_products_client_init() -> FakeProductHandler:
 class TestFakeProducts:
 
     async def test_search(self, fake_products_client_init: FakeProductHandler):
-        res = await fake_products_client_init.search(provider='Myntra')
+        res = await fake_products_client_init.product_search(provider='Myntra')
         logger.info(res)
