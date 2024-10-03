@@ -12,9 +12,13 @@ class FlipkartHandler(BaseHandler):
 
     def __init__(
             self,
-            api_key: str
+            api_key: str,
+            top_items: int | None = None
     ):
         self.api_key = api_key
+        self.top_items = top_items
+        if not self.top_items:
+            self.top_items = 5
 
     async def _retrieve(
             self,
@@ -46,7 +50,8 @@ class FlipkartHandler(BaseHandler):
                 reviews = await self.product_reviews(pid_id)
                 if reviews and reviews.get("pid", "") == pid_id:
                     _reviews = reviews.get("reviews")
-                    item["reviews"] = _reviews
+                    logger.debug(f"Reviews Length: {len(_reviews)}")
+                    item["reviews"] = _reviews[:self.top_items]
                     yield item
 
     async def product_search(
@@ -79,7 +84,7 @@ class FlipkartHandler(BaseHandler):
         )
         if res:
             products = res.get("products") or []
-            return [item async for item in self._construct_data(products)]
+            return [item async for item in self._construct_data(products[:self.top_items])]
 
     async def product_reviews(
             self,
