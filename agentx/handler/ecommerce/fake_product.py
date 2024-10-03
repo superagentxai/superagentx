@@ -14,12 +14,10 @@ class FakeProductHandler(BaseHandler):
     def __init__(
             self,
             *,
-            product_models: list[str],
             llm_client: LLMClient,
             total: int = 5
     ):
         self.total = total
-        self.product_models = product_models
         self.llm_client: LLMClient = llm_client
 
     @staticmethod
@@ -37,7 +35,7 @@ class FakeProductHandler(BaseHandler):
             {
                 "role": "system",
                 "content": f"You are a best product reviewer. Analyze and generate fake product short "
-                           f"description for {model} and its features"
+                           f"description for {model.get('name')} with category {model.get('category')} and its features"
             }
         ]
 
@@ -55,20 +53,22 @@ class FakeProductHandler(BaseHandler):
     async def _generate_data_products(
             self,
             provider: str,
+            product_models: list[str]
     ):
         # Generate the dataset
         products_list = []
-        if self.product_models:
+        if product_models:
             for i in range(1, self.total):
-                model = random.choice(self.product_models)
+                model = random.choice(product_models)
+                _name = model.get('name')
                 product_data = {
                     "id": i,
-                    "title": model,
+                    "title": _name,
                     "price": round(random.uniform(8000, 90000), 2),
                     "description": await self._random_product_description(model),
-                    "category": "mobile phones",
+                    "category": model.get('category'),
                     "provider": provider,
-                    "image": f"https://fake{provider.lower()}storeapi.com/img/{model}.jpg",
+                    "image": f"https://fake{provider.lower()}storeapi.com/img/{_name}.jpg",
                     "rating": await self._random_rating()
                 }
                 products_list.append(product_data)
@@ -77,7 +77,9 @@ class FakeProductHandler(BaseHandler):
 
     async def product_search(
             self,
-            provider: str
+            *,
+            provider: str,
+            product_models: list[str]
     ):
         """
         Search for a product using the specified provider.
@@ -91,7 +93,10 @@ class FakeProductHandler(BaseHandler):
         Returns:
         The search results as a response object or parsed data, depending on the implementation for each provider.
         """
-        return await self._generate_data_products(provider)
+        return await self._generate_data_products(
+            provider=provider,
+            product_models=product_models
+        )
 
     def __dir__(self):
         return (

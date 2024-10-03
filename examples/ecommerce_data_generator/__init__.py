@@ -1,9 +1,27 @@
-mobile_phones = ["iPhone 14", "iPhone 15", "iPhone 16", "Samsung Galaxy S23", "Samsung Galaxy S24",
-                 "Motorola Edge 40", "Motorola Edge 50", "Sony Xperia 1 V", "Sony Xperia 2",
-                 "MI 11", "MI 12", "MI 13", "Xiaomi Mi 12", "Xiaomi Mi 13",
-                 "Sony Xperia 5 IV", "Sony Xperia 1 V", "Oppo Find X6", "Oppo Reno8",
-                 "Realme GT 3", "Vivo X90", "Samsung Galaxy Note 22", "Huawei P60",
-                 "Nokia G50", "Asus Zenfone 9"]
+mobile_phones = [
+    {'name': "iPhone 14", 'category': 'Mobile Phone'},
+    {'name': "iPhone 15", 'category': 'Mobile Phone'},
+    {'name': "iPhone 16", 'category': 'Mobile Phone'},
+    {'name': "Samsung Galaxy S23", 'category': 'Mobile Phone'},
+    {'name': "Samsung Galaxy S24", 'category': 'Mobile Phone'},
+    {'name': "Motorola Edge 50", 'category': 'Mobile Phone'},
+    {'name': "Sony Xperia 1 V", 'category': 'Mobile Phone'},
+    {'name': "Sony Xperia 2", 'category': 'Mobile Phone'},
+    {'name': "MI 12", 'category': 'Mobile Phone'},
+    {'name': "MI 13", 'category': 'Mobile Phone'},
+    {'name': "Xiaomi Mi 12", 'category': 'Mobile Phone'},
+    {'name': "Xiaomi Mi 13", 'category': 'Mobile Phone'},
+    {'name': "Sony Xperia 5 IV", 'category': 'Mobile Phone'},
+    {'name': "Sony Xperia 1 V", 'category': 'Mobile Phone'},
+    {'name': "Oppo Find X6", 'category': 'Mobile Phone'},
+    {'name': "Oppo Reno8", 'category': 'Mobile Phone'},
+    {'name': "Realme GT 3", 'category': 'Mobile Phone'},
+    {'name': "Vivo X90", 'category': 'Mobile Phone'},
+    {'name': "Samsung Galaxy Note 22", 'category': 'Mobile Phone'},
+    {'name': "Huawei P60", 'category': 'Mobile Phone'},
+    {'name': "Nokia G50", 'category': 'Mobile Phone'},
+    {'name': "Asus Zenfone 9", 'category': 'Mobile Phone'}
+]
 
 appliance_models = [
     "Samsung Refrigerator RT34", "LG Washing Machine FH2", "Whirlpool Microwave Oven MW20",

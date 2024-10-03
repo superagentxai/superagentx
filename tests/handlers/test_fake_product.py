@@ -1,4 +1,3 @@
-from re import search
 import logging
 
 import pytest
@@ -22,8 +21,7 @@ def fake_products_client_init() -> FakeProductHandler:
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     fake_product_handler: FakeProductHandler = FakeProductHandler(
-        llm_client=llm_client,
-        product_models=mobile_phones
+        llm_client=llm_client
     )
     return fake_product_handler
 
@@ -31,5 +29,8 @@ def fake_products_client_init() -> FakeProductHandler:
 class TestFakeProducts:
 
     async def test_search(self, fake_products_client_init: FakeProductHandler):
-        res = await fake_products_client_init.product_search(provider='Myntra')
+        res = await fake_products_client_init.product_search(
+            provider='Amazon',
+            product_models=mobile_phones
+        )
         logger.info(res)
