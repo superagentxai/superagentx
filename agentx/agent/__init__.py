@@ -86,7 +86,8 @@ class Agent:
             output_format=self.output_format or ""
         )
         chat_completion_params = ChatCompletionParams(
-            messages=prompt_message
+            messages=prompt_message,
+            response_format="json_object"
         )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
