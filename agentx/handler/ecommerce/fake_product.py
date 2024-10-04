@@ -100,5 +100,5 @@ class FakeProductHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            "product_search"
+            "product_search",
         )
