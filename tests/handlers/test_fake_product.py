@@ -21,7 +21,8 @@ def fake_products_client_init() -> FakeProductHandler:
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     fake_product_handler: FakeProductHandler = FakeProductHandler(
-        llm_client=llm_client
+        llm_client=llm_client,
+        product_models=mobile_phones
     )
     return fake_product_handler
 
@@ -30,7 +31,6 @@ class TestFakeProducts:
 
     async def test_search(self, fake_products_client_init: FakeProductHandler):
         res = await fake_products_client_init.product_search(
-            provider='Amazon',
-            product_models=mobile_phones
+            provider='Amazon'
         )
         logger.info(res)
