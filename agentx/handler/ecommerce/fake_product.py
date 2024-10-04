@@ -15,10 +15,12 @@ class FakeProductHandler(BaseHandler):
             self,
             *,
             llm_client: LLMClient,
+            product_models: list[dict],
             total: int = 5
     ):
-        self.total = total
         self.llm_client: LLMClient = llm_client
+        self.product_models = product_models
+        self.total = total
 
     @staticmethod
     async def _random_rating():
@@ -52,14 +54,13 @@ class FakeProductHandler(BaseHandler):
 
     async def _generate_data_products(
             self,
-            provider: str,
-            product_models: list[str]
+            provider: str
     ):
         # Generate the dataset
         products_list = []
-        if product_models:
+        if self.product_models:
             for i in range(1, self.total):
-                model = random.choice(product_models)
+                model = random.choice(self.product_models)
                 _name = model.get('name')
                 product_data = {
                     "id": i,
@@ -78,8 +79,7 @@ class FakeProductHandler(BaseHandler):
     async def product_search(
             self,
             *,
-            provider: str,
-            product_models: list[str]
+            provider: str
     ):
         """
         Search for a product using the specified provider.
@@ -94,8 +94,7 @@ class FakeProductHandler(BaseHandler):
         The search results as a response object or parsed data, depending on the implementation for each provider.
         """
         return await self._generate_data_products(
-            provider=provider,
-            product_models=product_models
+            provider=provider
         )
 
     def __dir__(self):
