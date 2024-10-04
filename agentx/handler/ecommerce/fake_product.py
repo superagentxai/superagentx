@@ -1,5 +1,6 @@
 import random
 import logging
+from abc import ABC
 
 from openai.types.chat import ChatCompletion
 
@@ -9,7 +10,7 @@ from agentx.llm import ChatCompletionParams, LLMClient
 logger = logging.getLogger(__name__)
 
 
-class FakeProductHandler(BaseHandler):
+class FakeProductHandler(BaseHandler, ABC):
 
     def __init__(
             self,
@@ -54,7 +55,8 @@ class FakeProductHandler(BaseHandler):
 
     async def _generate_data_products(
             self,
-            provider: str
+            provider: str,
+            category: str
     ):
         # Generate the dataset
         products_list = []
@@ -76,10 +78,11 @@ class FakeProductHandler(BaseHandler):
                 # TODO: Random 5 comments generate using LLM!
         return products_list
 
-    async def product_search(
+    async def search(
             self,
             *,
-            provider: str
+            provider: str,
+            category: str
     ):
         """
         Search for a product using the specified provider.
@@ -94,10 +97,6 @@ class FakeProductHandler(BaseHandler):
         The search results as a response object or parsed data, depending on the implementation for each provider.
         """
         return await self._generate_data_products(
-            provider=provider
-        )
-
-    def __dir__(self):
-        return (
-            "product_search",
+            provider=provider,
+            category=category
         )
