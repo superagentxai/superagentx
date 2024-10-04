@@ -4,7 +4,7 @@ mobile_phones = [
     {'name': "iPhone 16", 'category': 'Mobile Phone'},
     {'name': "Samsung Galaxy S23", 'category': 'Mobile Phone'},
     {'name': "Samsung Galaxy S24", 'category': 'Mobile Phone'},
-    {'name': "Motorola Edge 50", 'category': 'Mobile Phone'},
+    {'name': "Motorola Edge 50 pro", 'category': 'Mobile Phone'},
     {'name': "Sony Xperia 1 V", 'category': 'Mobile Phone'},
     {'name': "Sony Xperia 2", 'category': 'Mobile Phone'},
     {'name': "MI 12", 'category': 'Mobile Phone'},
@@ -20,7 +20,17 @@ mobile_phones = [
     {'name': "Samsung Galaxy Note 22", 'category': 'Mobile Phone'},
     {'name': "Huawei P60", 'category': 'Mobile Phone'},
     {'name': "Nokia G50", 'category': 'Mobile Phone'},
-    {'name': "Asus Zenfone 9", 'category': 'Mobile Phone'}
+    {'name': "Asus Zenfone 9", 'category': 'Mobile Phone'},
+    {'name': "Blender", 'category': 'Kitchen Accessories'},
+    {'name': "AGARO Marvel 9L Oven", 'category': 'Kitchen Accessories'},
+    {'name': "Pigeon Electric Kettle", 'category': 'Kitchen Accessories'},
+    {'name': "SOFLIN Egg Boiler Electric", 'category': 'Kitchen Accessories'},
+    {'name': "NutriPro Juicer Mixer Grinder", 'category': 'Kitchen Accessories'},
+    {'name': "Butterfly Smart 2 Litres Table-Top Wet Grinder", 'category': 'Kitchen Accessories'},
+    {'name': "Pigeon by Stovekraft Cruise 1800 watt", 'category': 'Kitchen Accessories'},
+    {'name': "KENT 16051 Hand Blender 300 W", 'category': 'Kitchen Accessories'},
+    {'name': "Pigeon Healthifry Digital Air Fryer", 'category': 'Kitchen Accessories'},
+    {'name': "Philips Ventilator", 'category': 'Kitchen Accessories'}
 ]
 
 appliance_models = [
