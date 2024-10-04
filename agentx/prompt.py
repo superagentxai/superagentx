@@ -1,6 +1,7 @@
 import logging
 import copy
 from enum import Enum
+from typing import Any
 
 from agentx.constants import DEFAULT
 from agentx.exceptions import InvalidType
@@ -42,14 +43,14 @@ class PromptTemplate:
             self,
             *,
             input_prompt: str,
-            **kwargs
+            **kwargs: Any
     ) -> list[dict]:
         """
         To construct the message structure based on the user's prompt type
 
         Args:
             input_prompt (str): Give the instruction of your expected result.
-            kwargs (dict): Format the variable's value in the given prompt.
+            kwargs (Any): Format the variable's value in the given prompt.
         """
         if not kwargs:
             kwargs = {}

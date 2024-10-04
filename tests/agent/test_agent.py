@@ -3,9 +3,10 @@ import logging
 import pytest
 
 from agentx.agent import Engine, Agent
-from agentx.handler.ecommerce.amazon import AmazonHandler
+from agentx.handler.ecommerce.fake_product import FakeProductHandler
 from agentx.llm import LLMClient
 from agentx.prompt import PromptTemplate
+from examples.ecommerce_data_generator import mobile_phones
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,10 @@ class TestEcommerceAgent:
 
     async def test_ecommerce_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
-        amazon_ecom_handler = AmazonHandler(api_key="")
+        amazon_ecom_handler = FakeProductHandler(
+            llm_client=llm_client,
+            product_models=mobile_phones
+        )
         ecom_engine = Engine(
             handler=amazon_ecom_handler,
             llm=llm_client,

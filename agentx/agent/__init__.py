@@ -78,14 +78,12 @@ class Agent:
             *,
             results: list[Any]
     ):
-        _prompt = _GOAL_PROMPT_TEMPLATE.format(
+        prompt_message = await self.prompt_template.get_messages(
+            input_prompt=_GOAL_PROMPT_TEMPLATE,
             goal=self.goal,
             output_context=results,
             feedback="",
             output_format=self.output_format or ""
-        )
-        prompt_message = await self.prompt_template.get_messages(
-            input_prompt=_prompt
         )
         chat_completion_params = ChatCompletionParams(
             messages=prompt_message
