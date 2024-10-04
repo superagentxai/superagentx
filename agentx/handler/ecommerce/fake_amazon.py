@@ -22,7 +22,7 @@ class FakeAmazonHandler(FakeProductHandler):
         Returns:
             A list of products that match your search term, with information about each item.
         """
-        return super().search(
+        return await super().search(
             provider=self._provider,
             category=query
         )

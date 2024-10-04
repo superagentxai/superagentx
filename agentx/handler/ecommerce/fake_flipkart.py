@@ -24,7 +24,7 @@ class FakeFlipkartHandler(FakeProductHandler):
             such as its name, price, and other relevant information from Flipkart.
 
         """
-        return super().search(
+        return await super().search(
             provider=self._provider,
             category=query
         )

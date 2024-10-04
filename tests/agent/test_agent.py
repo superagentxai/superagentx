@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from agentx.agent import Engine, Agent
-from agentx.handler.ecommerce.fake_product import FakeProductHandler
+from agentx.handler.ecommerce.fake_flipkart import FakeFlipkartHandler
 from agentx.llm import LLMClient
 from agentx.prompt import PromptTemplate
 from examples.ecommerce_data_generator import mobile_phones
@@ -30,7 +30,7 @@ class TestEcommerceAgent:
 
     async def test_ecommerce_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
-        amazon_ecom_handler = FakeProductHandler(
+        amazon_ecom_handler = FakeFlipkartHandler(
             llm_client=llm_client,
             product_models=mobile_phones
         )
