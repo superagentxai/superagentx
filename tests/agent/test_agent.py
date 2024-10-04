@@ -40,7 +40,7 @@ class TestEcommerceAgent:
             prompt_template=PromptTemplate()
         )
         ecom_agent = Agent(
-            goal="Get me a best and cheap motorola mobile",
+            goal="Get me a best and cheap smartphone",
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=PromptTemplate()
