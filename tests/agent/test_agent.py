@@ -40,12 +40,11 @@ class TestEcommerceAgent:
             prompt_template=PromptTemplate()
         )
         ecom_agent = Agent(
-            goal="Get me a best and cheap mobile",
+            goal="Get me a best and cheap motorola mobile",
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=PromptTemplate()
         )
         await ecom_agent.add(ecom_engine)
         result = await ecom_agent.execute()
-        logger.info(f"Result => \n{result}")
         assert result

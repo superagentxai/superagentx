@@ -1,11 +1,14 @@
 import random
 import logging
+import uuid
 from abc import ABC
 
 from openai.types.chat import ChatCompletion
 
 from agentx.handler.base import BaseHandler
 from agentx.llm import ChatCompletionParams, LLMClient
+from agentx.utils.helper import iter_to_aiter, sync_to_async
+from tests.llm.test_bedrock_client import aws_bedrock_client_init
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +56,24 @@ class FakeProductHandler(BaseHandler, ABC):
             logger.debug(f"Open AI Async ChatCompletion Response {description}")
             return description
 
+    async def _category_found(
+            self,
+            *,
+            name: str,
+            category: str,
+            query: str
+    ) -> bool:
+        _categories = [
+            _name.strip().lower() for _name in name.split(" ")
+        ] + [
+            _category.strip().lower() for _category in category.split(",")
+        ]
+        _categories = " ".join(_categories)
+        async for _query in iter_to_aiter(query.split(' ')):
+            if _query.lower() in _categories:
+                return True
+        return False
+
     async def _generate_data_products(
             self,
             provider: str,
@@ -61,21 +82,35 @@ class FakeProductHandler(BaseHandler, ABC):
         # Generate the dataset
         products_list = []
         if self.product_models:
-            for i in range(1, self.total):
-                model = random.choice(self.product_models)
+            _total = 0
+            _exists_names = []
+            await sync_to_async(random.shuffle, self.product_models)
+            async for model in iter_to_aiter(self.product_models):
                 _name = model.get('name')
-                product_data = {
-                    "id": i,
-                    "title": _name,
-                    "price": round(random.uniform(8000, 90000), 2),
-                    "description": await self._random_product_description(model),
-                    "category": model.get('category'),
-                    "provider": provider,
-                    "image": f"https://fake{provider.lower()}storeapi.com/img/{_name}.jpg",
-                    "rating": await self._random_rating()
-                }
-                products_list.append(product_data)
-                # TODO: Random 5 comments generate using LLM!
+                _category = model.get('category')
+                if _name not in _exists_names:
+                    _category_found = await self._category_found(
+                        name=_name,
+                        category=_category,
+                        query=category
+                    )
+                    if _category_found:
+                        product_data = {
+                            "id": uuid.uuid4().hex,
+                            "title": _name,
+                            "price": round(random.uniform(8000, 90000), 2),
+                            "description": await self._random_product_description(model),
+                            "category": model.get('category'),
+                            "provider": provider,
+                            "image": f"https://fake{provider.lower()}storeapi.com/img/{_name}.jpg",
+                            "rating": await self._random_rating()
+                        }
+                        products_list.append(product_data)
+                        _exists_names.append(_name)
+                        _total = _total + 1
+                        if _total >= self.total:
+                            break
+                        # TODO: Random 5 comments generate using LLM!
         return products_list
 
     async def search(

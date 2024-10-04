@@ -103,6 +103,7 @@ class Agent:
             else:
                 _res = await _engines.start(input_prompt=self.goal)
             results.append(_res)
+        logger.info(f"Engine results =>\n{results}")
         final_result = await self._verify_goal(results=results)
         logger.info(f"Final Result =>\n, {final_result}")
         # TODO: Needs to fix for agent out
