@@ -29,7 +29,16 @@ mobile_phones = [
     {'name': "Butterfly Smart 2 Litres Table-Top Wet Grinder", 'category': 'Kitchen Accessories, Grinder'},
     {'name': "Pigeon by Stovekraft Cruise 1800 watt", 'category': 'Kitchen Accessories, StoveKraft'},
     {'name': "KENT 16051 Hand Blender 300 W", 'category': 'Kitchen Accessories, Hand Blender'},
-    {'name': "Pigeon Healthifry Digital Air Fryer", 'category': 'Kitchen Accessories, Air Fryer'}
+    {'name': "Pigeon Healthifry Digital Air Fryer", 'category': 'Kitchen Accessories, Air Fryer'},
+    {'name': "Lipstick", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': "Foundation", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': "compact powder", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': "Blush", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': "Long lasting Eyeliner", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': " waterproof Eyeliner", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': "Gel Eyeliner", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': "Pen Eyeliner", 'category': 'Cosmetic, Beauty, Makeup'},
+    {'name': "Liquid Eyeliner", 'category': 'Cosmetic, Beauty, Makeup'}
 ]
 
 appliance_models = [
