@@ -1,7 +1,10 @@
 import asyncio
+import json
 import logging
 import uuid
 from typing import Literal, Any
+
+from pydantic import BaseModel
 
 from agentx.agent.engine import Engine
 from agentx.constants import SEQUENCE
@@ -31,9 +34,20 @@ Answer should be based on the given output context. Do not try answer by your ow
 
 Make sure generate the result based on the given output format if provided. 
 
-{{result: Set this based on given output format if output format given. Otherwise set the result as it is., is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.}}
+{{
+    reason: Set the reason for result,
+    result: Set this based on given output format if output format given. Otherwise set the result as it is.,
+    is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
+}}
 
+Always generate the JSON output.
 """
+
+
+class GoalResult(BaseModel):
+    reason: str
+    result: Any
+    is_goal_satisfied: bool
 
 
 class Agent:
@@ -76,7 +90,7 @@ class Agent:
             self,
             *,
             results: list[Any]
-    ):
+    ) -> list[GoalResult]:
         prompt_message = await self.prompt_template.get_messages(
             input_prompt=_GOAL_PROMPT_TEMPLATE,
             goal=self.goal,
@@ -90,7 +104,15 @@ class Agent:
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
-        return messages
+        logger.info(f"Goal pre result => {messages}")
+        _result = []
+        if messages and messages.choices:
+            for choice in messages.choices:
+                if choice and choice.message:
+                    _res = choice.message.content
+                    _res = json.loads(_res)
+                    _result.append(GoalResult(**_res))
+        return _result
 
     async def execute(self):
         results = []
@@ -102,7 +124,7 @@ class Agent:
             else:
                 _res = await _engines.start(input_prompt=self.goal)
             results.append(_res)
-        logger.info(f"Engine results =>\n{results}")
+        logger.debug(f"Engine results =>\n{results}")
         final_result = await self._verify_goal(results=results)
         logger.info(f"Final Result =>\n, {final_result}")
         # TODO: Needs to fix for agent out
