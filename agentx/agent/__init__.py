@@ -31,8 +31,7 @@ Answer should be based on the given output context. Do not try answer by your ow
 
 Make sure generate the result based on the given output format if provided. 
 
-Set the `result` based on given output format if output format given. Otherwise set the result as it is. 
-Set `is_goal_satisfied` 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
+{{result: Set this based on given output format if output format given. Otherwise set the result as it is., is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.}}
 
 """
 
