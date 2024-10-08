@@ -1,9 +1,8 @@
 from abc import ABC
 
-from langchain_core.language_models.chat_models import BaseLanguageModel
-from langchain_openai.chat_models import ChatOpenAI
-
 from agentx.handler.base import BaseHandler
+from agentx.llm import LLMClient
+from agentx.llm.models import ChatCompletionParams
 
 
 class ContentCreatorHandler(BaseHandler, ABC):
@@ -16,30 +15,37 @@ class ContentCreatorHandler(BaseHandler, ABC):
     def __init__(
             self,
             prompt: str,
-            llm: BaseLanguageModel
+            llm: LLMClient
     ):
         self.prompt = prompt
         self.llm = llm
-
 
     async def text_creation(
             self
     ):
         """
-           Asynchronously generates or creates text based on predefined logic or input data.
-           This method manages the process of text creation without requiring additional parameters.
-        """
+        Generates or creates some form of text content when called. The text being created might involve combining
+        words, sentences, or paragraphs for various purposes. Since it’s part of a larger process, it could be used
+        for tasks like preparing data, generating messages, or any other text-related activity.
 
-        messages = self.prompt
-        if isinstance(self.llm, ChatOpenAI):
-            messages = [
-                (
-                    "human",
-                    self.prompt
-                )
-            ]
-        chain = await self.llm.ainvoke(messages)
-        return chain.content
+        """
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant."
+            },
+            {
+                "role": "user",
+                "content": self.prompt
+            }
+        ]
+        chat_completion = ChatCompletionParams(
+            messages=messages
+        )
+        result = await self.llm.achat_completion(
+            chat_completion_params=chat_completion
+        )
+        return result
 
     async def video_creation(
             self
