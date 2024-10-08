@@ -21,7 +21,6 @@ def content_creator_init() -> ContentCreatorHandler:
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     content_creator_handler = ContentCreatorHandler(
-        prompt="Create the digital marketing content",
         llm=llm_client
     )
     logger.info(content_creator_handler)
@@ -31,5 +30,5 @@ def content_creator_init() -> ContentCreatorHandler:
 class TestContentCreator:
 
     async def test_text_content_creator(self, content_creator_init: ContentCreatorHandler):
-        result = await content_creator_init.text_creation()
-        assert "digital marketing" in result
+        result = await content_creator_init.text_creation(instruction='Create the digital marketing content')
+        assert "digital marketing" in result.choices[0].message.content

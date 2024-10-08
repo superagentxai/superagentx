@@ -14,14 +14,14 @@ class ContentCreatorHandler(BaseHandler, ABC):
 
     def __init__(
             self,
-            prompt: str,
             llm: LLMClient
     ):
-        self.prompt = prompt
         self.llm = llm
 
     async def text_creation(
-            self
+            self,
+            *,
+            instruction: str
     ):
         """
         Generates or creates some form of text content when called. The text being created might involve combining
@@ -36,16 +36,15 @@ class ContentCreatorHandler(BaseHandler, ABC):
             },
             {
                 "role": "user",
-                "content": self.prompt
+                "content": instruction
             }
         ]
         chat_completion = ChatCompletionParams(
             messages=messages
         )
-        result = await self.llm.achat_completion(
+        return await self.llm.achat_completion(
             chat_completion_params=chat_completion
         )
-        return result
 
     async def video_creation(
             self
