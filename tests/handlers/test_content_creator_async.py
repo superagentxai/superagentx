@@ -1,9 +1,8 @@
-import pytest
 import logging
 
-from agentx.handler.content_creator import ContentCreatorHandler
-from langchain_openai import ChatOpenAI
+import pytest
 
+from agentx.handler.content_creator import ContentCreatorHandler
 from agentx.llm import LLMClient
 
 logger = logging.getLogger(__name__)
