@@ -16,7 +16,6 @@ class AmazonHandler(BaseHandler):
             api_key: str,
             country: str,
             top_items: int | None = None
-
     ):
         self.api_key = api_key
         self.country = country
