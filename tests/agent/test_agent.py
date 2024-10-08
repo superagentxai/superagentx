@@ -3,10 +3,11 @@ import logging
 import pytest
 
 from agentx.agent import Engine, Agent
-from agentx.handler.ecommerce.fake_flipkart import FakeFlipkartHandler
+from agentx.constants import PARALLEL
+from agentx.handler.ecommerce.amazon import AmazonHandler
+from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.llm import LLMClient
 from agentx.prompt import PromptTemplate
-from examples.ecommerce_data_generator import mobile_phones
 
 logger = logging.getLogger(__name__)
 
@@ -30,21 +31,39 @@ class TestEcommerceAgent:
 
     async def test_ecommerce_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
-        amazon_ecom_handler = FakeFlipkartHandler(
-            llm_client=llm_client,
-            product_models=mobile_phones
+        amazon_ecom_handler = AmazonHandler(
+            api_key=""
+            # llm_client=llm_client,
+            # product_models=mobile_phones
         )
-        ecom_engine = Engine(
+        flipkart_ecom_handler = FlipkartHandler(
+            api_key=""
+        )
+        prompt_template = PromptTemplate()
+        amazon_engine = Engine(
             handler=amazon_ecom_handler,
             llm=llm_client,
-            prompt_template=PromptTemplate()
+            prompt_template=prompt_template
+        )
+        flipkart_engine = Engine(
+            handler=flipkart_ecom_handler,
+            llm=llm_client,
+            prompt_template=prompt_template
         )
         ecom_agent = Agent(
-            goal="Get me a best and cheap smartphone",
+            goal="Get me a best and cheap blender",
             role="You are the best product searcher",
             llm=llm_client,
-            prompt_template=PromptTemplate()
+            prompt_template=prompt_template
         )
-        await ecom_agent.add(ecom_engine)
+        await ecom_agent.add(
+            amazon_engine,
+            flipkart_engine,
+            execute_type=PARALLEL
+        )
+        await ecom_agent.add(
+            amazon_engine,
+            flipkart_engine
+        )
         result = await ecom_agent.execute()
         assert result
