@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def amazon_client_init() -> AmazonHandler:
     amazon = AmazonHandler(
         api_key="<API_KEY>",
-
+        country="IN"
     )
     return amazon
 

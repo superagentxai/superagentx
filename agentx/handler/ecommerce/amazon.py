@@ -14,10 +14,12 @@ class AmazonHandler(BaseHandler):
             self,
             *,
             api_key: str,
+            country: str,
             top_items: int | None = None
 
     ):
         self.api_key = api_key
+        self.country = country
         self.top_items = top_items
         if not self.top_items:
             self.top_items = 5
@@ -79,7 +81,8 @@ class AmazonHandler(BaseHandler):
         _endpoint = f"search"
         params = {
             "query": query,
-            "sort_by": "RELEVANCE"
+            "sort_by": "RELEVANCE",
+            "country": self.country
         }
         res = await self._retrieve(
             endpoint=_endpoint,
