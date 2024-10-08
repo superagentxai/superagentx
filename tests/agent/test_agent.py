@@ -32,7 +32,8 @@ class TestEcommerceAgent:
     async def test_ecommerce_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         amazon_ecom_handler = AmazonHandler(
-            api_key=""
+            api_key="",
+            country="IN"
             # llm_client=llm_client,
             # product_models=mobile_phones
         )
