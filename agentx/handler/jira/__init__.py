@@ -74,12 +74,13 @@ class JiraHandler(BaseHandler):
         """
 
         try:
-            return await sync_to_async(self._connection.sprints,
-                                       board_id=board_id,
-                                       startAt=start,
-                                       maxResults=end,
-                                       state=state
-                                       )
+            return await sync_to_async(
+                self._connection.sprints,
+                board_id=board_id,
+                startAt=start,
+                maxResults=end,
+                state=state
+            )
         except Exception as ex:
             message = f"Active Sprint Not Found! {ex}"
             logger.error(message)
@@ -111,13 +112,14 @@ class JiraHandler(BaseHandler):
         """
 
         try:
-            return await sync_to_async(self._connection.create_sprint,
-                                       name=name,
-                                       board_id=board_id,
-                                       startDate=start_date,
-                                       endDate=end_date,
-                                       goal=description
-                                       )
+            return await sync_to_async(
+                self._connection.create_sprint,
+                name=name,
+                board_id=board_id,
+                startDate=start_date,
+                endDate=end_date,
+                goal=description
+            )
         except Exception as ex:
             message = f"Sprint Creation Failed! {ex}"
             logger.error(message)
@@ -163,10 +165,11 @@ class JiraHandler(BaseHandler):
                 board_id=board_id
             )
             async for sprint in current_sprint:
-                return await sync_to_async(self._connection.add_issues_to_sprint,
-                                           sprint_id=sprint.id,
-                                           issue_keys=issue_keys
-                                           )
+                return await sync_to_async(
+                    self._connection.add_issues_to_sprint,
+                    sprint_id=sprint.id,
+                    issue_keys=issue_keys
+                )
         except Exception as ex:
             message = f"Failed to add issue! {ex}"
             logger.error(message)
@@ -186,9 +189,10 @@ class JiraHandler(BaseHandler):
 
         """
         try:
-            return await sync_to_async(self._connection.move_to_backlog,
-                                       issue_keys=issue_keys
-                                       )
+            return await sync_to_async(
+                self._connection.move_to_backlog,
+                issue_keys=issue_keys
+            )
         except Exception as ex:
             message = f"Failed to move backlog! {ex}"
             logger.error(message)
@@ -210,10 +214,11 @@ class JiraHandler(BaseHandler):
 
         """
         try:
-            return await sync_to_async(self._connection.add_comment,
-                                       issue=issue_key,
-                                       body=comments
-                                       )
+            return await sync_to_async(
+                self._connection.add_comment,
+                issue=issue_key,
+                body=comments
+            )
         except Exception as ex:
             message = f"Comments added failed! {ex}"
             logger.error(message)
