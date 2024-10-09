@@ -12,13 +12,11 @@ class WikipediaHandler(BaseHandler):
         from Wikipedia, including searching articles, fetching summaries, and accessing structured data.
     """
 
-
-    @staticmethod
-    async def get_summary(
-            query: str | None = None,
-            sentences: int | None = None,
-            language: str | None = None
-    ):
+    async def get_summary(self,
+                          query: str,
+                          sentences: int = None,
+                          language: str = None
+                          ):
 
         """
         Asynchronously retrieves a summary of a specified topic or content.
@@ -31,18 +29,16 @@ class WikipediaHandler(BaseHandler):
 
         """
 
-
         if language:
-            await sync_to_async(wikipedia.set_lang,language)
+            await sync_to_async(wikipedia.set_lang, language)
 
-        return await sync_to_async(wikipedia.summary,query, sentences=sentences)
+        return await sync_to_async(wikipedia.summary, query, sentences=sentences)
 
-    @staticmethod
-    async def get_search(
-            query: str | None = None,
-            results: int | None = None,
-            language: str | None = None
-    ):
+    async def get_search(self,
+                         query: str,
+                         results: int,
+                         language: str
+                         ):
 
         """
         Asynchronously performs a search operation based on the specified parameters.
@@ -57,12 +53,12 @@ class WikipediaHandler(BaseHandler):
         """
 
         if language:
-            await sync_to_async(wikipedia.set_lang,language)
+            await sync_to_async(wikipedia.set_lang, language)
 
         return await sync_to_async(wikipedia.search, query, results=results)
 
     def __dir__(self):
-        return(
+        return (
             'get_summary',
             'get_search'
         )
