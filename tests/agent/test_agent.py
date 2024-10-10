@@ -50,8 +50,7 @@ class TestEcommerceAgent:
             prompt_template=prompt_template
         )
         ecom_agent = Agent(
-            goal="Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the prices with "
-                 "photo link",
+            goal="Get me the best search results",
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template
@@ -61,6 +60,9 @@ class TestEcommerceAgent:
             flipkart_engine,
             execute_type=PARALLEL
         )
-        result = await ecom_agent.execute()
+        result = await ecom_agent.execute(
+            query_instruction="Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the"
+                              " prices with photo link"
+        )
         logger.info(f'Result ==> {result}')
         assert result
