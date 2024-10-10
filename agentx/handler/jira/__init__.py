@@ -91,9 +91,9 @@ class JiraHandler(BaseHandler):
             *,
             name: str,
             board_id: int,
-            start_date: Any | None = None,
-            end_date: Any | None = None,
-            description: str | None = None
+            start_date: Any = None,
+            end_date: Any = None,
+            description: str = None
     ):
         """
             Asynchronously creates a new sprint for the specified board, allowing optional start and end dates
