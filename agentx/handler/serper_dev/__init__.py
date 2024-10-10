@@ -1,9 +1,9 @@
 import os
-import requests
 import json
 import aiohttp
 
 from agentx.handler.base import BaseHandler
+
 
 
 class SerperDevToolHandler(BaseHandler):
