@@ -116,7 +116,7 @@ class Agent:
                     _res = json.loads(_res)
                     return GoalResult(**_res)
 
-    async def execute(
+    async def _execute(
             self,
             query_instruction: str
     ):
@@ -135,7 +135,17 @@ class Agent:
             query_instruction=query_instruction
         )
         logger.info(f"Final Result =>\n, {final_result}")
-        # TODO: Needs to fix for agent out
-        # TODO: Needs to verify its goal after all set
-        # TODO: Needs to retry if it fails
         return final_result
+
+    async def execute(
+            self,
+            query_instruction: str
+    ):
+        for _retry in range(self.max_retry):
+            _goal_result = await self._execute(
+                query_instruction=query_instruction
+            )
+            if _goal_result.is_goal_satisfied:
+                return _goal_result
+            logger.info(f"Agent retry {_retry + 1}")
+        logger.warning(f"Done agent max retry {self.max_retry}!")
