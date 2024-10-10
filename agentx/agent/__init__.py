@@ -90,7 +90,7 @@ class Agent:
             self,
             *,
             results: list[Any]
-    ) -> list[GoalResult]:
+    ) -> GoalResult:
         prompt_message = await self.prompt_template.get_messages(
             input_prompt=_GOAL_PROMPT_TEMPLATE,
             goal=self.goal,
@@ -105,14 +105,12 @@ class Agent:
             chat_completion_params=chat_completion_params
         )
         logger.info(f"Goal pre result => {messages}")
-        _result = []
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
                     _res = choice.message.content
                     _res = json.loads(_res)
-                    _result.append(GoalResult(**_res))
-        return _result
+                    return GoalResult(**_res)
 
     async def execute(self):
         results = []
