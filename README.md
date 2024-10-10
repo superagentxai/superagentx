@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/agentx_logo.png" width="350">
+<img src="docs/images/fulllogo_transparent.png" width="350">
 
 # **agentX**
 
