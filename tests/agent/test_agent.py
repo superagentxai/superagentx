@@ -1,5 +1,5 @@
 import logging
-
+import os
 import pytest
 
 from agentx.agent import Engine, Agent
@@ -32,13 +32,11 @@ class TestEcommerceAgent:
     async def test_ecommerce_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         amazon_ecom_handler = AmazonHandler(
-            api_key="",
+            api_key=os.getenv('RAPID_API_KEY'),
             country="IN"
-            # llm_client=llm_client,
-            # product_models=mobile_phones
         )
         flipkart_ecom_handler = FlipkartHandler(
-            api_key=""
+            api_key=os.getenv('RAPID_API_KEY'),
         )
         prompt_template = PromptTemplate()
         amazon_engine = Engine(
@@ -52,7 +50,8 @@ class TestEcommerceAgent:
             prompt_template=prompt_template
         )
         ecom_agent = Agent(
-            goal="Get me a best and cheap blender",
+            goal="Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the prices with "
+                 "photo link",
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template
@@ -62,9 +61,6 @@ class TestEcommerceAgent:
             flipkart_engine,
             execute_type=PARALLEL
         )
-        await ecom_agent.add(
-            amazon_engine,
-            flipkart_engine
-        )
         result = await ecom_agent.execute()
+        logger.info(f'Result ==> {result}')
         assert result

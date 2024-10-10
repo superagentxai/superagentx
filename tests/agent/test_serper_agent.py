@@ -37,7 +37,7 @@ class TestSerperDevAgent:
         )
 
         goal = """
-                List five AI companies in 2024."""
+                List five AI companies started 2024."""
         search_agent = Agent(
             goal=goal,
             role="You are the analyst",
