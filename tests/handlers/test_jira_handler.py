@@ -19,8 +19,11 @@ logger = logging.getLogger(__name__)
    5.pytest --log-cli-level=INFO tests/handlers/test_jira_handler.py::TestJira::test_add_issue_to_active_sprint//
    6.pytest --log-cli-level=INFO tests/handlers/test_jira_handler.py::TestJira::test_move_issue_to_backlog//
    7.pytest --log-cli-level=INFO tests/handlers/test_jira_handler.py::TestJira::test_add_comment_issue
-   
-   
+   8.pytest --log-cli-level=INFO tests/handlers/test_jira_handler.py::TestJira::test_active_sprint_get_all_issues
+   9.pytest --log-cli-level=INFO tests/handlers/test_jira_handler.py::TestJira::test_active_sprint_issues_by_assignee
+   10.pytest --log-cli-level=INFO tests/handlers/test_jira_handler.py::TestJira::test_active_sprint_filter_issues_by_status
+
+
 '''
 
 
@@ -47,7 +50,7 @@ class TestJira:
         res = await jira_client_init.get_active_sprint(
             board_id=1,
             start=0,
-            size=50
+            end=50
         )
         logger.info(f"Active Sprint: {res}")
         assert isinstance(res, ResultList)
@@ -66,7 +69,7 @@ class TestJira:
 
     async def test_get_issue(self, jira_client_init: JiraHandler):
         # get issue
-        res = await jira_client_init.get_issue(issue_id='DFPS-520')
+        res = await jira_client_init.get_issue(issue_id='DFPS-680')
         logger.info(f"Get Issue: {res}")
         assert isinstance(res, dict)
         assert len(res) > 0
@@ -97,3 +100,33 @@ class TestJira:
 
         logger.info(f"Add Comment Issue: {res}")
         assert isinstance(res, Comment)
+
+    async def test_active_sprint_get_all_issues(self, jira_client_init: JiraHandler):
+        res = await jira_client_init.active_sprint_get_all_issues(
+            board_id=1,
+            start=0,
+            end=10
+        )
+        logger.info(f"Issues: {res}")
+        assert isinstance(res, list)
+        assert len(res) > 0
+
+    async def test_active_sprint_issues_by_assignee(self, jira_client_init: JiraHandler):
+        res = await jira_client_init.active_sprint_issues_by_assignee(
+            board_id=1,
+            assignee_name="Arul",
+            start=0,
+            end=10
+        )
+        logger.info(f"Issue: {res}")
+        assert isinstance(res, list)
+        assert len(res) > 0
+
+    async def test_active_sprint_filter_issues_by_status(self, jira_client_init: JiraHandler):
+        res = await jira_client_init.active_sprint_filter_issues_by_status(
+            board_id=1,
+            filter_by="Done"
+        )
+        logger.info(f"Issue: {res}")
+        assert isinstance(res, list)
+        assert len(res) > 0
