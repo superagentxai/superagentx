@@ -30,7 +30,7 @@ class AmazonHandler(BaseHandler):
             params: dict
     ):
         _url = f'{self.base_url}/{endpoint.strip("/")}'
-        logger.info(f"{_url}")
+        logger.debug(f"{_url}")
         headers = {
             "x-rapidapi-key": self.api_key,
             "x-rapidapi-host": "real-time-amazon-data.p.rapidapi.com"
