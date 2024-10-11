@@ -4,7 +4,7 @@
 
 <br/>
 
-🤖**agentX**: The Ultimate Modular Autonomous AI Agent Framework for Progressing Towards AGI.
+🤖**SuperAgentX**: The Ultimate Modular Autonomous AI Agent Framework for Progressing Towards AGI.
 
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/decisionfacts/agentX)](https://github.com/decisionfacts/agentX)
