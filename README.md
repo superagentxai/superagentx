@@ -2,6 +2,7 @@
 
 <img src="docs/images/fulllogo_transparent.png" width="350">
 
+<br/>
 
 🤖**agentX**: The Ultimate Modular Autonomous AI Agent Framework.
 
