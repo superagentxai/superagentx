@@ -4,7 +4,7 @@
 
 <br/>
 
-🤖**agentX**: The Ultimate Modular Autonomous AI Agent Framework.
+🤖**agentX**: The Ultimate Modular Autonomous AI Agent Framework for Progressing Towards AGI.
 
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/decisionfacts/agentX)](https://github.com/decisionfacts/agentX)
@@ -13,15 +13,22 @@
 </div>
 
 ## Table of contents
-
 - [What is AgentX?](#what-is-agentx)
+- [Why AgentX?](#why agentx)
 - [Getting Started](#getting-started)
 - [Key Features](#key-features)
 - [Installing Dependencies](#installing-dependencies)
 - [Contribution](#contribution)
 - [License](#license)
 
-## What is AgentX
+## What is SuperAgentX?
+
+**The Ultimate Modular Autonomous AI Agent Framework for Progressing Towards AGI**
+SuperAgentX is an advanced framework designed to accelerate the development of Artificial General Intelligence (AGI). It provides a powerful, modular, and flexible platform for building autonomous AI agents capable of executing complex tasks with minimal human intervention. By integrating cutting-edge AI technologies and promoting efficient, scalable agent behavior, SuperAgentX embodies a critical step forward in the path towards superintelligence and AGI. Whether for research, development, or deployment, SuperAgentX is built to push the boundaries of what's possible with autonomous AI systems.
+
+## Why SuperAgentX?
+
+SuperAgentX is designed to address the growing need for highly capable, autonomous AI systems that can perform complex tasks with minimal human intervention. As we approach the limits of narrow AI, there's a need for an adaptable and scalable framework to bridge the gap toward AGI (Artificial General Intelligence). Here’s why SuperAgentX stands out:
 
 ## Getting Started
 
