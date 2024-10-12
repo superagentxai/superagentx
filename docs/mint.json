@@ -2,17 +2,17 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Starter Kit",
   "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "dark": "/logo/fulllogo_transparent_nobuffer.svg",
+    "light": "/logo/fulllogo_transparent_nobuffer.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373",
-    "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
+    "primary": "#0b5394",
+    "light": "#E6FFA2",
+    "dark": "#a3df02",
+    "background": {
+      "dark": "#0f1117",
+      "light": "#fff"
     }
   },
   "topbarLinks": [
@@ -21,10 +21,6 @@
       "url": "mailto:hi@mintlify.com"
     }
   ],
-  "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
-  },
   "tabs": [
     {
       "name": "API Reference",
