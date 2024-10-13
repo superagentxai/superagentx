@@ -55,8 +55,8 @@ class TestIOConsolePIpe:
         )
         pipe = AgentXPipe(
             io=IOConsole(
-                read_phrase="Enter your query here =>\n",
-                write_phrase="Your result is =>\n"
+                read_phrase="\n\n\nEnter your query here:\n\n=>",
+                write_phrase="\n\n\nYour result is =>\n\n"
             )
         )
         await pipe.add(ecom_agent)
