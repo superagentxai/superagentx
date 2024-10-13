@@ -7,6 +7,20 @@ from agentx.io.base import IOStream
 class IOConsole(IOStream):
     """A console input/output stream."""
 
+    def __init__(
+            self,
+            read_phrase: str | None = None,
+            write_phrase: str | None = None
+    ):
+        self.read_phrase = read_phrase or ''
+        self.write_phrase = write_phrase or ''
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "<IOConsole>"
+
     async def write(
             self,
             *objects: Any,
@@ -25,6 +39,7 @@ class IOConsole(IOStream):
         sep = sep or " "
         end = end or "\n"
         print(
+            self.write_phrase,
             *objects,
             sep=sep,
             end=end,
@@ -47,7 +62,7 @@ class IOConsole(IOStream):
             str: The line read from the input stream.
 
         """
-        prompt = prompt or ""
+        prompt = prompt or self.read_phrase
 
         if password:
             return getpass.getpass(prompt if prompt else "Password: ")
