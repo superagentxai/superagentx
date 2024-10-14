@@ -154,7 +154,8 @@ class Agent:
 
     async def _execute(
             self,
-            query_instruction: str
+            query_instruction: str,
+            agent_goal_results: list[GoalResult] | None = None
     ) -> GoalResult:
         results = []
         old_memory = await self.retrieve_memory(query_instruction)
@@ -170,7 +171,7 @@ class Agent:
                     *[
                         _engine.start(
                             input_prompt=instruction,
-                            agent_goal_results=results
+                            agent_goal_results=agent_goal_results
                         )
                         async for _engine in iter_to_aiter(_engines)
                     ]
@@ -178,7 +179,7 @@ class Agent:
             else:
                 _res = await _engines.start(
                     input_prompt=instruction,
-                    agent_goal_results=results
+                    agent_goal_results=agent_goal_results
                 )
             results.append(_res)
         logger.info(f"Engine results =>\n{results}")
@@ -191,12 +192,14 @@ class Agent:
 
     async def execute(
             self,
-            query_instruction: str
+            query_instruction: str,
+            agent_goal_results: list[GoalResult] | None = None
     ):
         for _retry in range(1, self.max_retry+1):
             logger.info(f"Agent retry {_retry}")
             _goal_result = await self._execute(
-                query_instruction=query_instruction
+                query_instruction=query_instruction,
+                agent_goal_results=agent_goal_results
             )
             if _goal_result.is_goal_satisfied:
                 assistant = {
