@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from jira import JIRA
+from jira import JIRA, Project
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.jira.exceptions import SprintException, AuthException, ProjectException, TaskException
@@ -42,9 +42,26 @@ class JiraHandler(BaseHandler):
             logger.error(message, exc_info=ex)
             raise AuthException(message)
 
-    async def get_list_projects(self):
+    async def active_sprint_list_projects(
+            self
+    ):
+        """
+            retrieves a list of projects.
+
+            Returns:
+                List[dict]: A list of dictionaries, where each dictionary represents
+                a JIRA project with keys such as 'key', 'name', and 'id'.
+            """
         try:
-            return await sync_to_async(self._connection.projects)
+            project_list: Project = await sync_to_async(self._connection.projects)
+            projects = []
+            async for project in iter_to_aiter(project_list):
+                temp_data = await sync_to_async(
+                    self._connection.project,
+                    id=project.id
+                )
+                projects.append(temp_data.raw)
+            return projects
         except Exception as ex:
             message = f"Projects Getting Error! {ex}"
             logger.error(message)
@@ -59,16 +76,16 @@ class JiraHandler(BaseHandler):
             state: str = 'active'
     ):
         """
-        Asynchronously retrieves the active sprint for a specified board, allowing optional pagination and
-        state filtering.This returns details of the active sprint based on the provided board ID and parameters.
+        Retrieves the active sprint for a specified board, allowing optional pagination and
+        state filtering. This returns details of the active sprint based on the provided board ID and parameters.
 
            parameters:
                 board_id (int): The unique identifier of the board for which to retrieve the active sprint.
-                start (int | None, optional): The index from which to start retrieving sprints, defaulting
+                start (int | 0, optional): The index from which to start retrieving sprints, defaulting
                                              to 0 for the first item.
-                size (int | None, optional): The maximum number of sprints to return, defaulting to 1.
-                                             If set to None, all available sprints may be returned.
-                state (str | None, optional): The state of the sprints to filter by, defaulting to 'active'.
+                size (int | 1, optional): The maximum number of sprints to return, defaulting to 1.
+                                             If set to 1, all available sprints may be returned.
+                state (str | 'active', optional): The state of the sprints to filter by, defaulting to 'active'.
                                                 This can be used to specify different sprint states.
 
         """
@@ -96,9 +113,8 @@ class JiraHandler(BaseHandler):
             description: str = None
     ):
         """
-            Asynchronously creates a new sprint for the specified board, allowing optional start and end dates
-            along with a description. This method initializes the sprint with the provided parameters to manage project
-            workflows effectively.
+            Creates a new sprint for the specified board, allowing optional start and end dates
+            along with a description.
 
             parameter:
                 name (str): The name of the sprint to be created.
@@ -131,7 +147,7 @@ class JiraHandler(BaseHandler):
             issue_id: str
     ):
         """
-        Asynchronously retrieves the details of a specific issue based on the provided issue ID.
+        Retrieves the details of a specific issue based on the provided issue ID.
         This method allows users to access issue information for further processing or display.
 
         parameter:
@@ -149,15 +165,14 @@ class JiraHandler(BaseHandler):
             self,
             *,
             board_id: int,
-            issue_keys: list[str]
+            issue_key: str
     ):
         """
-            Asynchronously adds specified issues to a sprint associated with the given board ID.
-            This method updates the sprint by including the provided issue keys for enhanced project tracking.
+        Add a new issue to the active sprint.
 
-            parameter:
-                issue_key (str): The unique identifier of the issue to which the comment will be added.
-                board_id (int): The unique identifier of the board for which the operation will be performed.
+        Parameters:
+            board_id (int): The unique identifier of the board associated with the operation.
+            issue_key (str): The unique identifier of the issue to be added to the active sprint.
         """
 
         try:
@@ -168,7 +183,7 @@ class JiraHandler(BaseHandler):
                 return await sync_to_async(
                     self._connection.add_issues_to_sprint,
                     sprint_id=sprint.id,
-                    issue_keys=issue_keys
+                    issue_keys=[issue_key]
                 )
         except Exception as ex:
             message = f"Failed to add issue! {ex}"
@@ -178,11 +193,10 @@ class JiraHandler(BaseHandler):
     async def move_to_backlog(
             self,
             *,
-            issue_keys: list[str]
+            issue_key: str
     ):
         """
-        Asynchronously moves specified issues to the backlog for better project management. This method
-        allows users to update the status of the provided issue keys, ensuring they are set aside for future work.
+        Moves specified issues to the backlog for better future management.
 
         parameter:
             issue_key (str): The unique identifier of the issue to which the comment will be added.
@@ -191,7 +205,7 @@ class JiraHandler(BaseHandler):
         try:
             return await sync_to_async(
                 self._connection.move_to_backlog,
-                issue_keys=issue_keys
+                issue_keys=[issue_key]
             )
         except Exception as ex:
             message = f"Failed to move backlog! {ex}"
@@ -205,7 +219,7 @@ class JiraHandler(BaseHandler):
             comments: str
     ):
         """
-        Asynchronously adds a comment to the specified issue identified by the issue key.
+        Adds a comment to the specified issue identified by the issue key.
         This method enhances collaboration by allowing users to provide feedback or updates directly on the issue.
 
             parameter:
@@ -384,8 +398,8 @@ class JiraHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            'list_projects',
-            'active_sprint',
+            'active_sprint_list_projects',
+            'get_active_sprint',
             'create_sprint',
             'get_issue',
             'add_issue_to_sprint',
