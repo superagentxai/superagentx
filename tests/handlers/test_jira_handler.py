@@ -1,4 +1,5 @@
 import logging
+import os
 
 import pytest
 from jira.client import ResultList
@@ -30,9 +31,9 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def jira_client_init() -> JiraHandler:
     jira_handler = JiraHandler(
-        email='',
-        token='',
-        organization=""
+        email=os.getenv('JIRA_EMAIL'),
+        token=os.getenv('JIRA_TOKEN'),
+        organization=os.getenv('JIRA_ORGANIZATION'),
     )
     return jira_handler
 
@@ -40,7 +41,7 @@ def jira_client_init() -> JiraHandler:
 class TestJira:
 
     async def test_get_all_projects(self, jira_client_init: JiraHandler):
-        res = await jira_client_init.get_list_projects()
+        res = await jira_client_init.active_sprint_list_projects()
         logger.info(f"Projects: {res}")
         assert isinstance(res, list)
         assert len(res) > 0
@@ -78,7 +79,7 @@ class TestJira:
         # create Sprint
         res = await jira_client_init.add_issue_to_sprint(
             board_id=1,
-            issue_keys=['DFPS-520']
+            issue_key='DFPS-520'
         )
 
         assert isinstance(res, Response)
@@ -86,7 +87,7 @@ class TestJira:
     async def test_move_issue_to_backlog(self, jira_client_init: JiraHandler):
         # move issue to backlog
         res = await jira_client_init.move_to_backlog(
-            issue_keys=['DFPS-520']
+            issue_key='DFPS-520'
         )
 
         assert isinstance(res, Response)
