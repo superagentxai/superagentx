@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from agentx.agent.engine import Engine
 from agentx.constants import SEQUENCE
 from agentx.llm import LLMClient, ChatCompletionParams
+from agentx.memory import Memory
 from agentx.prompt import PromptTemplate
 from agentx.utils.helper import iter_to_aiter
 
@@ -65,6 +66,7 @@ class Agent:
             output_format: str | None = None,
             name: str | None = None,
             description: str | None = None,
+            memory: Memory = Memory(),
             max_retry: int = 5
     ):
         self.role = role
@@ -77,6 +79,9 @@ class Agent:
         self.description = description
         self.max_retry = max_retry
         self.engines: list[Engine | list[Engine]] = []
+        self.memory = memory
+        self.agent_id = str(uuid.uuid4().hex)
+        self.chat_id = str(uuid.uuid4().hex)
 
     async def add(
             self,
@@ -87,6 +92,27 @@ class Agent:
             self.engines += engines
         else:
             self.engines.append(list(engines))
+
+    async def add_memory(
+            self,
+            prompt_instruction: list[dict]
+    ):
+        async for prompt in iter_to_aiter(prompt_instruction):
+            await self.memory.add(
+                memory_id=self.agent_id,
+                chat_id=self.chat_id,
+                message_id=str(uuid.uuid4().hex),
+                role=prompt.get("role"),
+                message=prompt.get("content")
+            )
+
+    async def retrieve_memory(self, query_instruction: str) -> list[dict]:
+        return await self.memory.search(
+            query=query_instruction,
+            memory_id=self.agent_id,
+            chat_id=self.chat_id,
+            limit=5,
+        )
 
     async def _verify_goal(
             self,
@@ -102,34 +128,56 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
+        logger.info(f"Prompt Message: {prompt_message}")
+        user_input = {
+            "role": "user",
+            "content": query_instruction
+        }
+        old_memory = await self.retrieve_memory(query_instruction)
+        messages = prompt_message
         chat_completion_params = ChatCompletionParams(
-            messages=prompt_message
+            messages=messages
         )
+        if old_memory:
+            logger.info(f"Old Memory: {old_memory}")
+            chat_completion_params = ChatCompletionParams(
+                messages=messages + old_memory
+            )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
+        # await self.add_memory([user_input])
         logger.info(f"Goal pre result => {messages}")
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
                     _res = choice.message.content
                     _res = json.loads(_res)
-                    return GoalResult(**_res)
+                    res = GoalResult(**_res)
+                    return res
 
     async def _execute(
             self,
             query_instruction: str
     ):
         results = []
+        old_memory = await self.retrieve_memory(query_instruction)
+        instruction = query_instruction
+        if old_memory:
+            message_content = ""
+            async for _mem in iter_to_aiter(old_memory):
+                message_content += f"{_mem.get('content')} "
+            instruction = f"Context:\n{message_content}\nQuestion: {query_instruction}"
+            logger.info(f"Old Memory Instr: {instruction}")
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 _res = await asyncio.gather(
-                    *[_engine.start(input_prompt=query_instruction) async for _engine in iter_to_aiter(_engines)]
+                    *[_engine.start(input_prompt=instruction) async for _engine in iter_to_aiter(_engines)]
                 )
             else:
                 _res = await _engines.start(input_prompt=query_instruction)
             results.append(_res)
-        logger.debug(f"Engine results =>\n{results}")
+        logger.info(f"Engine results =>\n{results}")
         final_result = await self._verify_goal(
             results=results,
             query_instruction=query_instruction
@@ -147,5 +195,10 @@ class Agent:
                 query_instruction=query_instruction
             )
             if _goal_result.is_goal_satisfied:
+                assistant = {
+                    "role": "assistant",
+                    "content": _goal_result.reason
+                }
+                await self.add_memory([assistant])
                 return _goal_result
         logger.warning(f"Done agent max retry {self.max_retry}!")

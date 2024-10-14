@@ -6,8 +6,10 @@ from agentx.agent import Engine, Agent
 from agentx.constants import PARALLEL
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
+from agentx.io import IOConsole
 from agentx.llm import LLMClient
 from agentx.prompt import PromptTemplate
+from agentx.utils.console_color import ConsoleColorType
 
 logger = logging.getLogger(__name__)
 
@@ -53,16 +55,25 @@ class TestEcommerceAgent:
             goal="Get me the best search results",
             role="You are the best product searcher",
             llm=llm_client,
-            prompt_template=prompt_template
+            prompt_template=prompt_template,
         )
         await ecom_agent.add(
             amazon_engine,
             flipkart_engine,
             execute_type=PARALLEL
         )
-        result = await ecom_agent.execute(
-            query_instruction="Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the"
-                              " prices with photo link"
-        )
-        logger.info(f'Result ==> {result}')
-        assert result
+        io_console = IOConsole()
+        while True:
+            await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
+            query_instruction = await io_console.read("User: ")
+            # "Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the"
+            # " prices with photo link"
+            if query_instruction in (":q", "quit", "exit"):
+                break
+            else:
+                result = await ecom_agent.execute(
+                    query_instruction=query_instruction
+                )
+                await io_console.write(ConsoleColorType.CGREEN2.value, end="")
+                await io_console.write(f"Assistant: {result}", flush=True)
+                assert result

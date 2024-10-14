@@ -63,7 +63,7 @@ class SQLiteManager:
             """
             CREATE TABLE IF NOT EXISTS history (
                 id TEXT PRIMARY KEY,
-                user_id TEXT,
+                memory_id TEXT,
                 chat_id TEXT,
                 message_id TEXT,
                 created_at DATETIME,
@@ -78,33 +78,33 @@ class SQLiteManager:
 
     async def get_history(
             self,
-            user_id: str,
+            memory_id: str,
             chat_id: str
     ):
         """
         Asynchronously retrieves the chat history for a specific user and chat session.
 
         Parameters:
-            user_id : str
+            memory_id : str
                 The unique identifier of the user whose chat history is being requested.
             chat_id : str
                 The unique identifier of the chat session to retrieve the history from.
         """
         cursor = await self.connection.execute(
             """
-            SELECT id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted
+            SELECT id, memory_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted
             FROM history
             WHERE user_id = ? AND chat_id = ?
             ORDER BY created_at ASC
         """,
-            (user_id, chat_id),
+            (memory_id, chat_id),
         )
         rows = await cursor.fetchall()
         if rows:
             return [
                 {
                     "id": row[0],
-                    "user_id": row[1],
+                    "memory_id": row[1],
                     "chat_id": row[2],
                     "message_id": row[3],
                     "event": row[4],
@@ -119,7 +119,7 @@ class SQLiteManager:
 
     async def _get_user_by_id(
             self,
-            user_id: str
+            memory_id: str
     ):
         """
         Asynchronously retrieves user information by user ID.
@@ -128,18 +128,18 @@ class SQLiteManager:
         record matching the provided user ID.
 
         Parameters:
-            user_id : str
+            memory_id : str
                 The unique identifier of the user to be retrieved.
 
         """
         cursor = await self.connection.execute(
                 """
-                SELECT id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted
+                SELECT id, memory_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted
                 FROM history
-                WHERE user_id = ?
+                WHERE memory_id = ?
                 ORDER BY updated_at ASC
             """,
-                (user_id,),
+                (memory_id,),
         )
         return await cursor.fetchall()
 
@@ -154,7 +154,8 @@ class SQLiteManager:
 
     async def add_history(
             self,
-            user_id: str,
+            *,
+            memory_id: str,
             chat_id: str,
             message_id: str,
             event: str,
@@ -172,7 +173,7 @@ class SQLiteManager:
         event type, and timestamps.
 
         Parameters:
-            user_id : str
+            memory_id : str
                 The unique identifier of the user who sent the message.
             chat_id : str
                 The unique identifier of the chat session where the message was sent.
@@ -197,12 +198,12 @@ class SQLiteManager:
             updated_at = datetime.datetime.now()
         await self.connection.execute(
             """
-            INSERT INTO history (id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted)
+            INSERT INTO history (id, memory_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 str(uuid.uuid4()),
-                user_id,
+                memory_id,
                 chat_id,
                 message_id,
                 event,

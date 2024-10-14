@@ -1,6 +1,6 @@
 import logging
 from pydantic import BaseModel
-from typing import Optional, List, Sequence, Dict
+from typing import List, Sequence, Dict
 
 import chromadb
 from chromadb.api.models import Collection
@@ -43,10 +43,10 @@ class ChromaDB(BaseVectorStore):
             embed_cli (dict): Agentx openai-client/huggingface client configuration. Defaults to None.
         """
         self.embed_cli = embed_cli
-        if self.embed_cli:
+        if not self.embed_cli:
             embed_config = {
                 "model": DEFAULT_EMBED_MODEL,
-                "embed_type": DEFAULT_EMBED_TYPE
+                "llm_type": DEFAULT_EMBED_TYPE
             }
             self.embed_cli = LLMClient(llm_config=embed_config)
 
@@ -118,7 +118,7 @@ class ChromaDB(BaseVectorStore):
             ids (Optional[List[str]], optional): List of IDs corresponding to vectors. Defaults to None.
         """
 
-        vectors = [self.embed_cli.aembed(text=text) async for text in iter_to_aiter(texts)]
+        vectors = [await self.embed_cli.aembed(text=text) async for text in iter_to_aiter(texts)]
         logger.info(f"Inserting {len(vectors)} vectors into collection {self.collection_name}")
         collection = await self._get_or_create_collection(name=self.collection_name)
         await sync_to_async(
@@ -151,8 +151,10 @@ class ChromaDB(BaseVectorStore):
             collection.query,
             query_embeddings=query_vector,
             where=filters,
-            n_results=limit
+            n_results=limit,
+            include=['embeddings', 'metadatas', "distances", "data"]
         )
+        logger.info(results)
         return await self._parse_output(results)
 
     async def update(
@@ -221,13 +223,13 @@ class ChromaDB(BaseVectorStore):
 
         async for key in iter_to_aiter(keys):
             value = data.get(key, [])
-            if value and  isinstance(value, list) and isinstance(value[0], list):
+            if value and isinstance(value, list) and isinstance(value[0], list):
                 value = value[0]
             values.append(value)
 
         ids, distances, metadatas = values
         max_length = max(
-            len(v) async for v in iter_to_aiter(values) if isinstance(v, list) and v is not None
+            len(v) for v in values if isinstance(v, list) and v is not None
         )
 
         result = []
