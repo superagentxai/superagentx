@@ -2,7 +2,8 @@ import logging
 
 import pytest
 
-from agentx.agent import Engine, Agent
+from agentx.agent.agent import Agent
+from agentx.agent.engine import Engine
 from agentx.handler.wikipedia import WikipediaHandler
 from agentx.llm import LLMClient
 from agentx.prompt import PromptTemplate
