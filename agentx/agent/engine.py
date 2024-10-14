@@ -2,7 +2,7 @@ import inspect
 import logging
 import typing
 
-from agentx.agent import GoalResult
+from agentx.agent.result import GoalResult
 from agentx.exceptions import ToolError
 from agentx.handler.base import BaseHandler
 from agentx.handler.exceptions import InvalidHandler
