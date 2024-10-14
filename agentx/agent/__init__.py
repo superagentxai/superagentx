@@ -112,12 +112,15 @@ class Agent:
                 message=prompt.get("content")
             )
 
-    async def retrieve_memory(self, query_instruction: str) -> list[dict]:
+    async def retrieve_memory(
+            self,
+            query_instruction: str
+    ) -> list[dict]:
         return await self.memory.search(
             query=query_instruction,
             memory_id=self.agent_id,
             chat_id=self.chat_id,
-            limit=5,
+            limit=10,
         )
 
     async def _verify_goal(
@@ -134,18 +137,12 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
-        logger.info(f"Prompt Message: {prompt_message}")
-        user_input = {
-            "role": "user",
-            "content": query_instruction
-        }
         old_memory = await self.retrieve_memory(query_instruction)
         messages = prompt_message
         chat_completion_params = ChatCompletionParams(
             messages=messages
         )
         if old_memory:
-            logger.info(f"Old Memory: {old_memory}")
             chat_completion_params = ChatCompletionParams(
                 messages=messages + old_memory
             )
@@ -174,14 +171,13 @@ class Agent:
             async for _mem in iter_to_aiter(old_memory):
                 message_content += f"{_mem.get('content')} "
             instruction = f"Context:\n{message_content}\nQuestion: {query_instruction}"
-            logger.info(f"Old Memory Instr: {instruction}")
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 _res = await asyncio.gather(
                     *[_engine.start(input_prompt=instruction) async for _engine in iter_to_aiter(_engines)]
                 )
             else:
-                _res = await _engines.start(input_prompt=query_instruction)
+                _res = await _engines.start(input_prompt=instruction)
             results.append(_res)
         logger.info(f"Engine results =>\n{results}")
         final_result = await self._verify_goal(
