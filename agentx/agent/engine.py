@@ -1,9 +1,6 @@
 import inspect
 import logging
 import typing
-from trace import Trace
-
-from mypyc.ir.ops import Truncate
 
 from agentx.agent import GoalResult
 from agentx.exceptions import ToolError
