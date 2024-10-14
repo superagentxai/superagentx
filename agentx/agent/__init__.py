@@ -4,9 +4,8 @@ import logging
 import uuid
 from typing import Literal, Any
 
-from pydantic import BaseModel
-
 from agentx.agent.engine import Engine
+from agentx.agent.result import GoalResult
 from agentx.constants import SEQUENCE
 from agentx.llm import LLMClient, ChatCompletionParams
 from agentx.memory import Memory
@@ -45,12 +44,6 @@ Make sure generate the result based on the given output format if provided.
 
 Always generate the JSON output.
 """
-
-
-class GoalResult(BaseModel):
-    reason: str
-    result: Any
-    is_goal_satisfied: bool
 
 
 class Agent:
@@ -150,8 +143,7 @@ class Agent:
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
-        # await self.add_memory([user_input])
-        logger.info(f"Goal pre result => {messages}")
+        logger.debug(f"Goal pre result => {messages}")
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
@@ -163,7 +155,7 @@ class Agent:
     async def _execute(
             self,
             query_instruction: str
-    ):
+    ) -> GoalResult:
         results = []
         old_memory = await self.retrieve_memory(query_instruction)
         instruction = query_instruction
@@ -175,17 +167,26 @@ class Agent:
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 _res = await asyncio.gather(
-                    *[_engine.start(input_prompt=instruction) async for _engine in iter_to_aiter(_engines)]
+                    *[
+                        _engine.start(
+                            input_prompt=instruction,
+                            agent_goal_results=results
+                        )
+                        async for _engine in iter_to_aiter(_engines)
+                    ]
                 )
             else:
-                _res = await _engines.start(input_prompt=instruction)
+                _res = await _engines.start(
+                    input_prompt=instruction,
+                    agent_goal_results=results
+                )
             results.append(_res)
         logger.info(f"Engine results =>\n{results}")
         final_result = await self._verify_goal(
             results=results,
             query_instruction=query_instruction
         )
-        logger.info(f"Final Result =>\n, {final_result}")
+        logger.debug(f"Final Result =>\n, {final_result.model_dump()}")
         return final_result
 
     async def execute(
