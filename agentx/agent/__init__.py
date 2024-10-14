@@ -73,10 +73,16 @@ class Agent:
         self.prompt_template = prompt_template
         self.input_prompt = input_prompt
         self.output_format = output_format
-        self.name = name or uuid.uuid4().hex
+        self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
         self.description = description
         self.max_retry = max_retry
         self.engines: list[Engine | list[Engine]] = []
+
+    def __str__(self):
+        return "Agent"
+
+    def __repr__(self):
+        return f"<{self.__str__()}>"
 
     async def add(
             self,

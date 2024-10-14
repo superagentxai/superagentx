@@ -25,9 +25,15 @@ class AgentXPipe:
         self.goal = goal  # TODO: will be consider in the future
         self.role = role  # TODO: will be consider in the future
         self.prompt = prompt  # TODO: will be consider in the future
-        self.name = name or uuid.uuid4().hex
+        self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
         self.description = description
         self.agents: list[Agent | list[Agent]] = []
+
+    def __str__(self):
+        return "AgentXPipe"
+
+    def __repr__(self):
+        return f"<{self.__str__()}>"
 
     async def add(
             self,
