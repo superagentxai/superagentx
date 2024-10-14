@@ -2,7 +2,6 @@ import inspect
 import logging
 import typing
 
-from agentx.agent.result import GoalResult
 from agentx.exceptions import ToolError
 from agentx.handler.base import BaseHandler
 from agentx.handler.exceptions import InvalidHandler
@@ -63,16 +62,12 @@ class Engine:
     async def start(
             self,
             input_prompt: str,
-            agent_goal_results: list[GoalResult] | None = None,
+            pre_result: str | None = None,
             **kwargs
     ) -> list[typing.Any]:
 
-        if agent_goal_results:
-            _result_data = [
-                _goal_result.model_dump_json(exclude_none=True)
-                async for _goal_result in iter_to_aiter(agent_goal_results)
-            ]
-            input_prompt = f'{input_prompt}\n\n{_result_data}'
+        if pre_result:
+            input_prompt = f'{input_prompt}\n\n{pre_result}'
 
         if not kwargs:
             kwargs = {}

@@ -119,7 +119,7 @@ class Agent:
     async def _execute(
             self,
             query_instruction: str,
-            agent_goal_results: list[GoalResult] | None = None
+            pre_result: str | None = None
     ) -> GoalResult:
         results = []
         async for _engines in iter_to_aiter(self.engines):
@@ -128,7 +128,7 @@ class Agent:
                     *[
                         _engine.start(
                             input_prompt=query_instruction,
-                            agent_goal_results=agent_goal_results
+                            pre_result=pre_result
                         )
                         async for _engine in iter_to_aiter(_engines)
                     ]
@@ -136,7 +136,7 @@ class Agent:
             else:
                 _res = await _engines.start(
                     input_prompt=query_instruction,
-                    agent_goal_results=agent_goal_results
+                    pre_result=pre_result
                 )
             results.append(_res)
         logger.debug(f"Engine results =>\n{results}")
@@ -150,13 +150,13 @@ class Agent:
     async def execute(
             self,
             query_instruction: str,
-            agent_goal_results: list[GoalResult] | None = None
-    ):
+            pre_result: str | None = None
+    ) -> GoalResult | None:
         for _retry in range(1, self.max_retry+1):
             logger.info(f"Agent `{self.name}` retry {_retry}")
             _goal_result = await self._execute(
                 query_instruction=query_instruction,
-                agent_goal_results=agent_goal_results
+                pre_result=pre_result
             )
             if _goal_result.is_goal_satisfied:
                 return _goal_result
