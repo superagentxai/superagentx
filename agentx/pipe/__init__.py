@@ -54,10 +54,19 @@ class AgentXPipe:
         async for _agents in iter_to_aiter(self.agents):
             if isinstance(_agents, list):
                 _res = await asyncio.gather(
-                    *[_agent.execute(query_instruction=query_instruction) async for _agent in iter_to_aiter(_agents)]
+                    *[
+                        _agent.execute(
+                            query_instruction=query_instruction,
+                            agent_goal_results=results
+                        )
+                        async for _agent in iter_to_aiter(_agents)
+                    ]
                 )
             else:
-                _res = await _agents.execute(query_instruction=query_instruction)
+                _res = await _agents.execute(
+                    query_instruction=query_instruction,
+                    agent_goal_results=results
+                )
             results.append(_res)
         # TODO: Needs to fix for pipe out
         # TODO: Needs to verify its goal after all set
