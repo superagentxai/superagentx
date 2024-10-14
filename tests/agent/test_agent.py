@@ -3,7 +3,8 @@ import os
 
 import pytest
 
-from agentx.agent import Engine, Agent
+from agentx.agent.agent import Agent
+from agentx.agent.engine import Engine
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.io import IOConsole

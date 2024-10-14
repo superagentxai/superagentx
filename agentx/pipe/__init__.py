@@ -2,7 +2,7 @@ import asyncio
 import uuid
 from typing import Literal
 
-from agentx.agent import Agent
+from agentx.agent.agent import Agent
 from agentx.constants import SEQUENCE
 from agentx.io import IOConsole
 from agentx.llm.types.base import logger

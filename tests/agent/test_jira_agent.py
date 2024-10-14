@@ -3,7 +3,8 @@ import os
 
 import pytest
 
-from agentx.agent import Engine, Agent
+from agentx.agent.agent import Agent
+from agentx.agent.engine import Engine
 from agentx.constants import SEQUENCE
 from agentx.handler.jira import JiraHandler
 from agentx.llm import LLMClient
