@@ -61,22 +61,23 @@ class Agent:
             role: str,
             llm: LLMClient,
             prompt_template: PromptTemplate,
-            input_prompt: str | None = None,
-            output_format: str | None = None,
             name: str | None = None,
             description: str | None = None,
+            engines: list[Engine | list[Engine]] | None = None,
+            input_prompt: str | None = None,
+            output_format: str | None = None,
             max_retry: int = 5
     ):
         self.role = role
         self.goal = goal
         self.llm = llm
         self.prompt_template = prompt_template
-        self.input_prompt = input_prompt
-        self.output_format = output_format
         self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
         self.description = description
+        self.engines: list[Engine | list[Engine]] = engines or []
+        self.input_prompt = input_prompt
+        self.output_format = output_format
         self.max_retry = max_retry
-        self.engines: list[Engine | list[Engine]] = []
 
     def __str__(self):
         return "Agent"
