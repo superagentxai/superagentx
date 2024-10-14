@@ -87,19 +87,22 @@ class Engine:
 
         results = []
         async for message in iter_to_aiter(messages):
-            async for tool in iter_to_aiter(message.tool_calls):
-                if tool.tool_type == 'function':
-                    func = getattr(self.handler, tool.name)
-                    if func and (inspect.ismethod(func) or inspect.isfunction(func)):
-                        _kwargs = tool.arguments or {}
-                        if inspect.iscoroutinefunction(func):
-                            res = await func(**_kwargs)
-                        else:
-                            res = await sync_to_async(func, **_kwargs)
-
-                        if res:
-                            if not self.output_parser:
-                                results.append(res)
+            if message.tool_calls:
+                async for tool in iter_to_aiter(message.tool_calls):
+                    if tool.tool_type == 'function':
+                        func = getattr(self.handler, tool.name)
+                        if func and (inspect.ismethod(func) or inspect.isfunction(func)):
+                            _kwargs = tool.arguments or {}
+                            if inspect.iscoroutinefunction(func):
+                                res = await func(**_kwargs)
                             else:
-                                results.append(await self.output_parser.parse(res))
+                                res = await sync_to_async(func, **_kwargs)
+
+                            if res:
+                                if not self.output_parser:
+                                    results.append(res)
+                                else:
+                                    results.append(await self.output_parser.parse(res))
+            else:
+                results.append(message.content)
         return results

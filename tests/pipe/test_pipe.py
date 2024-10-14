@@ -1,21 +1,15 @@
-import logging
 import os
+
 import pytest
 
 from agentx.agent import Engine, Agent
 from agentx.constants import PARALLEL
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
+from agentx.io import IOConsole
 from agentx.llm import LLMClient
+from agentx.pipe import AgentXPipe
 from agentx.prompt import PromptTemplate
-
-logger = logging.getLogger(__name__)
-
-'''
- Run Pytest:  
-
-   1. pytest --log-cli-level=INFO tests/agent/test_agent.py::TestEcommerceAgent::test_ecommerce_agent
-'''
 
 
 @pytest.fixture
@@ -26,10 +20,9 @@ def agent_client_init() -> dict:
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
 
+class TestIOConsolePIpe:
 
-class TestEcommerceAgent:
-
-    async def test_ecommerce_agent(self, agent_client_init: dict):
+    async def test_ecom_pipe(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         amazon_ecom_handler = AmazonHandler(
             api_key=os.getenv('RAPID_API_KEY'),
@@ -60,9 +53,11 @@ class TestEcommerceAgent:
             flipkart_engine,
             execute_type=PARALLEL
         )
-        result = await ecom_agent.execute(
-            query_instruction="Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the"
-                              " prices with photo link"
+        pipe = AgentXPipe(
+            io=IOConsole(
+                read_phrase="\n\n\nEnter your query here:\n\n=>",
+                write_phrase="\n\n\nYour result is =>\n\n"
+            )
         )
-        logger.info(f'Result ==> {result}')
-        assert result
+        await pipe.add(ecom_agent)
+        await pipe.flow()
