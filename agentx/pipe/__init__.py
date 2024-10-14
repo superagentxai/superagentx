@@ -3,6 +3,7 @@ import uuid
 from typing import Literal
 
 from agentx.agent.agent import Agent
+from agentx.agent.result import GoalResult
 from agentx.constants import SEQUENCE
 from agentx.io import IOConsole
 from agentx.llm.types.base import logger
@@ -46,18 +47,32 @@ class AgentXPipe:
         else:
             self.agents.append(list(agents))
 
+    @staticmethod
+    async def _pre_result(
+            results: list[GoalResult] | None = None
+    ) -> list[str]:
+        if not results:
+            return []
+        return [
+            (f'Reason: {result.reason}\t\t'
+             f'Result: {result.result}\t\t'
+             f'Is Goal Satisfied: {result.is_goal_satisfied}')
+            async for result in iter_to_aiter(results)
+        ]
+
     async def _flow(
             self,
             query_instruction: str
     ):
         results = []
         async for _agents in iter_to_aiter(self.agents):
+            pre_result = await self._pre_result(results=results)
             if isinstance(_agents, list):
                 _res = await asyncio.gather(
                     *[
                         _agent.execute(
                             query_instruction=query_instruction,
-                            agent_goal_results=results
+                            pre_result=pre_result
                         )
                         async for _agent in iter_to_aiter(_agents)
                     ]
@@ -65,7 +80,7 @@ class AgentXPipe:
             else:
                 _res = await _agents.execute(
                     query_instruction=query_instruction,
-                    agent_goal_results=results
+                    pre_result=pre_result
                 )
             results.append(_res)
         # TODO: Needs to fix for pipe out
