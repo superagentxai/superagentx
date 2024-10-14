@@ -1,9 +1,9 @@
 import logging
 import os
+
 import pytest
 
 from agentx.agent import Engine, Agent
-from agentx.constants import PARALLEL
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.io import IOConsole
@@ -56,11 +56,7 @@ class TestEcommerceAgent:
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template,
-        )
-        await ecom_agent.add(
-            amazon_engine,
-            flipkart_engine,
-            execute_type=PARALLEL
+            engines=[amazon_engine, flipkart_engine]
         )
         io_console = IOConsole()
         while True:

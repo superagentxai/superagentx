@@ -15,19 +15,20 @@ class AgentXPipe:
             self,
             *,
             io: IOConsole,
+            name: str | None = None,
+            description: str | None = None,
+            agents: list[Agent | list[Agent]] | None = None,
             goal: str | None = None,
             role: str | None = None,
-            prompt: str | None = None,
-            name: str | None = None,
-            description: str | None = None
+            prompt: str | None = None
     ):
         self.io = io
+        self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
+        self.description = description
+        self.agents: list[Agent | list[Agent]] = agents or []
         self.goal = goal  # TODO: will be consider in the future
         self.role = role  # TODO: will be consider in the future
         self.prompt = prompt  # TODO: will be consider in the future
-        self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
-        self.description = description
-        self.agents: list[Agent | list[Agent]] = []
 
     def __str__(self):
         return "AgentXPipe"

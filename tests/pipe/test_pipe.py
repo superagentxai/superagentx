@@ -3,7 +3,6 @@ import os
 import pytest
 
 from agentx.agent import Engine, Agent
-from agentx.constants import PARALLEL
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.io import IOConsole
@@ -46,18 +45,14 @@ class TestIOConsolePIpe:
             goal="Get me the best search results",
             role="You are the best product searcher",
             llm=llm_client,
-            prompt_template=prompt_template
-        )
-        await ecom_agent.add(
-            amazon_engine,
-            flipkart_engine,
-            execute_type=PARALLEL
+            prompt_template=prompt_template,
+            engines=[[amazon_engine, flipkart_engine]]
         )
         pipe = AgentXPipe(
             io=IOConsole(
                 read_phrase="\n\n\nEnter your query here:\n\n=>",
                 write_phrase="\n\n\nYour result is =>\n\n"
-            )
+            ),
+            agents=[ecom_agent]
         )
-        await pipe.add(ecom_agent)
         await pipe.flow()
