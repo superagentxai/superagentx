@@ -1,4 +1,5 @@
 import logging
+import os
 
 import pytest
 from jira.client import ResultList
@@ -30,9 +31,9 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def jira_client_init() -> JiraHandler:
     jira_handler = JiraHandler(
-        email="",
-        token="",
-        organization=""
+        email=os.getenv('JIRA_EMAIL'),
+        token=os.getenv('JIRA_TOKEN'),
+        organization=os.getenv('JIRA_ORGANIZATION'),
     )
     return jira_handler
 
