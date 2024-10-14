@@ -1,0 +1,63 @@
+import os
+
+import pytest
+
+from agentx.agent import Engine, Agent
+from agentx.constants import PARALLEL
+from agentx.handler.ecommerce.amazon import AmazonHandler
+from agentx.handler.ecommerce.flipkart import FlipkartHandler
+from agentx.io import IOConsole
+from agentx.llm import LLMClient
+from agentx.pipe import AgentXPipe
+from agentx.prompt import PromptTemplate
+
+
+@pytest.fixture
+def agent_client_init() -> dict:
+    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+
+    llm_client: LLMClient = LLMClient(llm_config=llm_config)
+    response = {'llm': llm_client, 'llm_type': 'openai'}
+    return response
+
+class TestIOConsolePIpe:
+
+    async def test_ecom_pipe(self, agent_client_init: dict):
+        llm_client: LLMClient = agent_client_init.get('llm')
+        amazon_ecom_handler = AmazonHandler(
+            api_key=os.getenv('RAPID_API_KEY'),
+            country="IN"
+        )
+        flipkart_ecom_handler = FlipkartHandler(
+            api_key=os.getenv('RAPID_API_KEY'),
+        )
+        prompt_template = PromptTemplate()
+        amazon_engine = Engine(
+            handler=amazon_ecom_handler,
+            llm=llm_client,
+            prompt_template=prompt_template
+        )
+        flipkart_engine = Engine(
+            handler=flipkart_ecom_handler,
+            llm=llm_client,
+            prompt_template=prompt_template
+        )
+        ecom_agent = Agent(
+            goal="Get me the best search results",
+            role="You are the best product searcher",
+            llm=llm_client,
+            prompt_template=prompt_template
+        )
+        await ecom_agent.add(
+            amazon_engine,
+            flipkart_engine,
+            execute_type=PARALLEL
+        )
+        pipe = AgentXPipe(
+            io=IOConsole(
+                read_phrase="\n\n\nEnter your query here:\n\n=>",
+                write_phrase="\n\n\nYour result is =>\n\n"
+            )
+        )
+        await pipe.add(ecom_agent)
+        await pipe.flow()

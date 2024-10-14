@@ -1,16 +1,14 @@
 [tool.poetry]
-name = "agentx"
+name = "superagentx"
 version = "0.1.0"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
-authors = ["DecisionFacts AI <prabhu@decisionfacts.io>"]
+authors = ["SuperAgentX AI <prabhu@decisionfacts.io>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
 pydantic = "^2.8.2"
-langchain = "^0.2.14"
 boto3 = "^1.35.8"
-langchain-openai = "0.1.23"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.32"}
 psycopg2-binary = "^2.9.9"
 pymysql = "^1.1.1"
@@ -32,6 +30,16 @@ timezonefinder = "^6.5.2"
 openmeteo-requests = "^1.3.0"
 requests-cache = "^1.2.1"
 retry-requests = "^2.0.0"
+openai = "^1.47.1"
+python-dotenv = "^1.0.1"
+exa-py = "^1.1.4"
+neo4j = "^5.24.0"
+chromadb = "^0.5.5"
+opensearch-py = "^2.7.1"
+elasticsearch = "^8.15.1"
+google-auth-oauthlib = "^1.2.1"
+google-api-python-client = "^2.147.0"
+aiohttp = "^3.10.8"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"

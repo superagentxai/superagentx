@@ -1,14 +1,17 @@
+import inspect
 import logging
 import re
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
+from openai.types import CreateEmbeddingResponse
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
+from pydantic import typing
 
 from agentx.llm import ChatCompletionParams
 from agentx.llm.client import Client
 from agentx.llm.constants import OPENAI_PRICE1K
-from agentx.utils.helper import sync_to_async
+from agentx.utils.helper import sync_to_async, iter_to_aiter, ptype_to_json_scheme
 
 logger = logging.getLogger(__name__)
 _OPEN_API_BASE_URL_PREFIX = "https://api.openai.com"
@@ -27,10 +30,12 @@ class OpenAIClient(Client):
 
     def __init__(
             self,
+            *,
             client: OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI
     ):
 
         self.client = client
+        self._model = getattr(self.client, 'model')
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)
@@ -39,7 +44,6 @@ class OpenAIClient(Client):
             logger.info(
                 "OpenAI or Azure hosted Open AI client, is not valid!"
             )
-            super().__init__()
 
     def chat_completion(
             self,
@@ -47,10 +51,7 @@ class OpenAIClient(Client):
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
-        params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
-        response = self.client.chat.completions.create(**params)
-        cost = OpenAIClient.cost(response=response)
-        logger.debug(f"Usage Cost : {cost}")
+        params['model'] = self._model  # Get model name from client object attribute and set
         return self.client.chat.completions.create(**params)
 
     async def achat_completion(
@@ -58,15 +59,61 @@ class OpenAIClient(Client):
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
+
         params = chat_completion_params.model_dump(exclude_none=True)
-        params['model'] = getattr(self.client, 'model')  # Get model name from client object attribute and set
-        response = await self.client.chat.completions.create(**params)
-        cost = await sync_to_async(
-            OpenAIClient.cost,
+        params['model'] = self._model  # Get model name from client object attribute and set
+        return await self.client.chat.completions.create(**params)
+
+    @staticmethod
+    def _get_embeddings(response: CreateEmbeddingResponse):
+        if response and response.data:
+            return response.data[0].embedding
+
+    def embed(
+            self,
+            text: str,
+            **kwargs
+    ) -> list[float]:
+        """
+        Get the embedding for the given text using OpenAI | AzureOpenAI.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        text = text.replace("\n", " ")
+        response = self.client.embeddings.create(
+                input=[text],
+                model=self._model,
+                **kwargs
+            )
+        return self._get_embeddings(response)
+
+    async def aembed(
+            self,
+            text: str,
+            **kwargs
+    ) -> list[float]:
+        """
+        Get the embedding for the given text using AsyncOpenAI | AsyncAzureOpenAI.
+
+        Args:
+            text (str): The text to embed.
+
+        Returns:
+            list: The embedding vector.
+        """
+        text = text.replace("\n", " ")
+        response = await self.client.embeddings.create(
+            input=[text],
+            model=self._model,
+        )
+        return await sync_to_async(
+            self._get_embeddings,
             response=response
         )
-        logger.debug(f"Usage Cost : {cost}")
-        return response
 
     @staticmethod
     def is_valid_api_key(api_key: str) -> bool:
@@ -80,6 +127,30 @@ class OpenAIClient(Client):
         """
         api_key_re = re.compile(r"^sk-([A-Za-z0-9]+(-+[A-Za-z0-9]+)*-)?[A-Za-z0-9]{32,}$")
         return bool(re.fullmatch(api_key_re, api_key))
+
+    async def get_tool_json(self, func: typing.Callable) -> dict:
+        _func_name = func.__name__
+        _doc_str = inspect.getdoc(func)
+        _properties = {}
+        _type_hints = typing.get_type_hints(func)
+        async for param, param_type in iter_to_aiter(_type_hints.items()):
+            if param != 'return':
+                _properties[param] = {
+                    "type": await ptype_to_json_scheme(param_type.__name__),
+                    "description": f"The {param.replace('_', ' ')}."
+                }
+        return {
+            'type': 'function',
+            'function': {
+                'name': _func_name,
+                'description': _doc_str,
+                'parameters': {
+                    "type": "object",
+                    "properties": _properties,
+                    "required": list(_properties.keys()),
+                }
+            }
+        }
 
     @staticmethod
     def cost(response: ChatCompletion | Completion) -> float:
