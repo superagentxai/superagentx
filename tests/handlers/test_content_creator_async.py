@@ -1,8 +1,10 @@
-import pytest
 import logging
 
-from agentx.handler.content_creator import ContentCreatorHandler
-from langchain_openai import ChatOpenAI
+import pytest
+
+from agentx.handler.ai_handler import AIHandler
+from agentx.llm import LLMClient
+
 logger = logging.getLogger(__name__)
 
 '''
@@ -12,18 +14,21 @@ logger = logging.getLogger(__name__)
 
 '''
 
+
 @pytest.fixture
-def content_creator_init() -> ContentCreatorHandler:
-    content_creator_handler = ContentCreatorHandler(
-        prompt="Create the digital marketing content",
-        llm=ChatOpenAI(model="gpt-4o")
+def content_creator_init() -> AIHandler:
+    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+
+    llm_client: LLMClient = LLMClient(llm_config=llm_config)
+    content_creator_handler = AIHandler(
+        llm=llm_client
     )
     logger.info(content_creator_handler)
     return content_creator_handler
 
+
 class TestContentCreator:
 
-    async def test_text_content_creator(self, content_creator_init: ContentCreatorHandler):
-        result = await content_creator_init.text_creation()
-        assert "digital marketing" in result
-
+    async def test_text_content_creator(self, content_creator_init: AIHandler):
+        result = await content_creator_init.text_creation(instruction='Create the digital marketing content')
+        assert "digital marketing" in result.choices[0].message.content
