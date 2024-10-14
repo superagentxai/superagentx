@@ -1,5 +1,7 @@
 import asyncio
 import uuid
+import yaml
+
 from typing import Literal
 
 from agentx.agent.agent import Agent
@@ -54,9 +56,9 @@ class AgentXPipe:
         if not results:
             return []
         return [
-            (f'Reason: {result.reason}\t\t'
-             f'Result: {result.result}\t\t'
-             f'Is Goal Satisfied: {result.is_goal_satisfied}')
+            (f'Reason: {result.reason}\n'
+             f'Result: \n{yaml.dump(result.result)}\n'
+             f'Is Goal Satisfied: {result.is_goal_satisfied}\n\n')
             async for result in iter_to_aiter(results)
         ]
 
