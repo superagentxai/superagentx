@@ -64,7 +64,6 @@ class AgentXPipe:
         # TODO: Needs to retry if it fails
         return results
 
-
     async def flow(self):
         logger.debug(f"Initiating PIPe with IO {self.io}")
         while True:
