@@ -195,7 +195,7 @@ class Agent:
             agent_goal_results: list[GoalResult] | None = None
     ):
         for _retry in range(1, self.max_retry+1):
-            logger.info(f"Agent retry {_retry}")
+            logger.info(f"Agent `{self}` retry {_retry}")
             _goal_result = await self._execute(
                 query_instruction=query_instruction,
                 agent_goal_results=agent_goal_results
@@ -207,4 +207,4 @@ class Agent:
                 }
                 await self.add_memory([assistant])
                 return _goal_result
-        logger.warning(f"Done agent max retry {self.max_retry}!")
+        logger.warning(f"Done agent `{self}` max retry {self.max_retry}!")
