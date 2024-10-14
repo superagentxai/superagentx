@@ -1,7 +1,11 @@
 import inspect
 import logging
 import typing
+from trace import Trace
 
+from mypyc.ir.ops import Truncate
+
+from agentx.agent import GoalResult
 from agentx.exceptions import ToolError
 from agentx.handler.base import BaseHandler
 from agentx.handler.exceptions import InvalidHandler
@@ -62,8 +66,17 @@ class Engine:
     async def start(
             self,
             input_prompt: str,
+            agent_goal_results: list[GoalResult] | None = None,
             **kwargs
     ) -> list[typing.Any]:
+
+        if agent_goal_results:
+            _result_data = [
+                _goal_result.model_dump_json(exclude_none=True)
+                async for _goal_result in iter_to_aiter(agent_goal_results)
+            ]
+            input_prompt = f'{input_prompt}\n\n{_result_data}'
+
         if not kwargs:
             kwargs = {}
         prompt_messages = await self.prompt_template.get_messages(
@@ -77,11 +90,11 @@ class Engine:
             messages=prompt_messages,
             tools=tools
         )
-        logger.info(f"Chat completion params => {chat_completion_params.model_dump_json(exclude_none=True)}")
+        logger.debug(f"Chat completion params => {chat_completion_params.model_dump_json(exclude_none=True)}")
         messages = await self.llm.afunc_chat_completion(
             chat_completion_params=chat_completion_params
         )
-        logger.info(f"Func chat completion => {messages}")
+        logger.debug(f"Func chat completion => {messages}")
         if not messages:
             raise ToolError("Tool not found for the inputs!")
 
