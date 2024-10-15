@@ -62,8 +62,13 @@ class Engine:
     async def start(
             self,
             input_prompt: str,
+            pre_result: str | None = None,
             **kwargs
     ) -> list[typing.Any]:
+
+        if pre_result:
+            input_prompt = f'{input_prompt}\n\n{pre_result}'
+
         if not kwargs:
             kwargs = {}
         prompt_messages = await self.prompt_template.get_messages(
@@ -77,29 +82,32 @@ class Engine:
             messages=prompt_messages,
             tools=tools
         )
-        logger.info(f"Chat completion params => {chat_completion_params.model_dump_json(exclude_none=True)}")
+        logger.debug(f"Chat completion params => {chat_completion_params.model_dump_json(exclude_none=True)}")
         messages = await self.llm.afunc_chat_completion(
             chat_completion_params=chat_completion_params
         )
-        logger.info(f"Func chat completion => {messages}")
+        logger.debug(f"Func chat completion => {messages}")
         if not messages:
             raise ToolError("Tool not found for the inputs!")
 
         results = []
         async for message in iter_to_aiter(messages):
-            async for tool in iter_to_aiter(message.tool_calls):
-                if tool.tool_type == 'function':
-                    func = getattr(self.handler, tool.name)
-                    if func and (inspect.ismethod(func) or inspect.isfunction(func)):
-                        _kwargs = tool.arguments or {}
-                        if inspect.iscoroutinefunction(func):
-                            res = await func(**_kwargs)
-                        else:
-                            res = await sync_to_async(func, **_kwargs)
-
-                        if res:
-                            if not self.output_parser:
-                                results.append(res)
+            if message.tool_calls:
+                async for tool in iter_to_aiter(message.tool_calls):
+                    if tool.tool_type == 'function':
+                        func = getattr(self.handler, tool.name)
+                        if func and (inspect.ismethod(func) or inspect.isfunction(func)):
+                            _kwargs = tool.arguments or {}
+                            if inspect.iscoroutinefunction(func):
+                                res = await func(**_kwargs)
                             else:
-                                results.append(await self.output_parser.parse(res))
+                                res = await sync_to_async(func, **_kwargs)
+
+                            if res:
+                                if not self.output_parser:
+                                    results.append(res)
+                                else:
+                                    results.append(await self.output_parser.parse(res))
+            else:
+                results.append(message.content)
         return results

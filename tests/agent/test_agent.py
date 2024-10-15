@@ -1,9 +1,10 @@
 import logging
 import os
+
 import pytest
 
-from agentx.agent import Engine, Agent
-from agentx.constants import PARALLEL
+from agentx.agent.agent import Agent
+from agentx.agent.engine import Engine
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.llm import LLMClient
@@ -53,12 +54,8 @@ class TestEcommerceAgent:
             goal="Get me the best search results",
             role="You are the best product searcher",
             llm=llm_client,
-            prompt_template=prompt_template
-        )
-        await ecom_agent.add(
-            amazon_engine,
-            flipkart_engine,
-            execute_type=PARALLEL
+            prompt_template=prompt_template,
+            engines=[amazon_engine, flipkart_engine]
         )
         result = await ecom_agent.execute(
             query_instruction="Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the"

@@ -1,6 +1,7 @@
 import logging
 import pytest
-from agentx.agent import Engine, Agent
+from agentx.agent.agent import Agent
+from agentx.agent.engine import Engine
 from agentx.handler.serper_dev import SerperDevToolHandler
 from agentx.llm import LLMClient
 from agentx.prompt import PromptTemplate
