@@ -159,7 +159,9 @@ class TestIOConsolePipe:
         pipe = AgentXPipe(
             agents=[analyst, scriptwriter, formatter]
         )
-        assert await pipe.flow(query_instruction=discussion)
+        result = await pipe.flow(query_instruction=discussion)
+        logger.info(f"Writer result => \n{result}")
+        assert result
 
     async def test_scorer(self, ai_client_init: dict):
         llm_client: LLMClient = ai_client_init.get('llm')
@@ -196,4 +198,6 @@ class TestIOConsolePipe:
         pipe = AgentXPipe(
             agents=[scorer]
         )
-        assert await pipe.flow(query_instruction=discussion)
+        result = await pipe.flow(query_instruction=discussion)
+        logger.info(f"Scorer result => \n{result}")
+        assert result
