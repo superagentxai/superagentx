@@ -34,6 +34,7 @@ async def main():
         prompt_template=prompt_template
     )
     ecom_agent = Agent(
+        name='Ecom Agent',
         goal="Get me the best search results",
         role="You are the best product searcher",
         llm=llm_client,
