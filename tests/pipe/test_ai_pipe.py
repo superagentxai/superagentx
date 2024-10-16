@@ -4,7 +4,7 @@ import pytest
 
 from agentx.agent.agent import Agent
 from agentx.agent.engine import Engine
-from agentx.handler.ai_handler import AIHandler
+from agentx.handler.ai import AIHandler
 from agentx.llm import LLMClient
 from agentx.pipe import AgentXPipe
 from agentx.prompt import PromptTemplate
