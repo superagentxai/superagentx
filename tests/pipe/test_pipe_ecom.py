@@ -4,7 +4,7 @@ import pytest
 
 from agentx.agent.agent import Agent
 from agentx.agent.engine import Engine
-from agentx.handler.ai_handler import AIHandler
+from agentx.handler.ai import AIHandler
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.io import IOConsole
