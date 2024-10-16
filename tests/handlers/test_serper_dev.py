@@ -22,5 +22,5 @@ class TestSerperDev:
 
     async def test_serper_dev_search(self):
         serper_dev_handler = SerperDevToolHandler()
-        response = await serper_dev_handler.search(query='Top five AI companies in 2024')
+        response = await serper_dev_handler.search(query='Select the best city based on weather, season, and prices')
         logger.info(f'Results ==> {response}')

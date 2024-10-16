@@ -1,13 +1,12 @@
 import asyncio
 import uuid
-import yaml
-
 from typing import Literal
+
+import yaml
 
 from agentx.agent.agent import Agent
 from agentx.agent.result import GoalResult
 from agentx.constants import SEQUENCE
-from agentx.io import IOConsole
 from agentx.llm.types.base import logger
 from agentx.utils.helper import iter_to_aiter
 
@@ -17,7 +16,7 @@ class AgentXPipe:
     def __init__(
             self,
             *,
-            io: IOConsole,
+            pipe_id: str = uuid.uuid4().hex,
             name: str | None = None,
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
@@ -25,8 +24,8 @@ class AgentXPipe:
             role: str | None = None,
             prompt: str | None = None
     ):
-        self.io = io
-        self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
+        self.pipe_id = pipe_id
+        self.name = name or f'{self.__str__()}-{self.pipe_id}'
         self.description = description
         self.agents: list[Agent | list[Agent]] = agents or []
         self.goal = goal  # TODO: will be consider in the future
@@ -90,11 +89,11 @@ class AgentXPipe:
         # TODO: Needs to retry if it fails
         return results
 
-    async def flow(self):
-        logger.debug(f"Initiating PIPe with IO {self.io}")
-        while True:
-            query_instruction = await self.io.read()
-            result = await self._flow(
-                query_instruction=query_instruction
-            )
-            await self.io.write(result)
+    async def flow(
+            self,
+            query_instruction: str
+    ) -> list[GoalResult]:
+        logger.info(f"PIPe {self.name} starting...")
+        return await self._flow(
+            query_instruction=query_instruction
+        )
