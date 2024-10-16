@@ -54,6 +54,7 @@ class Agent:
             role: str,
             llm: LLMClient,
             prompt_template: PromptTemplate,
+            agent_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
             engines: list[Engine | list[Engine]] | None = None,
@@ -65,8 +66,8 @@ class Agent:
         self.goal = goal
         self.llm = llm
         self.prompt_template = prompt_template
-        self.id = uuid.uuid4().hex
-        self.name = name or f'{self.__str__()}-{self.id}'
+        self.agent_id = agent_id or uuid.uuid4().hex
+        self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
         self.engines: list[Engine | list[Engine]] = engines or []
         self.input_prompt = input_prompt
@@ -117,7 +118,7 @@ class Agent:
                     _res = json.loads(_res)
                     return GoalResult(
                         name=self.name,
-                        id=self.id,
+                        agent_id=self.agent_id,
                         **_res
                     )
 

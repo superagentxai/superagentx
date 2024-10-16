@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class GoalResult(BaseModel):
     name: str
-    id: str
+    agent_id: str
     reason: str
     result: Any
     is_goal_satisfied: bool
