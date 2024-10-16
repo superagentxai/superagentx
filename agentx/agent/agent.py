@@ -152,6 +152,7 @@ class Agent:
             query_instruction: str,
             pre_result: str | None = None
     ) -> GoalResult | None:
+        _goal_result = None
         for _retry in range(1, self.max_retry+1):
             logger.info(f"Agent `{self.name}` retry {_retry}")
             _goal_result = await self._execute(
@@ -160,4 +161,6 @@ class Agent:
             )
             if _goal_result.is_goal_satisfied:
                 return _goal_result
+
         logger.warning(f"Done agent `{self.name}` max retry {self.max_retry}!")
+        return _goal_result
