@@ -1,4 +1,6 @@
 import logging
+import os
+
 from pydantic import BaseModel
 from typing import List, Sequence, Dict
 
@@ -42,6 +44,7 @@ class ChromaDB(BaseVectorStore):
             path (str, optional): Path for local chromadb database. Defaults to None.
             embed_cli (dict): Agentx openai-client/huggingface client configuration. Defaults to None.
         """
+        os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
         self.embed_cli = embed_cli
         if not self.embed_cli:
             embed_config = {

@@ -134,15 +134,16 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
-        old_memory = await self.retrieve_memory(query_instruction)
         messages = prompt_message
         chat_completion_params = ChatCompletionParams(
             messages=messages
         )
-        if old_memory:
-            chat_completion_params = ChatCompletionParams(
-                messages=messages + old_memory
-            )
+        if self.memory:
+            old_memory = await self.retrieve_memory(query_instruction)
+            if old_memory:
+                chat_completion_params = ChatCompletionParams(
+                    messages=messages + old_memory
+                )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
