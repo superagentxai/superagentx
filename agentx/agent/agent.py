@@ -62,7 +62,7 @@ class Agent:
             input_prompt: str | None = None,
             output_format: str | None = None,
             max_retry: int = 5,
-            memory: Memory = Memory()
+            memory: Memory | None = None
     ):
         self.role = role
         self.goal = goal
@@ -76,8 +76,9 @@ class Agent:
         self.output_format = output_format
         self.max_retry = max_retry
         self.memory = memory
-        self.memory_id = uuid.uuid4().hex
-        self.chat_id = uuid.uuid4().hex
+        if self.memory:
+            self.memory_id = uuid.uuid4().hex
+            self.chat_id = uuid.uuid4().hex
 
     def __str__(self):
         return "Agent"
@@ -163,13 +164,14 @@ class Agent:
             pre_result: str | None = None
     ) -> GoalResult:
         results = []
-        old_memory = await self.retrieve_memory(query_instruction)
         instruction = query_instruction
-        if old_memory:
-            message_content = ""
-            async for _mem in iter_to_aiter(old_memory):
-                message_content += f"{_mem.get('content')} "
-            instruction = f"Context:\n{message_content}\nQuestion: {query_instruction}"
+        if self.memory:
+            old_memory = await self.retrieve_memory(query_instruction)
+            if old_memory:
+                message_content = ""
+                async for _mem in iter_to_aiter(old_memory):
+                    message_content += f"{_mem.get('content')} "
+                instruction = f"Context:\n{message_content}\nQuestion: {query_instruction}"
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 _res = await asyncio.gather(
@@ -208,11 +210,12 @@ class Agent:
                 pre_result=pre_result
             )
             if _goal_result.is_goal_satisfied:
-                assistant = {
-                    "role": "assistant",
-                    "content": _goal_result.reason
-                }
-                await self.add_memory([assistant])
+                if self.memory:
+                    assistant = {
+                        "role": "assistant",
+                        "content": _goal_result.reason
+                    }
+                    await self.add_memory([assistant])
                 return _goal_result
 
         logger.warning(f"Done agent `{self.name}` max retry {self.max_retry}!")

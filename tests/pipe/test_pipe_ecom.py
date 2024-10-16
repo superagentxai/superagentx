@@ -9,18 +9,14 @@ from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.io import IOConsole
 from agentx.llm import LLMClient
+from agentx.memory import Memory
 from agentx.pipe import AgentXPipe
 from agentx.prompt import PromptTemplate
-from agentx.utils.console_color import ConsoleColorType
 
 '''
  Run Pytest:  
 
-<<<<<<< HEAD
    1. pytest -s --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
-=======
-   1. pytest --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
->>>>>>> 8e0a10142687a9c6ad948a6d4f403a41ed789d48
 '''
 
 
@@ -63,13 +59,15 @@ class TestEcommercePipe:
             llm=llm_client,
             prompt_template=prompt_template
         )
+        memory = Memory()
         ecom_agent = Agent(
             name="Ecom Agent",
             goal="Get me the best search results",
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[[amazon_engine, flipkart_engine]]
+            engines=[[amazon_engine, flipkart_engine]],
+            memory=memory
         )
         price_review_agent = Agent(
             name="Price Review Agent",
@@ -77,7 +75,8 @@ class TestEcommercePipe:
             role="You are the price reviewer",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_engine]
+            engines=[ai_engine],
+            memory=memory
         )
         pipe = AgentXPipe(
             agents=[ecom_agent, price_review_agent]
