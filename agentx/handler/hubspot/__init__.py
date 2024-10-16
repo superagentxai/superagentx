@@ -19,7 +19,7 @@ class HubSpotHandler(BaseHandler):
     def __init__(
             self,
             *,
-            token
+            token: str
     ):
         self.token = token
         self._connection: HubSpot = self._connect()
