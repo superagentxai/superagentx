@@ -75,10 +75,13 @@ class TestEcommercePipe:
             engines=[ai_engine]
         )
         pipe = AgentXPipe(
-            io=IOConsole(
-                read_phrase="\n\n\nEnter your query here:\n\n=>",
-                write_phrase="\n\n\nYour result is =>\n\n"
-            ),
             agents=[ecom_agent, price_review_agent]
         )
-        await pipe.flow()
+        io = IOConsole(
+            read_phrase="\n\n\nEnter your query here:\n\n=>",
+            write_phrase="\n\n\nYour result is =>\n\n"
+        )
+        while True:
+            input_instruction = await io.read()
+            result = await pipe.flow(query_instruction=input_instruction)
+            await io.write(result)
