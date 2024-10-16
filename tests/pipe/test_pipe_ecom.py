@@ -11,6 +11,7 @@ from agentx.io import IOConsole
 from agentx.llm import LLMClient
 from agentx.pipe import AgentXPipe
 from agentx.prompt import PromptTemplate
+from agentx.utils.console_color import ConsoleColorType
 
 '''
  Run Pytest:  
@@ -75,10 +76,12 @@ class TestEcommercePipe:
             engines=[ai_engine]
         )
         pipe = AgentXPipe(
-            io=IOConsole(
-                read_phrase="\n\n\nEnter your query here:\n\n=>",
-                write_phrase="\n\n\nYour result is =>\n\n"
-            ),
             agents=[ecom_agent, price_review_agent]
         )
-        await pipe.flow()
+        io_console = IOConsole()
+        while True:
+            await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
+            query_instruction = await io_console.read("User: ")
+            result = await pipe.flow(query_instruction)
+            await io_console.write(ConsoleColorType.CGREEN2.value, end="")
+            await io_console.write(f"Assistant: {result}", flush=True)
