@@ -1,6 +1,6 @@
 import aiohttp
 import logging
-
+import os
 from agentx.handler.base import BaseHandler
 from agentx.utils.helper import iter_to_aiter
 
@@ -13,11 +13,12 @@ class AmazonHandler(BaseHandler):
     def __init__(
             self,
             *,
-            api_key: str,
-            country: str, # US, AU, BR, CA, CN, FR, DE, IN, IT, MX, NL, SG, ES, TR, AE, GB, JP, SA, PL, SE, BE, EG
+            api_key: str | None = None,
+            country: str = 'US',  # US, AU, BR, CA, CN, FR, DE, IN, IT, MX, NL, SG, ES, TR, AE, GB, JP, SA, PL, SE,
+            # BE, EG
             top_items: int | None = None
     ):
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv('RAPID_API_KEY')
         self.country = country
         self.top_items = top_items
         if not self.top_items:

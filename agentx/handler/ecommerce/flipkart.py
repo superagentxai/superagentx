@@ -1,5 +1,6 @@
 import aiohttp
 import logging
+import os
 
 from agentx.handler.base import BaseHandler
 from agentx.utils.helper import iter_to_aiter
@@ -12,10 +13,10 @@ class FlipkartHandler(BaseHandler):
 
     def __init__(
             self,
-            api_key: str,
+            api_key: str | None = None,
             top_items: int | None = None
     ):
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv('RAPID_API_KEY')
         self.top_items = top_items
         if not self.top_items:
             self.top_items = 5
