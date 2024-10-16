@@ -39,8 +39,8 @@ class Memory(MemoryBase):
 
     @final
     async def add(self, *args, **kwargs):
-        # async with self.db as db:
-        #     await db.add_history(*args, **kwargs)
+        async with self.db as db:
+            await db.add_history(*args, **kwargs)
         await self._add_to_vector_store(*args, **kwargs)
 
     @final
