@@ -15,6 +15,8 @@ from agentx.vector_stores.base import BaseVectorStore
 
 logger = logging.getLogger(__name__)
 
+COLLECTION_NAME = "agent"
+
 
 class Memory(MemoryBase):
 
@@ -26,7 +28,7 @@ class Memory(MemoryBase):
         self.db = SQLiteManager(self.memory_config.db_path)
         self.vector_db: BaseVectorStore = self.memory_config.vector_store
         if not self.vector_db:
-            self.vector_db: BaseVectorStore = ChromaDB(collection_name="test")
+            self.vector_db: BaseVectorStore = ChromaDB(collection_name=COLLECTION_NAME)
 
     @staticmethod
     def _from_config(config_dict: dict[str, Any]):
@@ -73,7 +75,7 @@ class Memory(MemoryBase):
 
     async def search(
             self,
-            query,
+            query: str,
             memory_id: str,
             chat_id: str,
             limit: int = 10,
@@ -82,8 +84,6 @@ class Memory(MemoryBase):
         filters = filters or {}
         if memory_id:
             filters["memory_id"] = memory_id
-        # if chat_id:
-        #     filters["chat_id"] = chat_id
         result = await self._search_vector_store(
             query=query,
             filters=filters,
@@ -132,7 +132,7 @@ class Memory(MemoryBase):
                     else {}
                 ),
             }
-            for mem in memories
+            async for mem in iter_to_aiter(memories)
         ]
 
         return original_memories
@@ -151,9 +151,9 @@ class Memory(MemoryBase):
     ):
         metadata = {}
         if not created_at:
-            created_at = str(datetime.datetime.now())
+            created_at = datetime.datetime.now()
         if not updated_at:
-            updated_at = str(datetime.datetime.now())
+            updated_at = datetime.datetime.now()
         metadata["memory_id"] = memory_id
         metadata["message"] = message
         metadata["chat_id"] = chat_id
