@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from agentx.handler.ai_handler import AIHandler
+from agentx.handler.ai import AIHandler
 from agentx.llm import LLMClient
 
 logger = logging.getLogger(__name__)
