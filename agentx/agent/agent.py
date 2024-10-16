@@ -76,8 +76,8 @@ class Agent:
         self.output_format = output_format
         self.max_retry = max_retry
         self.memory = memory
-        self.memory_id = str(uuid.uuid4().hex)
-        self.chat_id = str(uuid.uuid4().hex)
+        self.memory_id = uuid.uuid4().hex
+        self.chat_id = uuid.uuid4().hex
 
     def __str__(self):
         return "Agent"
@@ -103,7 +103,7 @@ class Agent:
             await self.memory.add(
                 memory_id=self.memory_id,
                 chat_id=self.chat_id,
-                message_id=str(uuid.uuid4().hex),
+                message_id=uuid.uuid4().hex,
                 role=prompt.get("role"),
                 message=prompt.get("content")
             )
