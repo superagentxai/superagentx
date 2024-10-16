@@ -1,5 +1,8 @@
 import asyncio
 import os
+import sys
+
+sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
 
 from agentx.agent.agent import Agent
 from agentx.agent.engine import Engine
