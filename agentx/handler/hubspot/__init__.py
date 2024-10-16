@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 class HubSpotHandler(BaseHandler):
     """
-            A handler class for managing interactions with the Hubspot API.
-            This class extends BaseHandler and provides methods for performing various operations,
-            such as creating, updating, retrieving, and managing within a Hubspot environment.
-        """
+        A handler class for managing interactions with the Hubspot API.
+        This class extends BaseHandler and provides methods for performing various operations,
+        such as creating, updating, retrieving, and managing within a Hubspot environment.
+    """
     def __init__(
             self,
             *,
