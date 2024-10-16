@@ -12,9 +12,16 @@ class AIHandler(BaseHandler):
 
     def __init__(
             self,
-            llm: LLMClient
+            llm: LLMClient,
+            role: str | None = None,
+            back_story: str | None = None
     ):
         self.llm = llm
+        self.role = role
+        self.back_story = back_story
+
+        if not self.role:
+            self.role = "You are a helpful assistant."
 
     async def text_creation(
             self,
@@ -30,10 +37,13 @@ class AIHandler(BaseHandler):
             instruction(str):  A string containing the instruction or prompt that guides the text generation process.
 
         """
+        content = f"{self.role}"
+        if self.back_story:
+            content += f"\nBack Story: {self.back_story}"
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant."
+                "content": content
             },
             {
                 "role": "user",
