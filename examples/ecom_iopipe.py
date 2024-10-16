@@ -2,6 +2,8 @@ import asyncio
 import os
 import sys
 
+from rich import print as rprint
+
 sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
 
 from agentx.agent.agent import Agent
@@ -49,11 +51,14 @@ async def main():
     )
     io_pipe = IOPipe(
         agetnx_pipe=pipe,
-        read_prompt="\n\nEnter your search here => ",
-        write_prompt="\n\nYour result are => "
+        read_prompt=f"\n[bold green]Enter your search here",
     )
+    await io_pipe.io_console.rule("[bold blue]SuperAgentX Ecom")
     await io_pipe.start()
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        rprint("\nUser canceled the [bold yellow][i]pipe[/i]!")

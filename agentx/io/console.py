@@ -1,5 +1,8 @@
-import getpass
 from typing import Any
+
+from rich import print as rprint
+from rich.console import Console
+from rich.prompt import Prompt
 
 from agentx.io.base import IOStream
 
@@ -14,6 +17,7 @@ class IOConsole(IOStream):
     ):
         self.read_phrase = read_phrase or ''
         self.write_phrase = write_phrase or ''
+        self._console = Console()
 
     def __repr__(self):
         return self.__str__()
@@ -38,12 +42,11 @@ class IOConsole(IOStream):
         """
         sep = sep or " "
         end = end or "\n"
-        print(
+        rprint(
             self.write_phrase,
             *objects,
             sep=sep,
             end=end,
-            flush=flush
         )
 
     async def read(
@@ -63,7 +66,29 @@ class IOConsole(IOStream):
 
         """
         prompt = prompt or self.read_phrase
+        return Prompt.ask(
+            prompt=prompt,
+            console=self._console,
+            password=password
+        )
 
-        if password:
-            return getpass.getpass(prompt if prompt else "Password: ")
-        return input(prompt)
+    async def rule(
+            self,
+            title: str
+    ):
+        self._console.rule(title)
+
+    async def json(
+            self,
+            data: list | dict
+    ):
+        self._console.print_json(data=data)
+
+    async def status(
+            self,
+            status_msg: str
+    ):
+        return self._console.status(
+            status_msg,
+            spinner='bouncingBall'
+        )

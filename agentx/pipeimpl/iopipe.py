@@ -18,17 +18,15 @@ class IOPipe:
 
     async def start(self):
         while True:
-            query = await self.io_console.read(
-                f'\n\n{'='*10} Search Start {'='*10}\n\n'
-                f'Enter your search here :=> '
-            )
-            pipe_result = await self.agetnx_pipe.flow(query_instruction=query)
-            if pipe_result:
-                goal_result = pipe_result[-1]
-                await self.io_console.write(
-                    f'\nResult: {goal_result.result}\n\n',
-                    f'Reason: {goal_result.reason}\n\n',
-                    f'Goal Satisfied: {goal_result.is_goal_satisfied}\n\n{'='*10} Search End {'='*10}\n\n'
-                )
-            else:
-                await self.io_console.write("\nNo results found!\n")
+            query = await self.io_console.read()
+            with await self.io_console.status("[bold yellow] Searching...\n"):
+                pipe_result = await self.agetnx_pipe.flow(query_instruction=query)
+                if pipe_result:
+                    goal_result = pipe_result[-1]
+                    await self.io_console.write(f'\n[bold cyan]Result:[/bold cyan] {goal_result.result}\n')
+                    await self.io_console.write(f'\n[bold cyan]Reason[/bold cyan]:')
+                    await self.io_console.json(data=goal_result.result)
+                    await self.io_console.write(f'\n\n[bold cyan]Goal Satisfied[/bold cyan]: {goal_result.is_goal_satisfied}\n')
+                else:
+                    await self.io_console.write("\nNo results found!\n")
+            await self.io_console.rule('[bold green]End')
