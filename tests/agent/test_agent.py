@@ -7,8 +7,11 @@ from agentx.agent.agent import Agent
 from agentx.agent.engine import Engine
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
+from agentx.io import IOConsole
 from agentx.llm import LLMClient
+from agentx.memory import Memory
 from agentx.prompt import PromptTemplate
+from agentx.utils.console_color import ConsoleColorType
 
 logger = logging.getLogger(__name__)
 
@@ -50,16 +53,24 @@ class TestEcommerceAgent:
             llm=llm_client,
             prompt_template=prompt_template
         )
+        memory = Memory()
         ecom_agent = Agent(
             goal="Get me the best search results",
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[amazon_engine, flipkart_engine]
+            engines=[amazon_engine, flipkart_engine],
+            memory=memory
         )
-        result = await ecom_agent.execute(
-            query_instruction="Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the"
-                              " prices with photo link"
-        )
-        logger.info(f'Result ==> {result}')
-        assert result
+        io_console = IOConsole()
+        while True:
+            await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
+            query_instruction = await io_console.read("User: ")
+            # "Get me a mobile phone which has rating 4 out of 5 and camera minimum 30 MP compare the"
+            # " prices with photo link"
+            result = await ecom_agent.execute(
+                query_instruction=query_instruction
+            )
+            await io_console.write(ConsoleColorType.CGREEN2.value, end="")
+            await io_console.write(f"Assistant: {result}", flush=True)
+            assert result

@@ -63,14 +63,13 @@ class SQLiteManager:
             """
             CREATE TABLE IF NOT EXISTS history (
                 id TEXT PRIMARY KEY,
-                user_id TEXT,
+                memory_id TEXT,
                 chat_id TEXT,
                 message_id TEXT,
                 created_at DATETIME,
                 updated_at DATETIME,
                 role TEXT,
                 message TEXT,
-                event TEXT,
                 is_deleted BOOLEAN
             )
         """
@@ -78,48 +77,47 @@ class SQLiteManager:
 
     async def get_history(
             self,
-            user_id: str,
+            memory_id: str,
             chat_id: str
     ):
         """
         Asynchronously retrieves the chat history for a specific user and chat session.
 
         Parameters:
-            user_id : str
+            memory_id : str
                 The unique identifier of the user whose chat history is being requested.
             chat_id : str
                 The unique identifier of the chat session to retrieve the history from.
         """
         cursor = await self.connection.execute(
             """
-            SELECT id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted
+            SELECT id, memory_id, chat_id, message_id, role, message, created_at, updated_at, is_deleted
             FROM history
             WHERE user_id = ? AND chat_id = ?
             ORDER BY created_at ASC
         """,
-            (user_id, chat_id),
+            (memory_id, chat_id),
         )
         rows = await cursor.fetchall()
         if rows:
             return [
                 {
                     "id": row[0],
-                    "user_id": row[1],
+                    "memory_id": row[1],
                     "chat_id": row[2],
                     "message_id": row[3],
-                    "event": row[4],
-                    "role": row[5],
-                    "message": row[6],
-                    "created_at": row[7],
-                    "updated_at": row[8],
-                    "is_deleted": row[9]
+                    "role": row[4],
+                    "message": row[5],
+                    "created_at": row[6],
+                    "updated_at": row[7],
+                    "is_deleted": row[8]
                 }
                 async for row in iter_to_aiter(rows)
             ]
 
     async def _get_user_by_id(
             self,
-            user_id: str
+            memory_id: str
     ):
         """
         Asynchronously retrieves user information by user ID.
@@ -128,18 +126,18 @@ class SQLiteManager:
         record matching the provided user ID.
 
         Parameters:
-            user_id : str
+            memory_id : str
                 The unique identifier of the user to be retrieved.
 
         """
         cursor = await self.connection.execute(
                 """
-                SELECT id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted
+                SELECT id, memory_id, chat_id, message_id, role, message, created_at, updated_at, is_deleted
                 FROM history
-                WHERE user_id = ?
+                WHERE memory_id = ?
                 ORDER BY updated_at ASC
             """,
-                (user_id,),
+                (memory_id,),
         )
         return await cursor.fetchall()
 
@@ -154,10 +152,10 @@ class SQLiteManager:
 
     async def add_history(
             self,
-            user_id: str,
+            *,
+            memory_id: str,
             chat_id: str,
             message_id: str,
-            event: str,
             role: str | Enum,
             message: str,
             created_at: datetime.datetime | None = None,
@@ -172,17 +170,16 @@ class SQLiteManager:
         event type, and timestamps.
 
         Parameters:
-            user_id : str
+            memory_id : str
                 The unique identifier of the user who sent the message.
             chat_id : str
                 The unique identifier of the chat session where the message was sent.
             message_id : str
                 A unique identifier for the message being added to the history.
-            event : str
-                The type of event (e.g., "ADD", "UPDATE").
             role : str or Enum
                 The role of the user sending the message (e.g., "user", "assistant").
-            message : str
+            message : str                event TEXT,
+
                 The actual message content to be stored.
             created_at : datetime, optional
                 The timestamp when the message was created. Defaults to the current time if not provided.
@@ -197,15 +194,14 @@ class SQLiteManager:
             updated_at = datetime.datetime.now()
         await self.connection.execute(
             """
-            INSERT INTO history (id, user_id, chat_id, message_id, event, role, message, created_at, updated_at, is_deleted)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO history (id, memory_id, chat_id, message_id, role, message, created_at, updated_at, is_deleted)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 str(uuid.uuid4()),
-                user_id,
+                memory_id,
                 chat_id,
                 message_id,
-                event,
                 role,
                 message,
                 created_at,

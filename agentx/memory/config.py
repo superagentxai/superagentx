@@ -1,8 +1,10 @@
 import os
 from pathlib import Path
-from typing import Optional
 
 from pydantic import BaseModel, Field
+
+from agentx.vector_stores.base import BaseVectorStore
+from agentx.vector_stores.chroma import ChromaDB
 
 
 def _db_path():
@@ -14,19 +16,20 @@ def _db_path():
     return _db_dir / 'history.db'
 
 
+def _chroma():
+    return ChromaDB(collection_name="test")
+
+
 class MemoryConfig(BaseModel):
-
-    db_path: Path = Field(
-        description="Path to the database",
-        default_factory=_db_path
-        # default=os.path.join(mem_dir, "history.db"),
-    )
-
-    version: str = Field(
-        description="The version of the API",
-        default="v1.0",
-    )
-    custom_prompt: Optional[str] = Field(
-        description="Custom prompt for the memory",
+    vector_store: BaseVectorStore = Field(
+        description="Configuration for the vector store",
         default=None,
     )
+
+    db_path: str = Field(
+        description="Path to the history database",
+        default=_db_path(),
+    )
+
+    class Config:
+        arbitrary_types_allowed = True
