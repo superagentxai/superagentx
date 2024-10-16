@@ -1,10 +1,11 @@
 import logging
 
-from jira import JIRA
+from atlassian import Confluence
 
 from agentx.handler.base import BaseHandler
 from agentx.handler.atlassian.exceptions import AuthException
 from agentx.utils.helper import sync_to_async, iter_to_aiter
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,29 +20,44 @@ class ConfluenceHandler(BaseHandler):
     def __init__(
             self,
             *,
-            email: str,
             token: str,
             organization: str
     ):
-        self.email = email
         self.token = token
         self.organization = organization
-        self._connection: JIRA = self._connect()
+        self._connection: Confluence = self._connect()
 
-    def _connect(self) -> JIRA:
+    def _connect(self) -> Confluence:
         try:
-            jira = JIRA(
-                server=f'https://{self.organization}.atlassian.net',
-                basic_auth=(self.email, self.token)
+            confluence = Confluence(
+                url=f'https://{self.organization}.atlassian.net',
+                token=self.token
             )
             logger.debug("Authenticate Success")
-            return jira
+            return confluence
         except Exception as ex:
-            message = f'JIRA Handler Authentication Problem {ex}'
+            message = f'Confluence Handler Authentication Problem {ex}'
             logger.error(message, exc_info=ex)
             raise AuthException(message)
 
+    async def get_all_groups(
+            self,
+            *,
+            start: int = 0,
+            limit: int = 10,
+    ):
+        try:
+            return await sync_to_async(
+                self._connection.get_all_groups,
+                start=start,
+                limit=limit
+            )
+        except Exception as ex:
+            message = f"Error While getting confluence Groups! {ex}"
+            logger.error(message, exc_info={ex})
+            raise Exception(message)
+
     def __dir__(self):
         return (
-
+            'get_all_groups'
         )
