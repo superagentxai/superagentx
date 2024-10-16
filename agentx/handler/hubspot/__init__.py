@@ -1,5 +1,4 @@
 import logging
-from abc import ABC
 
 from hubspot import HubSpot
 from hubspot.crm.contacts import SimplePublicObjectInputForCreate, ApiException, PublicObjectSearchRequest
@@ -11,7 +10,7 @@ from agentx.utils.helper import sync_to_async
 logger = logging.getLogger(__name__)
 
 
-class HubSpotHandler(BaseHandler, ABC):
+class HubSpotHandler(BaseHandler):
     """
             A handler class for managing interactions with the Hubspot API.
             This class extends BaseHandler and provides methods for performing various operations,
