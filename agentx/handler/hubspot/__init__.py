@@ -75,11 +75,10 @@ class HubSpotHandler(BaseHandler):
                     "lastname": lastName
                 }
             )
-            api_response = await sync_to_async(
+            return await sync_to_async(
                 self._connection.crm.contacts.basic_api.create,
                 simple_public_object_input_for_create=simple_public_object_input_for_create
             )
-            return api_response
         except ApiException as ex:
             message = f"Exception when creating contact {ex}"
             logger.error(message, exc_info=ex)
@@ -100,10 +99,9 @@ class HubSpotHandler(BaseHandler):
 
             """
         try:
-            api_response = await sync_to_async(
+            return await sync_to_async(
                 self._connection.crm.contacts.get_all
             )
-            return api_response
         except ApiException as ex:
             message = f"Exception when getting contacts {ex}"
             logger.error(message, exc_info=ex)
@@ -135,11 +133,10 @@ class HubSpotHandler(BaseHandler):
                     "name": name
                 }
             )
-            api_response = await sync_to_async(
+            return await sync_to_async(
                 self._connection.crm.companies.basic_api.create,
                 simple_public_object_input_for_create=simple_public_object_input_for_create
             )
-            return api_response
         except ApiException as ex:
             message = f"Exception when creating Company {ex}"
             logger.error(message, exc_info=ex)
@@ -159,10 +156,9 @@ class HubSpotHandler(BaseHandler):
                       name, domain, etc...
             """
         try:
-            api_response = await sync_to_async(
+            return await sync_to_async(
                 self._connection.crm.companies.get_all
             )
-            return api_response
         except ApiException as ex:
             message = f"Exception when getting company {ex}"
             logger.error(message, exc_info=ex)
@@ -182,10 +178,9 @@ class HubSpotHandler(BaseHandler):
                       deal name, amount, stage, etc...
             """
         try:
-            api_response = await sync_to_async(
+            return await sync_to_async(
                 self._connection.crm.deals.get_all
             )
-            return api_response
         except ApiException as ex:
             message = f"Exception when getting deals {ex}"
             logger.error(message, exc_info=ex)
@@ -206,10 +201,9 @@ class HubSpotHandler(BaseHandler):
 
             """
         try:
-            api_response = await sync_to_async(
+            return await sync_to_async(
                 self._connection.crm.tickets.get_all
             )
-            return api_response
         except ApiException as ex:
             message = f"Exception when getting tickets {ex}"
             logger.error(message, exc_info=ex)
