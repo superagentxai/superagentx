@@ -20,17 +20,15 @@ def agent_client_init() -> dict:
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
 
-class TestIOConsolePIpe:
+
+class TestIOConsolePipe:
 
     async def test_ecom_pipe(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         amazon_ecom_handler = AmazonHandler(
-            api_key=os.getenv('RAPID_API_KEY'),
             country="IN"
         )
-        flipkart_ecom_handler = FlipkartHandler(
-            api_key=os.getenv('RAPID_API_KEY'),
-        )
+        flipkart_ecom_handler = FlipkartHandler()
         prompt_template = PromptTemplate()
         amazon_engine = Engine(
             handler=amazon_ecom_handler,
