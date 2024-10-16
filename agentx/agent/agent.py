@@ -76,7 +76,7 @@ class Agent:
         self.output_format = output_format
         self.max_retry = max_retry
         self.memory = memory
-        self.agent_id = str(uuid.uuid4().hex)
+        self.memory_id = str(uuid.uuid4().hex)
         self.chat_id = str(uuid.uuid4().hex)
 
     def __str__(self):
@@ -101,7 +101,7 @@ class Agent:
     ):
         async for prompt in iter_to_aiter(prompt_instruction):
             await self.memory.add(
-                memory_id=self.agent_id,
+                memory_id=self.memory_id,
                 chat_id=self.chat_id,
                 message_id=str(uuid.uuid4().hex),
                 role=prompt.get("role"),
@@ -114,7 +114,7 @@ class Agent:
     ) -> list[dict]:
         return await self.memory.search(
             query=query_instruction,
-            memory_id=self.agent_id,
+            memory_id=self.memory_id,
             chat_id=self.chat_id,
             limit=10,
         )
