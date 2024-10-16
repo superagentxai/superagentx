@@ -16,7 +16,11 @@ from agentx.utils.console_color import ConsoleColorType
 '''
  Run Pytest:  
 
+<<<<<<< HEAD
    1. pytest -s --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
+=======
+   1. pytest --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
+>>>>>>> 8e0a10142687a9c6ad948a6d4f403a41ed789d48
 '''
 
 
@@ -78,10 +82,11 @@ class TestEcommercePipe:
         pipe = AgentXPipe(
             agents=[ecom_agent, price_review_agent]
         )
-        io_console = IOConsole()
+        io = IOConsole(
+            read_phrase="\n\n\nEnter your query here:\n\n=>",
+            write_phrase="\n\n\nYour result is =>\n\n"
+        )
         while True:
-            await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
-            query_instruction = await io_console.read("User: ")
-            result = await pipe.flow(query_instruction)
-            await io_console.write(ConsoleColorType.CGREEN2.value, end="")
-            await io_console.write(f"Assistant: {result}", flush=True)
+            input_instruction = await io.read()
+            result = await pipe.flow(query_instruction=input_instruction)
+            await io.write(result)
