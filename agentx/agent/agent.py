@@ -65,7 +65,8 @@ class Agent:
         self.goal = goal
         self.llm = llm
         self.prompt_template = prompt_template
-        self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
+        self.id = uuid.uuid4().hex
+        self.name = name or f'{self.__str__()}-{self.id}'
         self.description = description
         self.engines: list[Engine | list[Engine]] = engines or []
         self.input_prompt = input_prompt
@@ -114,7 +115,11 @@ class Agent:
                 if choice and choice.message:
                     _res = choice.message.content
                     _res = json.loads(_res)
-                    return GoalResult(**_res)
+                    return GoalResult(
+                        name=self.name,
+                        id=self.id,
+                        **_res
+                    )
 
     async def _execute(
             self,
