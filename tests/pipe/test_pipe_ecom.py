@@ -15,7 +15,7 @@ from agentx.prompt import PromptTemplate
 '''
  Run Pytest:  
 
-   1. pytest --log-cli-level=INFO tests/pipe/test_pipe_ecommerce.py::TestEcommercePipe::test_ecom_pipe
+   1. pytest --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
 '''
 
 

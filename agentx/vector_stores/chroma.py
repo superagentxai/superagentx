@@ -154,7 +154,6 @@ class ChromaDB(BaseVectorStore):
             n_results=limit,
             include=['embeddings', 'metadatas', "distances", "data"]
         )
-        logger.info(results)
         return await self._parse_output(results)
 
     async def update(
