@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 '''
  Run Pytest:  
-   1.pytest -s --log-cli-level=INFO tests/pipe/test_ai_pipe.py::TestIOConsolePipe::test_ai_spamfilter
-   2.pytest -s --log-cli-level=INFO tests/pipe/test_ai_pipe.py::TestIOConsolePipe::test_writer
-   3.pytest -s --log-cli-level=INFO tests/pipe/test_ai_pipe.py::TestIOConsolePipe::test_scorer
+   1.pytest -s --log-cli-level=INFO tests/pipe/test_pipe_trip_planner.py::TestTripPlannerPipe::test_city_selection_agent
+   2.pytest -s --log-cli-level=INFO tests/pipe/test_pipe_trip_planner.py::TestTripPlannerPipe::test_local_expert
+
 '''
 
 
@@ -54,9 +54,45 @@ class TestTripPlannerPipe:
             engines=[ai_engine]
         )
         pipe = AgentXPipe(
+            name="Trip Planner Pipe",
             agents=[city_selection_agent]
         )
 
+        io_console = IOConsole()
+        while True:
+            await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
+            query_instruction = await io_console.read("User: ")
+            result = await pipe.flow(query_instruction)
+            await io_console.write(ConsoleColorType.CGREEN2.value, end="")
+            await io_console.write(f"Assistant: {result}", flush=True)
+
+    async def test_local_expert(self, agent_client_init):
+        llm_client: LLMClient = agent_client_init.get('llm')
+        ai_handler = AIHandler(
+            llm=llm_client,
+            role="Local Expert at this city",
+            back_story="A knowledgeable local guide with extensive information about the city, it's attractions and "
+                       "customs"
+        )
+        prompt_template = PromptTemplate()
+        ai_engine = Engine(
+            handler=ai_handler,
+            llm=llm_client,
+            prompt_template=prompt_template
+        )
+        local_expert_agent = Agent(
+            name="City Selection Agent",
+            role='Local Expert at this city',
+            goal='Provide the BEST insights about the selected city',
+            description="",
+            llm=llm_client,
+            prompt_template=prompt_template,
+            engines=[ai_engine]
+        )
+        pipe = AgentXPipe(
+            name="Trip Planner Pipe",
+            agents=[local_expert_agent]
+        )
         io_console = IOConsole()
         while True:
             await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
