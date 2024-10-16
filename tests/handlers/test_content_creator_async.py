@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from agentx.handler.ai_handler import AIHandler
+from agentx.handler.ai import AIHandler
 from agentx.llm import LLMClient
 
 logger = logging.getLogger(__name__)
@@ -31,4 +31,5 @@ class TestContentCreator:
 
     async def test_text_content_creator(self, content_creator_init: AIHandler):
         result = await content_creator_init.text_creation(instruction='Create the digital marketing content')
+        logger.info(f'Result => {result.choices[0].message.content}')
         assert "digital marketing" in result.choices[0].message.content

@@ -4,7 +4,7 @@ import pytest
 
 from agentx.agent.agent import Agent
 from agentx.agent.engine import Engine
-from agentx.handler.ai_handler import AIHandler
+from agentx.handler.ai import AIHandler
 from agentx.handler.ecommerce.amazon import AmazonHandler
 from agentx.handler.ecommerce.flipkart import FlipkartHandler
 from agentx.io import IOConsole
@@ -15,7 +15,7 @@ from agentx.prompt import PromptTemplate
 '''
  Run Pytest:  
 
-   1. pytest --log-cli-level=INFO tests/pipe/test_pipe_ecommerce.py::TestEcommercePipe::test_ecom_pipe
+   1. pytest --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
 '''
 
 
@@ -75,10 +75,13 @@ class TestEcommercePipe:
             engines=[ai_engine]
         )
         pipe = AgentXPipe(
-            io=IOConsole(
-                read_phrase="\n\n\nEnter your query here:\n\n=>",
-                write_phrase="\n\n\nYour result is =>\n\n"
-            ),
             agents=[ecom_agent, price_review_agent]
         )
-        await pipe.flow()
+        io = IOConsole(
+            read_phrase="\n\n\nEnter your query here:\n\n=>",
+            write_phrase="\n\n\nYour result is =>\n\n"
+        )
+        while True:
+            input_instruction = await io.read()
+            result = await pipe.flow(query_instruction=input_instruction)
+            await io.write(result)
