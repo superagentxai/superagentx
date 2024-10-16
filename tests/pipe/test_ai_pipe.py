@@ -8,13 +8,12 @@ from agentx.llm import LLMClient
 from agentx.pipe import AgentXPipe
 from agentx.prompt import PromptTemplate
 
+
 '''
  Run Pytest:  
 
    1. pytest -s --log-cli-level=INFO tests/pipe/test_ai_pipe.py::TestIOConsolePipe::test_ai_pipe
 '''
-
-
 
 @pytest.fixture
 def ai_client_init() -> dict:
@@ -37,6 +36,7 @@ class TestIOConsolePipe:
         )
 
         spamfilter = Agent(
+            name='Spamfilter Agent',
             goal="Decide whether a text is spam or not.",
             role="spamfilter",
             llm=llm_client,
@@ -45,6 +45,7 @@ class TestIOConsolePipe:
         )
 
         analyst = Agent(
+            name='Analyst Agent',
             goal="You will distill all arguments from all discussion members. Identify who said what."
                  "You can reword what they said as long as the main discussion points remain.",
             role="analyse",
@@ -54,6 +55,7 @@ class TestIOConsolePipe:
         )
 
         scriptwriter = Agent(
+            name='Scriptwriter Agent',
             goal="Turn a conversation into a movie script. Only write the dialogue parts. "
                  "Do not start the sentence with an action. Do not specify situational descriptions. Do not write parentheticals.",
             role="scriptwriter",
@@ -64,6 +66,7 @@ class TestIOConsolePipe:
         )
 
         formatter = Agent(
+            name='Formatter Agent',
             goal="Format the text as asked. Leave out actions from discussion members that happen between "
                  "brackets, eg (smiling).",
             role="formatter",
@@ -74,6 +77,7 @@ class TestIOConsolePipe:
         )
 
         scorer = Agent(
+            name='Scorer Agent',
             goal="""
              You score a dialogue assessing various aspects of the exchange between the participants using a 1-10 scale, where 1 is the lowest performance and 10 is the highest:
             Scale:
@@ -99,12 +103,11 @@ class TestIOConsolePipe:
             engines=[ai_agent_engine]
 
         )
-
         pipe = AgentXPipe(
             io=IOConsole(
                 read_phrase="\n\n\nEnter your query here:\n\n=>",
                 write_phrase="\n\n\nYour result is =>\n\n"
             ),
-            agents=[spamfilter, analyst, scriptwriter, formatter, scorer]
+            agents=[analyst, scriptwriter, formatter]
         )
         await pipe.flow()
