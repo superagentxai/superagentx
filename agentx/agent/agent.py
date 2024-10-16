@@ -55,6 +55,7 @@ class Agent:
             role: str,
             llm: LLMClient,
             prompt_template: PromptTemplate,
+            agent_id: str | None = uuid.uuid4().hex,
             name: str | None = None,
             description: str | None = None,
             engines: list[Engine | list[Engine]] | None = None,
@@ -67,7 +68,8 @@ class Agent:
         self.goal = goal
         self.llm = llm
         self.prompt_template = prompt_template
-        self.name = name or f'{self.__str__()}-{uuid.uuid4().hex}'
+        self.agent_id = agent_id
+        self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
         self.engines: list[Engine | list[Engine]] = engines or []
         self.input_prompt = input_prompt
@@ -149,7 +151,11 @@ class Agent:
                 if choice and choice.message:
                     _res = choice.message.content
                     _res = json.loads(_res)
-                    return GoalResult(**_res)
+                    return GoalResult(
+                        name=self.name,
+                        agent_id=self.agent_id,
+                        **_res
+                    )
 
     async def _execute(
             self,
@@ -194,6 +200,7 @@ class Agent:
             query_instruction: str,
             pre_result: str | None = None
     ) -> GoalResult | None:
+        _goal_result = None
         for _retry in range(1, self.max_retry+1):
             logger.info(f"Agent `{self.name}` retry {_retry}")
             _goal_result = await self._execute(
@@ -207,4 +214,6 @@ class Agent:
                 }
                 await self.add_memory([assistant])
                 return _goal_result
+
         logger.warning(f"Done agent `{self.name}` max retry {self.max_retry}!")
+        return _goal_result

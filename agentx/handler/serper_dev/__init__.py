@@ -5,7 +5,6 @@ import aiohttp
 from agentx.handler.base import BaseHandler
 
 
-
 class SerperDevToolHandler(BaseHandler):
 
     def __init__(self):
