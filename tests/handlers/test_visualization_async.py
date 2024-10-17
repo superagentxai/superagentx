@@ -1,6 +1,6 @@
 import pytest
 
-from agentx.visualization import Visualize
+from superagentx.visualization import Visualize
 
 '''
  Run Pytest:  

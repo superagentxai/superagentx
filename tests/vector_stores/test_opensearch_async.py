@@ -3,7 +3,7 @@ import logging
 
 from elastic_transport import ApiResponse
 
-from agentx.vector_stores import VectorStore
+from superagentx.vector_stores import VectorStore
 
 logger = logging.getLogger(__name__)
 

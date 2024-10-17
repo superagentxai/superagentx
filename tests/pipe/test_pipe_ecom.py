@@ -2,20 +2,21 @@ import os
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.ai import AIHandler
-from agentx.handler.ecommerce.amazon import AmazonHandler
-from agentx.handler.ecommerce.flipkart import FlipkartHandler
-from agentx.io import IOConsole
-from agentx.llm import LLMClient
-from agentx.pipe import AgentXPipe
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.ai import AIHandler
+from superagentx.handler.ecommerce.amazon import AmazonHandler
+from superagentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx.io import IOConsole
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.pipe import AgentXPipe
+from superagentx.prompt import PromptTemplate
 
 '''
  Run Pytest:  
 
-   1. pytest --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
+   1. pytest -s --log-cli-level=INFO tests/pipe/test_pipe_ecom.py::TestEcommercePipe::test_ecom_pipe
 '''
 
 
@@ -58,13 +59,15 @@ class TestEcommercePipe:
             llm=llm_client,
             prompt_template=prompt_template
         )
+        memory = Memory()
         ecom_agent = Agent(
             name="Ecom Agent",
             goal="Get me the best search results",
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[[amazon_engine, flipkart_engine]]
+            engines=[[amazon_engine, flipkart_engine]],
+            memory=memory
         )
         price_review_agent = Agent(
             name="Price Review Agent",
@@ -72,7 +75,8 @@ class TestEcommercePipe:
             role="You are the price reviewer",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_engine]
+            engines=[ai_engine],
+            memory=memory
         )
         pipe = AgentXPipe(
             agents=[ecom_agent, price_review_agent]

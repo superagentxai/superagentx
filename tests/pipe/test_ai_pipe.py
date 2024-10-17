@@ -2,12 +2,12 @@ import logging
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.ai import AIHandler
-from agentx.llm import LLMClient
-from agentx.pipe import AgentXPipe
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.ai import AIHandler
+from superagentx.llm import LLMClient
+from superagentx.pipe import AgentXPipe
+from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
 

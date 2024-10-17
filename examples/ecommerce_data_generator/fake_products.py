@@ -3,7 +3,7 @@ import logging
 
 from openai.types.chat import ChatCompletion
 
-from agentx.llm import LLMClient, ChatCompletionParams
+from superagentx.llm import LLMClient, ChatCompletionParams
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@ import logging
 
 import pytest
 
-from agentx.handler.ai import AIHandler
-from agentx.llm import LLMClient
+from superagentx.handler.ai import AIHandler
+from superagentx.llm import LLMClient
 
 logger = logging.getLogger(__name__)
 
