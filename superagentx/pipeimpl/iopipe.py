@@ -14,13 +14,41 @@ class IOPipe:
             read_prompt: str | None = None,
             write_prompt: str | None = None
     ):
+        """
+        Initializes the WSPipe with necessary parameters for configuring an agentxpipe that interacts with a specified
+        search mechanism and handles websocket connections.
+
+        Args:
+            search_name: The name of the search mechanism or service that the agent will utilize. This name is used
+                to identify the search functionality within the broader system.
+            agentx_pipe: An instance of AgentXPipe that facilitates communication between the agent and other
+                components of the system. This pipe is crucial for data transfer and message handling within the
+                agent's operational context.
+            read_prompt: An optional prompt string used for guiding the reading information.
+                This prompt can help shape the queries made during the search operation. Defaults to None
+                if not provided.
+            write_prompt: An optional prompt string used for guiding the writing of information.
+                This prompt may assist in structuring the responses or data being sent. Defaults to None
+                if not provided.
+        """
         self.search_name = search_name
         self.agentx_pipe = agentx_pipe
         self._read_prompt = read_prompt or ''
         self._write_prompt = write_prompt or ''
         self._console = Console()
 
-    async def start(self):
+    async def start(self) -> None:
+        """
+        Initiates the main process or operation of the class.
+
+        This asynchronous method is responsible for starting the primary functionality of
+        the class instance. It may involve setting up necessary resources, establishing
+        connections, and beginning the main event loop or workflow that the class is designed
+        to perform.
+
+        Returns:
+            None
+        """
         self._console.rule(f'[bold blue]{self.search_name}')
         while True:
             query = Prompt.ask(
