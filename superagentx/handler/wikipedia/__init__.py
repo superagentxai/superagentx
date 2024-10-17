@@ -31,5 +31,5 @@ class WikipediaHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            'get_summary'
+            'get_summary',
         )
