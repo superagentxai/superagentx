@@ -106,7 +106,7 @@ class Agent:
                 chat_id=self.chat_id,
                 message_id=uuid.uuid4().hex,
                 role=prompt.get("role"),
-                message=prompt.get("content")
+                data=prompt.get("content")
             )
 
     async def retrieve_memory(
