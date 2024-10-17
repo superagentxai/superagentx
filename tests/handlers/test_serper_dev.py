@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from agentx.handler.serper_dev import SerperDevToolHandler
+from superagentx.handler.serper_dev import SerperDevToolHandler
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 import pytest
 import logging
 
-from agentx.handler.sql import SQLHandler
+from superagentx.handler.sql import SQLHandler
 from sqlalchemy.engine.cursor import CursorResult
 
 logger = logging.getLogger(__name__)

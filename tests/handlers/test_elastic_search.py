@@ -2,7 +2,7 @@ from cgitb import handler
 
 import pytest
 
-from agentx.handler.elastic_search import ElasticsearchHandler
+from superagentx.handler.elastic_search import ElasticsearchHandler
 
 '''
  Run Pytest:  

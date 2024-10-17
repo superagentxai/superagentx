@@ -1,7 +1,7 @@
 import logging
 import pytest
 
-from agentx.vector_stores import VectorStore, ChromaDB
+from superagentx.vector_stores import VectorStore, ChromaDB
 
 logger = logging.getLogger(__name__)
 

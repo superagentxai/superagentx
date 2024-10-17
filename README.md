@@ -36,7 +36,7 @@ SuperAgentX is designed to address the growing need for highly capable, autonomo
 
 ## Environment Setup
 ```shell
-$ cd <path-to>/agentx
+$ cd <path-to>/superagentx
 $ python3.12 -m venv venv
 $ source venv/bin/activate
 (venv) $ pip install poetry

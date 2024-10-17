@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from agentx.handler.financial_data import FinancialHandler
+from superagentx.handler.financial_data import FinancialHandler
 
 '''
  Run Pytest:
