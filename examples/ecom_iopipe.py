@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+from tkinter.font import names
 
 from rich import print as rprint
 
@@ -50,10 +51,10 @@ async def main():
         agents=[ecom_agent]
     )
     io_pipe = IOPipe(
+        search_name='SuperAgentX Ecom',
         agentx_pipe=pipe,
-        read_prompt=f"\n[bold green]Enter your search here",
+        read_prompt=f"\n[bold green]Enter your search here"
     )
-    await io_pipe.io_console.rule("[bold blue]SuperAgentX Ecom")
     await io_pipe.start()
 
 
