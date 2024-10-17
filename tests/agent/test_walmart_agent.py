@@ -33,7 +33,7 @@ class TestWalmartAgent:
     async def test_walmart_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         walmart_handler = WalmartHandler(
-            api_key=os.getenv('WALMART_API_KEY')
+            api_key=os.getenv('RAPID_API_KEY')
         )
         prompt_template = PromptTemplate()
         walmart_engine = Engine(
@@ -45,12 +45,8 @@ class TestWalmartAgent:
             goal="Get a proper answer for asking a question in Walmart.",
             role="You are the product searcher",
             llm=llm_client,
-            prompt_template=prompt_template
-        )
-        await walmart_agent.add(
-            walmart_engine,
-            execute_type=SEQUENCE
-
+            prompt_template=prompt_template,
+            engines=[walmart_engine]
         )
         result = await walmart_agent.execute(
             query_instruction="Get me the best product of blender with 4.5 ratings"
