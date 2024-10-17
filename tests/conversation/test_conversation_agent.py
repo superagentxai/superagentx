@@ -1,4 +1,3 @@
-import datetime
 import logging
 import uuid
 from enum import Enum
@@ -54,8 +53,7 @@ class TestConversationAgent:
             messages=message
         )
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
-        result = response.choices[0].message.content
-        return result
+        return response.choices[0].message.content
 
     @staticmethod
     async def _get_history(query: str, memory_id: str, chat_id: str, memory_client: Memory) -> list[dict]:
@@ -63,14 +61,13 @@ class TestConversationAgent:
             memory_id=memory_id,
             chat_id=chat_id
         )
-        messages = []
-        async for message in iter_to_aiter(response):
-            data = {
+        return [
+            {
                 "role": message.get("role"),
                 "content": message.get("data")
             }
-            messages.append(data)
-        return messages
+            async for message in iter_to_aiter(response)
+        ]
 
     async def test_conversation_agent(self, clients_init: dict):
         io_console: IOConsole = clients_init.get("io_console")
