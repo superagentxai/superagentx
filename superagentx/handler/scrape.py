@@ -35,11 +35,6 @@ class ScrapeHandler(BaseHandler):
             This method fetches and processes the content from the target website or data source
             using an asynchronous approach to ensure non-blocking operations.
 
-            It handles the following steps:
-            1. Initiates an HTTP request to retrieve the content from the source.
-            2. Parses the fetched data, extracts relevant information, and processes it.
-            3. Optionally stores or returns the processed content.
-
             Returns:
                 Parsed content (could be a list, dict, or other structure depending on implementation).
 
