@@ -228,7 +228,8 @@ class Agent:
             old_memory = await self.retrieve_memory(query_instruction)
             if old_memory:
                 chat_completion_params = ChatCompletionParams(
-                    messages=messages + old_memory
+                    messages=messages + old_memory,
+                    response_format={"type": "json_object"}
                 )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
@@ -238,6 +239,8 @@ class Agent:
             for choice in messages.choices:
                 if choice and choice.message:
                     _res = choice.message.content
+                    _res = _res.replace('```json', '')
+                    _res = _res.replace('```', '')
                     _res = json.loads(_res)
                     return GoalResult(
                         name=self.name,

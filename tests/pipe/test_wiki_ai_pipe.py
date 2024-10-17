@@ -7,24 +7,15 @@ from superagentx.agent.engine import Engine
 from superagentx.handler.ai import AIHandler
 from superagentx.handler.wikipedia import WikipediaHandler
 from superagentx.llm import LLMClient
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
 
 
-@pytest.fixture
-def ai_client_init() -> dict:
-
-    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
-    llm_client: LLMClient = LLMClient(llm_config=llm_config)
-    content_handler = AIHandler(llm=llm_client)
-
-
 class TestWikiAIPipe:
 
     async def test_wiki_ai_sequence_pipe(self):
-
         llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
         llm_client: LLMClient = LLMClient(llm_config=llm_config)
         content_handler = AIHandler(llm=llm_client)
@@ -54,7 +45,6 @@ class TestWikiAIPipe:
                     Name - <<Profile Name of the biographer>>
                     Birth Year - <<Biographer Birth Year, If available>>
                     Achievements - <<Achievements, if any in the content>>
-                    
                """
         biographer_agent = Agent(
             name='Biography Agent',
@@ -66,8 +56,8 @@ class TestWikiAIPipe:
         )
 
         pipe = AgentXPipe(
-            agents=[wiki_agent]
+            agents=[wiki_agent, biographer_agent]
         )
 
-        result = await pipe.flow(query_instruction="Sachin Tendulkar")
+        result = await pipe.flow(query_instruction="Rajinikanth")
         logger.info(f"Biographer result => \n{result}")
