@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
 
-    1.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_create_table
-    2.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_insert_table
-    3.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_select_table
-    4.pytest --log-cli-level=INFO tests/handlers/test_sql_handler_async.py::TestSql::test_drop_table
+    1.pytest --log-cli-level=INFO tests/handlers/test_sql_handler.py::TestSql::test_create_table
+    2.pytest --log-cli-level=INFO tests/handlers/test_sql_handler.py::TestSql::test_insert_table
+    3.pytest --log-cli-level=INFO tests/handlers/test_sql_handler.py::TestSql::test_select_table
+    4.pytest --log-cli-level=INFO tests/handlers/test_sql_handler.py::TestSql::test_drop_table
     
 '''
 
