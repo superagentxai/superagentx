@@ -8,11 +8,12 @@ sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
 
 from superagentx.agent.agent import Agent
 from superagentx.agent.engine import Engine
+
 from superagentx.handler.ecommerce.amazon import AmazonHandler
 from superagentx.handler.ecommerce.flipkart import FlipkartHandler
 from superagentx.llm import LLMClient
 from superagentx.pipe import AgentXPipe
-from superagentx.pipeimpl.iopipe import IOPipe
+from superagentx.pipeimpl.wspipe import WSPipe
 from superagentx.prompt import PromptTemplate
 
 
@@ -49,15 +50,14 @@ async def main():
     pipe = AgentXPipe(
         agents=[ecom_agent]
     )
-    io_pipe = IOPipe(
-        search_name='SuperAgentX Ecom',
-        agentx_pipe=pipe,
-        read_prompt=f"\n[bold green]Enter your search here"
+    ws_pipe = WSPipe(
+        search_name='SuperAgentX Ecom Websocket Server',
+        agentx_pipe=pipe
     )
-    await io_pipe.start()
+    await ws_pipe.start()
 
 
-if __name__ == '__main__':
+if __name__ =='__main__':
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, asyncio.CancelledError):

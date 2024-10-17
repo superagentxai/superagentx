@@ -1,24 +1,24 @@
 from rich.console import Console
 from rich.prompt import Prompt
 
-from superagentx.pipeimpl.base import BasePipeImpl
+from superagentx.pipe import AgentXPipe
 
 
-class IOPipe(BasePipeImpl):
+class IOPipe:
 
     def __init__(
             self,
             *,
             search_name: str,
+            agentx_pipe: AgentXPipe,
             read_prompt: str | None = None,
-            write_prompt: str | None = None,
-            **kwargs
+            write_prompt: str | None = None
     ):
         self.search_name = search_name
+        self.agentx_pipe = agentx_pipe
         self._read_prompt = read_prompt or ''
         self._write_prompt = write_prompt or ''
         self._console = Console()
-        super().__init__(**kwargs)
 
     async def start(self):
         self._console.rule(f'[bold blue]{self.search_name}')
