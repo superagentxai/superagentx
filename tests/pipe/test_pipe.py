@@ -2,15 +2,21 @@ import os
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.ecommerce.amazon import AmazonHandler
-from agentx.handler.ecommerce.flipkart import FlipkartHandler
-from agentx.io import IOConsole
-from agentx.llm import LLMClient
-from agentx.pipe import AgentXPipe
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.ecommerce.amazon import AmazonHandler
+from superagentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx.io import IOConsole
+from superagentx.llm import LLMClient
+from superagentx.pipe import AgentXPipe
+from superagentx.prompt import PromptTemplate
 
+'''
+Run Pytest:  
+
+   1.pytest -s --log-cli-level=INFO tests/pipe/test_pipe.py::TestIOConsolePipe::test_ecom_pipe
+   
+'''
 
 @pytest.fixture
 def agent_client_init() -> dict:
@@ -20,17 +26,15 @@ def agent_client_init() -> dict:
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
 
-class TestIOConsolePIpe:
+
+class TestIOConsolePipe:
 
     async def test_ecom_pipe(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         amazon_ecom_handler = AmazonHandler(
-            api_key=os.getenv('RAPID_API_KEY'),
             country="IN"
         )
-        flipkart_ecom_handler = FlipkartHandler(
-            api_key=os.getenv('RAPID_API_KEY'),
-        )
+        flipkart_ecom_handler = FlipkartHandler()
         prompt_template = PromptTemplate()
         amazon_engine = Engine(
             handler=amazon_ecom_handler,
@@ -50,10 +54,13 @@ class TestIOConsolePIpe:
             engines=[[amazon_engine, flipkart_engine]]
         )
         pipe = AgentXPipe(
-            io=IOConsole(
-                read_phrase="\n\n\nEnter your query here:\n\n=>",
-                write_phrase="\n\n\nYour result is =>\n\n"
-            ),
             agents=[ecom_agent]
         )
-        await pipe.flow()
+        io = IOConsole(
+            read_phrase="\n\n\nEnter your query here:\n\n=>",
+            write_phrase="\n\n\nYour result is =>\n\n"
+        )
+        while True:
+            input_instruction = await io.read()
+            result = await pipe.flow(query_instruction=input_instruction)
+            await io.write(result)

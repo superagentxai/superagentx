@@ -2,9 +2,9 @@ import logging
 import pytest
 from openai.types.chat.chat_completion import ChatCompletion
 
-from agentx.llm import LLMClient, Message
-from agentx.llm.models import ChatCompletionParams
-from agentx.llm.openai import OpenAIClient
+from superagentx.llm import LLMClient, Message
+from superagentx.llm.models import ChatCompletionParams
+from superagentx.llm.openai import OpenAIClient
 
 logger = logging.getLogger(__name__)
 

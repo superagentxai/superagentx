@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from agentx.handler.aws.s3 import AWSS3Handler
+from superagentx.handler.aws.s3 import AWSS3Handler
 
 '''
  Run Pytest:  

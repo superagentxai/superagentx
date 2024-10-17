@@ -1,7 +1,7 @@
 import pytest
 import logging
 
-from agentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx.handler.ecommerce.flipkart import FlipkartHandler
 
 logger = logging.getLogger(__name__)
 
