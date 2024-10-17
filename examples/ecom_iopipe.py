@@ -50,7 +50,7 @@ async def main():
         agents=[ecom_agent]
     )
     io_pipe = IOPipe(
-        agetnx_pipe=pipe,
+        agentx_pipe=pipe,
         read_prompt=f"\n[bold green]Enter your search here",
     )
     await io_pipe.io_console.rule("[bold blue]SuperAgentX Ecom")
