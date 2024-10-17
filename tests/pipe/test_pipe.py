@@ -11,6 +11,12 @@ from superagentx.llm import LLMClient
 from superagentx.pipe import AgentXPipe
 from superagentx.prompt import PromptTemplate
 
+'''
+Run Pytest:  
+
+   1.pytest -s --log-cli-level=INFO tests/pipe/test_pipe.py::TestIOConsolePipe::test_ecom_pipe
+   
+'''
 
 @pytest.fixture
 def agent_client_init() -> dict:
