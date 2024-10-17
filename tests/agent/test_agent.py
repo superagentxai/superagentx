@@ -3,15 +3,15 @@ import os
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.ecommerce.amazon import AmazonHandler
-from agentx.handler.ecommerce.flipkart import FlipkartHandler
-from agentx.io import IOConsole
-from agentx.llm import LLMClient
-from agentx.memory import Memory
-from agentx.prompt import PromptTemplate
-from agentx.utils.console_color import ConsoleColorType
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.ecommerce.amazon import AmazonHandler
+from superagentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx.io import IOConsole
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.prompt import PromptTemplate
+from superagentx.utils.console_color import ConsoleColorType
 
 logger = logging.getLogger(__name__)
 

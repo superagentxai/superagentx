@@ -2,9 +2,9 @@ import logging
 import json
 import pytest
 
-from agentx.llm import LLMClient, Message
-from agentx.llm.models import ChatCompletionParams
-from agentx.llm.bedrock import BedrockClient
+from superagentx.llm import LLMClient, Message
+from superagentx.llm.models import ChatCompletionParams
+from superagentx.llm.bedrock import BedrockClient
 
 logger = logging.getLogger(__name__)
 

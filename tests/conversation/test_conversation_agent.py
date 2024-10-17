@@ -5,11 +5,11 @@ from enum import Enum
 
 import pytest
 
-from agentx.io import IOConsole
-from agentx.llm import LLMClient, ChatCompletionParams
-from agentx.memory import Memory
-from agentx.utils.console_color import ConsoleColorType
-from agentx.utils.helper import iter_to_aiter
+from superagentx.io import IOConsole
+from superagentx.llm import LLMClient, ChatCompletionParams
+from superagentx.memory import Memory
+from superagentx.utils.console_color import ConsoleColorType
+from superagentx.utils.helper import iter_to_aiter
 
 logger = logging.getLogger(__name__)
 

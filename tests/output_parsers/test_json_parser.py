@@ -1,6 +1,6 @@
 from openai.types.chat.chat_completion import ChatCompletion, ChatCompletionMessage
-from agentx.llm import LLMClient
-from agentx.llm.openai import ChatCompletionParams
+from superagentx.llm import LLMClient
+from superagentx.llm.openai import ChatCompletionParams
 
 import json
 

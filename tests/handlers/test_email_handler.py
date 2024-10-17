@@ -1,6 +1,6 @@
 import pytest
 
-from agentx.handler.email import EmailHandler
+from superagentx.handler.email import EmailHandler
 
 '''
  Run Pytest:

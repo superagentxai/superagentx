@@ -2,8 +2,8 @@ import logging
 
 import pytest
 
-from agentx.handler.ecommerce.fake_product import FakeProductHandler
-from agentx.llm import LLMClient
+from superagentx.handler.ecommerce.fake_product import FakeProductHandler
+from superagentx.llm import LLMClient
 from examples.ecommerce_data_generator import mobile_phones
 
 logger = logging.getLogger(__name__)

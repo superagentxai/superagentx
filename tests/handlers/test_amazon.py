@@ -1,7 +1,7 @@
 import pytest
 import logging
 
-from agentx.handler.ecommerce.amazon import AmazonHandler
+from superagentx.handler.ecommerce.amazon import AmazonHandler
 
 logger = logging.getLogger(__name__)
 
