@@ -2,9 +2,7 @@ import os
 from pathlib import Path
 
 from pydantic import BaseModel, Field
-
 from superagentx.vector_stores.base import BaseVectorStore
-from superagentx.vector_stores.chroma import ChromaDB
 
 
 def _db_path():
@@ -14,10 +12,6 @@ def _db_path():
     else:
         _db_dir = Path(_db_dir)
     return _db_dir / 'history.db'
-
-
-def _chroma():
-    return ChromaDB(collection_name="test")
 
 
 class MemoryConfig(BaseModel):
