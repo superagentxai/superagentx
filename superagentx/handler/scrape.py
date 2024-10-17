@@ -48,4 +48,5 @@ class ScrapeHandler(BaseHandler):
             result = await crawler.arun(
                 url=self.domain_url
             )
-            return result.markdown if result else "Not found"
+            if result:
+                return result.markdown
