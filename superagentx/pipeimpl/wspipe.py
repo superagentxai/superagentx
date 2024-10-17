@@ -65,7 +65,7 @@ class WSPipe:
         stop = loop.create_future()
         loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
         self._console.print(
-            f'[bold yellow]:gun: Starting SuperagentX websocket server\n'
+            f'[bold yellow]:rocket: Starting SuperagentX websocket server\n'
             f':smiley: Host: {self.host}\n'
             f':smiley: Port: {self.port}'
         )
