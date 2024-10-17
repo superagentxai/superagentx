@@ -1,2 +1,0 @@
-class InvalidType(Exception):
-    pass
