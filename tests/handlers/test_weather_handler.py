@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
 
-   1.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_forecast_weather
-   2.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_historical_weather
-   3.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_climate_weather
-   4.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_flood_weather
-   5.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_air_quality_weather
-   6.pytest --log-cli-level=INFO tests/handlers/test_weather_handler_async.py::TestWeatherHandler::test_marine_weather
+   1.pytest --log-cli-level=INFO tests/handlers/test_weather_handler.py::TestWeatherHandler::test_forecast_weather
+   2.pytest --log-cli-level=INFO tests/handlers/test_weather_handler.py::TestWeatherHandler::test_historical_weather
+   3.pytest --log-cli-level=INFO tests/handlers/test_weather_handler.py::TestWeatherHandler::test_climate_weather
+   4.pytest --log-cli-level=INFO tests/handlers/test_weather_handler.py::TestWeatherHandler::test_flood_weather
+   5.pytest --log-cli-level=INFO tests/handlers/test_weather_handler.py::TestWeatherHandler::test_air_quality_weather
+   6.pytest --log-cli-level=INFO tests/handlers/test_weather_handler.py::TestWeatherHandler::test_marine_weather
 
 '''
 
