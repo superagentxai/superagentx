@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def weather_client_init() -> ScrapeHandler:
     scrap_handler = ScrapeHandler(
-        domain_url=""
+        domain_url=["https://nitiforstates.gov.in/my_state"]
     )
     return scrap_handler
 

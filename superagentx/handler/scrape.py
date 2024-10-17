@@ -25,7 +25,7 @@ class ScrapeHandler(BaseHandler):
     def __init__(
             self,
             *,
-            domain_url: str
+            domain_url: list
     ):
         self.domain_url = domain_url
 
@@ -40,8 +40,13 @@ class ScrapeHandler(BaseHandler):
 
        """
         async with AsyncWebCrawler(verbose=True) as crawler:
-            result = await crawler.arun(
-                url=self.domain_url
+            result = await crawler.arun_many(
+                urls=self.domain_url
             )
-            if result:
-                return result.markdown
+            arr=[]
+            if result and result[0]:
+                for res in result:
+                    if res:
+                        arr.append(str(res.markdown))
+                return arr
+
