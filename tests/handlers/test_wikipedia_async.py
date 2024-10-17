@@ -1,6 +1,6 @@
 import pytest
 import logging
-from agentx.handler.wikipedia import WikipediaHandler
+from superagentx.handler.wikipedia import WikipediaHandler
 
 logger = logging.getLogger(__name__)
 '''

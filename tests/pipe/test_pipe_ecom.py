@@ -2,16 +2,16 @@ import os
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.ai import AIHandler
-from agentx.handler.ecommerce.amazon import AmazonHandler
-from agentx.handler.ecommerce.flipkart import FlipkartHandler
-from agentx.io import IOConsole
-from agentx.llm import LLMClient
-from agentx.memory import Memory
-from agentx.pipe import AgentXPipe
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.ai import AIHandler
+from superagentx.handler.ecommerce.amazon import AmazonHandler
+from superagentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx.io import IOConsole
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.pipe import AgentXPipe
+from superagentx.prompt import PromptTemplate
 
 '''
  Run Pytest:  

@@ -6,14 +6,14 @@ from rich import print as rprint
 
 sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.ecommerce.amazon import AmazonHandler
-from agentx.handler.ecommerce.flipkart import FlipkartHandler
-from agentx.llm import LLMClient
-from agentx.pipe import AgentXPipe
-from agentx.pipeimpl.iopipe import IOPipe
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.ecommerce.amazon import AmazonHandler
+from superagentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx.llm import LLMClient
+from superagentx.pipe import AgentXPipe
+from superagentx.pipeimpl.iopipe import IOPipe
+from superagentx.prompt import PromptTemplate
 
 
 async def main():

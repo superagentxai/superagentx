@@ -3,9 +3,9 @@ import datetime
 import pytest
 import uuid
 import logging
-from agentx.memory import Memory
-from agentx.llm import LLMClient
-from agentx.llm.models import ChatCompletionParams
+from superagentx.memory import Memory
+from superagentx.llm import LLMClient
+from superagentx.llm.models import ChatCompletionParams
 
 logger = logging.getLogger(__name__)
 

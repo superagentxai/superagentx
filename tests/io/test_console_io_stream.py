@@ -1,7 +1,7 @@
 
 import pytest
-from agentx.io.console import IOConsole
-from agentx.utils.console_color import ConsoleColorType
+from superagentx.io.console import IOConsole
+from superagentx.utils.console_color import ConsoleColorType
 import logging
 logger = logging.getLogger(__name__)
 

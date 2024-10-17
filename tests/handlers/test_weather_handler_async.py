@@ -3,7 +3,7 @@ import logging
 import pytest
 from pandas.core.frame import DataFrame
 
-from agentx.handler.weather import WeatherHandler
+from superagentx.handler.weather import WeatherHandler
 
 logger = logging.getLogger(__name__)
 

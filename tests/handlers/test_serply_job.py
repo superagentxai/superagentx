@@ -1,7 +1,7 @@
 import pytest
 import logging
 
-from agentx.handler.serply_api.serply_job_search import SerplyJobHandler
+from superagentx.handler.serply_api.serply_job_search import SerplyJobHandler
 
 logger = logging.getLogger(__name__)
 

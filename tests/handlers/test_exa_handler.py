@@ -1,6 +1,6 @@
 import os
 
-from agentx.handler.exa_search import ExaHandler
+from superagentx.handler.exa_search import ExaHandler
 from exa_py.api import SearchResponse
 import pytest
 

@@ -6,7 +6,7 @@ from jira.client import ResultList
 from jira.resources import Sprint, Comment
 from requests.models import Response
 
-from agentx.handler.jira import JiraHandler
+from superagentx.handler.jira import JiraHandler
 
 logger = logging.getLogger(__name__)
 
