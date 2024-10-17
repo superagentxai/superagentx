@@ -1,7 +1,7 @@
 from rich.console import Console
 from rich.prompt import Prompt
 
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 
 
 class IOPipe:

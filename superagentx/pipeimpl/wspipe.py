@@ -7,7 +7,7 @@ from json import JSONDecodeError
 from rich.console import Console
 from websockets.asyncio.server import ServerConnection, serve
 
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 
 
 class WSPipe:

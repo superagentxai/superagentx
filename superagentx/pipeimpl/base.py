@@ -1,4 +1,4 @@
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 
 
 class BasePipeImpl:
