@@ -35,5 +35,4 @@ class ScrapeHandler(BaseHandler):
             result = await crawler.arun(
                 url=self.domain_url
             )
-            print(result.markdown)
             return result.markdown
