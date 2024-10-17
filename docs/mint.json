@@ -65,7 +65,15 @@
     },
     {"group" :  "Examples Handlers (Tools)",
       "pages": [
-        "examples/ecommerce",
+        {
+          "group": "E-Commerce",
+          "icon": "code",
+          "pages": [
+            "examples/handlers/ecommerce/amazon",
+            "examples/handlers/ecommerce/flipkart"
+          ]
+        },
+        "examples/handlers/exa",
         "essentials/code",
         "essentials/images",
         "essentials/settings",

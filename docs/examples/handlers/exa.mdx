@@ -1,0 +1,56 @@
+---
+title: 'Exa Search Handler (Tool)'
+icon: 'code'
+---
+
+Exa helps you locate precise content online using embeddings-based search. Its API offers three key features:
+
+>**Page Search:** Find web pages through natural language queries, with an option to use traditional keyword searches if needed. <br /> **Content Extraction:** Access clean, parsed HTML from search results, with the option to focus on relevant sections using the highlights feature. <br /> **Similar Page Discovery:** Input a link to identify and retrieve pages with related content or meaning.
+
+## Exa Handler Test Code
+
+```python exa_handler_test.py
+import os
+from superagentx.handler.exa_search import ExaHandler
+from exa_py.api import SearchResponse
+import pytest
+
+@pytest.fixture
+def exasearch_client_init() -> ExaHandler:
+
+    # Set your API key as an environment variable
+    exa_handler = ExaHandler(api_key=os.getenv("EXA_API_KEY"))
+    return exa_handler
+
+class TestExasearch:
+
+    # Test async exa handler - search_contents method
+    async def test_exa_handler(self, exasearch_client_init: ExaHandler):
+        exa = await exasearch_client_init.search_contents(
+            query="Topics in AI",
+            search_type="auto",
+            use_autoprompt=True,
+            num_results=5,
+         )
+        assert isinstance(exa, SearchResponse)
+
+```
+
+## Output:
+
+```inline output
+INFO     tests.handlers.test_exa_handler:test_exa_handler.py:35 Title: AI on the Web
+URL: https://aima.eecs.berkeley.edu/2nd-ed/ai.html
+ID: http://aima.eecs.berkeley.edu/2nd-ed/ai.html
+Score: 0.19881151616573334
+Published Date: 2006-09-12T00:00:00.000Z
+Author:
+Image: None
+Text: This page links to 849 pages around the web with
+information on Artificial Intelligence. Links in  Bold*  followed by a star are especially useful
+and interesting sites. Links with a + sign at the end have "tooltip"
+information that will pop up if you put your mouse over the link for a
+second or two. If you have new links to add, mail them to peter@norvig.com. We hope you can find
+what you want in one of the following subtopics:
+
+```
