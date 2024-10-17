@@ -17,15 +17,10 @@ class ScrapeHandler(BaseHandler):
         - Processing and storing the scraped content.
     """
 
-    def __dir__(self):
-        return (
-            'scrap_content',
-        )
-
     def __init__(
             self,
             *,
-            domain_url: list
+            domain_url: list[str]
     ):
         self.domain_url = domain_url
 
@@ -43,10 +38,14 @@ class ScrapeHandler(BaseHandler):
             result = await crawler.arun_many(
                 urls=self.domain_url
             )
-            arr=[]
+            contents = []
             if result and result[0]:
                 for res in result:
                     if res:
-                        arr.append(str(res.markdown))
-                return arr
+                        contents.append(str(res.markdown))
+                return contents
 
+    def __dir__(self):
+        return (
+            'scrap_content',
+        )
