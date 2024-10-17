@@ -24,4 +24,4 @@ class TestScrap:
 
     async def test_scrap_content(self, weather_client_init: ScrapeHandler):
         res = await weather_client_init.scrap_content()
-        assert isinstance(res, object)
+        assert isinstance(res, str)
