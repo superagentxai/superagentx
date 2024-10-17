@@ -11,7 +11,7 @@ from superagentx.agent.engine import Engine
 from superagentx.handler.ecommerce.amazon import AmazonHandler
 from superagentx.handler.ecommerce.flipkart import FlipkartHandler
 from superagentx.llm import LLMClient
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.pipeimpl.iopipe import IOPipe
 from superagentx.prompt import PromptTemplate
 

@@ -6,7 +6,7 @@ from superagentx.agent.agent import Agent
 from superagentx.agent.engine import Engine
 from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
