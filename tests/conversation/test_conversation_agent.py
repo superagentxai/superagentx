@@ -1,4 +1,3 @@
-import datetime
 import logging
 import uuid
 from enum import Enum
@@ -54,17 +53,21 @@ class TestConversationAgent:
             messages=message
         )
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
-        result = response.choices[0].message.content
-        return result
+        return response.choices[0].message.content
 
     @staticmethod
     async def _get_history(query: str, memory_id: str, chat_id: str, memory_client: Memory) -> list[dict]:
-        response = await memory_client.search(
-            query=query,
+        response = await memory_client.get(
             memory_id=memory_id,
             chat_id=chat_id
         )
-        return response
+        return [
+            {
+                "role": message.get("role"),
+                "content": message.get("data")
+            }
+            async for message in iter_to_aiter(response)
+        ]
 
     async def test_conversation_agent(self, clients_init: dict):
         io_console: IOConsole = clients_init.get("io_console")
@@ -88,9 +91,9 @@ class TestConversationAgent:
             await memory_client.add(
                 memory_id=memory_id,
                 chat_id=chat_id,
-                message_id=str(uuid.uuid4().hex),
+                message_id=uuid.uuid4().hex,
                 role=RoleEnum.USER,
-                message=user_input
+                data=user_input
             )
             get_message = await self._get_history(user_input, memory_id, chat_id, memory_client)
             logger.info(f"Before LLM: {get_message}")
@@ -100,7 +103,7 @@ class TestConversationAgent:
                 chat_id=chat_id,
                 message_id=str(uuid.uuid4().hex),
                 role=RoleEnum.ASSISTANT,
-                message=llm_res
+                data=llm_res
             )
             if user_input in exit_conditions:
                 break

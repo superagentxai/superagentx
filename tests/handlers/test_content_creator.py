@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
 
-   1.pytest --log-cli-level=INFO tests/handlers/test_content_creator_async.py::TestContentCreator::test_text_content_creator
+   1.pytest --log-cli-level=INFO tests/handlers/test_content_creator.py::TestContentCreator::test_text_content_creator
 
 '''
 

@@ -47,8 +47,7 @@ class Memory(MemoryBase):
     @final
     async def get(self, *args, **kwargs):
         async with self.db as db:
-            await db.get_history(*args, **kwargs)
-        return self.vector_db.search(*args, **kwargs)
+            return await db.get_history(*args, **kwargs)
 
     @final
     async def update(self, memory_id, data):
@@ -109,7 +108,7 @@ class Memory(MemoryBase):
             "chat_id",
             "role",
             "message_id",
-            "message",
+            "data",
             "created_at",
             "updated_at",
         }
@@ -118,7 +117,7 @@ class Memory(MemoryBase):
             {
                 **MemoryItem(
                     id=mem.id,
-                    memory=mem.payload["message"],
+                    memory=mem.payload["data"],
                     role=mem.payload["role"],
                     created_at=mem.payload.get("created_at"),
                     updated_at=mem.payload.get("updated_at"),
@@ -143,7 +142,7 @@ class Memory(MemoryBase):
             chat_id: str,
             message_id: str,
             role: str | Enum,
-            message: str,
+            data: str,
             created_at: datetime.datetime | None = None,
             updated_at: datetime.datetime | None = None,
             is_deleted: bool = False,
@@ -154,7 +153,7 @@ class Memory(MemoryBase):
         if not updated_at:
             updated_at = datetime.datetime.now()
         metadata["memory_id"] = memory_id
-        metadata["message"] = message
+        metadata["data"] = data
         metadata["chat_id"] = chat_id
         metadata["message_id"] = message_id
         metadata["role"] = role
@@ -162,7 +161,7 @@ class Memory(MemoryBase):
         metadata["updated_at"] = str(updated_at)
         metadata["is_deleted"] = is_deleted
         await self.vector_db.insert(
-            texts=[message],
+            texts=[data],
             payloads=metadata,
             ids=[message_id]
         )
