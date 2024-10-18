@@ -47,6 +47,7 @@ protobuf = "3.20.3"
 crawl4ai = "^0.3.6"
 hubspot-api-client = "^10.0.0"
 atlassian-python-api = "^3.41.16"
+wikipedia-api = "^0.7.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
