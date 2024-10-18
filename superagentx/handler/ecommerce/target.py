@@ -1,7 +1,7 @@
 import aiohttp
 import logging
 
-from agentx.handler.base import BaseHandler
+from superagentx.handler.base import BaseHandler
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class TargetHandler(BaseHandler):
             self,
             *,
             api_key: str,
-            top_items: int = 1
+            top_items: int | None = None
     ):
         self.api_key = api_key
         self.top_items = top_items
@@ -45,6 +45,23 @@ class TargetHandler(BaseHandler):
             *,
             query: str
     ):
+
+        """
+        Searches for products on Target based on the given keyword.
+
+        This method allows you to find products on Target by using a search term such as
+        "blender" or "smartphone." It retrieves a list of items that match your query, along
+        with key product details like the product name, price, ratings, availability, and
+        customer reviews.
+
+        Args:
+            query (str): The word or phrase you want to search for on Target.
+
+        Returns:
+            A list of products that match your search term, including information such as
+            product name, price, ratings, and other relevant details.
+        """
+
         _endpoint = f"product_search"
         params = {
             "store_id": "1122",
