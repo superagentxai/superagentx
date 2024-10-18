@@ -3,7 +3,7 @@ name = "superagentx"
 version = "0.1.0"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 authors = [
-    {name="SuperAgentX AI", email="prabhu@decisionfacts.io"}
+    "SuperAgentX AI <prabhu@decisionfacts.io>"
 ]
 readme = "README.md"
 
