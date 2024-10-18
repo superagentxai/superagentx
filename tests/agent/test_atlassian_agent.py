@@ -36,13 +36,17 @@ class TestAtlassianAgent:
             agent_client_init: dict
     ):
         llm_client: LLMClient = agent_client_init.get('llm')
-        jira_handler = JiraHandler()
+        jira_handler = JiraHandler(
+            email=os.getenv('ATLASSIAN_EMAIL'),
+            token=os.getenv('ATLASSIAN_TOKEN'),
+            organization=os.getenv('ATLASSIAN_ORGANIZATION')
+        )
 
-        # confluence_handler = ConfluenceHandler(
-        #     email=os.getenv('ATLASSIAN_EMAIL'),
-        #     token=os.getenv('ATLASSIAN_TOKEN'),
-        #     organization=os.getenv('ATLASSIAN_ORGANIZATION'),
-        # )
+        confluence_handler = ConfluenceHandler(
+            email=os.getenv('ATLASSIAN_EMAIL'),
+            token=os.getenv('ATLASSIAN_TOKEN'),
+            organization=os.getenv('ATLASSIAN_ORGANIZATION'),
+        )
         prompt_template = PromptTemplate()
         jira_engine = Engine(
             handler=jira_handler,
@@ -50,22 +54,23 @@ class TestAtlassianAgent:
             prompt_template=prompt_template
         )
 
-        # confluence_engine = Engine(
-        #     handler=confluence_handler,
-        #     llm=llm_client,
-        #     prompt_template=prompt_template
-        # )
+        confluence_engine = Engine(
+            handler=confluence_handler,
+            llm=llm_client,
+            prompt_template=prompt_template
+        )
         memory = Memory()
         jira_agent = Agent(
             goal="Get a proper answer for asking a question in Jira.",
-            role="You are the Atlassian Admin",
+            role="You are the Jira admin",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[jira_engine],
+            engines=[jira_engine, confluence_engine],
             memory=memory
         )
 
         result = await jira_agent.execute(
-            query_instruction="Get me the list of projects in jira"
+            query_instruction="Give me the list of projects"
         )
+        logger.info(f"Result => {result}")
         assert result
