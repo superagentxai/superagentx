@@ -88,7 +88,10 @@ class WSPipe:
             if pipe_result:
                 goal_result = pipe_result[-1]
                 if r_as_json:
-                    result = goal_result.model_dump_json(exclude={'name', 'agent_id'})
+                    result = goal_result.model_dump_json(
+                        exclude={'name', 'agent_id'},
+                        exclude_none=True
+                    )
                 else:
                     result = (
                         f'\nResult:\n{json.dumps(goal_result.result)}\n'
