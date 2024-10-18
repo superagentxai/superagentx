@@ -2,6 +2,10 @@ from wikipediaapi import Wikipedia, WikipediaPage
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.wikipedia.exceptions import InvalidAction
 
+import logging
+import re
+logger = logging.getLogger(__name__)
+
 
 class WikipediaHandler(BaseHandler):
     """
@@ -27,9 +31,11 @@ class WikipediaHandler(BaseHandler):
             query (str | None, optional): The search query to retrieve relevant information. Defaults to None.
         """
         page = await self._get_wikipedia_page(query=query)
-        return page.summary if page else None
+        summary = re.escape(page.summary)
+        logger.debug(f"Page Summary => {page.summary}")
+        return summary if page else None
 
     def __dir__(self):
         return (
-            'get_summary'
+            'get_summary',
         )

@@ -2,7 +2,9 @@
 name = "superagentx"
 version = "0.1.0"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
-authors = ["SuperAgentX AI <prabhu@decisionfacts.io>"]
+authors = [
+    "SuperAgentX AI <prabhu@decisionfacts.io>"
+]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -42,6 +44,7 @@ google-api-python-client = "^2.147.0"
 aiohttp = "^3.10.8"
 rich = "^13.9.2"
 protobuf = "3.20.3"
+crawl4ai = "^0.3.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
