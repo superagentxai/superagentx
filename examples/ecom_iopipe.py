@@ -11,12 +11,15 @@ from superagentx.agent.engine import Engine
 from superagentx.handler.ecommerce.amazon import AmazonHandler
 from superagentx.handler.ecommerce.flipkart import FlipkartHandler
 from superagentx.llm import LLMClient
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.pipeimpl.iopipe import IOPipe
 from superagentx.prompt import PromptTemplate
 
 
 async def main():
+    """
+    Launches the e-commerce pipeline console client for processing requests and handling data.
+    """
     llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)

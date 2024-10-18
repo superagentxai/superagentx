@@ -9,6 +9,9 @@ from superagentx.utils.helper import sync_to_async
 
 
 async def ecom_pipe_cli():
+    """
+    Launches the e-commerce pipeline websocket client for processing requests and handling data.
+    """
 
     uri = "ws://localhost:8765"
     rprint(f'[bold blue]{10*'-'}Superagentx Ecom Websocket Cli{10*'-'}')
