@@ -4,7 +4,7 @@ from hubspot import HubSpot
 from hubspot.crm.contacts import SimplePublicObjectInputForCreate, ApiException, PublicObjectSearchRequest
 
 from superagentx.handler.base import BaseHandler
-from superagentx.handler.jira import AuthException
+from superagentx.handler.atlassian.exceptions import AuthException
 from superagentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
