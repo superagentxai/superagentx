@@ -5,6 +5,8 @@ import uuid
 from json import JSONDecodeError
 from typing import Literal, Any
 
+import yaml
+
 from superagentx.agent.engine import Engine
 from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
@@ -207,6 +209,19 @@ class Agent:
             limit=10,
         )
 
+    @staticmethod
+    async def _pre_result(
+            results: list[GoalResult] | None = None
+    ) -> list[str]:
+        if not results:
+            return []
+        return [
+            (f'Reason: {result.reason}\n'
+             f'Result: \n{yaml.dump(result.result)}\n'
+             f'Is Goal Satisfied: {result.is_goal_satisfied}\n\n')
+            async for result in iter_to_aiter(results)
+        ]
+
     async def _verify_goal(
             self,
             *,
@@ -332,9 +347,10 @@ class Agent:
             )
             if _goal_result.is_goal_satisfied:
                 if self.memory:
+                    result_construct = await self._pre_result([_goal_result])
                     assistant = {
                         "role": "assistant",
-                        "content": _goal_result.reason
+                        "content": result_construct[0]
                     }
                     await self.add_memory([assistant])
                 return _goal_result
