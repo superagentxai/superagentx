@@ -147,7 +147,7 @@ class AgentXPipe:
                 the query instruction. Each GoalResult provides details about the success or failure of the
                 corresponding operation and may include additional context or data.
         """
-        logger.info(f"PIPe {self.name} starting...")
+        logger.info(f"Pipe {self.name} starting...")
         return await self._flow(
             query_instruction=query_instruction
         )
