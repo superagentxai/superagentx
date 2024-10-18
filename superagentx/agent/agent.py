@@ -228,8 +228,7 @@ class Agent:
             old_memory = await self.retrieve_memory(query_instruction)
             if old_memory:
                 chat_completion_params = ChatCompletionParams(
-                    messages=messages + old_memory,
-                    response_format={"type": "json_object"}
+                    messages=messages + old_memory
                 )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
