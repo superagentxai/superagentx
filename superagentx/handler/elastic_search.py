@@ -6,7 +6,6 @@ from elastic_transport import NodeConfig
 from elasticsearch import AsyncElasticsearch
 
 from superagentx.handler.base import BaseHandler
-from superagentx.handler.elastic_search.exceptions import InvalidElasticsearchAction
 
 logger = logging.getLogger(__name__)
 
