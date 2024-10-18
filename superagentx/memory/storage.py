@@ -69,7 +69,7 @@ class SQLiteManager:
                 created_at DATETIME,
                 updated_at DATETIME,
                 role TEXT,
-                message TEXT,
+                data TEXT,
                 is_deleted BOOLEAN
             )
         """
@@ -77,6 +77,7 @@ class SQLiteManager:
 
     async def get_history(
             self,
+            *,
             memory_id: str,
             chat_id: str
     ):
@@ -91,9 +92,9 @@ class SQLiteManager:
         """
         cursor = await self.connection.execute(
             """
-            SELECT id, memory_id, chat_id, message_id, role, message, created_at, updated_at, is_deleted
+            SELECT id, memory_id, chat_id, message_id, role, data, created_at, updated_at, is_deleted
             FROM history
-            WHERE user_id = ? AND chat_id = ?
+            WHERE memory_id = ? AND chat_id = ?
             ORDER BY created_at ASC
         """,
             (memory_id, chat_id),
@@ -107,7 +108,7 @@ class SQLiteManager:
                     "chat_id": row[2],
                     "message_id": row[3],
                     "role": row[4],
-                    "message": row[5],
+                    "data": row[5],
                     "created_at": row[6],
                     "updated_at": row[7],
                     "is_deleted": row[8]
@@ -132,7 +133,7 @@ class SQLiteManager:
         """
         cursor = await self.connection.execute(
                 """
-                SELECT id, memory_id, chat_id, message_id, role, message, created_at, updated_at, is_deleted
+                SELECT id, memory_id, chat_id, message_id, role, data, created_at, updated_at, is_deleted
                 FROM history
                 WHERE memory_id = ?
                 ORDER BY updated_at ASC
@@ -157,7 +158,7 @@ class SQLiteManager:
             chat_id: str,
             message_id: str,
             role: str | Enum,
-            message: str,
+            data: str,
             created_at: datetime.datetime | None = None,
             updated_at: datetime.datetime | None = None,
             is_deleted: bool = False,
@@ -178,7 +179,7 @@ class SQLiteManager:
                 A unique identifier for the message being added to the history.
             role : str or Enum
                 The role of the user sending the message (e.g., "user", "assistant").
-            message : str                event TEXT,
+            data : str                event TEXT,
 
                 The actual message content to be stored.
             created_at : datetime, optional
@@ -194,16 +195,16 @@ class SQLiteManager:
             updated_at = datetime.datetime.now()
         await self.connection.execute(
             """
-            INSERT INTO history (id, memory_id, chat_id, message_id, role, message, created_at, updated_at, is_deleted)
+            INSERT INTO history (id, memory_id, chat_id, message_id, role, data, created_at, updated_at, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                str(uuid.uuid4()),
+                uuid.uuid4().hex,
                 memory_id,
                 chat_id,
                 message_id,
                 role,
-                message,
+                data,
                 created_at,
                 updated_at,
                 is_deleted

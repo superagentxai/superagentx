@@ -24,23 +24,34 @@ class Engine:
             tools: list[dict] | list[str] | None = None,
             output_parser: BaseParser | None = None
     ):
+        """
+        Initializes a new instance of the Engine class.
+
+        This wraps BaseHandler implementation(s) and helps to trigger the handlers using llm and given prompt
+
+        Args:
+            handler: Implementation of `BaseHandler`, it method(s) will be executed based on the given prompts
+            llm: Interface for communicating with the large language model (LLM).
+            prompt_template: Defines the structure and format of prompts sent to the LLM using `PromptTemplate`.
+            tools: List of handler method names (as dictionaries or strings) available for use during interactions.
+                Defaults to `None`. If nothing provide `Engine` will get it dynamically using `dir(handler)`.
+            output_parser: An optional parser to format and process the handler tools output. Defaults to `None`.
+        """
         self.handler = handler
         self.llm = llm
         self.prompt_template = prompt_template
         self.tools = tools
         self.output_parser = output_parser
 
-    async def __funcs_props(self, funcs: list[str] | list[dict]) -> list[dict]:
+    async def __funcs_props(
+            self,
+            funcs: list[str]
+    ) -> list[dict]:
         _funcs_props: list[dict] = []
         async for _func_name in iter_to_aiter(funcs):
-            _func = None
-            if isinstance(_func_name, str):
-                _func_name = _func_name.split('.')[-1]
-                _func = getattr(self.handler, _func_name)
-                logger.debug(f"Func Name => {_func_name}, Func => {_func}")
-            else:
-                # TODO: Needs to fix this for tools contains list of dict
-                pass
+            _func_name = _func_name.split('.')[-1]
+            _func = getattr(self.handler, _func_name)
+            logger.debug(f"Func Name => {_func_name}, Func => {_func}")
             if inspect.ismethod(_func) or inspect.isfunction(_func):
                 logger.debug(f"{_func_name} is function!")
                 _funcs_props.append(await self.llm.get_tool_json(func=_func))
@@ -65,7 +76,21 @@ class Engine:
             pre_result: str | None = None,
             **kwargs
     ) -> list[typing.Any]:
+        """
+        Initiates a process using the given input prompt and optional pre-processing result.
 
+        Args:
+            input_prompt: The input string to initiate the process. This could be a query, command, or instruction
+                 based on the context.
+            pre_result: An optional pre-computed result or state to be used during the execution.
+                Defaults to `None` if not provided.
+            kwargs: Additional keyword arguments to update the `input_prompt` dynamically.
+
+        Returns:
+            list[typing.Any]
+                A list of results generated during the process. The content and
+                structure of the list depend on the implementation details.
+        """
         if pre_result:
             input_prompt = f'{input_prompt}\n\n{pre_result}'
 

@@ -5,7 +5,7 @@ from superagentx.visualization import Visualize
 '''
  Run Pytest:  
 
-  1.pytest --log-cli-level=INFO tests/handlers/test_visualization_async.py::TestVisualization::test_visualization
+  1.pytest --log-cli-level=INFO tests/handlers/test_visualization.py::TestVisualization::test_visualization
 
 '''
 

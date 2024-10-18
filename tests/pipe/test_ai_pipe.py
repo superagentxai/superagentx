@@ -6,7 +6,7 @@ from superagentx.agent.agent import Agent
 from superagentx.agent.engine import Engine
 from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
@@ -181,7 +181,8 @@ class TestIOConsolePipe:
         scriptwriter = Agent(
             name='Scriptwriter Agent',
             goal="Turn a conversation into a movie script. Only write the dialogue parts. "
-                 "Do not start the sentence with an action. Do not specify situational descriptions. Do not write parentheticals.",
+                 "Do not start the sentence with an action. Do not specify situational descriptions. Do not write "
+                 "parentheticals.",
             role="scriptwriter",
             llm=llm_client,
             prompt_template=prompt_template,
