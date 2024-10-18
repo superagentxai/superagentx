@@ -20,9 +20,16 @@ class ScrapeHandler(BaseHandler):
     def __init__(
             self,
             *,
-            domain_url: list[str]
+            domain_urls: list[str]
     ):
-        self.domain_url = domain_url
+        """
+        Initializes a new instance of the ScrapeHandler class.
+
+        Args:
+            domain_urls (list[str]): A list of domain URLs to be scraped.
+        
+        """
+        self.domain_url = domain_urls
 
     async def scrap_content(self):
 
