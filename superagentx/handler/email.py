@@ -7,8 +7,11 @@ from email.mime.text import MIMEText
 from ssl import SSLContext
 
 from superagentx.handler.base import BaseHandler
-from superagentx.handler.email.exceptions import SendEmailFailed, InvalidEmailAction
 from superagentx.utils.helper import sync_to_async
+
+
+class SendEmailFailed(Exception):
+    pass
 
 
 class EmailHandler(BaseHandler):
@@ -121,5 +124,5 @@ class EmailHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            "send_email"
+            "send_email",
         )

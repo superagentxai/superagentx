@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import uuid
+from json import JSONDecodeError
 from typing import Literal, Any
 
 from superagentx.agent.engine import Engine
@@ -228,8 +229,7 @@ class Agent:
             old_memory = await self.retrieve_memory(query_instruction)
             if old_memory:
                 chat_completion_params = ChatCompletionParams(
-                    messages=messages + old_memory,
-                    response_format={"type": "json_object"}
+                    messages=messages + old_memory
                 )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
@@ -241,12 +241,30 @@ class Agent:
                     _res = choice.message.content
                     _res = _res.replace('```json', '')
                     _res = _res.replace('```', '')
-                    _res = json.loads(_res)
-                    return GoalResult(
-                        name=self.name,
-                        agent_id=self.agent_id,
-                        **_res
-                    )
+                    try:
+                        __res = json.loads(_res)
+                        return GoalResult(
+                            name=self.name,
+                            agent_id=self.agent_id,
+                            **__res
+                        )
+                    except JSONDecodeError as ex:
+                        _msg = 'Cannot parse verify goal content!'
+                        logger.error(_msg, exc_info=ex)
+                        return GoalResult(
+                            name=self.name,
+                            agent_id=self.agent_id,
+                            content=_res,
+                            error=_msg,
+                            is_goal_satisfied=False
+                        )
+        else:
+            return GoalResult(
+                name=self.name,
+                agent_id=self.agent_id,
+                error='No results found!',
+                is_goal_satisfied=False
+            )
 
     async def _execute(
             self,

@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from rich import print as rprint
 from rich.prompt import Prompt
@@ -19,7 +20,7 @@ async def ecom_pipe_cli():
     async with connect(uri) as websocket:
         while True:
             query = await sync_to_async(Prompt.ask, '\n[bold green]Enter your search here')
-            await websocket.send(query)
+            await websocket.send(json.dumps({'query': query}))
             res = await websocket.recv()
             rprint(f'{res}')
 
