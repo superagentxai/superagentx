@@ -27,20 +27,21 @@ class TestElasticsearch:
 
     # Test async elasticsearch handler - search method
     async def test_elasticsearch_search(self, elasticsearch_client_init: ElasticsearchHandler):
-        elasticsearch = await elasticsearch_client_init.handle(action="search",
-                                                               index_name="index_name",
-                                                               )
+        elasticsearch = await elasticsearch_client_init.search(
+            index_name="index_name",
+            query={"match_all": {}}
+        )
         assert isinstance(elasticsearch, object)
 
     # Test async elasticsearch handler - create method
     async def test_elasticsearch_create(self, elasticsearch_client_init: ElasticsearchHandler):
-        elasticsearch = await elasticsearch_client_init.handle(action="create",
-                                                               index_name="python_test1",
-                                                               document_id="python1",
-                                                               document={
-                                                                   "@timestamp": "2099-11-15T13:12:00",
-                                                                   "message": "GET /search HTTP/1.1 200 1070000",
-                                                               },
+        elasticsearch = await elasticsearch_client_init.create(
+            index_name="python_test1",
+            document_id="python1",
+            document={
+                "@timestamp": "2099-11-15T13:12:00",
+                "message": "GET /search HTTP/1.1 200 1070000",
+            },
 
-                                                               )
+        )
         assert isinstance(elasticsearch, object)

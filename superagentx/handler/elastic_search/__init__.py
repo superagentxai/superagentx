@@ -11,10 +11,6 @@ from superagentx.handler.elastic_search.exceptions import InvalidElasticsearchAc
 
 logger = logging.getLogger(__name__)
 
-class ElasticsearchAction(StrEnum):
-    SEARCH = "search"
-    CREATE = "create"
-
 
 class ElasticsearchHandler(BaseHandler):
     """
