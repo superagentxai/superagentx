@@ -221,6 +221,7 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
+        logger.debug(f'Initial Prompt Message =>\n{prompt_message}')
         messages = prompt_message
         chat_completion_params = ChatCompletionParams(
             messages=messages
