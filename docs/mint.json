@@ -65,15 +65,25 @@
     },
     {"group" :  "Examples Handlers (Tools)",
       "pages": [
-        {
-          "group": "E-Commerce",
+         {
+          "group": "AWS",
           "icon": "code",
           "pages": [
-            "examples/handlers/ecommerce/amazon",
-            "examples/handlers/ecommerce/flipkart"
+            "examples/handlers/aws/s3"
+          ]
+        },
+        "examples/handlers/content_creator",
+        {
+          "group": "E-Commerce Handler",
+          "icon": "code",
+          "pages": [
+            "examples/handlers/E-commerce/amazon",
+            "examples/handlers/E-commerce/flipkart"
           ]
         },
         "examples/handlers/exa",
+        "examples/handlers/elastic",
+        "examples/handlers/email",
         "essentials/code",
         "essentials/images",
         "essentials/settings",

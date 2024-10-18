@@ -1,0 +1,51 @@
+---
+title: 'Content Creator(Tool)'
+icon: 'code'
+---
+
+These tools enable creators to produce, enhance, and automate content across multiple platforms.
+LLMs play a crucial role in streamlining workflows, increasing efficiency, and delivering personalized
+experiences to audiences.
+
+```python content_creator_handler_test.py
+import asyncio
+
+from superagentx.handler.ai import AIHandler
+from superagentx.llm import LLMClient
+
+async def content_creator_init():
+    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+
+    llm_client: LLMClient = LLMClient(llm_config=llm_config)
+    content_creator_handler = AIHandler(
+        llm=llm_client
+    )
+    return content_creator_handler
+
+async def content_creator(instruction):
+    handler_object = await content_creator_init()
+    result = await handler_object.text_creation(instruction=instruction)
+    return result.choices[0].message.content
+
+instruction = input("Enter Instruction: ")
+asyncio.run(content_creator(instruction))
+
+```
+
+## Output:
+```inline output
+Enter Instruction: create robusting content
+Out[1]: 'Creating compelling and robust content requires attention to detail, creativity, and strategy.
+Whether you\'re creating content for a blog, social media, a website, or any other platform, here are
+some key steps to help you produce effective content:\n\n### 1. **Understand Your Audience**\n   -
+**Research:** Know who your audience is. What are their needs, preferences, and challenges? Use surveys,
+social media listening tools, and analytics to gather insights.\n   - **Personas:** Develop buyer or reader
+personas to better target your content.\n\n### 2. **Define Your Goals**\n   - What do you want to achieve with
+your content? Goals could include increasing brand awareness, generating leads, educating your audience, or
+building community engagement.\n\n### 3. **Choose the Right Format**\n   - Depending on your audience and goals,
+decide on the best format. Options include blog posts, videos, infographics, podcasts, and more.\n   -
+Consider multimedia formats to increase engagement and appeal to different learning styles.\n\n###
+4. **Craft Compelling Headlines**\n   - Your headline is often the first impression. Make it catchy, intriguing,
+and clear to draw in readers.\n\n###
+
+```

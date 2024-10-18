@@ -1,0 +1,31 @@
+---
+title: 'Amazon (Tool)'
+icon: 'code'
+---
+
+Amazon.in is the leading online shopping platform in India, attracting more customers than ever before.
+Serviceable pin codes across the country, it has become the go-to marketplace for small and medium-sized enterprises.
+
+## Amazon Test Code
+
+```python amazon_handler_test.py
+import asyncio
+import os
+from superagentx.handler.ecommerce.amazon import AmazonHandler
+
+async def search(query):
+    amazon = AmazonHandler(
+            api_key=os.getenv("RAPID_API_KEY"),
+            country="IN"
+        )
+    result = await amazon_client_init.product_search(query=query)
+    return result
+
+query = input("Enter Query: ")
+asyncio.run(search(query))
+
+```
+## Output:
+
+```inline output
+```
