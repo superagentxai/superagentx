@@ -27,7 +27,7 @@ class AWSS3Handler(BaseHandler):
         self.bucket_name = bucket_name
         self.region = region_name
         self._storage = boto3.client(
-           's3',
+            's3',
             region_name=self.region,
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key
@@ -69,10 +69,10 @@ class AWSS3Handler(BaseHandler):
             object_name = file_name
         try:
             await sync_to_async(self._storage.upload_file,
-                Filename=file_name,
-                Bucket=self.bucket_name,
-                Key=object_name
-            )
+                                Filename=file_name,
+                                Bucket=self.bucket_name,
+                                Key=object_name
+                                )
             logger.info(f"File '{file_name}' uploaded to '{self.bucket_name}/{object_name}'.")
         except (FileNotFoundError, NoCredentialsError, ClientError) as ex:
             _msg = f'File {file_name} upload failed!'
@@ -97,16 +97,15 @@ class AWSS3Handler(BaseHandler):
             file_name = object_name
         try:
             await sync_to_async(self._storage.download_file,
-                Bucket=self.bucket_name,
-                Key=object_name,
-                Filename=file_name
-            )
+                                Bucket=self.bucket_name,
+                                Key=object_name,
+                                Filename=file_name
+                                )
             logger.info(f"File '{file_name}' downloaded from '{self.bucket_name}/{object_name}'.")
         except (NoCredentialsError, ClientError) as ex:
             _msg = f'File {file_name} download failed!'
             logger.error(_msg, exc_info=ex)
             raise FileDownloadFailed(ex)
-
 
     def __dir__(self):
         return (

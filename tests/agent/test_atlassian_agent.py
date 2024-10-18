@@ -3,12 +3,13 @@ import os
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.atlassian.jira import JiraHandler
-from agentx.handler.atlassian.confluence import ConfluenceHandler
-from agentx.llm import LLMClient
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.atlassian.jira import JiraHandler
+from superagentx.handler.atlassian.confluence import ConfluenceHandler
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -30,19 +31,18 @@ def agent_client_init() -> dict:
 
 class TestAtlassianAgent:
 
-    async def test_atlassian_agent(self, agent_client_init: dict):
+    async def test_atlassian_agent(
+            self,
+            agent_client_init: dict
+    ):
         llm_client: LLMClient = agent_client_init.get('llm')
-        jira_handler = JiraHandler(
-            email=os.getenv('JIRA_EMAIL'),
-            token=os.getenv('JIRA_TOKEN'),
-            organization=os.getenv('JIRA_ORGANIZATION'),
-        )
+        jira_handler = JiraHandler()
 
-        confluence_handler = ConfluenceHandler(
-            email=os.getenv('JIRA_EMAIL'),
-            token=os.getenv('JIRA_TOKEN'),
-            organization=os.getenv('JIRA_ORGANIZATION'),
-        )
+        # confluence_handler = ConfluenceHandler(
+        #     email=os.getenv('ATLASSIAN_EMAIL'),
+        #     token=os.getenv('ATLASSIAN_TOKEN'),
+        #     organization=os.getenv('ATLASSIAN_ORGANIZATION'),
+        # )
         prompt_template = PromptTemplate()
         jira_engine = Engine(
             handler=jira_handler,
@@ -55,16 +55,17 @@ class TestAtlassianAgent:
         #     llm=llm_client,
         #     prompt_template=prompt_template
         # )
+        memory = Memory()
         jira_agent = Agent(
             goal="Get a proper answer for asking a question in Jira.",
-            role="You are the JIRA admin",
+            role="You are the Atlassian Admin",
             llm=llm_client,
             prompt_template=prompt_template,
-
-            engines=[jira_engine]
+            engines=[jira_engine],
+            memory=memory
         )
 
         result = await jira_agent.execute(
-            query_instruction="Give me the list of projects"
+            query_instruction="Get me the list of projects in jira"
         )
         assert result

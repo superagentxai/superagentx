@@ -1,11 +1,12 @@
 import logging
+import os
 from typing import Any
 
 from jira import JIRA, Project
 
-from agentx.handler.base import BaseHandler
-from agentx.handler.atlassian.exceptions import SprintException, AuthException, ProjectException, TaskException
-from agentx.utils.helper import sync_to_async, iter_to_aiter
+from superagentx.handler.base import BaseHandler
+from superagentx.handler.atlassian.exceptions import SprintException, AuthException, ProjectException, TaskException
+from superagentx.utils.helper import sync_to_async, iter_to_aiter
 
 logger = logging.getLogger(__name__)
 
@@ -20,13 +21,13 @@ class JiraHandler(BaseHandler):
     def __init__(
             self,
             *,
-            email: str,
-            token: str,
-            organization: str
+            email: str | None = None,
+            token: str | None = None,
+            organization: str | None = None,
     ):
-        self.email = email
-        self.token = token
-        self.organization = organization
+        self.email = email or os.getenv('ATLASSIAN_EMAIL')
+        self.token = token or os.getenv('ATLASSIAN_TOKEN')
+        self.organization = organization or os.getenv('ATLASSIAN_ORGANIZATION')
         self._connection: JIRA = self._connect()
 
     def _connect(self) -> JIRA:
@@ -35,14 +36,14 @@ class JiraHandler(BaseHandler):
                 server=f'https://{self.organization}.atlassian.net',
                 basic_auth=(self.email, self.token)
             )
-            logger.debug("Authenticate Success")
+            logger.info("Authenticate Success")
             return jira
         except Exception as ex:
             message = f'JIRA Handler Authentication Problem {ex}'
             logger.error(message, exc_info=ex)
             raise AuthException(message)
 
-    async def active_sprint_list_projects(
+    async def get_list_projects(
             self
     ):
         """
@@ -398,7 +399,7 @@ class JiraHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            'active_sprint_list_projects',
+            'get_list_projects',
             'get_active_sprint',
             'create_sprint',
             'get_issue',
