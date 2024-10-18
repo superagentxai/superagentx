@@ -1,8 +1,6 @@
 from exa_py import Exa
 
 from superagentx.handler.base import BaseHandler
-from superagentx.handler.exa_search.exceptions import InvalidExaAction
-from superagentx.handler.exa_search.exceptions import InvalidExaAction
 from superagentx.utils.helper import sync_to_async
 
 
@@ -17,9 +15,7 @@ class ExaHandler(BaseHandler):
             self,
             api_key: str
     ):
-
         self.exa = Exa(api_key=api_key)
-
 
     async def search_contents(
             self,
@@ -59,5 +55,5 @@ class ExaHandler(BaseHandler):
 
     def __dir__(self):
         return (
-            'search_contents'
+            'search_contents',
         )
