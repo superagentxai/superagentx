@@ -258,6 +258,13 @@ class Agent:
                             error=_msg,
                             is_goal_satisfied=False
                         )
+        else:
+            return GoalResult(
+                name=self.name,
+                agent_id=self.agent_id,
+                error='No results found!',
+                is_goal_satisfied=False
+            )
 
     async def _execute(
             self,
