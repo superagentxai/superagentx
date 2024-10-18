@@ -13,7 +13,7 @@ from pydantic import typing
 
 from superagentx.llm.client import Client
 from superagentx.llm.models import ChatCompletionParams, Message
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, ptype_to_json_scheme
 from superagentx.utils.helper import sync_to_async
 
 import logging
@@ -64,7 +64,6 @@ class BedrockClient(Client):
             if tools:
                 messages = chat_completion_params.messages
                 conversations = self._construct_message(messages)
-
                 tools_config = {"tools": tools}
 
                 try:
@@ -126,12 +125,14 @@ class BedrockClient(Client):
 
             if tools:
                 messages = chat_completion_params.messages
+                logger.debug(f"Bedrock Message {messages} ")
                 conversations = await sync_to_async(
                     self._construct_message,
                     messages
                 )
 
                 tools_config = {"tools": tools}
+                logger.debug(f"Bedrock Conversation {conversations}")
 
                 try:
                     # Convert from synchronous to asynchronous mode and invoke Bedrock client!
@@ -142,6 +143,7 @@ class BedrockClient(Client):
                         inferenceConfig=inference_config,
                         toolConfig=tools_config,
                     )
+                    logger.debug(f"Bedrock Response {response}")
                 except Exception as e:
                     raise RuntimeError(f"Failed to get response from Bedrock: {e}")
 
@@ -153,6 +155,7 @@ class BedrockClient(Client):
                     model_id=model_id,
                     is_async=True
                 )
+                logger.info(f"Bedrock Message {chat_completion} ")
                 return chat_completion
 
     @staticmethod
@@ -238,7 +241,7 @@ class BedrockClient(Client):
         async for param, param_type in iter_to_aiter(_type_hints.items()):
             if param != 'return':
                 _properties[param] = {
-                    "type": param_type.__name__,
+                    "type": await ptype_to_json_scheme(param_type.__name__),
                     "description": f"The {param.replace('_', ' ')}."
                 }
         return {
@@ -314,16 +317,15 @@ class BedrockClient(Client):
                 List: List of messages in the format of bedrock runtime!
         """
         formatted_messages = []
-        message = {}
+
         for conversation in messages:
+            message = {}
             role = conversation.role
             if role == 'user':
                 message['role'] = 'user'
                 message['content'] = [{'text': conversation.content}]
-            else:
-                message['role'] = role
-                message['content'] = conversation.content
-            formatted_messages.append(message)
+                formatted_messages.append(message)
+
         return formatted_messages
 
     @staticmethod

@@ -68,7 +68,9 @@ discussion = """From: jane@edu.tech.net (Jane Mitchell)
 
 @pytest.fixture
 def ai_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    # llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+
+    llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     content_handler = AIHandler(llm=llm_client)
