@@ -22,7 +22,22 @@ class ScrapeHandler(BaseHandler):
             *,
             domain_url: list[str]
     ):
+        """
+        Initializes a new instance of the ScrapeHandler class.
+
+        Args:
+            domain_url (list[str]): A list of domain URLs to be scraped.
+
+        Attributes:
+            domain_url (list[str]): Stores the list of domain URLs provided during initialization.
+
+        Raises:
+            ValueError: If the provided domain_url list is empty.
+        """
         self.domain_url = domain_url
+
+        if not domain_url:
+            raise ValueError("A list of valid domain URLs must be provided.")
 
     async def scrap_content(self):
 
