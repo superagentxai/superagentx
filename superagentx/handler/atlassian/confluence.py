@@ -37,7 +37,7 @@ class ConfluenceHandler(BaseHandler):
                 url=f'https://{self.organization}.atlassian.net',
                 token=self.token
             )
-            logger.info("Authenticate Success")
+            logger.info("Confluence Authenticate Success")
             return confluence
         except Exception as ex:
             message = f'Confluence Handler Authentication Problem {ex}'
@@ -90,8 +90,21 @@ class ConfluenceHandler(BaseHandler):
             logger.error(message, exc_info={ex})
             raise Exception(message)
 
+    async def download_pages(self):
+        try:
+            result = await sync_to_async(
+                self._connection.export_page,
+                page_id=959938561
+            )
+            return result
+        except Exception as ex:
+            message = f"Error While getting confluence spaces! {ex}"
+            logger.error(message, exc_info={ex})
+            raise Exception(message)
+
     def __dir__(self):
         return (
             'get_all_spaces',
-            'get_pages_spaces'
+            'get_pages_spaces',
+            'download_pages'
         )

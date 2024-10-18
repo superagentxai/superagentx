@@ -60,17 +60,18 @@ class TestAtlassianAgent:
             prompt_template=prompt_template
         )
         memory = Memory()
-        jira_agent = Agent(
-            goal="Get a proper answer for asking a question in Jira.",
-            role="You are the Jira admin",
+        atlassian_agent = Agent(
+            goal="Get a proper answer for asking a question in atlassian.",
+            role="You are the Atlassian admin",
             llm=llm_client,
             prompt_template=prompt_template,
             engines=[jira_engine, confluence_engine],
             memory=memory
         )
 
-        result = await jira_agent.execute(
-            query_instruction="Give me the list of projects"
+        result = await atlassian_agent.execute(
+            query_instruction="Give me all the spaces in confluence"
         )
         logger.info(f"Result => {result}")
+
         assert result
