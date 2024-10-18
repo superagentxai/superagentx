@@ -5410,6 +5410,19 @@ beautifulsoup4 = "*"
 requests = ">=2.0.0,<3.0.0"
 
 [[package]]
+name = "wikipedia-api"
+version = "0.7.1"
+description = "Python Wrapper for Wikipedia"
+optional = false
+python-versions = "*"
+files = [
+    {file = "wikipedia_api-0.7.1.tar.gz", hash = "sha256:c72296adc0a6d8166d353a501f907add5db140179df462fc1cc0171c1c1bca00"},
+]
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "wrapt"
 version = "1.16.0"
 description = "Module for decorators, wrappers and monkey patching."
@@ -5617,4 +5630,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<=3.13"
-content-hash = "69b82485731ad6ef2f6ff653cc140f0a68a72f09f04050ca543e2cb07d78850e"
+content-hash = "1f0fedd90a34b9f7200b1f88e64259167390e04c6270127a77f71662741dafa1"

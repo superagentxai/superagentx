@@ -1,2 +1,0 @@
-class InvalidAction(Exception):
-    pass

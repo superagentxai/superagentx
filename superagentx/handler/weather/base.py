@@ -1,7 +1,8 @@
 import openmeteo_requests
 import requests_cache
-from superagentx.handler.weather.exception import WeatherApiException, WeatherNotFound
 from retry_requests import retry
+
+from superagentx.handler.weather.exception import WeatherApiException, WeatherNotFound
 
 
 class  WeatherBase:
