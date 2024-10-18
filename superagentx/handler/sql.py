@@ -2,7 +2,14 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from superagentx.handler.base import BaseHandler
-from superagentx.handler.sql.exceptions import InvalidDatabase, InvalidSQLAction
+
+
+class InvalidDatabase(Exception):
+    pass
+
+
+class InvalidSQLAction(Exception):
+    pass
 
 
 class SQLHandler(BaseHandler):

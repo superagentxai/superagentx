@@ -429,4 +429,3 @@ class WeatherHandler(BaseHandler):
             'air_quality_weather',
             'marine_weather'
         )
-

@@ -58,6 +58,6 @@ class SerperDevToolHandler(BaseHandler):
             return results
 
     def __dir__(self):
-        return [
-            'search'
-        ]
+        return (
+            'search',
+        )
