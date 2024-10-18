@@ -1,5 +1,3 @@
-from cgitb import handler
-
 import pytest
 
 from superagentx.handler.elastic_search import ElasticsearchHandler

@@ -1,5 +1,4 @@
 import logging
-from enum import StrEnum
 from typing import Union, Mapping, Sequence
 
 import elasticsearch
