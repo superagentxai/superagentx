@@ -31,5 +31,5 @@ async def ptype_to_json_scheme(ptype: str) -> str:
             return "boolean"
         case 'list':
             return "array"
-        case 'dict', _:
+        case 'dict' | _:
             return "object"
