@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 from abc import ABC
 
@@ -31,7 +30,7 @@ class CalenderHandler(BaseHandler, ABC):
         logger.info(f'Calendar client initialization')
         self.credentials = credentials or {}
         self._service = self._connect()
-        
+
     def _connect(self):
         """
             Establish a connection to the Gmail API.
