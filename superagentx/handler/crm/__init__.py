@@ -1,1 +1,1 @@
-from .hubspot import HubSpotHandler
+from .hubspot_crm import HubSpotHandler
