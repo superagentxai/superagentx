@@ -31,9 +31,6 @@ class ScrapeHandler(BaseHandler):
         """
         self.domain_url = domain_urls
 
-        if not domain_urls:
-            raise ValueError("A list of valid domain URLs must be provided.")
-
     async def scrap_content(self):
 
         """
