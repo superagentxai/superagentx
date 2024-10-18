@@ -24,7 +24,7 @@ class GmailHandler(BaseHandler, ABC):
     def __init__(
             self,
             *,
-            credentials: dict
+            credentials: str
     ):
         self.creds = None
         logger.info(f'Gmail client initialization')
