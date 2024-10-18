@@ -18,6 +18,19 @@ class WalmartHandler(BaseHandler):
             api_key: str,
             top_items: int | None = None
     ):
+        """
+        Initializes the Walmart.com shopping handler.
+
+        This handler is used to interact with the Walmart.com shopping API, allowing for
+        operations such as searching for products, retrieving details about items, and
+        managing shopping-related activities. It requires an API key for authentication.
+
+        Args:
+            api_key (str): The API key used to authenticate requests to the Walmart.com API.
+            top_items (int | None, optional): The number of top items to retrieve or
+            process. If not provided, the default behavior is used.
+
+        """
         self.api_key = api_key
         self.top_items = top_items
         if not self.top_items:
@@ -29,6 +42,30 @@ class WalmartHandler(BaseHandler):
             endpoint: str,
             params: dict
     ):
+
+        """
+            Asynchronously retrieves data from a Walmart.com API endpoint.
+
+            This internal method is used to send an asynchronous request to a specified
+            Walmart.com API endpoint, using the given query parameters. It facilitates
+            interaction with the Walmart.com shopping API to perform tasks such as fetching
+            product details, search results, or other relevant information.
+
+            Args:
+                endpoint (str): The specific API endpoint to send the request to, which
+                    corresponds to a Walmart.com service.
+                params (dict): A dictionary of parameters to be included in the API request.
+                    These parameters may include filters, search terms, or pagination options.
+
+                Returns:
+                    The response data from the API, typically in JSON format, containing the
+                    requested information.
+
+                Raises:
+                    An exception if the request fails, encounters network issues, or if the API
+                    returns an error response.
+        """
+
         _url = f'{self.base_url}/{endpoint.strip("/")}'
         logger.info(f"{_url}")
         headers = {

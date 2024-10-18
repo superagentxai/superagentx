@@ -33,6 +33,4 @@ class TestTarget:
             query="best one blender provide 5 ratings"
         )
         logger.info(f"Projects: {res}")
-        # assert isinstance(res, dict)
-        # assert len(res) > 0
 
