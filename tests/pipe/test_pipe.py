@@ -8,7 +8,7 @@ from superagentx.handler.ecommerce.amazon import AmazonHandler
 from superagentx.handler.ecommerce.flipkart import FlipkartHandler
 from superagentx.io import IOConsole
 from superagentx.llm import LLMClient
-from superagentx.pipe import AgentXPipe
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.prompt import PromptTemplate
 
 '''
