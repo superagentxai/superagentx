@@ -6,8 +6,7 @@ import pytest
 from superagentx.agent.agent import Agent
 from superagentx.agent.engine import Engine
 from superagentx.constants import SEQUENCE
-from superagentx.handler.hubspot import HubSpotHandler
-from superagentx.handler.jira import JiraHandler
+from superagentx.handler.crm.hubspot import HubSpotHandler
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
 

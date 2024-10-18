@@ -1791,6 +1791,26 @@ socks = ["socksio (==1.*)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "hubspot-api-client"
+version = "10.0.0"
+description = "HubSpot API client"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "hubspot_api_client-10.0.0-py3-none-any.whl", hash = "sha256:3b397c5fefc6ab12d8805e7cb147bfdbe3cacafa5deb70d2467f515955d6d566"},
+    {file = "hubspot_api_client-10.0.0.tar.gz", hash = "sha256:00174bc291cadbbe80d8448d7475a3ac92bb196ab078047c2a8464b9cffa7edf"},
+]
+
+[package.dependencies]
+certifi = "*"
+python-dateutil = "*"
+six = ">=1.10"
+urllib3 = ">=1.15"
+
+[package.extras]
+dev = ["black", "pytest"]
+
+[[package]]
 name = "huggingface-hub"
 version = "0.26.0"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -3198,9 +3218,9 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -3701,8 +3721,8 @@ files = [
 annotated-types = ">=0.6.0"
 pydantic-core = "2.23.4"
 typing-extensions = [
-    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
     {version = ">=4.6.1", markers = "python_version < \"3.13\""},
+    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
 ]
 
 [package.extras]
@@ -5597,4 +5617,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<=3.13"
-content-hash = "911249890d84c9ebc6c09a191918d96854c9da2b0034df015800d9a43af803ad"
+content-hash = "69b82485731ad6ef2f6ff653cc140f0a68a72f09f04050ca543e2cb07d78850e"

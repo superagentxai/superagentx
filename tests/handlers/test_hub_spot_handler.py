@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from superagentx.handler.hubspot import HubSpotHandler
+from superagentx.handler.crm.hubspot import HubSpotHandler
 
 logger = logging.getLogger(__name__)
 
