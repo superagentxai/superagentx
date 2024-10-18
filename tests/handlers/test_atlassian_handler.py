@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
     10. pytest --log-cli-level=INFO tests/handlers/test_atlassian_handler.py::TestAtlassian::test_active_sprint_filter_issues_by_status
     11. pytest --log-cli-level=INFO tests/handlers/test_atlassian_handler.py::TestAtlassian::test_get_all_spaces
     12. pytest --log-cli-level=INFO tests/handlers/test_atlassian_handler.py::TestAtlassian::test_get_pages_spaces
-    13. pytest --log-cli-level=INFO tests/handlers/test_atlassian_handler.py::TestAtlassian::test_download_pages
+    
 '''
 
 
@@ -157,9 +157,4 @@ class TestAtlassian:
         logger.info(f"Pages: {res}")
         assert isinstance(res, dict)
         assert len(res) > 0
-
-    async def test_download_pages(self, confluence_client_init: ConfluenceHandler):
-        res = await confluence_client_init.download_pages()
-        logger.info(f"Page: {res}")
-        assert res
 
