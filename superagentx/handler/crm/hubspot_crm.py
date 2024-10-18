@@ -1,7 +1,7 @@
 import logging
 
 from hubspot import HubSpot
-from hubspot.crm.contacts import SimplePublicObjectInputForCreate, ApiException, PublicObjectSearchRequest
+from hubspot.crm.contacts import SimplePublicObjectInputForCreate, ApiException
 
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.jira import AuthException
