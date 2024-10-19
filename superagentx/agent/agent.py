@@ -255,8 +255,7 @@ class Agent:
                             name=self.name,
                             agent_id=self.agent_id,
                             content=_res,
-                            error=_msg,
-                            is_goal_satisfied=False
+                            error=_msg
                         )
         else:
             return GoalResult(
