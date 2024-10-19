@@ -134,7 +134,7 @@ if __name__ == '__main__':
 ##### Usage - Example SuperAgentX Result
 SuperAgentX searches for product items requested by the user in the console, validates them against the set goal, and returns the result. It retains the context, allowing it to respond to the user's next prompt in the IO Console intelligently. 
 
-<img src="/Users/raghavprabhu/work/decisionfacts/sourcecode/agent/superagentX/docs/images/examples/ecom-output-console.png"/>
+<img src="./docs/images/examples/ecom-output-console.png"/>
 
 ## Architecture
 <img src="./docs/images/architecture.png" title="SuperAgentX Architecture"/>
