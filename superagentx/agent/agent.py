@@ -250,8 +250,8 @@ class Agent:
                             **__res
                         )
                     except JSONDecodeError as ex:
-                        _msg = 'Cannot parse verify goal content!'
-                        logger.error(_msg, exc_info=ex)
+                        _msg = f'Cannot parse verify goal content!\n{ex}'
+                        logger.warning(_msg)
                         return GoalResult(
                             name=self.name,
                             agent_id=self.agent_id,
