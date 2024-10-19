@@ -7,6 +7,7 @@ import yaml
 from superagentx.agent.agent import Agent
 from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
+from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm.types.base import logger
 from superagentx.utils.helper import iter_to_aiter
 
@@ -105,19 +106,6 @@ class AgentXPipe:
             async for result in iter_to_aiter(results)
         ]
 
-    @staticmethod
-    async def _needs_to_stop(
-            result: GoalResult | list[GoalResult] | None
-    ) -> bool:
-        if isinstance(result, list):
-            for _result in result:
-                if not _result and _result.is_goal_satisfied is False:
-                    return True
-        else:
-            if not result and result.is_goal_satisfied is False:
-                return True
-        return False
-
     async def _flow(
             self,
             query_instruction: str
@@ -125,25 +113,28 @@ class AgentXPipe:
         results = []
         async for _agents in iter_to_aiter(self.agents):
             pre_result = await self._pre_result(results=results)
-            if isinstance(_agents, list):
-                _res = await asyncio.gather(
-                    *[
-                        _agent.execute(
-                            query_instruction=query_instruction,
-                            pre_result=pre_result
-                        )
-                        async for _agent in iter_to_aiter(_agents)
-                    ]
-                )
-            else:
-                _res = await _agents.execute(
-                    query_instruction=query_instruction,
-                    pre_result=pre_result
-                )
+            try:
+                if isinstance(_agents, list):
+                    _res = await asyncio.gather(
+                        *[
+                            _agent.execute(
+                                query_instruction=query_instruction,
+                                pre_result=pre_result,
+                                stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
+                            )
+                            async for _agent in iter_to_aiter(_agents)
+                        ]
+                    )
+                else:
+                    _res = await _agents.execute(
+                        query_instruction=query_instruction,
+                        pre_result=pre_result,
+                        stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
+                    )
+            except StopSuperAgentX as ex:
+                logger.warning(ex)
+                _res = ex.goal_result
             results.append(_res)
-
-            if self.stop_if_goal_not_satisfied and await self._needs_to_stop(result=_res):
-                break
         return results
 
     async def flow(
