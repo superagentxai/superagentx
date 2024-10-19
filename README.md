@@ -35,21 +35,21 @@ SuperAgentX is designed to address the growing need for highly capable, autonomo
 **X**     : The unknown, the limitless, the extra factor that makes SuperAgentX revolutionary, futuristic, and transformative.</p>
 
 ## Architecture
-![architecture.png](docs%2Fimages%2Farchitecture.png)
+<img src="./docs/images/architecture.png" title="SuperAgentX Architecture" height="250" width="250"/>
 
 ## Large Language Models
 
-| Icon                                                                                          | LLM Name      | Status                                                                                   |
-|-----------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------------------------------------|
-| <img src="./docs/images/llms/openai.png" title="OpenAI" height="20" width="20"/>              | OpenAI        | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |
-| <img src="./docs/images/llms/azure-icon.png" title="Azure OpenAI" height="20" width="20"/>    | Azure OpenAI  | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |  
-| <img src="./docs/images/llms/awsbedrock.png" title="AWS Bedrock" height="20" width="20"/>     | AWS Bedrock   | <img src="./docs/images/beta.png" title="Testing Inprogress" height="20" width="20"/>    |
-| <img src="./docs/images/llms/gemini.png" title="Google Gemini" height="20" width="20"/>       | Google Gemini | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
-| <img src="./docs/images/llms/meta.png" title="Google Gemini" height="20" width="20"/>         | Meta Llama    | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
-| <img src="./docs/images/llms/ollama.png" title="Ollama" height="20" width="20"/>              | Ollama        | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
-| <img src="./docs/images/llms/claude-ai-logo.png" title="Claude AI" height="20" width="20"/>   | Claude AI     | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
-| <img src="./docs/images/llms/mistral-ai-logo.png" title="Mistral AI" height="20" width="30"/> | Mistral AI    | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
-| <img src="./docs/images/llms/ibm.png" title="IBM WatsonX AI" height="20" width="30"/>         | IBM WatsonX   | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
+| Icon                                                                                          | LLM Name          | Status                                                                                   |
+|-----------------------------------------------------------------------------------------------|-------------------|------------------------------------------------------------------------------------------|
+| <img src="./docs/images/llms/openai.png" title="OpenAI" height="20" width="20"/>              | **OpenAI**        | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |
+| <img src="./docs/images/llms/azure-icon.png" title="Azure OpenAI" height="20" width="20"/>    | **Azure OpenAI**  | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |  
+| <img src="./docs/images/llms/awsbedrock.png" title="AWS Bedrock" height="20" width="20"/>     | **AWS Bedrock**   | <img src="./docs/images/beta.png" title="Testing Inprogress" height="20" width="20"/>    |
+| <img src="./docs/images/llms/gemini.png" title="Google Gemini" height="20" width="20"/>       | **Google Gemini** | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
+| <img src="./docs/images/llms/meta.png" title="Google Gemini" height="20" width="20"/>         | **Meta Llama**    | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
+| <img src="./docs/images/llms/ollama.png" title="Ollama" height="20" width="20"/>              | **Ollama**        | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
+| <img src="./docs/images/llms/claude-ai-logo.png" title="Claude AI" height="20" width="20"/>   | **Claude AI**     | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
+| <img src="./docs/images/llms/mistral-ai-logo.png" title="Mistral AI" height="20" width="30"/> | **Mistral AI**    | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
+| <img src="./docs/images/llms/ibm.png" title="IBM WatsonX AI" height="20" width="30"/>         | **IBM WatsonX**   | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
 
 
 ## Getting Started
