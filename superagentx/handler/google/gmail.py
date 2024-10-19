@@ -124,9 +124,10 @@ class GmailHandler(BaseHandler, ABC):
             result = await sync_to_async(
                 service_lists.execute
             )
-            messages = result.get('messages')
+            messages = result.get('messages', [])
+
             email_data_list = []
-            for msg in messages:
+            async for msg in iter_to_aiter(messages):
                 try:
                     events = await sync_to_async(
                         self._service.users
@@ -137,14 +138,13 @@ class GmailHandler(BaseHandler, ABC):
                     service_get = await sync_to_async(
                         service_messages.get,
                         userId='me',
-                        id=msg['id']
+                        id=msg.get('id')
                     )
                     txt = await sync_to_async(
                         service_get.execute
                     )
                     # Get the payload from the message
-                    payload = txt['payload']
-                    headers = payload.get('headers', [])
+                    payload = txt.get('payload')
 
                     # Initialize variables for sender, receiver, and date
                     sender = None
@@ -153,16 +153,17 @@ class GmailHandler(BaseHandler, ABC):
                     subject = None
                     attachments = []
 
+                    headers = payload.get('headers', [])
                     # Extract sender, receiver, and date from the headers
-                    for header in headers:
-                        if header['name'] == 'From':
-                            sender = header['value']
-                        elif header['name'] == 'To':
-                            receiver = header['value']
-                        elif header['name'] == 'Date':
-                            date = header['value']
-                        elif header['name'] == 'Subject':
-                            subject = header['value']
+                    async for header in iter_to_aiter(headers):
+                        if header.get('name') == 'From':
+                            sender = header.get('value')
+                        elif header.get('name') == 'To':
+                            receiver = header.get('value')
+                        elif header.get('name') == 'Date':
+                            date = header.get('value')
+                        elif header.get('name') == 'Subject':
+                            subject = header.get('value')
 
                     # Look for the 'body' part of the email
                     parts = payload.get('parts', [])
@@ -170,21 +171,21 @@ class GmailHandler(BaseHandler, ABC):
 
                     # Extract the email body, which is usually the 'data' field in the payload
                     async for part in iter_to_aiter(parts):
-                        if part['mimeType'] == 'text/plain':  # You can also check for 'text/html'
-                            data = part['body'].get('data')
+                        if part.get('mimeType') == 'text/plain':  # You can also check for 'text/html'
+                            data = part.get('body').get('data')
                             if data:
                                 email_body = base64.urlsafe_b64decode(data).decode('utf-8')
                                 break
                         if part.get('filename'):
-                            attachment_id = part['body'].get('attachmentId')
+                            attachment_id = part.get('body').get('attachmentId')
                             if attachment_id:
                                 attachment = self._service.users().messages().attachments().get(
-                                    userId='me', messageId=msg['id'], id=attachment_id
+                                    userId='me', messageId=msg.get('id'), id=attachment_id
                                 ).execute()
-                                file_data = base64.urlsafe_b64decode(attachment['data'])
+                                file_data = base64.urlsafe_b64decode(attachment.get('data'))
                                 # Store the attachment information
                                 attachments.append({
-                                    "filename": part['filename'],
+                                    "filename": part.get('filename'),
                                     "data": file_data
                                 })
                     # Create a dictionary for the email data
@@ -194,7 +195,12 @@ class GmailHandler(BaseHandler, ABC):
                         "date": date,
                         "subject": subject,
                         "email_body": email_body or "No body content found.",
-                        "attachments": [{"filename": att["filename"], "data": "<binary data>"} for att in attachments]
+                        "attachments": [
+                            {
+                                "filename": att.get("filename")
+                            }
+                            for att in attachments
+                        ]
                     }
 
                     # Add the email data dictionary to the list
@@ -204,7 +210,7 @@ class GmailHandler(BaseHandler, ABC):
             return email_data_list
 
         except Exception as ex:
-            message = f"Error while Reading Profile"
+            message = f"Error while Reading Mail"
             logger.error(message, exc_info=ex)
             raise
 
