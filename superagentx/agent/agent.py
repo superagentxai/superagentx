@@ -8,6 +8,7 @@ from typing import Literal, Any
 from superagentx.agent.engine import Engine
 from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
+from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
@@ -307,7 +308,8 @@ class Agent:
     async def execute(
             self,
             query_instruction: str,
-            pre_result: str | None = None
+            pre_result: str | None = None,
+            stop_if_goal_not_satisfied: bool = False
     ) -> GoalResult | None:
         """
         Executes the specified query instruction to achieve a defined goal.
@@ -322,6 +324,10 @@ class Agent:
                 This should be a clear and actionable statement that the method can execute.
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
+            stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
+                When set to True, the agent operation will halt if the defined goal is not met,
+                preventing any further actions. Defaults to False, allowing the process to continue regardless
+                of goal satisfaction.
 
         Returns:
             GoalResult | None
@@ -344,6 +350,11 @@ class Agent:
                     }
                     await self.add_memory([assistant])
                 return _goal_result
+            elif _goal_result.is_goal_satisfied is False and stop_if_goal_not_satisfied:
+                raise StopSuperAgentX(
+                    message='Superagentx stopped forcefully since `stop` flag has been set!',
+                    goal_result=_goal_result
+                )
 
         logger.warning(f"Done agent `{self.name}` max retry {self.max_retry}!")
         return _goal_result
