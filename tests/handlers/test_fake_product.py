@@ -2,9 +2,8 @@ import logging
 
 import pytest
 
-from superagentx.handler.ecommerce.fake_product import FakeProductHandler
+from superagentx.handler import FakeFlipkartHandler
 from superagentx.llm import LLMClient
-from examples.ecommerce_data_generator import mobile_phones
 
 logger = logging.getLogger(__name__)
 
@@ -16,21 +15,21 @@ logger = logging.getLogger(__name__)
 '''
 
 @pytest.fixture
-def fake_products_client_init() -> FakeProductHandler:
+def fake_flipkarts_client_init() -> FakeFlipkartHandler:
     llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
-    fake_product_handler: FakeProductHandler = FakeProductHandler(
+    fake_flipkart_handler: FakeFlipkartHandler = FakeFlipkartHandler(
         llm_client=llm_client,
-        product_models=mobile_phones
+        product_models=[]  #  Needs to give sample products in the desired formats
     )
-    return fake_product_handler
+    return fake_flipkart_handler
 
 
 class TestFakeProducts:
 
-    async def test_search(self, fake_products_client_init: FakeProductHandler):
-        res = await fake_products_client_init.product_search(
-            provider='Amazon'
+    async def test_search(self, fake_flipkarts_client_init: FakeFlipkartHandler):
+        res = await fake_flipkarts_client_init.product_search(
+            query="Get me the top 3 smart watches under 5k"
         )
         logger.info(res)
