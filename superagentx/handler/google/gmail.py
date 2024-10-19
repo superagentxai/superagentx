@@ -151,6 +151,7 @@ class GmailHandler(BaseHandler, ABC):
                     receiver = None
                     date = None
                     subject = None
+                    email_body = None
                     attachments = []
 
                     headers = payload.get('headers', [])
@@ -165,10 +166,7 @@ class GmailHandler(BaseHandler, ABC):
                         elif header.get('name') == 'Subject':
                             subject = header.get('value')
 
-                    # Look for the 'body' part of the email
                     parts = payload.get('parts', [])
-                    email_body = None
-
                     # Extract the email body, which is usually the 'data' field in the payload
                     async for part in iter_to_aiter(parts):
                         if part.get('mimeType') == 'text/plain':  # You can also check for 'text/html'
