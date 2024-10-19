@@ -8,10 +8,10 @@ from superagentx.vector_stores.base import BaseVectorStore
 def _db_path():
     _db_dir = os.environ.get('AGENTX_MEMORY_DIR')
     if not _db_dir:
-        _db_dir = Path().home()
+        return ":memory:"
     else:
         _db_dir = Path(_db_dir)
-    return _db_dir / 'history.db'
+        return _db_dir / 'history.db'
 
 
 class MemoryConfig(BaseModel):
