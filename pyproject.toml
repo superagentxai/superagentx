@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "superagentx"
-version = "0.1.0"
+version = "0.1.1"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = "MIT"
 authors = [
