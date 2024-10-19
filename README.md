@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="docs/images/fulllogo_transparent.png" width="350">
+<img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/fulllogo_transparent.png?raw=True" width="350">
+
 
 <br/>
 
@@ -139,24 +140,24 @@ if __name__ == '__main__':
 ##### Usage - Example SuperAgentX Result
 SuperAgentX searches for product items requested by the user in the console, validates them against the set goal, and returns the result. It retains the context, allowing it to respond to the user's next prompt in the IO Console intelligently. 
 
-![Output](./docs/images/examples/ecom-output-console.png)
+![Output](https://github.com/decisionfacts/superagentX/blob/master/docs/images/examples/ecom-output-console.png?raw=True)
 
 ## Architecture
-<img src="./docs/images/architecture.png" title="SuperAgentX Architecture"/>
+<img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/architecture.png?raw=True" title="SuperAgentX Architecture"/>
 
 ## Large Language Models
 
-| Icon                                                                                          | LLM Name          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Status                                                                                   |
-|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| <img src="./docs/images/llms/openai.png" title="OpenAI" height="20" width="20"/>              | **OpenAI** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;        | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |
-| <img src="./docs/images/llms/azure-icon.png" title="Azure OpenAI" height="20" width="20"/>    | **Azure OpenAI**                                                                               | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |  
-| <img src="./docs/images/llms/awsbedrock.png" title="AWS Bedrock" height="20" width="20"/>     | **AWS Bedrock**                                                                                | <img src="./docs/images/beta.png" title="Testing Inprogress" height="20" width="20"/>    |
-| <img src="./docs/images/llms/gemini.png" title="Google Gemini" height="20" width="20"/>       | **Google Gemini**                                                                              | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
-| <img src="./docs/images/llms/meta.png" title="Google Gemini" height="20" width="20"/>         | **Meta Llama**                                                                                 | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
-| <img src="./docs/images/llms/ollama.png" title="Ollama" height="20" width="20"/>              | **Ollama**                                                                                     | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
-| <img src="./docs/images/llms/claude-ai-logo.png" title="Claude AI" height="20" width="20"/>   | **Claude AI**                                                                                  | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
-| <img src="./docs/images/llms/mistral-ai-logo.png" title="Mistral AI" height="20" width="30"/> | **Mistral AI**                                                                                 | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
-| <img src="./docs/images/llms/ibm.png" title="IBM WatsonX AI" height="20" width="30"/>         | **IBM WatsonX**                                                                                | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
+| Icon                                                                                                                                    | LLM Name          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Status                                                                                   |
+|-----------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/openai.png?raw=True" title="OpenAI" height="20" width="20"/> | **OpenAI** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;        | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>           |
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/azure-icon.png?raw=True" title="Azure OpenAI" height="20" width="20"/>                                              | **Azure OpenAI**                                                                               | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>           |  
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/awsbedrock.png?raw=True" title="AWS Bedrock" height="20" width="20"/>                                               | **AWS Bedrock**                                                                                | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/beta.png?raw=True" title="Testing Inprogress" height="20" width="20"/>    |
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/gemini.png?raw=True" title="Google Gemini" height="20" width="20"/>                                                 | **Google Gemini**                                                                              | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/meta.png?raw=True" title="Google Gemini" height="20" width="20"/>                                                   | **Meta Llama**                                                                                 | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/ollama.png?raw=True" title="Ollama" height="20" width="20"/>                                                        | **Ollama**                                                                                     | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/claude-ai-logo.png?raw=True" title="Claude AI" height="20" width="20"/>                                             | **Claude AI**                                                                                  | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png?raw=True" title="Mistral AI" height="20" width="30"/>                                           | **Mistral AI**                                                                                 | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
+| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/ibm.png?raw=True" title="IBM WatsonX AI" height="20" width="30"/>                                                   | **IBM WatsonX**                                                                                | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
 
 
 ## Key Features
