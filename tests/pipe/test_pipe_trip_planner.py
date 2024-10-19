@@ -23,10 +23,49 @@ logger = logging.getLogger(__name__)
 
 '''
 
+output_prompt = """
+Destination: [Insert City/Country Name]
+Duration: [Insert Number of Days]
+
+Cities:
+    [Insert City Here] - [Insert Locations]
+    
+Accommodation Details:
+
+    Hotel Name: [Insert Hotel Name]
+    Location: [Insert Hotel Address]
+    Check-in: [Insert Check-in Date]
+    Check-out: [Insert Check-out Date]
+    Price: [Insert Price]
+
+Must-Visit Attractions:
+
+    [Insert Attraction Name] – [Insert Brief description and importance]
+    [Insert Attraction Name] – [Insert Brief description and importance]
+
+Hidden Gems:
+
+    [Insert Location/Activity Name] – [Insert Brief description and why it’s a hidden gem]
+    [Insert Location/Activity Name] – [Insert Brief description]
+
+Cultural Hotspots:
+
+    [Insert Landmark/Event Name] – [Insert Description of cultural significance]
+    [Insert Museum/Art Gallery/Theater Name] – [Insert Description of importance]
+
+Practical Travel Tips:
+
+    Local Customs: [Insert Description of local etiquette or customs]
+    Best Time to Visit: [Insert Weather conditions and recommended season]
+    Currency Exchange: [Insert Currency details and exchange advice]
+    Transportation Tips: [Insert Details on public transport, taxis, etc.]
+    Emergency Contacts: [Insert Local emergency numbers, embassy contact information]
+"""
+
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o-2024-08-06', 'llm_type': 'openai'}
     serper_handler = SerperDevToolHandler()
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai', 'serper_dev': serper_handler}
@@ -40,35 +79,25 @@ class TestTripPlannerPipe:
             query: str,
             serper_dev_handler: SerperDevToolHandler
     ) -> ScrapeHandler:
-        datas = await serper_dev_handler.search(query=query, total_results=2)
+        datas = await serper_dev_handler.search(query=query, total_results=5)
+        logger.info(f"Website Datas: {datas}")
         website_links = [data.get("link") async for data in iter_to_aiter(datas)]
-        scrape_handler = ScrapeHandler(domain_url=website_links)
+        logger.info(f"Website Links: {website_links}")
+        scrape_handler = ScrapeHandler(domain_urls=website_links)
         return scrape_handler
 
     async def _construct_pipe(self, query: str, agent_client_init, crawler_handler):
         llm_client: LLMClient = agent_client_init.get('llm')
         prompt_template = PromptTemplate()
-        memory = Memory()
         city_ai_handler = AIHandler(
             llm=llm_client,
-            role="Analyze and select the best city for the trip based on specific criteria such as weather patterns, "
-                 "seasonal events, and travel costs.",
-            back_story="Detailed report on the chosen city including costs, weather forecast, and attractions"
-        )
-        local_expert_handler = AIHandler(
-            llm=llm_client,
-            role="As a local expert on this city you must compile an in-depth guide for someone traveling there and "
-                 "wanting to have THE BEST trip ever!",
-            back_story="Gather information about key attractions, local customs, "
-                 "special events, and daily activity recommendations. Find the best spots to go to, the kind of place "
-                 "only a local would know."
+            role="City Selection Expert",
+            back_story="An expert in analyzing travel data to pick ideal destinations"
         )
         travel_concierge_handler = AIHandler(
             llm=llm_client,
-            role="Amazing Travel Planner",
-            back_story="Expand this guide into a full 7-day travel itinerary with detailed per-day plans, including "
-                       "weather forecasts, places to eat, packing suggestions, and a budget breakdown. You MUST "
-                       "suggest actual places to visit, actual hotels to stay and actual restaurants to go to."
+            role="Amazing Travel Concierge",
+            back_story="Specialist in travel planning and logistics with decades of experience"
         )
         crawl_engine = Engine(
             handler=crawler_handler,
@@ -80,11 +109,6 @@ class TestTripPlannerPipe:
             llm=llm_client,
             prompt_template=prompt_template
         )
-        local_expert_engine = Engine(
-            handler=local_expert_handler,
-            llm=llm_client,
-            prompt_template=prompt_template
-        )
         travel_concierge_engine = Engine(
             handler=travel_concierge_handler,
             llm=llm_client,
@@ -92,65 +116,49 @@ class TestTripPlannerPipe:
         )
         crawl_agent = Agent(
             name="Crawler Agent",
-            role='You are the data extract expert',
-            goal='Extract the city, locations, weather, seasons, months and prices with full information',
+            role=f'You are the travel data extractor. Extract the city, locations, hotels, weather, seasons, months and prices with full information based on the user question and context. And generate the below output format \n\n{output_prompt}',
+            goal='Extract the city, locations, hotels, weather, seasons, months and prices',
             llm=llm_client,
             prompt_template=prompt_template,
             engines=[crawl_engine],
-            memory=memory
+            output_format=output_prompt
         )
         city_selection_agent = Agent(
             name="City Selection Agent",
             role='City Selection Expert',
-            goal='Select the best city based on weather, season, months, and prices',
+            goal='Select the best city based on weather, locations, hotels season, months, itineraries and prices',
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[city_ai_engine],
-            memory=memory
-        )
-        city_selection_agent.memory_id = crawl_agent.memory_id
-        city_selection_agent.chat_id = crawl_agent.chat_id
-        local_expert_agent = Agent(
-            name="Local Expert Agent",
-            role='Local Expert at the given city',
-            goal='''
-            you are a local expert city guide agent that highlights hidden gems, cultural hotspots, and practical travel.
-            Include off-the-beaten-path attractions and experiences.
-            Feature well-known cultural landmarks and venues (museums, theaters, etc.).
-            Provide practical tips for travelers (transportation, local customs, best times to visit, etc.).
-            ''',
-            llm=llm_client,
-            prompt_template=prompt_template,
-            engines=[local_expert_engine]
+            engines=[city_ai_engine]
         )
         travel_concierge_agent = Agent(
             name="Travel Concierge Agent",
-            role='You are a Amazing Travel Plan Report Generator',
-            goal='''Your final answer MUST be a complete expanded travel plan,
-                formatted as markdown, encompassing a daily schedule,
-                anticipated weather conditions, recommended clothing and
-                items to pack, and a detailed budget, ensuring THE BEST
-                TRIP EVER''',
+            role='Amazing Travel Concierge',
+            goal='Create the most amazing travel with budget and packing suggestions for the city',
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[travel_concierge_engine],
-            memory=memory
+            engines=[travel_concierge_engine]
         )
-        travel_concierge_agent.memory_id = crawl_agent.memory_id
-        travel_concierge_agent.chat_id = crawl_agent.chat_id
-        pipe = AgentXPipe(
-            name="Trip Planner Pipe",
-            agents=[crawl_agent, city_selection_agent, travel_concierge_agent]
-        )
-        return await pipe.flow(query)
+        return crawl_agent, city_selection_agent, travel_concierge_agent
 
     async def test_planner_agent(self, agent_client_init):
         serper_dev_handler: SerperDevToolHandler = agent_client_init.get("serper_dev")
         io_console = IOConsole()
+        memory = Memory()
+        pipe = AgentXPipe(
+            name="Trip Planner Pipe",
+            memory=memory
+        )
         while True:
             await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
             query_instruction = await io_console.read("User: ")
             crawl = await self._crawler_handler(query_instruction, serper_dev_handler)
-            result = await self._construct_pipe(query_instruction, agent_client_init, crawl)
+            crawl_agent, city_selection_agent, travel_concierge_agent = await self._construct_pipe(
+                query_instruction,
+                agent_client_init,
+                crawl
+            )
+            pipe.agents = [crawl_agent, city_selection_agent, travel_concierge_agent]
+            res = await pipe.flow(query_instruction)
             await io_console.write(ConsoleColorType.CGREEN2.value, end="")
-            await io_console.write(f"Assistant: {result}", flush=True)
+            await io_console.write(f"Assistant: {res}", flush=True)

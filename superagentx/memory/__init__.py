@@ -60,13 +60,14 @@ class Memory(MemoryBase):
         await self.vector_db.delete_collection()
 
     @staticmethod
-    async def _get_history(memory_id: str, data) -> list[dict]:
+    async def _get_history(memory_id: str, datas) -> list[dict]:
         messages = []
-        async for data in iter_to_aiter(data):
+        async for data in iter_to_aiter(datas):
             if memory_id == data.get("memory_id"):
+                message_construct = f"Reason: {data.get("reason")}\nResult: {data.get("memory")}"
                 message = {
                     "role": data.get("role"),
-                    "content": data.get("memory")
+                    "content": message_construct
                 }
                 messages.append(message)
         return messages
@@ -89,7 +90,7 @@ class Memory(MemoryBase):
         )
         return await self._get_history(
             memory_id=memory_id,
-            data=result
+            datas=result
         )
 
     async def _search_vector_store(
@@ -109,6 +110,7 @@ class Memory(MemoryBase):
             "role",
             "message_id",
             "data",
+            "reason",
             "created_at",
             "updated_at",
         }
@@ -118,6 +120,7 @@ class Memory(MemoryBase):
                 **MemoryItem(
                     id=mem.id,
                     memory=mem.payload["data"],
+                    reason=mem.payload["reason"],
                     role=mem.payload["role"],
                     created_at=mem.payload.get("created_at"),
                     updated_at=mem.payload.get("updated_at"),
@@ -143,6 +146,7 @@ class Memory(MemoryBase):
             message_id: str,
             role: str | Enum,
             data: str,
+            reason: str,
             created_at: datetime.datetime | None = None,
             updated_at: datetime.datetime | None = None,
             is_deleted: bool = False,
@@ -154,6 +158,7 @@ class Memory(MemoryBase):
             updated_at = datetime.datetime.now()
         metadata["memory_id"] = memory_id
         metadata["data"] = data
+        metadata["reason"] = reason
         metadata["chat_id"] = chat_id
         metadata["message_id"] = message_id
         metadata["role"] = role
