@@ -9,6 +9,7 @@ from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
 from superagentx.llm.types.base import logger
 from superagentx.utils.helper import iter_to_aiter
+from tests.llm.test_bedrock_client import aws_bedrock_client_init
 
 
 class AgentXPipe:
@@ -19,7 +20,8 @@ class AgentXPipe:
             pipe_id: str = uuid.uuid4().hex,
             name: str | None = None,
             description: str | None = None,
-            agents: list[Agent | list[Agent]] | None = None
+            agents: list[Agent | list[Agent]] | None = None,
+            stop_goal_not_satisfied: bool = False
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -41,11 +43,16 @@ class AgentXPipe:
                 purpose and capabilities.
             agents: A list of Agent instances (or lists of Agent instances) that are part of this structure.
                 These agents can perform tasks and contribute to achieving the defined goal.
+            stop_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
+                When set to True, the agentxpipe operation will halt if the defined goal is not met,
+                preventing any further actions. Defaults to False, allowing the process to continue regardless
+                of goal satisfaction.
         """
         self.pipe_id = pipe_id
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
         self.description = description
         self.agents: list[Agent | list[Agent]] = agents or []
+        self.stop_goal_not_satisfied = stop_goal_not_satisfied
 
     def __str__(self):
         return "AgentXPipe"
@@ -99,6 +106,19 @@ class AgentXPipe:
             async for result in iter_to_aiter(results)
         ]
 
+    @staticmethod
+    async def _needs_to_stop(
+            result: GoalResult | list[GoalResult] | None
+    ) -> bool:
+        if isinstance(result, list):
+            for _result in result:
+                if not _result and _result.is_goal_satisfied is False:
+                    return True
+        else:
+            if not result and result.is_goal_satisfied is False:
+                return True
+        return False
+
     async def _flow(
             self,
             query_instruction: str
@@ -122,6 +142,9 @@ class AgentXPipe:
                     pre_result=pre_result
                 )
             results.append(_res)
+
+            if self.stop_goal_not_satisfied and await self._needs_to_stop(result=_res):
+                break
         return results
 
     async def flow(
