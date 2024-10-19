@@ -2,6 +2,8 @@ from superagentx.handler.base import BaseHandler
 
 from crawl4ai import AsyncWebCrawler
 
+from superagentx.utils.helper import iter_to_aiter
+
 
 class ScrapeHandler(BaseHandler):
     """
@@ -47,9 +49,9 @@ class ScrapeHandler(BaseHandler):
             )
             contents = []
             if result and result[0]:
-                for res in result:
+                async for res in iter_to_aiter(result):
                     if res:
-                        contents.append(str(res.markdown))
+                        contents.append(res.markdown)
                 return contents
 
     def __dir__(self):
