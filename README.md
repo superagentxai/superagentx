@@ -48,7 +48,7 @@ This SuperAgentX example utilizes two handlers, Amazon and Walmart, to search fo
 3. LLM configured to OpenAI
 4. Pre-requisites
   <p> 4.1. Set OpenAI Key - export OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxx<br/>
-      4.2  Set Rapid API Key ([Free Subscription](https://rapidapi.com/auth/sign-up)) for Amazon, Walmart Search APIs </p>
+      4.2  Set Rapid API Key <a href="https://rapidapi.com/auth/sign-up" target="_blank">Free Subscription</a> for Amazon, Walmart Search APIs </p>
 
 ```python 
 # python3 superagentx_examples/ecom_iopipe.py
