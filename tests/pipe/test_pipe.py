@@ -14,15 +14,15 @@ from superagentx.prompt import PromptTemplate
 '''
 Run Pytest:  
 
-   1.pytest -s --log-cli-level=INFO tests/pipe/test_pipe.py::TestIOConsolePipe::test_ecom_pipe
+   1. pytest -s --log-cli-level=INFO tests/pipe/test_pipe.py::TestIOConsolePipe::test_ecom_pipe
    
 '''
 
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
-
+    # llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'mistral.mistral-large-2402-v1:0', 'llm_type': 'bedrock'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
@@ -52,10 +52,12 @@ class TestIOConsolePipe:
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[[amazon_engine, flipkart_engine]]
+            engines=[[amazon_engine, flipkart_engine]],
+
         )
         pipe = AgentXPipe(
-            agents=[ecom_agent]
+            agents=[ecom_agent],
+
         )
         io = IOConsole(
             read_phrase="\n\n\nEnter your query here:\n\n=>",

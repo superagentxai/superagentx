@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def openai_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'DFGPT4o', 'llm_type': 'azure-openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
