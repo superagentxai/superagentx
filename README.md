@@ -46,6 +46,9 @@ This SuperAgentX example utilizes two handlers, Amazon and Walmart, to search fo
 1. It uses Parallel execution of handler in the agent 
 2. Memory Context Enabled
 3. LLM configured to OpenAI
+4. Pre-requisites
+  <p> 4.1. Set OpenAI Key - export OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxx<br/>
+      4.2  Set Rapid API Key ([Free Subscription](https://rapidapi.com/auth/sign-up)) for Amazon, Walmart Search APIs </p>
 
 ```python 
 import asyncio
@@ -134,7 +137,7 @@ if __name__ == '__main__':
 ##### Usage - Example SuperAgentX Result
 SuperAgentX searches for product items requested by the user in the console, validates them against the set goal, and returns the result. It retains the context, allowing it to respond to the user's next prompt in the IO Console intelligently. 
 
-<img src="./docs/images/examples/ecom-output-console.png"/>
+![Output](./docs/images/examples/ecom-output-console.png)
 
 ## Architecture
 <img src="./docs/images/architecture.png" title="SuperAgentX Architecture"/>
