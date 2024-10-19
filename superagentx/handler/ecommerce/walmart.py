@@ -1,3 +1,5 @@
+import os
+
 import aiohttp
 import logging
 import urllib.parse
@@ -16,7 +18,7 @@ class WalmartHandler(BaseHandler):
     def __init__(
             self,
             *,
-            api_key: str,
+            api_key: str | None = None,
             top_items: int | None = None
     ):
         """
@@ -32,7 +34,7 @@ class WalmartHandler(BaseHandler):
             process. If not provided, the default behavior is used.
 
         """
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv("RAPID_API_KEY")
         self.top_items = top_items
         if not self.top_items:
             self.top_items = 5
