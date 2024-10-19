@@ -60,13 +60,13 @@ class Memory(MemoryBase):
         await self.vector_db.delete_collection()
 
     @staticmethod
-    async def _get_history(memory_id: str, datas) -> list[dict]:
+    async def _get_history(memory_id: str, data) -> list[dict]:
         messages = []
-        async for data in iter_to_aiter(datas):
-            if memory_id == data.get("memory_id"):
-                message_construct = f"Reason: {data.get("reason")}\nResult: {data.get("memory")}"
+        async for _data in iter_to_aiter(data):
+            if memory_id == _data.get("memory_id"):
+                message_construct = f"Reason: {_data.get("reason")}\nResult: {_data.get("memory")}"
                 message = {
-                    "role": data.get("role"),
+                    "role": _data.get("role"),
                     "content": message_construct
                 }
                 messages.append(message)
@@ -90,7 +90,7 @@ class Memory(MemoryBase):
         )
         return await self._get_history(
             memory_id=memory_id,
-            datas=result
+            data=result
         )
 
     async def _search_vector_store(
