@@ -22,7 +22,7 @@ def sql_client_init() -> SQLHandler:
         database_type="mysql",
         database="test",
         username="root",
-        password="df_12345"
+        password="password"
     )
     return sql_handler
 

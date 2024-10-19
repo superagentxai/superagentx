@@ -22,18 +22,22 @@ async def main():
     """
     Launches the e-commerce pipeline console client for processing requests and handling data.
     """
-    llm_config = {'llm_type': 'azure-openai'}
 
+    # LLM Configuration
+    llm_config = {'llm_type': 'openai'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
+
+    # Enable Memory
     memory = Memory()
-    amazon_ecom_handler = AmazonHandler(
-        api_key="",
-        country="IN"
-    )
-    walmart_ecom_handler = WalmartHandler(
-        api_key="",
-    )
+
+    # Add Two Handlers (Tools) - Amazon, Walmart
+    amazon_ecom_handler = AmazonHandler()
+    walmart_ecom_handler = WalmartHandler()
+
+    # Prompt Template
     prompt_template = PromptTemplate()
+
+    # Amazon & Walmart Engine to execute handlers
     amazon_engine = Engine(
         handler=amazon_ecom_handler,
         llm=llm_client,
@@ -44,6 +48,8 @@ async def main():
         llm=llm_client,
         prompt_template=prompt_template
     )
+
+    # Create Agent with Amazon, Walmart Engines execute in Parallel - Search Products from user prompts
     ecom_agent = Agent(
         name='Ecom Agent',
         goal="Get me the best search results",
@@ -52,10 +58,14 @@ async def main():
         prompt_template=prompt_template,
         engines=[[amazon_engine, walmart_engine]]
     )
+
+    # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
     pipe = AgentXPipe(
         agents=[ecom_agent],
         memory=memory
     )
+
+    # Create IO Cli Console - Interface
     io_pipe = IOPipe(
         search_name='SuperAgentX Ecom',
         agentx_pipe=pipe,
