@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 def sql_client_init() -> SQLHandler:
     sql_handler = SQLHandler(
         database_type="mysql",
-        database="test",
-        username="root",
-        password="password"
+        database="<DATABASE>",
+        username="<USER_NAME>",
+        password="<YOUR_PASSWORD>"
     )
     return sql_handler
 
