@@ -13,15 +13,17 @@ logger = logging.getLogger(__name__)
 
 '''
 
+
 @pytest.fixture
-def weather_client_init() -> ScrapeHandler:
+def scrap_content_init() -> ScrapeHandler:
     scrap_handler = ScrapeHandler(
-        domain_url=["https://nitiforstates.gov.in/my_state"]
+        domain_urls=[""]
     )
     return scrap_handler
 
+
 class TestScrap:
 
-    async def test_scrap_content(self, weather_client_init: ScrapeHandler):
-        res = await weather_client_init.scrap_content()
-        assert isinstance(res, str)
+    async def test_scrap_content(self, scrap_content_init: ScrapeHandler):
+        res = await scrap_content_init.scrap_content()
+        assert isinstance(res, list)
