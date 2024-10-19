@@ -239,9 +239,8 @@ class Agent:
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
-                    _res = choice.message.content
-                    _res = _res.replace('```json', '')
-                    _res = _res.replace('```', '')
+                    _res = choice.message.content or ''
+                    _res = _res.replace('```json', '').replace('```', '')
                     try:
                         __res = json.loads(_res)
                         return GoalResult(
@@ -250,8 +249,8 @@ class Agent:
                             **__res
                         )
                     except JSONDecodeError as ex:
-                        _msg = 'Cannot parse verify goal content!'
-                        logger.error(_msg, exc_info=ex)
+                        _msg = f'Cannot verify goal!\n{ex}'
+                        logger.warning(_msg)
                         return GoalResult(
                             name=self.name,
                             agent_id=self.agent_id,

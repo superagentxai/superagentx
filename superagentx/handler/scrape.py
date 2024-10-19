@@ -2,6 +2,8 @@ from superagentx.handler.base import BaseHandler
 
 from crawl4ai import AsyncWebCrawler
 
+from superagentx.utils.helper import iter_to_aiter
+
 
 class ScrapeHandler(BaseHandler):
     """
@@ -42,15 +44,13 @@ class ScrapeHandler(BaseHandler):
 
        """
         async with AsyncWebCrawler(verbose=True) as crawler:
-            result = await crawler.arun_many(
+            results = await crawler.arun_many(
                 urls=self.domain_url
             )
-            contents = []
-            if result and result[0]:
-                for res in result:
-                    if res:
-                        contents.append(str(res.markdown))
-                return contents
+            if results:
+                return [
+                    res.markdown async for res in iter_to_aiter(results) if res
+                ]
 
     def __dir__(self):
         return (
