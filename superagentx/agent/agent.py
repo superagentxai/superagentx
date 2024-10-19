@@ -5,8 +5,6 @@ import uuid
 from json import JSONDecodeError
 from typing import Literal, Any
 
-import yaml
-
 from superagentx.agent.engine import Engine
 from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
