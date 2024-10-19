@@ -151,6 +151,7 @@ class GmailHandler(BaseHandler, ABC):
                     receiver = None
                     date = None
                     subject = None
+                    attachments = []
 
                     # Extract sender, receiver, and date from the headers
                     for header in headers:
@@ -174,18 +175,30 @@ class GmailHandler(BaseHandler, ABC):
                             if data:
                                 email_body = base64.urlsafe_b64decode(data).decode('utf-8')
                                 break
+                        if part.get('filename'):
+                            attachment_id = part['body'].get('attachmentId')
+                            if attachment_id:
+                                attachment = self._service.users().messages().attachments().get(
+                                    userId='me', messageId=msg['id'], id=attachment_id
+                                ).execute()
+                                file_data = base64.urlsafe_b64decode(attachment['data'])
+                                # Store the attachment information
+                                attachments.append({
+                                    "filename": part['filename'],
+                                    "data": file_data
+                                })
                     # Create a dictionary for the email data
                     email_data = {
                         "sender": sender,
                         "receiver": receiver,
                         "date": date,
                         "subject": subject,
-                        "email_body": email_body or "No body content found."
+                        "email_body": email_body or "No body content found.",
+                        "attachments": [{"filename": att["filename"], "data": "<binary data>"} for att in attachments]
                     }
 
                     # Add the email data dictionary to the list
                     email_data_list.append(email_data)
-
                 except HttpError as error:
                     print(f'An error occurred: {error}')
             return email_data_list

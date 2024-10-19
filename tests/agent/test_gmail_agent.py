@@ -51,6 +51,6 @@ class TestGmailAgent:
             engines=[gmail_engine],
         )
         result = await gmail_agent.execute(
-            query_instruction="Read mail and get last 5 days mail content"
+            query_instruction="Read mail and get today mail content and attachments"
         )
         logger.info(f"Result=>   {result}")
