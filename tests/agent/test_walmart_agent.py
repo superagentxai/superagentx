@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
@@ -49,7 +49,7 @@ class TestWalmartAgent:
             engines=[walmart_engine]
         )
         result = await walmart_agent.execute(
-            query_instruction="Get me the best product of blender with 4.5 ratings"
+            query_instruction="Get me the best product of Trimmer with 4.5 ratings"
         )
         logger.info(f"Result=>   {result}")
         assert result

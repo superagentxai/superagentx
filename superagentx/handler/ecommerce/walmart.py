@@ -70,7 +70,9 @@ class WalmartHandler(BaseHandler):
         logger.info(f"{_url}")
         headers = {
             'x-rapidapi-key': self.api_key,
-            'x-rapidapi-host': "walmart-product-info.p.rapidapi.com"
+            'x-rapidapi-host': "walmart-product-info.p.rapidapi.com",
+            'Content-Type':'application/json'
+
         }
         async with aiohttp.ClientSession() as session:
             async with session.get(
@@ -78,8 +80,7 @@ class WalmartHandler(BaseHandler):
                     headers=headers,
                     params=params
             ) as resp:
-                if resp.content_type =='application/json':
-                    return await resp.json()
+                return await resp.json()
 
     async def product_search(
             self,
