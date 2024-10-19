@@ -236,6 +236,7 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
+        logger.debug(f'Initial Prompt Message =>\n{prompt_message}')
         messages = prompt_message
         chat_completion_params = ChatCompletionParams(
             messages=messages
@@ -273,6 +274,13 @@ class Agent:
                             error=_msg,
                             is_goal_satisfied=False
                         )
+        else:
+            return GoalResult(
+                name=self.name,
+                agent_id=self.agent_id,
+                error='No results found!',
+                is_goal_satisfied=False
+            )
 
     async def _execute(
             self,

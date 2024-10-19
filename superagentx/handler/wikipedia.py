@@ -1,10 +1,15 @@
-from wikipediaapi import Wikipedia, WikipediaPage
-from superagentx.handler.base import BaseHandler
-from superagentx.handler.wikipedia.exceptions import InvalidAction
-
 import logging
 import re
+
+from wikipediaapi import Wikipedia, WikipediaPage
+
+from superagentx.handler.base import BaseHandler
+
 logger = logging.getLogger(__name__)
+
+
+class InvalidAction(Exception):
+    pass
 
 
 class WikipediaHandler(BaseHandler):

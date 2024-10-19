@@ -1,5 +1,5 @@
-import random
 import logging
+import random
 import uuid
 from abc import ABC
 
@@ -8,7 +8,6 @@ from openai.types.chat import ChatCompletion
 from superagentx.handler.base import BaseHandler
 from superagentx.llm import ChatCompletionParams, LLMClient
 from superagentx.utils.helper import iter_to_aiter, sync_to_async
-from tests.llm.test_bedrock_client import aws_bedrock_client_init
 
 logger = logging.getLogger(__name__)
 

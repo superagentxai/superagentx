@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 from abc import ABC
 
@@ -24,14 +23,14 @@ class CalenderHandler(BaseHandler, ABC):
     def __init__(
             self,
             *,
-            credentials: dict
+            credentials: str
     ):
         self.service = None
         self.creds = None
         logger.info(f'Calendar client initialization')
         self.credentials = credentials or {}
         self._service = self._connect()
-        
+
     def _connect(self):
         """
             Establish a connection to the Gmail API.
@@ -141,7 +140,7 @@ class CalenderHandler(BaseHandler, ABC):
         try:
             if days > 30 or days < 1:
                 message = f"Events are only being retrieved within the range of 1 to 30"
-                logger.error(message, exc_info=message)
+                logger.error(message)
                 raise ValueError(message)
             else:
                 today = datetime.datetime.today()
