@@ -51,6 +51,8 @@ This SuperAgentX example utilizes two handlers, Amazon and Walmart, to search fo
       4.2  Set Rapid API Key ([Free Subscription](https://rapidapi.com/auth/sign-up)) for Amazon, Walmart Search APIs </p>
 
 ```python 
+# python3 superagentx_examples/ecom_iopipe.py
+
 import asyncio
 import os
 import sys
