@@ -143,19 +143,6 @@ class Agent:
         else:
             self.engines.append(list(engines))
 
-    @staticmethod
-    async def _pre_result(
-            results: list[GoalResult] | None = None
-    ) -> list[str]:
-        if not results:
-            return []
-        return [
-            (f'Reason: {result.reason}\n'
-             f'Result: \n{yaml.dump(result.result)}\n'
-             f'Is Goal Satisfied: {result.is_goal_satisfied}\n\n')
-            async for result in iter_to_aiter(results)
-        ]
-
     async def _verify_goal(
             self,
             *,
