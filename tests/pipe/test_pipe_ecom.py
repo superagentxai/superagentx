@@ -22,10 +22,11 @@ from superagentx.prompt import PromptTemplate
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+    # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
-    response = {'llm': llm_client, 'llm_type': 'openai'}
+    response = {'llm': llm_client}
     return response
 
 

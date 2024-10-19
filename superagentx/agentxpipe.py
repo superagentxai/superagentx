@@ -7,6 +7,7 @@ import yaml
 from superagentx.agent.agent import Agent
 from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
+from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm.types.base import logger
 from superagentx.memory import Memory
 from superagentx.utils.helper import iter_to_aiter
@@ -21,7 +22,8 @@ class AgentXPipe:
             name: str | None = None,
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
-            memory: Memory | None = None
+            memory: Memory | None = None,
+            stop_if_goal_not_satisfied: bool = False
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -45,6 +47,10 @@ class AgentXPipe:
                 These agents can perform tasks and contribute to achieving the defined goal.
             memory: An optional memory instance that allows the agent to retain information across interactions.
                 This can enhance the pipe's contextual awareness and improve its performance over time.
+            stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
+                When set to True, the agentxpipe operation will halt if the defined goal is not met,
+                preventing any further actions. Defaults to False, allowing the process to continue regardless
+                of goal satisfaction.
         """
         self.pipe_id = pipe_id
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
@@ -54,6 +60,7 @@ class AgentXPipe:
         if self.memory:
             self.memory_id = uuid.uuid4().hex
             self.chat_id = uuid.uuid4().hex
+        self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
 
     def __str__(self):
         return "AgentXPipe"
@@ -171,42 +178,54 @@ class AgentXPipe:
             self,
             query_instruction: str
     ):
+        trigger_break = False
         results = []
         old_memory = None
         async for _agents in iter_to_aiter(self.agents):
             pre_result = await self._pre_result(results=results)
             if self.memory:
                 old_memory = await self.retrieve_memory(query_instruction)
+                logger.info(f"Old Memory: {old_memory}")
                 if old_memory:
                     message_content = ""
                     async for _mem in iter_to_aiter(old_memory):
                         message_content += f"{_mem.get('content')} "
                     old_memory = f"Context:\n{message_content}\nQuestion: {query_instruction}"
-            if isinstance(_agents, list):
-                _res = await asyncio.gather(
-                    *[
-                        _agent.execute(
-                            query_instruction=query_instruction,
-                            pre_result=pre_result,
-                            old_memory=old_memory
-                        )
-                        async for _agent in iter_to_aiter(_agents)
-                    ]
-                )
-            else:
-                _res = await _agents.execute(
-                    query_instruction=query_instruction,
-                    pre_result=pre_result,
-                    old_memory=old_memory
-                )
-            if self.memory:
-                assistant = {
-                    "role": "assistant",
-                    "content": f"{yaml.dump(_res.result)}",
-                    "reason": _res.reason
-                }
-                await self.add_memory([assistant])
+            try:
+                if isinstance(_agents, list):
+                    _res = await asyncio.gather(
+                        *[
+                            _agent.execute(
+                                query_instruction=query_instruction,
+                                pre_result=pre_result,
+                                old_memory=old_memory,
+                                stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
+                            )
+                            async for _agent in iter_to_aiter(_agents)
+                        ]
+                    )
+                else:
+                    _res = await _agents.execute(
+                        query_instruction=query_instruction,
+                        pre_result=pre_result,
+                        old_memory=old_memory,
+                        stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
+                    )
+                if self.memory:
+                    assistant = {
+                        "role": "assistant",
+                        "content": f"{yaml.dump(_res.result)}",
+                        "reason": _res.reason
+                    }
+                    await self.add_memory([assistant])
+            except StopSuperAgentX as ex:
+                trigger_break = True
+                logger.warning(ex)
+                _res = ex.goal_result
+
             results.append(_res)
+            if trigger_break:
+                break
         return results
 
     async def flow(

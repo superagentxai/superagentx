@@ -10,6 +10,7 @@ import yaml
 from superagentx.agent.engine import Engine
 from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
+from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter
@@ -180,9 +181,8 @@ class Agent:
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
-                    _res = choice.message.content
-                    _res = _res.replace('```json', '')
-                    _res = _res.replace('```', '')
+                    _res = choice.message.content or ''
+                    _res = _res.replace('```json', '').replace('```', '')
                     try:
                         __res = json.loads(_res)
                         return GoalResult(
@@ -191,14 +191,13 @@ class Agent:
                             **__res
                         )
                     except JSONDecodeError as ex:
-                        _msg = 'Cannot parse verify goal content!'
-                        logger.error(_msg, exc_info=ex)
+                        _msg = f'Cannot verify goal!\n{ex}'
+                        logger.warning(_msg)
                         return GoalResult(
                             name=self.name,
                             agent_id=self.agent_id,
                             content=_res,
-                            error=_msg,
-                            is_goal_satisfied=False
+                            error=_msg
                         )
 
     async def _execute(
@@ -238,9 +237,11 @@ class Agent:
 
     async def execute(
             self,
+            *,
             query_instruction: str,
             pre_result: str | None = None,
-            old_memory: str | None = None
+            old_memory: str | None = None,
+            stop_if_goal_not_satisfied: bool = False
     ) -> GoalResult | None:
         """
         Executes the specified query instruction to achieve a defined goal.
@@ -256,6 +257,10 @@ class Agent:
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
             old_memory: An optional previous context of the user's instruction
+            stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
+                When set to True, the agent operation will halt if the defined goal is not met,
+                preventing any further actions. Defaults to False, allowing the process to continue regardless
+                of goal satisfaction.
 
         Returns:
             GoalResult | None
@@ -273,6 +278,11 @@ class Agent:
             )
             if _goal_result.is_goal_satisfied:
                 return _goal_result
+            elif _goal_result.is_goal_satisfied is False and stop_if_goal_not_satisfied:
+                raise StopSuperAgentX(
+                    message='Superagentx stopped forcefully since `stop` flag has been set!',
+                    goal_result=_goal_result
+                )
 
         logger.warning(f"Done agent `{self.name}` max retry {self.max_retry}!")
         return _goal_result

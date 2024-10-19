@@ -30,9 +30,24 @@ SuperAgentX is an advanced agentic AI framework designed to accelerate the devel
 
 SuperAgentX is designed to address the growing need for highly capable, autonomous AI systems that can perform complex tasks with minimal human intervention. As we approach the limits of narrow AI, there's a need for an adaptable and scalable framework to bridge the gap toward AGI (Artificial General Intelligence). Here’s why SuperAgentX stands out:
 
+**Super** : Cutting-edge AI systems with exceptional capabilities, paving the way to **AGI** (Artificial General Intelligence) and **ASI** (Artificial Super Intelligence).</p>
+**Agent** : Autonomous Multi AI agent framework designed to make decisions, act independently, and handle complex tasks. </p>
+**X**     : The unknown, the limitless, the extra factor that makes SuperAgentX revolutionary, futuristic, and transformative.</p>
+
+## Architecture
+
+<img src="docs/images/architecture.png">
+
+
 ## Getting Started
 
 ## Key Features
+  1. Websocket
+  2. IO Console
+  3. Restful API
+4. Sequential / Parallel
+5. 
+
 
 ## Environment Setup
 ```shell
@@ -43,41 +58,9 @@ $ source venv/bin/activate
 (venv) $ poetry install
 ```
 
-## Installing Dependencies
-```bash
-poetry shell
-```
-
-### Pre-commit hooks
-
-```bash
-pre-commit install
-```
-
-### Running Tests
-
-```bash
-poetry run pytest
-```
-
-### Running static type checks
-
-```bash
-poetry run mypy
-```
-
-### Packaging
-
-```bash
-poetry build
-```
-
-### Installing Locally
-
-```bash
-pip install dist/*.tar.gz
-```
-
 ## Contribution
 
 ## License
+
+SuperAgentX is released under the MIT License.
+
