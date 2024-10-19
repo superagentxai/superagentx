@@ -10,7 +10,6 @@ from superagentx.agent.result import GoalResult
 from superagentx.constants import SEQUENCE
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
-from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter
 
@@ -62,8 +61,7 @@ class Agent:
             description: str | None = None,
             engines: list[Engine | list[Engine]] | None = None,
             output_format: str | None = None,
-            max_retry: int = 5,
-            memory: Memory | None = None
+            max_retry: int = 5
     ):
         """
         Initializes a new instance of the Agent class.
@@ -92,8 +90,6 @@ class Agent:
             max_retry: The maximum number of retry attempts for operations that may fail.
                 Default is set to 5. This is particularly useful in scenarios where transient errors may occur,
                 ensuring robust execution.
-            memory: An optional memory instance that allows the agent to retain information across interactions.
-                This can enhance the agent's contextual awareness and improve its performance over time.
         """
         self.role = role
         self.goal = goal
@@ -105,10 +101,6 @@ class Agent:
         self.engines: list[Engine | list[Engine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry
-        self.memory = memory
-        if self.memory:
-            self.memory_id = uuid.uuid4().hex
-            self.chat_id = uuid.uuid4().hex
 
     def __str__(self):
         return "Agent"
@@ -149,65 +141,6 @@ class Agent:
         else:
             self.engines.append(list(engines))
 
-    async def add_memory(
-            self,
-            prompt_instruction: list[dict]
-    ) -> None:
-        """
-        Adds a list of prompt instructions to the memory of the agent.
-
-        This method is designed to enhance the agent's contextual awareness by storing
-        relevant prompt instructions in its memory. The stored instructions can be
-        referenced in future interactions, allowing the agent to recall important
-        information and improve its responses over time.
-
-        Args:
-            prompt_instruction: A list of dictionaries containing prompt instructions to be added to the agent's memory.
-                Each dictionary should contain structured data relevant to the prompts, which may include keys such as
-                'text', 'context', or any other relevant attributes that define the prompt instructions.
-
-        Returns:
-            None
-        """
-        async for prompt in iter_to_aiter(prompt_instruction):
-            await self.memory.add(
-                memory_id=self.memory_id,
-                chat_id=self.chat_id,
-                message_id=uuid.uuid4().hex,
-                role=prompt.get("role"),
-                data=prompt.get("content")
-            )
-
-    async def retrieve_memory(
-            self,
-            query_instruction: str
-    ) -> list[dict]:
-        """
-        Retrieves a list of prompt instructions from the agent's memory based on the provided query instruction.
-
-        This method allows the agent to search its memory for stored prompt instructions
-        that match or are relevant to the given query. The retrieved instructions can be
-        used to inform responses, provide context, or assist in decision-making during
-        future interactions.
-
-        Args:
-            query_instruction: A string representing the query used to search the agent's memory.
-                This instruction should be formulated in a way that allows the agent to identify relevant stored
-                prompts.
-
-        Returns:
-            list[dict]
-                A list of dictionaries containing the retrieved prompt instructions that match the query.
-                Each dictionary represents an instruction and may contain keys such as 'text', 'context',
-                and other relevant attributes that describe the prompt.
-        """
-        return await self.memory.search(
-            query=query_instruction,
-            memory_id=self.memory_id,
-            chat_id=self.chat_id,
-            limit=10,
-        )
-
     async def _verify_goal(
             self,
             *,
@@ -222,17 +155,10 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
-        logger.debug(f'Initial Prompt Message =>\n{prompt_message}')
         messages = prompt_message
         chat_completion_params = ChatCompletionParams(
             messages=messages
         )
-        if self.memory:
-            old_memory = await self.retrieve_memory(query_instruction)
-            if old_memory:
-                chat_completion_params = ChatCompletionParams(
-                    messages=messages + old_memory
-                )
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
@@ -269,17 +195,13 @@ class Agent:
     async def _execute(
             self,
             query_instruction: str,
-            pre_result: str | None = None
+            pre_result: str | None = None,
+            old_memory: str | None = None
     ) -> GoalResult:
         results = []
         instruction = query_instruction
-        if self.memory:
-            old_memory = await self.retrieve_memory(query_instruction)
-            if old_memory:
-                message_content = ""
-                async for _mem in iter_to_aiter(old_memory):
-                    message_content += f"{_mem.get('content')} "
-                instruction = f"Context:\n{message_content}\nQuestion: {query_instruction}"
+        if old_memory:
+            instruction = f"Context:\n{old_memory}\nQuestion: {query_instruction}"
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 _res = await asyncio.gather(
@@ -307,8 +229,10 @@ class Agent:
 
     async def execute(
             self,
+            *,
             query_instruction: str,
             pre_result: str | None = None,
+            old_memory: str | None = None,
             stop_if_goal_not_satisfied: bool = False
     ) -> GoalResult | None:
         """
@@ -324,6 +248,7 @@ class Agent:
                 This should be a clear and actionable statement that the method can execute.
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
+            old_memory: An optional previous context of the user's instruction
             stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
                 When set to True, the agent operation will halt if the defined goal is not met,
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
@@ -340,15 +265,10 @@ class Agent:
             logger.info(f"Agent `{self.name}` retry {_retry}")
             _goal_result = await self._execute(
                 query_instruction=query_instruction,
-                pre_result=pre_result
+                pre_result=pre_result,
+                old_memory=old_memory
             )
             if _goal_result.is_goal_satisfied:
-                if self.memory:
-                    assistant = {
-                        "role": "assistant",
-                        "content": _goal_result.reason
-                    }
-                    await self.add_memory([assistant])
                 return _goal_result
             elif _goal_result.is_goal_satisfied is False and stop_if_goal_not_satisfied:
                 raise StopSuperAgentX(

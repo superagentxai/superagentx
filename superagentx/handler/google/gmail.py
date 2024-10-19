@@ -5,10 +5,11 @@ from email.message import EmailMessage
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.google.exceptions import AuthException
-from superagentx.utils.helper import sync_to_async
+from superagentx.utils.helper import sync_to_async, iter_to_aiter
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +104,130 @@ class GmailHandler(BaseHandler, ABC):
             )
         except Exception as ex:
             message = f"Error while Getting Profile"
+            logger.error(message, exc_info=ex)
+            raise
+
+    async def read_mail(
+            self,
+    ):
+        try:
+            events = await sync_to_async(
+                self._service.users
+            )
+            service_messages = await sync_to_async(
+                events.messages
+            )
+            service_lists = await sync_to_async(
+                service_messages.list,
+                userId='me'
+            )
+            result = await sync_to_async(
+                service_lists.execute
+            )
+            messages = result.get('messages', [])
+
+            email_data_list = []
+            async for msg in iter_to_aiter(messages):
+                try:
+                    events = await sync_to_async(
+                        self._service.users
+                    )
+                    service_messages = await sync_to_async(
+                        events.messages
+                    )
+                    service_get = await sync_to_async(
+                        service_messages.get,
+                        userId='me',
+                        id=msg.get('id')
+                    )
+                    txt = await sync_to_async(
+                        service_get.execute
+                    )
+                    # Get the payload from the message
+                    payload = txt.get('payload', {})
+
+                    # Initialize variables for sender, receiver, and date
+                    sender = None
+                    receiver = None
+                    date = None
+                    subject = None
+                    email_body = None
+                    attachments = []
+
+                    headers = payload.get('headers', [])
+                    # Extract sender, receiver, and date from the headers
+                    async for header in iter_to_aiter(headers):
+                        _name = (header.get('name', '')).lower()
+                        _value = header.get('value')
+                        match _name:
+                            case 'from':
+                                sender = _value
+                            case 'to':
+                                receiver = _value
+                            case 'date':
+                                date = _value
+                            case 'subject':
+                                subject = _value
+
+                    parts = payload.get('parts', [])
+                    # Extract the email body, which is usually the 'data' field in the payload
+                    async for part in iter_to_aiter(parts):
+                        _body = part.get('body', {})
+                        if part.get('mimeType', '') == 'text/plain':  # You can also check for 'text/html'
+                            data = _body.get('data')
+                            if data:
+                                email_body = base64.urlsafe_b64decode(data).decode('utf-8')
+                                break
+                        if part.get('filename'):
+                            attachment_id = _body.get('attachmentId')
+                            if attachment_id:
+                                events = await sync_to_async(
+                                    self._service.users
+                                )
+                                att_messages = await sync_to_async(
+                                    events.messages
+                                )
+                                service_attachment = await sync_to_async(
+                                    att_messages.attachments
+                                )
+                                get_attachment = await sync_to_async(
+                                    service_attachment.get,
+                                    userId='me',
+                                    messageId=msg.get('id'),
+                                    id=attachment_id
+                                )
+                                attachment = await sync_to_async(
+                                    get_attachment.execute
+                                )
+                                file_data = base64.urlsafe_b64decode(attachment.get('data'))
+                                # Store the attachment information
+                                attachments.append({
+                                    "filename": part.get('filename'),
+                                    "data": file_data
+                                })
+                    # Create a dictionary for the email data
+                    email_data = {
+                        "sender": sender,
+                        "receiver": receiver,
+                        "date": date,
+                        "subject": subject,
+                        "email_body": email_body or "No body content found.",
+                        "attachments": [
+                            {
+                                "filename": att.get("filename")
+                            }
+                            async for att in iter_to_aiter(attachments)
+                        ]
+                    }
+
+                    # Add the email data dictionary to the list
+                    email_data_list.append(email_data)
+                except HttpError as error:
+                    logger.error(f'An error occurred: {error}')
+            return email_data_list
+
+        except Exception as ex:
+            message = f"Error while Reading Mail"
             logger.error(message, exc_info=ex)
             raise
 
@@ -226,4 +351,5 @@ class GmailHandler(BaseHandler, ABC):
             'get_user_profile',
             'send_email',
             'create_draft_email',
+            'read_mail'
         )

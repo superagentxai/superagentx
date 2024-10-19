@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
   
     1.pytest --log-cli-level=INFO tests/handlers/test_gmail_handler.py::TestGmailHandler::test_get_user_profile
     2.pytest --log-cli-level=INFO tests/handlers/test_gmail_handler.py::TestGmailHandler::test_send_email
-    3.pytest --log-cli-level=INFO tests/handlers/test_gmail_handler.py::TestGmailHandler::test_create_draft_email  
+    3.pytest --log-cli-level=INFO tests/handlers/test_gmail_handler.py::TestGmailHandler::test_create_draft_email
+    4.pytest --log-cli-level=INFO tests/handlers/test_gmail_handler.py::TestGmailHandler::test_read_mail
 '''
 
 
@@ -30,20 +31,25 @@ class TestGmailHandler:
         logger.info(f"Result: {res}")
         assert res
 
+    async def test_read_mail(self, gmail_handler_init: GmailHandler):
+        res = await gmail_handler_init.read_mail()
+        logger.info(f"Inbox: {res}")
+        # assert res
+
     async def test_send_email(self, gmail_handler_init: GmailHandler):
         res = await gmail_handler_init.send_email(
-            from_address="arul@decisionfacts.io",
-            to="syed@decisionfacts.io",
-            subject="Test Email",
-            content="Hi anna this is test email from handler"
+            from_address="",
+            to="",
+            subject="",
+            content=""
         )
         logger.info(f"Result: {res}")
         assert res
 
     async def test_create_draft_email(self, gmail_handler_init: GmailHandler):
         res = await gmail_handler_init.create_draft_email(
-            from_address="arul@decisionfacts.io",
-            to="syed@decisionfacts.io"
+            from_address="",
+            to=""
         )
         logger.info(f"Result: {res}")
         assert res

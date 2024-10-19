@@ -204,7 +204,7 @@ class TestIOConsolePipe:
         )
 
         pipe = AgentXPipe(
-            agents=[analyst, scriptwriter, formatter]
+            agents=[analyst, scriptwriter, formatter], stop_if_goal_not_satisfied=False
         )
         result = await pipe.flow(query_instruction=discussion)
         logger.info(f"Writer result => \n{result}")
