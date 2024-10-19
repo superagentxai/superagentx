@@ -22,7 +22,7 @@ async def main():
     """
     Launches the e-commerce pipeline console client for processing requests and handling data.
     """
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'llm_type': 'azure-openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     memory = Memory()

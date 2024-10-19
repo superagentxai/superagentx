@@ -41,6 +41,7 @@ class LLMModelConfig(BaseModel):
 
     @model_validator(mode="after")
     def __validate_variables__(self) -> Self:
+
         if not LLMType.has_member_value(self.llm_type):
             _msg = (
                 f'LLM llm_type is should be one of the following '
@@ -48,9 +49,6 @@ class LLMModelConfig(BaseModel):
             )
             logger.error(_msg)
             raise ValueError(_msg)
-
-        elif LLMType.AZURE_OPENAI_CLIENT.value == self.llm_type and not self.api_version:
-            raise ValueError('API Version should not be empty for Azure OpenAI')
         return self
 
     @model_validator(mode="after")
