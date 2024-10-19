@@ -90,8 +90,33 @@ class ConfluenceHandler(BaseHandler):
             logger.error(message, exc_info={ex})
             raise Exception(message)
 
+    async def last_updated_pages(
+            self,
+            *,
+            space_key: str,
+            title: str,
+            start: int = 0,
+            limit: int = 1
+    ):
+        try:
+            result = await sync_to_async(
+                self._connection.get_page_by_title,
+                space=space_key,
+                title=title,
+                start=start,
+                limit=limit,
+                expand='title,history.lastUpdated',
+                type="page"
+            )
+            return result['history']
+        except Exception as ex:
+            message = f"Error While getting last updated info! {ex}"
+            logger.error(message, exc_info={ex})
+            raise Exception(message)
+
     def __dir__(self):
         return (
             'get_all_spaces',
             'get_pages_spaces',
+            'last_updated_pages'
         )
