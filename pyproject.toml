@@ -2,10 +2,18 @@
 name = "superagentx"
 version = "0.1.0"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
+license = "MIT"
 authors = [
-    "SuperAgentX AI <prabhu@decisionfacts.io>"
+    "SuperAgentX AI <prabhu@decisionfacts.io>",
+]
+maintainers = [
+    "SuperAgentX AI <prabhu@decisionfacts.io>",
 ]
 readme = "README.md"
+homepage = "https://www.superagentx.ai/"
+repository = "https://github.com/decisionfacts/superagentX"
+documentation = "https://docs.superagentx.ai/"
+keywords = ["superagentX", "superagentx", "agent"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
