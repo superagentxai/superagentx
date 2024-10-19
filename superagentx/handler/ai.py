@@ -19,6 +19,7 @@ class AIHandler(BaseHandler):
     async def text_creation(
             self,
             *,
+            system_message: str = 'You are a helpful assistant.',
             instruction: str
     ):
         """
@@ -27,13 +28,14 @@ class AIHandler(BaseHandler):
         for tasks like preparing data, generating messages, or any other text-related activity.
 
         Args:
-            instruction(str):  A string containing the instruction or prompt that guides the text generation process.
+            @param instruction: A string containing the user instruction or prompt that guides the text generation process.
+            @param system_message: LLM System Message
 
         """
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant."
+                "content": system_message
             },
             {
                 "role": "user",

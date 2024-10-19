@@ -64,7 +64,6 @@ class OpenAIClient(Client):
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = await self.client.chat.completions.create(**params)
-        logger.info(f"Bedrock Message {chat_completion_response} ")
         return chat_completion_response
 
     @staticmethod
