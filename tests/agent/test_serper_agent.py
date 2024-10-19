@@ -1,10 +1,10 @@
 import logging
 import pytest
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.serper_dev import SerperDevToolHandler
-from agentx.llm import LLMClient
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.serper_dev import SerperDevToolHandler
+from superagentx.llm import LLMClient
+from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
 

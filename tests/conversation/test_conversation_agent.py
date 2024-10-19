@@ -1,15 +1,14 @@
-import datetime
 import logging
 import uuid
 from enum import Enum
 
 import pytest
 
-from agentx.io import IOConsole
-from agentx.llm import LLMClient, ChatCompletionParams
-from agentx.memory import Memory
-from agentx.utils.console_color import ConsoleColorType
-from agentx.utils.helper import iter_to_aiter
+from superagentx.io import IOConsole
+from superagentx.llm import LLMClient, ChatCompletionParams
+from superagentx.memory import Memory
+from superagentx.utils.console_color import ConsoleColorType
+from superagentx.utils.helper import iter_to_aiter
 
 logger = logging.getLogger(__name__)
 
@@ -54,25 +53,21 @@ class TestConversationAgent:
             messages=message
         )
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
-        result = response.choices[0].message.content
-        return result
+        return response.choices[0].message.content
 
     @staticmethod
-    async def _get_history(user_id: str, chat_id: str, memory_client: Memory) -> list[dict]:
-        messages = []
+    async def _get_history(query: str, memory_id: str, chat_id: str, memory_client: Memory) -> list[dict]:
         response = await memory_client.get(
-            user_id=user_id,
+            memory_id=memory_id,
             chat_id=chat_id
         )
-
-        async for data in iter_to_aiter(response):
-            if (user_id == data.get("user_id")) and (chat_id == data.get("chat_id")):
-                message = {
-                    "role": data.get("role"),
-                    "content": data.get("message")
-                }
-                messages.append(message)
-        return messages
+        return [
+            {
+                "role": message.get("role"),
+                "content": message.get("data")
+            }
+            async for message in iter_to_aiter(response)
+        ]
 
     async def test_conversation_agent(self, clients_init: dict):
         io_console: IOConsole = clients_init.get("io_console")
@@ -86,38 +81,31 @@ class TestConversationAgent:
         await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
         await io_console.write("Hello, Super AgentX World!", flush=True)
 
-        user_id = "55e497f4010d4eda909691272eaf31fb"
+        memory_id = "55e497f4010d4eda909691272eaf31fb"
         chat_id = "915ec91bc2654f8da3af800c0bf6eca9"
 
         while True:
             # Getting input from the console
             await io_console.write(ConsoleColorType.CYELLOW2.value, end="")
-            data = await io_console.read("User: ")
+            user_input = await io_console.read("User: ")
             await memory_client.add(
-                user_id=user_id,
+                memory_id=memory_id,
                 chat_id=chat_id,
-                message_id=str(uuid.uuid4().hex),
-                event="ADD",
+                message_id=uuid.uuid4().hex,
                 role=RoleEnum.USER,
-                message=data,
-                created_at=datetime.datetime.now(),
-                updated_at=datetime.datetime.now(),
-                is_deleted=False
+                data=user_input
             )
-            get_message = await self._get_history(user_id, chat_id, memory_client)
+            get_message = await self._get_history(user_input, memory_id, chat_id, memory_client)
+            logger.info(f"Before LLM: {get_message}")
             llm_res = await self._llm_response(get_message, llm_client)
             await memory_client.add(
-                user_id=user_id,
+                memory_id=memory_id,
                 chat_id=chat_id,
                 message_id=str(uuid.uuid4().hex),
-                event="ADD",
                 role=RoleEnum.ASSISTANT,
-                message=llm_res,
-                created_at=datetime.datetime.now(),
-                updated_at=datetime.datetime.now(),
-                is_deleted=False
+                data=llm_res
             )
-            if data in exit_conditions:
+            if user_input in exit_conditions:
                 break
             else:
                 await io_console.write(ConsoleColorType.CGREEN2.value, end="")

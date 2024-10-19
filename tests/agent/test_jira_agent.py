@@ -3,12 +3,12 @@ import os
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.constants import SEQUENCE
-from agentx.handler.jira import JiraHandler
-from agentx.llm import LLMClient
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.constants import SEQUENCE
+from superagentx.handler.jira import JiraHandler
+from superagentx.llm import LLMClient
+from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
 

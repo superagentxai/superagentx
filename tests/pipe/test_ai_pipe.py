@@ -2,12 +2,12 @@ import logging
 
 import pytest
 
-from agentx.agent.agent import Agent
-from agentx.agent.engine import Engine
-from agentx.handler.ai import AIHandler
-from agentx.llm import LLMClient
-from agentx.pipe import AgentXPipe
-from agentx.prompt import PromptTemplate
+from superagentx.agent.agent import Agent
+from superagentx.agent.engine import Engine
+from superagentx.handler.ai import AIHandler
+from superagentx.llm import LLMClient
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,9 @@ discussion = """From: jane@edu.tech.net (Jane Mitchell)
 
 @pytest.fixture
 def ai_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    # llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+
+    llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     content_handler = AIHandler(llm=llm_client)
@@ -181,7 +183,8 @@ class TestIOConsolePipe:
         scriptwriter = Agent(
             name='Scriptwriter Agent',
             goal="Turn a conversation into a movie script. Only write the dialogue parts. "
-                 "Do not start the sentence with an action. Do not specify situational descriptions. Do not write parentheticals.",
+                 "Do not start the sentence with an action. Do not specify situational descriptions. Do not write "
+                 "parentheticals.",
             role="scriptwriter",
             llm=llm_client,
             prompt_template=prompt_template,
