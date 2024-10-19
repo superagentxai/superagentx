@@ -17,7 +17,9 @@ class TestWikiAIPipe:
 
     async def test_wiki_ai_sequence_pipe(self):
         # llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
-        llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
+        # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
+        # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock'}
+        llm_config = {'model': 'mistral.mistral-large-2402-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
         llm_client: LLMClient = LLMClient(llm_config=llm_config)
         content_handler = AIHandler(llm=llm_client)
         prompt_template = PromptTemplate()
@@ -32,7 +34,8 @@ class TestWikiAIPipe:
             role="Content Retriever",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[wikipedia_engine]
+            engines=[wikipedia_engine],
+            max_retry=1
         )
 
         ai_agent_engine = Engine(
@@ -48,7 +51,8 @@ class TestWikiAIPipe:
             role="Biographer",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_agent_engine]
+            engines=[ai_agent_engine],
+            max_retry=3
         )
 
         pipe = AgentXPipe(

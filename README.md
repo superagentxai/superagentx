@@ -35,18 +35,50 @@ SuperAgentX is designed to address the growing need for highly capable, autonomo
 **X**     : The unknown, the limitless, the extra factor that makes SuperAgentX revolutionary, futuristic, and transformative.</p>
 
 ## Architecture
+![architecture.png](docs%2Fimages%2Farchitecture.png)
 
-<img src="docs/images/architecture.png">
+## Large Language Models
+
+| Icon                                                                                          | LLM Name      | Status                                                                                   |
+|-----------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------------------------------------|
+| <img src="./docs/images/llms/openai.png" title="OpenAI" height="20" width="20"/>              | OpenAI        | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |
+| <img src="./docs/images/llms/azure-icon.png" title="Azure OpenAI" height="20" width="20"/>    | Azure OpenAI  | <img src="./docs/images/checkmark.png" title="Tested" height="20" width="20"/>           |  
+| <img src="./docs/images/llms/awsbedrock.png" title="AWS Bedrock" height="20" width="20"/>     | AWS Bedrock   | <img src="./docs/images/beta.png" title="Testing Inprogress" height="20" width="20"/>    |
+| <img src="./docs/images/llms/gemini.png" title="Google Gemini" height="20" width="20"/>       | Google Gemini | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
+| <img src="./docs/images/llms/meta.png" title="Google Gemini" height="20" width="20"/>         | Meta Llama    | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
+| <img src="./docs/images/llms/ollama.png" title="Ollama" height="20" width="20"/>              | Ollama        | <img src="./docs/images/wip.png" title="Development Inprogress" height="20" width="20"/> |
+| <img src="./docs/images/llms/claude-ai-logo.png" title="Claude AI" height="20" width="20"/>   | Claude AI     | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
+| <img src="./docs/images/llms/mistral-ai-logo.png" title="Mistral AI" height="20" width="30"/> | Mistral AI    | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
+| <img src="./docs/images/llms/ibm.png" title="IBM WatsonX AI" height="20" width="30"/>         | IBM WatsonX   | <img src="./docs/images/todo.png" title="TODO" height="20" width="20"/>                  |
 
 
 ## Getting Started
 
 ## Key Features
-  1. Websocket
-  2. IO Console
-  3. Restful API
-4. Sequential / Parallel
-5. 
+
+#### Easy-to-Publish Interfaces
+**Pipe** - WebSocket, Interactive Cli Console, and RESTFul API (Coming Soon) enable a smooth and real-time interface for users and systems to interact with SuperAgentX. 
+
+#### Advanced Handler Engines
+Handler Engines (Tools) operate either in parallel or sequentially, passing the output from one engine to the input of another. This flexible orchestration enhances efficiency, allowing agents to work in perfect harmony for complex tasks.
+
+#### Multi-Mode Agents
+Goal oriented agents with auto retry feature based on threshold, helps to achieve expected results. SuperAgentX supports agents running in parallel, sequential, or a hybrid mode (a combination of both). This ensures optimized task execution, whether processes are dependent or independent.
+
+#### Intelligent Context Memory
+A robust Context Memory captures user interactions and environmental data, enabling the system to provide efficient RAG (Retrieval-Augmented Generation) search features, significantly reducing operational costs by handling data intelligently.
+
+#### Ease of Configuration for LLM Support in SuperAgentX
+SuperAgentX supports multiple LLMs, including **OpenAI**, **Azure OpenAI**, **AWS Bedrock LLMs**, **Llama 3+**, **Gemini AI**, **Claude AI**, **Ollama** and **IBM WatsonX** is designed to effortlessly integrate with a variety of Large Language Models (LLMs), providing a smooth and flexible setup process.
+
+#### Continuous Learning
+Through built-in feedback mechanisms, SuperAgentX continuously learns and adapts, allowing it to memorize and improve its performance for future interactions.
+
+#### Adaptability and Personalization
+Highly adaptable and flexible, SuperAgentX can be extended and trained to create personalized **AGI** (Artificial General Intelligence) systems, ensuring that it meets specific needs and scenarios.
+
+### Simplified Autonomous Framework
+The **Autonomous Multi-Agent Framework** simplifies the deployment of intelligent, autonomous systems, offering a foundation with **AGI** extendability capabilities, enabling a smooth evolution toward general intelligence.
 
 
 ## Environment Setup
