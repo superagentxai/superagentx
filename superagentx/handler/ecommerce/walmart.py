@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class WalmartHandler(BaseHandler):
-    base_url: str = "https://walmart-product-info.p.rapidapi.com"
+    base_host: str = 'walmart-product-info.p.rapidapi.com'
+    base_url: str = f'https://{base_host}'
 
     def __init__(
             self,
@@ -70,7 +71,7 @@ class WalmartHandler(BaseHandler):
         logger.info(f"{_url}")
         headers = {
             'x-rapidapi-key': self.api_key,
-            'x-rapidapi-host': "walmart-product-info.p.rapidapi.com",
+            'x-rapidapi-host': self.base_host,
             'Content-Type':'application/json'
 
         }
