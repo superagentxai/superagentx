@@ -4,12 +4,14 @@ import sys
 
 from rich import print as rprint
 
+from superagentx.memory import Memory
+
 sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
 
 from superagentx.agent.agent import Agent
 from superagentx.agent.engine import Engine
 from superagentx.handler.ecommerce.amazon import AmazonHandler
-from superagentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx.handler.ecommerce.walmart import WalmartHandler
 from superagentx.llm import LLMClient
 from superagentx.agentxpipe import AgentXPipe
 from superagentx.pipeimpl.iopipe import IOPipe
@@ -23,12 +25,13 @@ async def main():
     llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
+    memory = Memory()
     amazon_ecom_handler = AmazonHandler(
-        api_key=os.getenv('RAPID_API_KEY'),
+        api_key="",
         country="IN"
     )
-    flipkart_ecom_handler = FlipkartHandler(
-        api_key=os.getenv('RAPID_API_KEY'),
+    walmart_ecom_handler = WalmartHandler(
+        api_key="",
     )
     prompt_template = PromptTemplate()
     amazon_engine = Engine(
@@ -36,8 +39,8 @@ async def main():
         llm=llm_client,
         prompt_template=prompt_template
     )
-    flipkart_engine = Engine(
-        handler=flipkart_ecom_handler,
+    walmart_engine = Engine(
+        handler=walmart_ecom_handler,
         llm=llm_client,
         prompt_template=prompt_template
     )
@@ -47,10 +50,11 @@ async def main():
         role="You are the best product searcher",
         llm=llm_client,
         prompt_template=prompt_template,
-        engines=[[amazon_engine, flipkart_engine]]
+        engines=[[amazon_engine, walmart_engine]]
     )
     pipe = AgentXPipe(
-        agents=[ecom_agent]
+        agents=[ecom_agent],
+        memory=memory
     )
     io_pipe = IOPipe(
         search_name='SuperAgentX Ecom',
