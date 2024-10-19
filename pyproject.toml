@@ -13,7 +13,7 @@ readme = "README.md"
 homepage = "https://www.superagentx.ai/"
 repository = "https://github.com/decisionfacts/superagentX"
 documentation = "https://docs.superagentx.ai/"
-keywords = ["superagentX", "superagentx", "agent"]
+keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
