@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
@@ -70,7 +70,7 @@ class TestAtlassianAgent:
         )
 
         result = await atlassian_agent.execute(
-            query_instruction="Give me all the spaces in confluence"
+            query_instruction="Give me all the spaces"
         )
         logger.info(f"Result => {result}")
 
