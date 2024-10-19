@@ -133,6 +133,8 @@ class Engine:
                                     results.append(res)
                                 else:
                                     results.append(await self.output_parser.parse(res))
+                        else:
+                            logger.warning(f'Not valid handler final func {func}!')
             else:
                 results.append(message.content)
         return results

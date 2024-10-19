@@ -52,7 +52,8 @@ class OpenAIClient(Client):
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
-        return self.client.chat.completions.create(**params)
+        chat_completion_response = self.client.chat.completions.create(**params)
+        return chat_completion_response
 
     async def achat_completion(
             self,
@@ -62,7 +63,8 @@ class OpenAIClient(Client):
 
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
-        return await self.client.chat.completions.create(**params)
+        chat_completion_response = await self.client.chat.completions.create(**params)
+        return chat_completion_response
 
     @staticmethod
     def _get_embeddings(response: CreateEmbeddingResponse):

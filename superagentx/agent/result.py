@@ -9,4 +9,4 @@ class GoalResult(BaseModel):
     result: Any | None = None
     content: Any | None = None
     error: str | None = None
-    is_goal_satisfied: bool
+    is_goal_satisfied: bool | None = None

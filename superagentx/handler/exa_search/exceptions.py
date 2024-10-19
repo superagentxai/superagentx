@@ -1,2 +1,0 @@
-class InvalidExaAction(Exception):
-    pass

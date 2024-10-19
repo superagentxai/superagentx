@@ -2,7 +2,7 @@ import inspect
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Dict
+from typing import List, Dict, Tuple, Any
 import asyncio
 
 import boto3
@@ -13,7 +13,7 @@ from pydantic import typing
 
 from superagentx.llm.client import Client
 from superagentx.llm.models import ChatCompletionParams, Message
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, ptype_to_json_scheme
 from superagentx.utils.helper import sync_to_async
 
 import logging
@@ -61,10 +61,41 @@ class BedrockClient(Client):
             if chat_completion_params.top_p:
                 inference_config["topP"] = chat_completion_params.top_p
 
+            messages = chat_completion_params.messages
+            logger.debug(f"Bedrock Message {messages} ")
+            conversations = self._construct_message(messages)
+
+            user_message = {'role': 'user', 'content': conversations['user']}
+            assistant_message = conversations['assistant'] if len(conversations['assistant']) > 0 else None
+
+            try:
+                if tools:
+                    tools_config = {"tools": tools}
+                    # Convert from synchronous to asynchronous mode and invoke Bedrock client!
+                    response = self.client.converse(
+                        modelId=model_id,
+                        messages=[user_message],
+                        inferenceConfig=inference_config,
+                        toolConfig=tools_config)
+
+                    logger.debug(f"Bedrock Tool Response {response}")
+                else:
+                    response = self.client.converse(
+                        modelId=model_id,
+                        messages=[user_message],
+                        system=assistant_message,
+                        inferenceConfig=inference_config)
+                    logger.debug(f"Bedrock Message ==> Bedrock no tool {response} ")
+
+            except Exception as e:
+                raise RuntimeError(f"Failed to get response from Bedrock: {e}")
+
+            if response is None:
+                raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
+
             if tools:
                 messages = chat_completion_params.messages
                 conversations = self._construct_message(messages)
-
                 tools_config = {"tools": tools}
 
                 try:
@@ -124,36 +155,49 @@ class BedrockClient(Client):
             if chat_completion_params.top_p:
                 inference_config["topP"] = chat_completion_params.top_p
 
-            if tools:
-                messages = chat_completion_params.messages
-                conversations = await sync_to_async(
-                    self._construct_message,
-                    messages
-                )
+            messages = chat_completion_params.messages
+            logger.debug(f"Bedrock Message {messages} ")
+            conversations = await sync_to_async(
+                self._construct_message,
+                messages
+            )
+            user_message = {'role': 'user', 'content': conversations['user']}
+            assistant_message = conversations['assistant'] if len(conversations['assistant']) > 0 else None
 
-                tools_config = {"tools": tools}
-
-                try:
+            try:
+                if tools:
+                    tools_config = {"tools": tools}
                     # Convert from synchronous to asynchronous mode and invoke Bedrock client!
                     response = await sync_to_async(
                         self.client.converse,
                         modelId=model_id,
-                        messages=conversations,
+                        messages=[user_message],
                         inferenceConfig=inference_config,
                         toolConfig=tools_config,
                     )
-                except Exception as e:
-                    raise RuntimeError(f"Failed to get response from Bedrock: {e}")
+                    logger.debug(f"Bedrock Tool Response {response}")
+                else:
+                    response = await sync_to_async(
+                        self.client.converse,
+                        modelId=model_id,
+                        messages=[user_message],
+                        system=assistant_message,
+                        inferenceConfig=inference_config,
+                    )
+                    logger.debug(f"Bedrock Message ==> Bedrock no tool {response} ")
 
-                if response is None:
-                    raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
+            except Exception as e:
+                raise RuntimeError(f"Failed to get response from Bedrock: {e}")
 
-                chat_completion: ChatCompletion = await self.__prepare_bedrock_formatted_output_(
-                    response=response,
-                    model_id=model_id,
-                    is_async=True
-                )
-                return chat_completion
+            if response is None:
+                raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
+
+            chat_completion: ChatCompletion = await self.__prepare_bedrock_formatted_output_(
+                response=response,
+                model_id=model_id,
+                is_async=True
+            )
+            return chat_completion
 
     @staticmethod
     async def __prepare_bedrock_formatted_output_(
@@ -238,7 +282,7 @@ class BedrockClient(Client):
         async for param, param_type in iter_to_aiter(_type_hints.items()):
             if param != 'return':
                 _properties[param] = {
-                    "type": param_type.__name__,
+                    "type": await ptype_to_json_scheme(param_type.__name__),
                     "description": f"The {param.replace('_', ' ')}."
                 }
         return {
@@ -304,27 +348,28 @@ class BedrockClient(Client):
         return None
 
     @staticmethod
-    def _construct_message(messages: [Message]) -> List:
+    def _construct_message(conversations: [Message]) -> dict:
         """
           Converts a list of messages into the necessary prompt format for the model.
 
           Args:
-                messages ([Message]): A list of Message where each message contains 'role' and 'content' keys.
+                conversations ([Message]): A list of Message where each message contains 'role' and 'content' keys.
           Returns:
-                List: List of messages in the format of bedrock runtime!
+                dict: Dict of messages in the format of bedrock runtime!
         """
-        formatted_messages = []
-        message = {}
-        for conversation in messages:
+        formatted_user_messages = []
+        formatted_assistant_messages = []
+        messages = {}
+        for conversation in conversations:
             role = conversation.role
+            content = {'text': conversation.content}
             if role == 'user':
-                message['role'] = 'user'
-                message['content'] = [{'text': conversation.content}]
-            else:
-                message['role'] = role
-                message['content'] = conversation.content
-            formatted_messages.append(message)
-        return formatted_messages
+                formatted_user_messages.append(content)
+            elif role == 'system':
+                formatted_assistant_messages.append(content)
+        messages['user'] = formatted_user_messages
+        messages['assistant'] = formatted_assistant_messages
+        return messages
 
     @staticmethod
     async def _format_messages(messages: List[Dict[str, str]]) -> str:
