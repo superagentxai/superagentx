@@ -35,7 +35,7 @@ SuperAgentX is designed to address the growing need for highly capable, autonomo
 **X**     : The unknown, the limitless, the extra factor that makes SuperAgentX revolutionary, futuristic, and transformative.</p>
 
 ## Architecture
-<img src="./docs/images/architecture.png" title="SuperAgentX Architecture" height="250" width="250"/>
+<img src="./docs/images/architecture.png" title="SuperAgentX Architecture"/>
 
 ## Large Language Models
 
