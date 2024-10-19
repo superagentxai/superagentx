@@ -110,6 +110,7 @@ class AgentXPipe:
             self,
             query_instruction: str
     ):
+        trigger_break = False
         results = []
         async for _agents in iter_to_aiter(self.agents):
             pre_result = await self._pre_result(results=results)
@@ -132,9 +133,13 @@ class AgentXPipe:
                         stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
                     )
             except StopSuperAgentX as ex:
+                trigger_break = True
                 logger.warning(ex)
                 _res = ex.goal_result
+
             results.append(_res)
+            if trigger_break:
+                break
         return results
 
     async def flow(
