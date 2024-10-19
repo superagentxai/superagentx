@@ -33,7 +33,7 @@ class TestGmailAgent:
     async def test_read_mail_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         gmail_handler = GmailHandler(
-            credentials=""
+            credentials="/home/elangovanr/Documents/Gmail_Creds/credentials.json"
         )
         prompt_template = PromptTemplate()
         gmail_engine = Engine(

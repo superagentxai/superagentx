@@ -216,7 +216,7 @@ class GmailHandler(BaseHandler, ABC):
                             {
                                 "filename": att.get("filename")
                             }
-                            for att in attachments
+                            async for att in iter_to_aiter(attachments)
                         ]
                     }
 
