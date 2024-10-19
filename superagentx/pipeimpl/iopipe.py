@@ -15,7 +15,7 @@ class IOPipe:
             write_prompt: str | None = None
     ):
         """
-        Initializes the WSPipe with necessary parameters for configuring an agentxpipe that interacts with a specified
+        Initializes the IOPipe with necessary parameters for configuring an agentxpipe that interacts with a specified
         search mechanism and handles websocket connections.
 
         Args:

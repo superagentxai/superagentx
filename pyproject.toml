@@ -2,10 +2,18 @@
 name = "superagentx"
 version = "0.1.0"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
+license = "MIT"
 authors = [
-    "SuperAgentX AI <prabhu@decisionfacts.io>"
+    "SuperAgentX AI <prabhu@decisionfacts.io>",
+]
+maintainers = [
+    "SuperAgentX AI <prabhu@decisionfacts.io>",
 ]
 readme = "README.md"
+homepage = "https://www.superagentx.ai/"
+repository = "https://github.com/decisionfacts/superagentX"
+documentation = "https://docs.superagentx.ai/"
+keywords = ["superagentX", "superagentx", "agent"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
@@ -47,6 +55,7 @@ protobuf = "3.20.3"
 crawl4ai = "^0.3.6"
 wikipedia-api = "^0.7.1"
 hubspot-api-client = "^10.0.0"
+atlassian-python-api = "^3.41.16"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"

@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 class TestWikiAIPipe:
 
     async def test_wiki_ai_sequence_pipe(self):
-        llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+        # llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+        llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
         llm_client: LLMClient = LLMClient(llm_config=llm_config)
         content_handler = AIHandler(llm=llm_client)
         prompt_template = PromptTemplate()

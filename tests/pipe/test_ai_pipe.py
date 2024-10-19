@@ -88,6 +88,7 @@ def ai_client_init() -> dict:
     }
     return response
 
+
 class TestIOConsolePipe:
 
     async def test_ai_spamfilter(self, ai_client_init: dict):
@@ -97,7 +98,7 @@ class TestIOConsolePipe:
 
         spamfilter = Agent(
             name='Spamfilter Agent',
-            goal="Decide whether a text is spam or not.",
+            goal="Analyse the given content and decide whether a text is spam or not.",
             role="spamfilter",
             llm=llm_client,
             prompt_template=prompt_template,

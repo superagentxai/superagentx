@@ -9,6 +9,9 @@ class MemoryItem(BaseModel):
     memory: str = Field(
         ..., description="The memory deduced from the text data"
     )
+    reason: str = Field(
+        ..., description="The memory deduced from the text data"
+    )
     role: str = Field(
         ..., description="The memory of role"
     )

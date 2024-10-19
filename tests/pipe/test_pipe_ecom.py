@@ -22,10 +22,11 @@ from superagentx.prompt import PromptTemplate
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+    # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
-    response = {'llm': llm_client, 'llm_type': 'openai'}
+    response = {'llm': llm_client}
     return response
 
 
@@ -66,8 +67,7 @@ class TestEcommercePipe:
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[[amazon_engine, flipkart_engine]],
-            memory=memory
+            engines=[[amazon_engine, flipkart_engine]]
         )
         price_review_agent = Agent(
             name="Price Review Agent",
@@ -75,11 +75,11 @@ class TestEcommercePipe:
             role="You are the price reviewer",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_engine],
-            memory=memory
+            engines=[ai_engine]
         )
         pipe = AgentXPipe(
-            agents=[ecom_agent, price_review_agent]
+            agents=[ecom_agent, price_review_agent],
+            memory=memory
         )
         io = IOConsole(
             read_phrase="\n\n\nEnter your query here:\n\n=>",
