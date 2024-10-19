@@ -40,12 +40,7 @@ class TestWikiAIPipe:
             llm=llm_client
         )
 
-        goal = """ Get the biography summary from the Wikipedia content and format in a way to provide details in the below format.
-                    
-                    Name - <<Profile Name of the biographer>>
-                    Birth Year - <<Biographer Birth Year, If available>>
-                    Achievements - <<Achievements, if any in the content>>
-               """
+        goal = """ Write as biography story about the person from the given content. """
         biographer_agent = Agent(
             name='Biography Agent',
             goal=goal,
@@ -59,5 +54,6 @@ class TestWikiAIPipe:
             agents=[wiki_agent, biographer_agent]
         )
 
-        result = await pipe.flow(query_instruction="Rajinikanth")
+        result = await pipe.flow(query_instruction="Walt Disney")
+
         logger.info(f"Biographer result => \n{result}")
