@@ -77,14 +77,13 @@ class ConfluenceHandler(BaseHandler):
             limit: int = 25,
     ):
         try:
-            result = await sync_to_async(
+            return await sync_to_async(
                 self._connection.get_all_pages_from_space,
                 space=space_key,
                 expand="children.page",
                 start=start,
                 limit=limit
             )
-            return result
         except Exception as ex:
             message = f"Error While getting confluence spaces! {ex}"
             logger.error(message, exc_info={ex})
@@ -97,7 +96,7 @@ class ConfluenceHandler(BaseHandler):
             title: str,
             start: int = 0,
             limit: int = 1
-    ):
+    ) -> dict:
         try:
             result = await sync_to_async(
                 self._connection.get_page_by_title,
@@ -108,7 +107,7 @@ class ConfluenceHandler(BaseHandler):
                 expand='title,history.lastUpdated',
                 type="page"
             )
-            return result['history']
+            return result['history'] if result else None
         except Exception as ex:
             message = f"Error While getting last updated info! {ex}"
             logger.error(message, exc_info={ex})
