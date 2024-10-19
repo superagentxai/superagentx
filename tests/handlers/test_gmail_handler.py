@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def gmail_handler_init() -> GmailHandler:
     gmail_handler = GmailHandler(
-        credentials="/home/elangovanr/Documents/Gmail_Creds/credentials.json"
+        credentials=""
     )
     return gmail_handler
 
@@ -38,18 +38,18 @@ class TestGmailHandler:
 
     async def test_send_email(self, gmail_handler_init: GmailHandler):
         res = await gmail_handler_init.send_email(
-            from_address="arul@decisionfacts.io",
-            to="syed@decisionfacts.io",
-            subject="Test Email",
-            content="Hi anna this is test email from handler"
+            from_address="",
+            to="",
+            subject="",
+            content=""
         )
         logger.info(f"Result: {res}")
         assert res
 
     async def test_create_draft_email(self, gmail_handler_init: GmailHandler):
         res = await gmail_handler_init.create_draft_email(
-            from_address="arul@decisionfacts.io",
-            to="syed@decisionfacts.io"
+            from_address="",
+            to=""
         )
         logger.info(f"Result: {res}")
         assert res
