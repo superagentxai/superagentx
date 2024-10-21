@@ -1,0 +1,22 @@
+---
+title: 'Serper_dev Handler (Tool)'
+icon: 'code'
+---
+
+The Serper.dev API provides a way to conduct real-time web searches, mainly leveraging Google's search capabilities,
+and is useful for tasks requiring quick access to up-to-date information. It focuses on returning specific search
+results, such as snippets and relevant URLs, making it ideal for developers who need web-based insights integrated
+into their applications.
+
+## Serper handler code
+
+```python serper handler
+from superagentx.handler.serper_dev import SerperDevToolHandler
+
+async def serper_dev():
+    serper_dev_handler = SerperDevToolHandler()
+    return await serper_dev_handler.search(
+    query='Select the best city based on weather, season, and prices'
+    )
+```
+

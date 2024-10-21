@@ -1,0 +1,28 @@
+---
+title: 'Hubspot Handler (Tool)'
+icon: 'code'
+---
+
+This HubSpotHandler class simplifies managing interactions with the HubSpot API, offering seamless methods for
+creating, retrieving, and managing contacts, companies, deals, and tickets within a HubSpot environment. By
+encapsulating common operations, it ensures that users can efficiently communicate with the API using both
+synchronous and asynchronous workflows.
+
+## HubSpotHandler Code
+
+```python hubspot_handler_test.py
+import os
+
+from superagentx.handler.crm.hubspot_crm import HubSpotHandler
+
+async def hs_handler():
+    hs_handler = HubSpotHandler(
+        token=os.getenv("HUBSPOT_TOKEN")
+    )
+
+    return await hs_handler.create_contact(
+        email='',
+        firstName="",
+        lastName=""
+    )
+```

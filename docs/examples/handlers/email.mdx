@@ -2,3 +2,38 @@
 title: 'E-mail (Tool)'
 icon: 'code'
 ---
+
+The EmailHandler is a simple and effective tool for managing email communication in your applications.
+It allows you to send emails easily, handle multiple recipients, and include attachments, making it
+perfect for both personal and professional use.
+
+>**From:** The email address of the sender. <br /> **To:** The primary recipient(s) of the email. <br />
+**Cc:** Additional recipients who will receive a copy of the email, visible to all. <br /> **Bcc:** Recipients who
+receive a copy of the email without other recipients knowing their addresses. <br /> **Subject:** A brief summary or
+title of the email's content. <br /> **Body:** The main content or message of the email, where the sender communicates
+their thoughts or information.
+
+
+## Email Handler Code
+
+```python email_handler_test.py
+from superagentx.handler.email import EmailHandler
+
+def email_client_init():
+    email_handler = EmailHandler(
+        host="",
+        port=345
+    )
+    return email_handler
+
+async def email():
+    email_object = await email_client_init()
+    return await email_object.send_email(**{})
+
+
+
+
+
+
+
+

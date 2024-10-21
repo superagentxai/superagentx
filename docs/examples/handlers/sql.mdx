@@ -1,0 +1,27 @@
+---
+title: 'Sql Handler (Tool)'
+icon: 'code'
+---
+
+A SQL handler refers to a tool or interface that simplifies the process of interacting with SQL databases.
+Its main purpose is to help developers run SQL queries, manage data, and connect to databases with minimal
+complexity. It abstracts away repetitive tasks such as writing complex SQL syntax, handling connections,
+and managing query results, making it easier to work with databases programmatically.
+
+## Sql Handler Code
+```python sql handler
+
+from superagentx.handler.sql import SQLHandler
+from sqlalchemy.engine.cursor import CursorResult
+
+async def sql_handler():
+    sql_handler = SQLHandler(
+        database_type="mysql",
+        database="<DATABASE>",
+        username="<USER_NAME>",
+        password="<YOUR_PASSWORD>"
+    )
+
+    stmt = "CREATE TABLE test9 (x int, y int)"
+    return await sql_handler.create_table( stmt=stmt)
+```

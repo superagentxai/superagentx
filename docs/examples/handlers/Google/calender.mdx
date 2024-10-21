@@ -1,0 +1,41 @@
+---
+title: 'Calender Handler (Tool)'
+icon: 'code'
+---
+
+The Google Calendar Handler is a utility designed to simplify interactions with the Google Calendar API.
+This handler enables users to authenticate, access, and manage their calendar events efficiently.
+It provides methods for retrieving events for specific time frames, such as today, the upcoming week,
+or the next month, as well as filtering events based on specific types.
+
+## Calender Handler Code
+
+``` python calender_handler_code.py
+from superagentx.handler.google.calender import CalenderHandler
+
+async def google_calender_handler():
+    calender_handler = CalenderHandler(
+        credentials=""
+    )
+
+    return await calender_handler.get_today_events()
+```
+## Output:
+```inline Today Event
+{
+    "kind": "calendar#events",
+    "etag": "\"p32oftunmn22oe0o\"",
+    "summary": "sam1234@gmail.com",
+    "description": "",
+    "updated": "2024-07-01T08:41:06.398Z",
+    "timeZone": "America/Los_Angeles",
+    "accessRole": "owner",
+    "defaultReminders": [
+        {
+            "method": "popup",
+            "minutes": 10
+        }
+    ],
+    "items": []
+}
+```

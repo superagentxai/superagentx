@@ -8,40 +8,45 @@ searches, and analyzes large amounts of data by creating indexes, rather than se
 a document-based structure and easy-to-use REST APIs, it processes and returns data in JSON format, offering
 fast and scalable performance.
 
-```python elastic_handler_test.py
-from cgitb import handler
+## Elastic search Handler Code
 
+```python elastic_handler_test.py
 from superagentx.handler.elastic_search import ElasticsearchHandler
 
-
-async def elasticsearch_client_init():
+async def elasticsearch_handler():
     elasticsearch_handler = ElasticsearchHandler(
         hosts="http://localhost:9200",
         username="elastic",
-        password="df_123456789"
+        password="password"
     )
-    return elasticsearch_handler
 
-async def test_elasticsearch_search():
-    search = await elasticsearch_client_init
-    elasticsearch = await search.handle(action="search",
-                                       index_name="index_name",
-                                       )
-    return elastic_search
-
-async def test_elasticsearch_create():
-    elasticsearch = await elasticsearch_client_init.handle(action="create",
-                                                           index_name="python_test1",
-                                                           document_id="python1",
-                                                           document={
-                                                               "@timestamp": "2099-11-15T13:12:00",
-                                                               "message": "GET /search HTTP/1.1 200 1070000",
-                                                           },
-
-                                                           )
-    assert isinstance(elasticsearch, object)
-
+    return await elasticsearch_handler.create(
+    index_name="project8",
+    document_id="project test",
+    document={
+        "@timestamp": "2099-11-15T13:12:00",
+        "message": "GET /search HTTP/1.1 200 1070000",
+    },
+    )
 ```
+
+## Output:
+```inline Index Create Output:
+{
+  "_index": "project8",
+  "_id": "project test",
+  "_version": 1,
+  "result": "created",
+  "_shards": {
+    "total": 2,
+    "successful": 1,
+    "failed": 0
+  },
+  "_seq_no": 0,
+  "_primary_term": 1
+}
+```
+
 
 
 

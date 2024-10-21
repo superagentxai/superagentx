@@ -1,0 +1,33 @@
+---
+title: 'Jira Handler (Tool)'
+icon: 'code'
+---
+
+The JiraHandler class is a tool that helps developers easily connect to Jira and perform common
+operations like creating, updating, and managing issues or projects. If you’ve ever used Jira
+for tracking bugs, managing tasks, or following project progress, this class makes it simpler
+to automate those activities using Python.
+
+## Jira Handler Code
+
+```python jira handler code
+import os
+
+from jira.client import ResultList
+from jira.resources import Sprint, Comment
+from requests.models import Response
+
+from superagentx.handler.jira import JiraHandler
+async def jira_handler():
+    jira_handler = JiraHandler(
+        email=os.getenv('JIRA_EMAIL'),
+        token=os.getenv('JIRA_TOKEN'),
+        organization=os.getenv('JIRA_ORGANIZATION'),
+    )
+
+    return await jira_handler.get_active_sprint(
+        board_id=1,
+        start=0,
+        end=50
+    )
+```

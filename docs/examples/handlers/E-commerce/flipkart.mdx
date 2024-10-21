@@ -8,7 +8,7 @@ like electronics, fashion, home appliances, and groceries. Efficient product sea
 to its ecosystem, helping users quickly discover relevant items through filters, recommendations,
 and keyword-based search functionality.
 
-## Flipkart Test Code
+## Flipkart Code
 
 ```python flipkart_handler_test.py
 import asyncio
@@ -16,16 +16,11 @@ import os
 from superagentx.handler.ecommerce.flipkart import FlipkartHandler
 
 async def search(query):
-    flipkart = FlipkartHandler(
-            api_key=os.getenv("RAPID_API_KEY")
-        )
-    result = await flipkart.product_search(query=query)
-    print(result)
-    return result
+    flipkart = FlipkartHandler()
+    return await flipkart.product_search(query=query)
 
-query = input("Enter Query: ")
+query = input("Enter your query here: ")
 asyncio.run(search(query))
-
 ```
 ## Output:
 

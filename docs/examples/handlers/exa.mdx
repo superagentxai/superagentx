@@ -10,32 +10,29 @@ if needed. <br /> **Content Extraction:** Access clean, parsed HTML from search 
 relevant sections using the highlights feature. <br /> **Similar Page Discovery:** Input a link to identify and retrieve
 pages with related content or meaning.
 
-## Exa Handler Test Code
+## Exa Handler Code
 
 ```python exa_handler_test.py
 import os
 from superagentx.handler.exa_search import ExaHandler
 
 async def exa_handler_search(query):
-    exa_handler = ExaHandler(api_key=os.getenv("EXA_API_KEY"))
+    exa_handler = ExaHandler(api_key="")
 
-    exa = await exa_handler.search_contents(
+    return await exa_handler.search_contents(
         query=query,
         search_type="auto",
         use_autoprompt=True,
         num_results=5,
-     )
-    return exa
+    )
 
-query = input("Enter Query: ")
+query = input("Enter your query here: ")
 asyncio.run(exa_handler_search(query))
-
 ```
 
 ## Output:
 
-```inline output
-INFO     tests.handlers.test_exa_handler:test_exa_handler.py:35 Title: AI on the Web
+```log output
 URL: https://aima.eecs.berkeley.edu/2nd-ed/ai.html
 ID: http://aima.eecs.berkeley.edu/2nd-ed/ai.html
 Score: 0.19881151616573334
@@ -46,7 +43,5 @@ Text: This page links to 849 pages around the web with
 information on Artificial Intelligence. Links in  Bold*  followed by a star are especially useful
 and interesting sites. Links with a + sign at the end have "tooltip"
 information that will pop up if you put your mouse over the link for a
-second or two. If you have new links to add, mail them to peter@norvig.com. We hope you can find
-what you want in one of the following subtopics:
-
+second or two. If you have new links to add, mail them to peter@norvig.com.
 ```

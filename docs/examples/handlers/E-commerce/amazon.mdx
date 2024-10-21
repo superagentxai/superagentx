@@ -6,7 +6,7 @@ icon: 'code'
 Amazon.in is the leading online shopping platform in India, attracting more customers than ever before.
 Serviceable pin codes across the country, it has become the go-to marketplace for small and medium-sized enterprises.
 
-## Amazon Test Code
+## Amazon Code
 
 ```python amazon_handler_test.py
 import asyncio
@@ -14,18 +14,59 @@ import os
 from superagentx.handler.ecommerce.amazon import AmazonHandler
 
 async def search(query):
-    amazon = AmazonHandler(
-            api_key=os.getenv("RAPID_API_KEY"),
-            country="IN"
-        )
-    result = await amazon_client_init.product_search(query=query)
-    return result
+    amazon = AmazonHandler()
+    return await amazon.product_search(query=query)
 
-query = input("Enter Query: ")
-asyncio.run(search(query))
+query = input("Enter your query here: ")
+print(asyncio.run(search(query)))
 
 ```
 ## Output:
 
 ```inline output
+Enter Query: give a best juice blender under 2k
+[   {   'asin': 'B0DHXZQDD2',
+        'climate_pledge_friendly': False,
+        'currency': 'INR',
+        'delivery': 'FREE delivery Tue, 22 Oct Or fastest delivery Mon, 21 Oct',
+        'has_variations': False,
+        'is_amazon_choice': False,
+        'is_best_seller': False,
+        'is_prime': True,
+        'product_minimum_offer_price': '₹659',
+        'product_num_offers': 1,
+        'product_num_ratings': 31,
+        'product_original_price': '₹1,599',
+        'product_photo': 'https://m.media-amazon.com/images/I/714Xz3C8tNL._AC_UY654_FMwebp_QL65_.jpg',
+        'product_price': '₹659',
+        'product_star_rating': '5',
+        'product_title': 'ROMINO 380ml USB Rechargeable Mini Juicer Blender, '
+                         'Portable Juicer Bottle, Electric Fruit Juice Maker '
+                         'Machine, Personal Size Juicer Bottle Blender Grinder '
+                         'Mixer for Juices, Shakes &amp; Smoothies (Multi)',
+        'product_url': 'https://www.amazon.in/dp/B0DHXZQDD2',
+        'reviews': [],
+        'sales_volume': '400+ bought in past month'},
+    {   'asin': 'B0DFWCM981',
+        'climate_pledge_friendly': False,
+        'currency': 'INR',
+        'delivery': 'FREE delivery Sun, 20 Oct Or fastest delivery Tomorrow, '
+                    '19 Oct',
+        'has_variations': False,
+        'is_amazon_choice': False,
+        'is_best_seller': False,
+        'is_prime': True,
+        'product_minimum_offer_price': '₹999',
+        'product_num_offers': 1,
+        'product_num_ratings': 63,
+        'product_original_price': '₹2,599',
+        'product_photo': 'https://m.media-amazon.com/images/I/61AcxigXJvL._AC_UY654_FMwebp_QL65_.jpg',
+        'product_price': '₹999',
+        'product_star_rating': '4.4',
+        'product_title': 'SUPERSTUD Portable USB Juicer Blender for Juices and '
+                         'Smoothie, Milk Shakes, 380ML, built-in Jar (Rich '
+                         'Grey)',
+        'product_url': 'https://www.amazon.in/dp/B0DFWCM981',
+        'reviews': [],
+        'sales_volume': 'M.R.P: '}]
 ```

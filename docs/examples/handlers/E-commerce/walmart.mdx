@@ -1,0 +1,23 @@
+---
+title: 'Walmart (Tool)'
+icon: 'code'
+---
+
+A Walmart handler is a tool that makes it easy for developers to connect their apps or websites to Walmart’s system.
+With this tool, businesses can access Walmart’s product listings, prices, stock levels, and availability in real-time.
+It helps automate tasks like searching for products, tracking inventory, and monitoring price changes.
+This handler is very useful for e-commerce websites, price comparison tools, and inventory management systems.
+
+## Walmart Handler Code
+```python walmart handler
+import os
+
+from superagentx.handler.ecommerce.walmart import WalmartHandler
+
+async def walmart_handler():
+    walmart = WalmartHandler()
+
+    return await walmart.product_search(
+        query="best one blender provide 5 ratings"
+    )
+```

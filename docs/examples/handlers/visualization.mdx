@@ -1,0 +1,36 @@
+---
+title: 'Visualization Handler (Tool)'
+icon: 'code'
+---
+
+A visualization handler is a tool or library that helps developers and analysts create visual representations of data.
+Its main purpose is to transform raw data into charts, graphs, and dashboards, making it easier to understand trends,
+patterns, and insights. It serves as a bridge between complex datasets and easy-to-digest visuals, which are critical
+for decision-making.
+
+## Visualization Handler Code
+```python visualization handler code
+from superagentx.visualization import Visualize
+
+async def visualize_handler():
+    obj = Visualize()
+    chart_data = [
+        {
+        "Apples": 5,
+        "Pears": 3,
+        "Nectarines": 4,
+        "Plums": 2,
+        "Grapes": 4,
+        "Strawberries": 6
+    },
+    {
+        "Apples": 12,
+        "Pears": 42,
+        "Nectarines": 1,
+        "Plums": 51,
+        "Grapes": 9,
+        "Strawberries": 21
+    }
+    ]
+    await obj.pie_chart(data=chart_data, show_output=True)
+```

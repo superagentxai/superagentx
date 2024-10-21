@@ -1,0 +1,27 @@
+---
+title: 'Weather Handler (Tool)'
+icon: 'code'
+---
+
+A weather handler is a tool or library that helps developers integrate weather data into applications.
+It works by retrieving real-time or forecasted weather information from external sources, such as weather
+APIs, and presenting it in a way that is easy to use in applications like websites, mobile apps, or IoT devices.
+
+## Weather Handler Code
+```python weather handler code
+from pandas.core.frame import DataFrame
+
+from superagentx.handler.weather import WeatherHandler
+
+async def weather_handler():
+    w_handler = WeatherHandler()
+
+    return await w_handler.get_forecast_weather(
+        location="Chennai",
+        forecast_days=7,
+        past_days=0,
+        current=True,
+        daily=True,
+        hourly=True,
+    )
+```

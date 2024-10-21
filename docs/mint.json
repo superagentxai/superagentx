@@ -78,12 +78,30 @@
           "icon": "code",
           "pages": [
             "examples/handlers/E-commerce/amazon",
-            "examples/handlers/E-commerce/flipkart"
+            "examples/handlers/E-commerce/flipkart",
+            "examples/handlers/E-commerce/walmart"
           ]
         },
         "examples/handlers/exa",
         "examples/handlers/elastic",
         "examples/handlers/email",
+        "examples/handlers/financial_data",
+        {
+          "group": "Google",
+          "icon": "code",
+          "pages": [
+            "examples/handlers/Google/calender",
+            "examples/handlers/Google/gmail"
+          ]
+        },
+        "examples/handlers/hubspot",
+        "examples/handlers/jira",
+        "examples/handlers/serper_dev",
+        "examples/handlers/serply_api",
+        "examples/handlers/sql",
+        "examples/handlers/visualization",
+        "examples/handlers/weather",
+        "examples/handlers/wikipedia",
         "essentials/code",
         "essentials/images",
         "essentials/settings",

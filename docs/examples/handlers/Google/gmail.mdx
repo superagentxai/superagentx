@@ -1,0 +1,32 @@
+---
+title: 'Gmail Handler (Tool)'
+icon: 'code'
+---
+
+The Gmail Handler is a specialized tool designed to interact with the Gmail API, enabling users to manage their
+email accounts programmatically. This handler simplifies the process of accessing user profiles, sending emails,
+and creating draft emails. It uses OAuth 2.0 for authentication and provides a user-friendly interface to perform
+various email-related tasks asynchronously.
+
+## Gmail Handler Code
+
+```python Gmail_handler_test.py
+from superagentx.handler.google.gmail import GmailHandler
+
+async def gmail_handler():
+    gmail_handler = GmailHandler(
+        credentials=""
+    )
+
+    return await gmail_handler.get_user_profile()
+```
+
+## Output:
+```python user profile
+    {
+    'emailAddress': 'bala234@gmail.com',
+    'messagesTotal': 3678,
+    'threadsTotal': 4352,
+    'historyId': '985428'
+    }
+```

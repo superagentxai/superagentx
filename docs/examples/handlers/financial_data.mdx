@@ -1,0 +1,60 @@
+---
+title: 'Financial Data (Tool)'
+icon: 'code'
+---
+
+The Financial Data Handler is a tool that helps get important financial information from online sources.
+It allows businesses or individuals to easily access real-time data like stock prices, company financial
+details, and income statements. This information can be used for tracking market trends, analyzing a
+company’s performance, or making better investment decisions.
+
+Refer the link to know more details about symbol from the document.
+<a href="https://site.financialmodelingprep.com/developer/docs#symbol-list-stock-list" target="_blank">Click Here</a>
+
+## Financial Handler Code
+
+```python financial_handler_test.py
+import os
+
+from superagentx.handler.financial_data import FinancialHandler
+
+async def financial_handler():
+    financial_handler = FinancialHandler(
+        api_key="",
+        symbol='AMZN'
+    )
+
+    return await financial_handler.get_stock_price()
+```
+## Output:
+```inline Stock price Output:
+{
+  "data": [
+    {
+      "symbol": "AA",
+      "name": "Alcoa Corporation",
+      "price": 41.71,
+      "changesPercentage": 3.3705,
+      "change": 1.36,
+      "dayLow": 40.86,
+      "dayHigh": 42.1659,
+      "yearHigh": 45.48,
+      "yearLow": 23.07,
+      "marketCap": 10775361358,
+      "priceAvg50": 34.709,
+      "priceAvg200": 34.4335,
+      "exchange": "NYSE",
+      "volume": 4489893,
+      "avgVolume": 6216657,
+      "open": 41.77,
+      "previousClose": 40.35,
+      "eps": -1.56,
+      "pe": -26.74,
+      "earningsAnnouncement": "2025-01-15T05:00:00.000+0000",
+      "sharesOutstanding": 258339999,
+      "timestamp": 1729281602
+    }
+  ]
+}
+
+```
