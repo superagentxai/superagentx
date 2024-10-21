@@ -1,4 +1,4 @@
-from superagentx.agent.result import GoalResult
+from superagentx.engine.result import GoalResult
 
 
 class InvalidType(Exception):

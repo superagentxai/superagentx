@@ -60,6 +60,8 @@ export RAPID_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 ```python 
+# Additional lib needs to install
+# pip install superagentx-handlers
 # python3 superagentx_examples/ecom_iopipe.py
 
 import asyncio
@@ -72,14 +74,14 @@ from superagentx.memory import Memory
 
 sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
 
-from superagentx.agent.agent import Agent
-from superagentx.agent.engine import Engine
-from superagentx.handler.ecommerce.amazon import AmazonHandler
-from superagentx.handler.ecommerce.walmart import WalmartHandler
+from superagentx.agent import Agent
+from superagentx.engine import Engine
 from superagentx.llm import LLMClient
 from superagentx.agentxpipe import AgentXPipe
 from superagentx.pipeimpl.iopipe import IOPipe
 from superagentx.prompt import PromptTemplate
+from superagentx_handlers.ecommerce.amazon import AmazonHandler
+from superagentx_handlers.ecommerce.walmart import WalmartHandler
 
 
 async def main():

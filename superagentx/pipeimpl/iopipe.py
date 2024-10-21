@@ -19,9 +19,9 @@ class IOPipe:
         search mechanism and handles websocket connections.
 
         Args:
-            search_name: The name of the search mechanism or service that the agent will utilize. This name is used
+            search_name: The name of the search mechanism or service that the IOPipe will utilize. This name is used
                 to identify the search functionality within the broader system.
-            agentx_pipe: An instance of AgentXPipe that facilitates communication between the agent and other
+            agentx_pipe: An instance of AgentXPipe that facilitates communication between the agent, engine and other
                 components of the system. This pipe is crucial for data transfer and message handling within the
                 agent's operational context.
             read_prompt: An optional prompt string used for guiding the reading information.
