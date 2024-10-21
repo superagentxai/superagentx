@@ -13,13 +13,13 @@ from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.console_color import ConsoleColorType
 from superagentx.utils.helper import iter_to_aiter
-from superagentx.handler.scrape import ScrapeHandler
+from superagentx.handler
 
 logger = logging.getLogger(__name__)
 
 '''
  Run Pytest:  
-   1.pytest -s --log-cli-level=INFO tests/pipe/test_pipe_trip_planner.py::TestTripPlannerPipe::test_planner_agent
+   1.pytest -s --log-cli-level=INFO tests/pipe/test_trip_planner_pipe.py::TestTripPlannerPipe::test_planner_agent
 
 '''
 
@@ -132,8 +132,8 @@ class TestTripPlannerPipe:
             engines=[city_ai_engine]
         )
         travel_concierge_agent = Agent(
-            name="Travel Concierge Agent",
-            role='Amazing Travel Concierge',
+            name="Trip Planner Agent",
+            role='Amazing Trip planner',
             goal='Create the most amazing travel with budget and packing suggestions for the city',
             llm=llm_client,
             prompt_template=prompt_template,
