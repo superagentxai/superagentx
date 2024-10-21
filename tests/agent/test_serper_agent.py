@@ -50,6 +50,6 @@ class TestSerperDevAgent:
             serper_search_engine
         )
 
-        result = await search_agent.execute()
+        result = await search_agent.execute(query_instruction='')
         logger.info(f'Result ==> {result}')
         assert result
