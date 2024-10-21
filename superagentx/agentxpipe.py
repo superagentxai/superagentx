@@ -5,7 +5,7 @@ from typing import Literal
 import yaml
 
 from superagentx.agent import Agent
-from superagentx.engine.result import GoalResult
+from superagentx.result import GoalResult
 from superagentx.constants import SEQUENCE
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm.types.base import logger

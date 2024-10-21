@@ -1,4 +1,4 @@
-from superagentx.engine.result import GoalResult
+from superagentx.result import GoalResult
 
 
 class InvalidType(Exception):
@@ -7,6 +7,7 @@ class InvalidType(Exception):
 
 class ToolError(Exception):
     pass
+
 
 class StopSuperAgentX(Exception):
 

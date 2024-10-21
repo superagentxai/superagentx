@@ -6,7 +6,7 @@ from json import JSONDecodeError
 from typing import Literal, Any
 
 from superagentx.engine import Engine
-from superagentx.engine.result import GoalResult
+from superagentx.result import GoalResult
 from superagentx.constants import SEQUENCE
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
