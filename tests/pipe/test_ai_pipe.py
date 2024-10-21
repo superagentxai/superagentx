@@ -2,8 +2,8 @@ import logging
 
 import pytest
 
-from superagentx.agent.agent import Agent
-from superagentx.agent.engine import Engine
+from superagentx.agent import Agent
+from superagentx.engine import Engine
 from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
 from superagentx.agentxpipe import AgentXPipe

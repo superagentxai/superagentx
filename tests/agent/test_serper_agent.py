@@ -1,7 +1,7 @@
 import logging
 import pytest
-from superagentx.agent.agent import Agent
-from superagentx.agent.engine import Engine
+from superagentx.agent import Agent
+from superagentx.engine import Engine
 from superagentx.handler.serper_dev import SerperDevToolHandler
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
@@ -50,6 +50,6 @@ class TestSerperDevAgent:
             serper_search_engine
         )
 
-        result = await search_agent.execute()
+        result = await search_agent.execute(query_instruction='')
         logger.info(f'Result ==> {result}')
         assert result
