@@ -72,6 +72,15 @@
             "examples/handlers/aws/s3"
           ]
         },
+                {
+          "group": "Atlassian",
+          "icon": "code",
+          "pages": [
+            "examples/handlers/atlassian/confluence",
+            "examples/handlers/atlassian/jira"
+          ]
+        },
+
         "examples/handlers/content_creator",
         {
           "group": "E-Commerce Handler",
@@ -95,7 +104,6 @@
           ]
         },
         "examples/handlers/hubspot",
-        "examples/handlers/jira",
         "examples/handlers/serper_dev",
         "examples/handlers/serply_api",
         "examples/handlers/sql",

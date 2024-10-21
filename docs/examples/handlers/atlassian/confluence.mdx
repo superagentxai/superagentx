@@ -1,0 +1,92 @@
+---
+title: 'Confluence Handler (Tool)'
+icon: 'code'
+---
+
+A Confluence handler is a tool or API that allows developers to interact with Confluence,
+a popular collaboration and documentation platform by Atlassian. This handler makes it easier
+to manage and manipulate content within Confluence, such as creating, updating, and retrieving
+pages, spaces, and user information.
+
+## Confluence Handler Code
+
+```python Confluence handler code
+import os
+
+from superagentx.handler.atlassian.confluence import ConfluenceHandler
+
+async def confluence_handler():
+    confluence_handler = ConfluenceHandler(
+        email=os.getenv('ATLASSIAN_EMAIL'),
+        token=os.getenv('ATLASSIAN_TOKEN'),
+        organization=os.getenv('ATLASSIAN_ORGANIZATION')
+    )
+    return await confluence_handler.get_all_spaces()
+```
+
+## Output
+```python confluence
+{   '_links': {   'base': 'https://example.atlassian.net/wiki',
+                  'context': '/wiki',
+                  'self': 'https://example.atlassian.net/wiki/rest/api/space'},
+    'limit': 25,
+    'results': [   {   '_expandable': {   'description': '',
+                                          'history': '',
+                                          'homepage': '/rest/api/content/74647464',
+                                          'icon': '',
+                                          'identifiers': '',
+                                          'lookAndFeel': '/rest/api/settings/lookandfeel?spaceKey=~74647464',
+                                          'metadata': '',
+                                          'operations': '',
+                                          'permissions': '',
+                                          'roles': '',
+                                          'settings': '/rest/api/space/~74647464/settings',
+                                          'theme': '/rest/api/space/~74647464/theme'},
+                       '_links': {   'self': 'https://example.atlassian.net/wiki/rest/api/space/~74647464',
+                                     'webui': '/spaces/~74647464'},
+                       'id': 98765432,
+                       'key': '~2345678',
+                       'name': 'Joe',
+                       'status': 'current',
+                       'type': 'personal'},
+                   {   '_expandable': {   'description': '',
+                                          'history': '',
+                                          'homepage': '/rest/api/content/765432',
+                                          'icon': '',
+                                          'identifiers': '',
+                                          'lookAndFeel': '/rest/api/settings/lookandfeel?spaceKey=~657482927',
+                                          'metadata': '',
+                                          'operations': '',
+                                          'permissions': '',
+                                          'roles': '',
+                                          'settings': '/rest/api/space/~657482927/settings',
+                                          'theme': '/rest/api/space/~657482927/theme'},
+                       '_links': {   'self': 'https://example.atlassian.net/wiki/rest/api/space/~657482927',
+                                     'webui': '/spaces/~657482927'},
+                       'id': 171507714,
+                       'key': '~74647464',
+                       'name': 'joe',
+                       'status': 'current',
+                       'type': 'personal'},
+                   {   '_expandable': {   'description': '',
+                                          'history': '',
+                                          'homepage': '/rest/api/content/74647464',
+                                          'icon': '',
+                                          'identifiers': '',
+                                          'lookAndFeel': '/rest/api/settings/lookandfeel?spaceKey=~74647464',
+                                          'metadata': '',
+                                          'operations': '',
+                                          'permissions': '',
+                                          'roles': '',
+                                          'settings': '/rest/api/space/~74647464/settings',
+                                          'theme': '/rest/api/space/~74647464/theme'},
+                       '_links': {   'self': 'https://example.atlassian.net/wiki/rest/api/space/DPS',
+                                     'webui': '/spaces/dgf'},
+                       'id': 965443593,
+                       'key': 'dgf',
+                       'name': 'Example Product Sprints',
+                       'status': 'current',
+                       'type': 'global'}],
+    'size': 24,
+    'start': 0}
+```

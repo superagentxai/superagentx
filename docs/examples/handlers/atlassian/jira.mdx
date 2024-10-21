@@ -17,12 +17,13 @@ from jira.client import ResultList
 from jira.resources import Sprint, Comment
 from requests.models import Response
 
-from superagentx.handler.jira import JiraHandler
+from superagentx.handler.atlassian.jira import JiraHandler
+
 async def jira_handler():
     jira_handler = JiraHandler(
-        email=os.getenv('JIRA_EMAIL'),
-        token=os.getenv('JIRA_TOKEN'),
-        organization=os.getenv('JIRA_ORGANIZATION'),
+        email=os.getenv('ATLASSIAN_EMAIL'),
+        token=os.getenv('ATLASSIAN_TOKEN'),
+        organization=os.getenv('ATLASSIAN_ORGANIZATION'),
     )
 
     return await jira_handler.get_active_sprint(
@@ -30,4 +31,9 @@ async def jira_handler():
         start=0,
         end=50
     )
+```
+
+## Output
+```python jira
+[<JIRA Sprint: name='ASDF Sprint 27',id=20>]
 ```
