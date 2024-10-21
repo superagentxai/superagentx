@@ -67,7 +67,8 @@ class TestEcommercePipe:
             role="You are the best product searcher",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[[amazon_engine, flipkart_engine]]
+            engines=[[amazon_engine, flipkart_engine]],
+            memory=memory
         )
         price_review_agent = Agent(
             name="Price Review Agent",
@@ -75,11 +76,11 @@ class TestEcommercePipe:
             role="You are the price reviewer",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_engine]
+            engines=[ai_engine],
+            memory=memory
         )
         pipe = AgentXPipe(
-            agents=[ecom_agent, price_review_agent],
-            memory=memory
+            agents=[ecom_agent, price_review_agent]
         )
         io = IOConsole(
             read_phrase="\n\n\nEnter your query here:\n\n=>",

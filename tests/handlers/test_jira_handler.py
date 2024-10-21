@@ -56,13 +56,13 @@ class TestJira:
         logger.info(f"Active Sprint: {res}")
         assert isinstance(res, ResultList)
         assert len(res) > 0
-        assert "DFPS Sprint" in res[0].name
+        assert "PS Sprint" in res[0].name
 
     async def test_create_sprint(self, jira_client_init: JiraHandler):
         # create Sprint
         res = await jira_client_init.create_sprint(
             board_id=1,
-            name='DFPS Sprint Testing',
+            name='PS Sprint Testing',
             description='Description of the sprint'
         )
 
@@ -70,7 +70,7 @@ class TestJira:
 
     async def test_get_issue(self, jira_client_init: JiraHandler):
         # get issue
-        res = await jira_client_init.get_issue(issue_id='DFPS-680')
+        res = await jira_client_init.get_issue(issue_id='PS-680')
         logger.info(f"Get Issue: {res}")
         assert isinstance(res, dict)
         assert len(res) > 0
@@ -79,7 +79,7 @@ class TestJira:
         # create Sprint
         res = await jira_client_init.add_issue_to_sprint(
             board_id=1,
-            issue_key='DFPS-520'
+            issue_key='PS-520'
         )
 
         assert isinstance(res, Response)
@@ -87,7 +87,7 @@ class TestJira:
     async def test_move_issue_to_backlog(self, jira_client_init: JiraHandler):
         # move issue to backlog
         res = await jira_client_init.move_to_backlog(
-            issue_key='DFPS-520'
+            issue_key='PS-520'
         )
 
         assert isinstance(res, Response)
@@ -95,8 +95,8 @@ class TestJira:
     async def test_add_comment_issue(self, jira_client_init: JiraHandler):
         # move issue to backlog
         res = await jira_client_init.add_comment_for_issue(
-            issue_key='DFPS-520',
-            comments="K8s auto restart"
+            issue_key='PS-520',
+            comments="test command"
         )
 
         logger.info(f"Add Comment Issue: {res}")
@@ -115,7 +115,7 @@ class TestJira:
     async def test_active_sprint_issues_by_assignee(self, jira_client_init: JiraHandler):
         res = await jira_client_init.active_sprint_issues_by_assignee(
             board_id=1,
-            assignee_name="Arul",
+            assignee_name="",
             start=0,
             end=10
         )
