@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
 
-   1. pytest --log-cli-level=INFO tests/engine/test_serper_agent.py::TestSerperDevAgent::test_search_agent
+   1. pytest --log-cli-level=INFO tests/agent/test_serper_agent.py::TestSerperDevAgent::test_search_agent
 '''
 
 
