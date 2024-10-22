@@ -11,12 +11,38 @@ into their applications.
 ## Serper handler code
 
 ```python serper handler
+
 from superagentx.handler.serper_dev import SerperDevToolHandler
 
-async def serper_dev():
+async def serper_dev_handler():
     serper_dev_handler = SerperDevToolHandler()
     return await serper_dev_handler.search(
-    query='Select the best city based on weather, season, and prices'
+    query='Select the best city based on weather, season, and prices',
+    total_results=1
     )
-```
 
+```
+## Output
+```python serper dev
+[{'attributes': {'Missing': 'Select | Show results with:Select'},
+  'date': 'Oct 31, 2023',
+  'link': 'https://www.reddit.com/r/geography/comments/17kklit/what_city_is_the_best_combination_of_weather_and/',
+  'position': 1,
+  'sitelinks': [{'link': 'https://www.reddit.com/r/geography/comments/1emkt8r/in_your_opinion_which_us_city_has_the_best/',
+                 'title': 'In your opinion, which U.S. city has the best '
+                          'combination of cost of ...'},
+                {'link': 'https://www.reddit.com/r/SameGrassButGreener/comments/1drjzbg/what_city_state_has_the_best_yearround_weather/',
+                 'title': 'What city / state has the best year-round weather? '
+                          'Excluding ...'},
+                {'link': 'https://www.reddit.com/r/SameGrassButGreener/comments/1bn2jh3/what_us_citymetro_area_do_you_feel_has_the_best/',
+                 'title': 'What us city/metro area do you feel has the best '
+                          'weather? - Reddit'},
+                {'link': 'https://www.reddit.com/r/SameGrassButGreener/comments/1clkiuy/which_cities_or_areas_become_way_more_appealing/',
+                 'title': 'Which cities (or areas) become way more appealing '
+                          'if you can skip ...'}],
+  'snippet': 'Lisbon has my vote. Enough of a temperature shift to feel '
+             "seasons, but not so much that it's absurd, especially if you "
+             'prefer warm to cold.',
+  'title': 'What city is the BEST combination of weather and cost of living?'}]
+
+```
