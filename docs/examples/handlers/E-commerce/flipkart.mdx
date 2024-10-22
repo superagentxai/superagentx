@@ -9,11 +9,13 @@ to its ecosystem, helping users quickly discover relevant items through filters,
 and keyword-based search functionality.
 
 ## Flipkart Code
+This code searches for products on Flipkart. It uses the FlipkartHandler to connect to Flipkart’s platform and returns
+product results based on the given query.
 
 ```python flipkart_handler_test.py
 import asyncio
 import os
-from superagentx.handler.ecommerce.flipkart import FlipkartHandler
+from superagentx_handlers.ecommerce.flipkart import FlipkartHandler
 
 async def search(query):
     flipkart = FlipkartHandler()

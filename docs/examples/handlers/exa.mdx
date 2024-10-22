@@ -10,7 +10,10 @@ if needed. <br /> **Content Extraction:** Access clean, parsed HTML from search 
 relevant sections using the highlights feature. <br /> **Similar Page Discovery:** Input a link to identify and retrieve
 pages with related content or meaning.
 
-## Exa Handler Code
+## Example
+This code sets up an ExaHandler to perform a search using an API key. It retrieves content based on the provided query,
+automatically determining the search type and returning up to five results, making it easy to find relevant information
+quickly.
 
 ```python exa_handler_test.py
 import os
@@ -30,7 +33,7 @@ query = input("Enter your query here: ")
 asyncio.run(exa_handler_search(query))
 ```
 
-## Output:
+## Result
 
 ```log output
 URL: https://aima.eecs.berkeley.edu/2nd-ed/ai.html

@@ -8,11 +8,13 @@ With this tool, businesses can access Walmart’s product listings, prices, stoc
 It helps automate tasks like searching for products, tracking inventory, and monitoring price changes.
 This handler is very useful for e-commerce websites, price comparison tools, and inventory management systems.
 
-## Walmart Handler Code
+## Example
+This code sets up a WalmartHandler, which allows interacting with Walmart’s platform to search for products or access
+related data programmatically.
 ```python walmart handler
 import os
 
-from superagentx.handler.ecommerce.walmart import WalmartHandler
+from superagentx_handlers.ecommerce.walmart import WalmartHandler
 
 async def walmart_handler():
     walmart_handler = WalmartHandler()
@@ -20,10 +22,9 @@ async def walmart_handler():
     return await walmart_handler.product_search(
         query="best one blender provide 5 ratings"
     )
-
 ```
 
-## Output
+## Result
 ```python walmart
 {'body': {'pagination': {'currentPage': 1, 'nextPage': 2, 'totalPages': 2},
           'products': [{'image': 'https://i5.walmartimages.com/seo/VAVSEA-1000W-Countertop-Blender-for-Shake-and-Smoothies-for-Ice-Crush-Fruit-Protein-Drinks-Vegetable_7357b6c5-180c-4724-a87f-6c3aa4478ea7.55c0e5952798f4cb3fa4f542e91ccce9.jpeg?odnHeight=784&odnWidth=580&odnBg=FFFFFF',

@@ -8,12 +8,13 @@ creating, retrieving, and managing contacts, companies, deals, and tickets withi
 encapsulating common operations, it ensures that users can efficiently communicate with the API using both
 synchronous and asynchronous workflows.
 
-## HubSpotHandler Code
-
+## Example
+A HubSpotHandler using an API token from environment variables and creates a new contact in HubSpot with the specified
+email, first name, and last name. This allows the application to manage customer information directly within HubSpot.
 ```python hubspot_handler_test.py
 import os
 
-from superagentx.handler.crm.hubspot_crm import HubSpotHandler
+from superagentx_handlers.crm.hubspot_crm import HubSpotHandler
 
 async def hs_handler():
     hs_handler = HubSpotHandler(
@@ -21,12 +22,37 @@ async def hs_handler():
     )
 
     return await hs_handler.create_contact(
-        email='',
-        firstName="",
-        lastName=""
+        email='ram1234@gmail.com',
+        firstName="Ram",
+        lastName="Kumar"
     )
 ```
-## Output
+## Result
 ```python hs handler
+{'archived': False,
+ 'archived_at': None,
+ 'created_at': datetime.datetime(2024, 10, 22, 5, 46, 6, 926000, tzinfo=tzutc()),
+ 'id': '70443625133',
+ 'properties': {'createdate': '2024-10-22T05:46:06.926Z',
+                'email': 'ram1234@gmail.com',
+                'firstname': 'Ram',
+                'hs_all_contact_vids': '70443625133',
+                'hs_currently_enrolled_in_prospecting_agent': 'false',
+                'hs_email_domain': 'gmail.com',
+                'hs_is_contact': 'true',
+                'hs_is_unworked': 'true',
+                'hs_lifecyclestage_lead_date': '2024-10-22T05:46:06.926Z',
+                'hs_membership_has_accessed_private_content': '0',
+                'hs_object_id': '70443625133',
+                'hs_object_source': 'INTEGRATION',
+                'hs_object_source_id': '4114772',
+                'hs_object_source_label': 'INTEGRATION',
+                'hs_pipeline': 'contacts-lifecycle-pipeline',
+                'hs_registered_member': '0',
+                'lastmodifieddate': '2024-10-22T05:46:06.926Z',
+                'lastname': 'Kumar',
+                'lifecyclestage': 'lead'},
+ 'properties_with_history': None,
+ 'updated_at': datetime.datetime(2024, 10, 22, 5, 46, 6, 926000, tzinfo=tzutc())}
 
 ```

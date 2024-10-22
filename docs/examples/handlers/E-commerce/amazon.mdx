@@ -6,12 +6,13 @@ icon: 'code'
 Amazon.in is the leading online shopping platform in India, attracting more customers than ever before.
 Serviceable pin codes across the country, it has become the go-to marketplace for small and medium-sized enterprises.
 
-## Amazon Code
-
+## Example
+This code performs a product search on Amazon. It uses the AmazonHandler to connect to Amazon’s system and returns
+relevant product results based on the provided query.
 ```python amazon_handler_test.py
 import asyncio
 import os
-from superagentx.handler.ecommerce.amazon import AmazonHandler
+from superagentx_handlers.ecommerce.amazon import AmazonHandler
 
 async def search(query):
     amazon = AmazonHandler()
@@ -21,9 +22,9 @@ query = input("Enter your query here: ")
 print(asyncio.run(search(query)))
 
 ```
-## Output:
+## Result
 
-```inline output
+```inline amazon
 Enter Query: give a best juice blender under 2k
 [   {   'asin': 'B0DHXZQDD2',
         'climate_pledge_friendly': False,

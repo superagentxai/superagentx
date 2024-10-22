@@ -7,8 +7,11 @@ These tools enable creators to produce, enhance, and automate content across mul
 LLMs play a crucial role in streamlining workflows, increasing efficiency, and delivering personalized
 experiences to audiences.
 
-## Content Creator Handler Code
-
+## Example
+This code sets up a content creation tool using a language model
+(GPT-4o). The configuration specifies the model type and service
+(OpenAI). The AIHandler uses the connected LLM (Language Model) client
+to generate or process text content efficiently.
 ```python content_creator_handler_test.py
 import asyncio
 
@@ -34,7 +37,7 @@ asyncio.run(content_creator(instruction))
 
 ```
 
-## Output:
+## Result
 ```log output
 Enter Instruction: create robusting content
 Out[1]: 'Creating compelling and robust content requires attention to detail,creativity, and strategy.

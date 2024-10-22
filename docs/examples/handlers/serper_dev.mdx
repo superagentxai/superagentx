@@ -9,10 +9,10 @@ results, such as snippets and relevant URLs, making it ideal for developers who 
 into their applications.
 
 ## Serper handler code
-
+This code connects to the Serper Dev Tool and searches for the best city to visit based on factors like weather, season,
+and prices, returning the top result. It helps users find ideal travel destinations easily.
 ```python serper handler
-
-from superagentx.handler.serper_dev import SerperDevToolHandler
+from superagentx_handlers.serper_dev import SerperDevToolHandler
 
 async def serper_dev_handler():
     serper_dev_handler = SerperDevToolHandler()
@@ -22,7 +22,7 @@ async def serper_dev_handler():
     )
 
 ```
-## Output
+## Result
 ```python serper dev
 [{'attributes': {'Missing': 'Select | Show results with:Select'},
   'date': 'Oct 31, 2023',

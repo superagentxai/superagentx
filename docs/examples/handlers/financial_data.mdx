@@ -11,11 +11,11 @@ company’s performance, or making better investment decisions.
 Refer the link to know more details about symbol from the document.
 <a href="https://site.financialmodelingprep.com/developer/docs#symbol-list-stock-list" target="_blank">Click Here</a>
 
-## Financial Handler Code
-
+## Example
+This code sets up a FinancialHandler to access financial data using an API key and specifies the stock symbol for Amazon
+(AMZN). This allows for retrieving stock market information and other financial data programmatically.
 ```python financial_handler_test.py
 import os
-
 from superagentx.handler.financial_data import FinancialHandler
 
 async def financial_handler():
@@ -23,10 +23,9 @@ async def financial_handler():
         api_key="",
         symbol='AMZN'
     )
-
     return await financial_handler.get_stock_price()
 ```
-## Output:
+## Result
 ```inline Stock price Output:
 {
   "data": [

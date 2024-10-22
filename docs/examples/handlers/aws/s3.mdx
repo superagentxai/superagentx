@@ -8,12 +8,17 @@ videos, as objects. It offers high scalability and security, making it easy to s
 from anywhere, anytime. S3 also provides features like high availability, strong security, and smooth integration with
 other AWS services.
 
+## Example
+To create the AWSHandler object creation with the aws credentials.
+The AWSS3Handler connects to an Amazon S3 bucket using access credentials
+(access key, secret key) and specifies a region and bucket name. It enables
+seamless interaction with S3 for tasks like uploading, downloading, and
+managing files.
 
-To create the AWSHandler object creation with the aws credentials
 ```python s3_handler_test.py
 import os
 
-from superagentx.handler.aws.s3 import AWSS3Handler
+from superagentx_handlers.aws.s3 import AWSS3Handler
 
 s3_handler = AWSS3Handler(
         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),

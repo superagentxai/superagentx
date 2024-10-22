@@ -9,15 +9,12 @@ for tracking bugs, managing tasks, or following project progress, this class mak
 to automate those activities using Python.
 
 ## Jira Handler Code
+The JiraHandler connects to Jira using an email, API token, and organization details. This setup allows the program to interact with Jira, making it easy to manage tasks, projects, and issues programmatically.
 
 ```python jira handler code
 import os
 
-from jira.client import ResultList
-from jira.resources import Sprint, Comment
-from requests.models import Response
-
-from superagentx.handler.atlassian.jira import JiraHandler
+from superagentx_handlers.atlassian.jira import JiraHandler
 
 async def jira_handler():
     jira_handler = JiraHandler(
@@ -34,6 +31,7 @@ async def jira_handler():
 ```
 
 ## Output
+
 ```python jira
-[<JIRA Sprint: name='ASDF Sprint 27',id=20>]
+[<JIRA Sprint: name='WDVG Sprint 27',id=28>]
 ```

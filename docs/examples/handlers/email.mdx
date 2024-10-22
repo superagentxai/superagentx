@@ -14,26 +14,16 @@ title of the email's content. <br /> **Body:** The main content or message of th
 their thoughts or information.
 
 
-## Email Handler Code
-
+## Example
+This code initializes an EmailHandler to connect to an email server using the specified host and port number.
+This setup enables sending, receiving, or managing emails programmatically.
 ```python email_handler_test.py
-from superagentx.handler.email import EmailHandler
+from superagentx.handler.send_email import EmailHandler
 
-def email_client_init():
+async def email_handler():
     email_handler = EmailHandler(
-        host="",
+        host="<HOST>",
         port=345
     )
-    return email_handler
-
-async def email():
-    email_object = await email_client_init()
-    return await email_object.send_email(**{})
-
-
-
-
-
-
-
-
+    return await email_handler.send_email(**{})
+```

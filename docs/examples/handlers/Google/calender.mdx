@@ -8,20 +8,21 @@ This handler enables users to authenticate, access, and manage their calendar ev
 It provides methods for retrieving events for specific time frames, such as today, the upcoming week,
 or the next month, as well as filtering events based on specific types.
 
-## Calender Handler Code
-
+## Example
+A CalendarHandler for Google Calendar using provided credentials. This setup enables the application to manage calendar
+events, schedule meetings, and interact with Google Calendar services programmatically.
 ``` python calender_handler_code.py
-from superagentx.handler.google.calender import CalenderHandler
+from superagentx_handlers.google.calender import CalenderHandler
 
 async def google_calender_handler():
     calender_handler = CalenderHandler(
         credentials=""
     )
-
     return await calender_handler.get_today_events()
 ```
-## Output:
-```inline Today Event
+
+## Result
+```inline Calender Today Event
 {
     "kind": "calendar#events",
     "etag": "\"p32oftunmn22oe0o\"",

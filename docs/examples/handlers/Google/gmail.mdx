@@ -8,21 +8,21 @@ email accounts programmatically. This handler simplifies the process of accessin
 and creating draft emails. It uses OAuth 2.0 for authentication and provides a user-friendly interface to perform
 various email-related tasks asynchronously.
 
-## Gmail Handler Code
-
+## Example
+Set up a GmailHandler using the provided credentials, allowing the application to send, receive, and manage emails
+through Gmail programmatically.
 ```python Gmail_handler_test.py
-from superagentx.handler.google.gmail import GmailHandler
+from superagentx_handlers.google.gmail import GmailHandler
 
 async def gmail_handler():
     gmail_handler = GmailHandler(
         credentials=""
     )
-
     return await gmail_handler.get_user_profile()
 ```
 
-## Output:
-```python user profile
+## Result
+```python Gmail user profile
     {
     'emailAddress': 'bala234@gmail.com',
     'messagesTotal': 3678,

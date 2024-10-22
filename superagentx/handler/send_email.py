@@ -1,13 +1,16 @@
+import logging
 import os
 import smtplib
 from email import encoders
 from email.message import EmailMessage
 from email.mime.base import MIMEBase
-from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from ssl import SSLContext
 
 from superagentx.handler.base import BaseHandler
 from superagentx.utils.helper import sync_to_async
+
+logger = logging.getLogger(__name__)
 
 
 class SendEmailFailed(Exception):
@@ -77,14 +80,13 @@ class EmailHandler(BaseHandler):
         """
 
         try:
-            msg = EmailMessage()
+            msg = EmailMessage() if not attachment_path else MIMEMultipart()
+            msg.set_content(body)
             msg['From'] = f"{from_name} <{sender}>"
             msg['To'] = ', '.join(to)
             msg['Cc'] = ', '.join(cc) if cc else ''
             msg['Bcc'] = ', '.join(bcc) if bcc else ''
             msg['Subject'] = subject
-
-            await sync_to_async(msg.attach, MIMEText(body, 'plain'))
 
             if attachment_path:
                 attachment_name = os.path.basename(attachment_path)
@@ -115,11 +117,12 @@ class EmailHandler(BaseHandler):
                 self._conn.sendmail,
                 from_addr=sender,
                 to_addrs=all_recipients,
-                msg=await sync_to_async(msg.as_string)
-                )
+                msg=msg.as_string()
+            )
             await sync_to_async(self._conn.close)
             return res
         except Exception as e:
+            logger.error('Failed to send email!', exc_info=e)
             raise SendEmailFailed(f"Failed to send email!\n{e}")
 
     def __dir__(self):
