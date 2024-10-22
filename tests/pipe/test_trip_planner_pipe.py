@@ -13,7 +13,7 @@ from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.console_color import ConsoleColorType
 from superagentx.utils.helper import iter_to_aiter
-from superagentx.handler
+from superagentx.handler.scrape import ScrapeHandler
 
 logger = logging.getLogger(__name__)
 
