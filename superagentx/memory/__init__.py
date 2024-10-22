@@ -64,7 +64,7 @@ class Memory(MemoryBase):
         messages = []
         async for _data in iter_to_aiter(data):
             if memory_id == _data.get("memory_id"):
-                message_construct = f"Reason: {_data.get("reason")}\nResult: {_data.get("memory")}"
+                message_construct = f"Reason: {_data.get('reason')}\nResult: {_data.get('memory')}"
                 message = {
                     "role": _data.get("role"),
                     "content": message_construct
