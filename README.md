@@ -61,19 +61,14 @@ export RAPID_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXX
 
 ```python 
 # Additional lib needs to install
-# pip install superagentx-handlers
+# `pip install superagentx-handlers`
 # python3 superagentx_examples/ecom_iopipe.py
 
 import asyncio
-import os
-import sys
 
 from rich import print as rprint
 
 from superagentx.memory import Memory
-
-sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
-
 from superagentx.agent import Agent
 from superagentx.engine import Engine
 from superagentx.llm import LLMClient
