@@ -25,7 +25,7 @@ def ai_bedrock_client_init() -> dict:
 
 class TestBedrockAIHandler:
 
-    async def test_async_ai_bedrock_message(self, ai_bedrock_client_init: dict):
+    async def test_ai_bedrock_message(self, ai_bedrock_client_init: dict):
         llm_client: LLMClient = ai_bedrock_client_init.get('llm')
 
         content_handler = AIHandler(llm=llm_client)

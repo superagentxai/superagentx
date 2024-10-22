@@ -5,3 +5,6 @@ class InvalidHandler(Exception):
 
 class InvalidAction(Exception):
     pass
+
+class AuthException(Exception):
+    pass

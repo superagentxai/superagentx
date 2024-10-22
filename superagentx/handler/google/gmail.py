@@ -11,7 +11,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from superagentx.handler.base import BaseHandler
-from superagentx.handler.google.exceptions import AuthException
 from superagentx.utils.helper import sync_to_async, iter_to_aiter
 
 logger = logging.getLogger(__name__)

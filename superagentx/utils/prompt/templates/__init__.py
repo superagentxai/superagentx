@@ -24,5 +24,5 @@ Question: {input}
 Thought:{agent_scratchpad}
 '''
 
-# Initialize the agent's scratchpad (initial thoughts)
+# Initialize the engine's scratchpad (initial thoughts)
 agent_scratchpad = ""

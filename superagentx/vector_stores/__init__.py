@@ -1,5 +1,5 @@
 import logging
-from enum import StrEnum
+from enum import Enum
 
 from superagentx.vector_stores.chroma import ChromaDB
 from superagentx.llm import LLMClient
@@ -9,7 +9,7 @@ from superagentx.vector_stores.opensearch import Opensearch
 logger = logging.getLogger(__name__)
 
 
-class VectorDatabaseType(StrEnum):
+class VectorDatabaseType(Enum):
     CHROMA = "chroma"
     NEO4J = "neo4j"
     ELASTICSEARCH = "elasticsearch"
@@ -63,9 +63,8 @@ class VectorStore:
             case _:
                 _msg = (
                     f'Invalid Vector data type - '
-                    f'{self.vector_type}. It should be one of the following {", ".join(
-                        list(map(lambda c: c.value, VectorDatabaseType))
-                    )}'
+                    f'{self.vector_type}. It should be one of the following '
+                    f'{", ".join(list(map(lambda c: c.value, VectorDatabaseType)))}'
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
