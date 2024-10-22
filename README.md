@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/fulllogo_transparent.png?raw=True" width="350">
+<img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/fulllogo_transparent.png?raw=True" width="350">
 
 
 <br/>
 
 
-**SuperAgentX**: The Ultimate Modular Autonomous AI Agent Framework for Progressing Towards AGI.
+**SuperAgentX**: The Ultimate Modular Autonomous Agentic AGI Framework for Progressing Towards AGI.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
-[![GitHub Repo stars](https://img.shields.io/github/stars/decisionfacts/agentX)](https://github.com/decisionfacts/superagentX)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/decisionfacts/superagentX/blob/master/LICENSE)
+[![GitHub Repo stars](https://img.shields.io/github/stars/superagentxai/superagentX)](https://github.com/superagentxai/superagentX)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/superagentxai/superagentX/blob/master/LICENSE)
 
 </div>
 
@@ -25,7 +25,7 @@
 
 ## What is SuperAgentX?
 
-**The Ultimate Modular Autonomous AI Agent Framework for Progressing Towards AGI.** <br/><br/>
+**The Ultimate Modular Autonomous Agentic AGI Framework for Progressing Towards AGI.** <br/><br/>
 SuperAgentX is an advanced agentic AI framework designed to accelerate the development of Artificial General Intelligence (AGI). It provides a powerful, modular, and flexible platform for building autonomous AI agents capable of executing complex tasks with minimal human intervention. By integrating cutting-edge AI technologies and promoting efficient, scalable agent behavior, SuperAgentX embodies a critical step forward in the path towards superintelligence and AGI. Whether for research, development, or deployment, SuperAgentX is built to push the boundaries of what's possible with autonomous AI systems.
 
 ## Why SuperAgentX?
@@ -38,7 +38,7 @@ SuperAgentX is designed to address the growing need for highly capable, autonomo
 
 ### Getting Started
 
-```sh
+```shell
 pip install superagentx
 ```
 ##### Usage - Example SuperAgentX Code
@@ -48,10 +48,20 @@ This SuperAgentX example utilizes two handlers, Amazon and Walmart, to search fo
 2. Memory Context Enabled
 3. LLM configured to OpenAI
 4. Pre-requisites
-  <p> 4.1. Set OpenAI Key - export OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxx<br/>
-      4.2  Set Rapid API Key <a href="https://rapidapi.com/auth/sign-up" target="_blank">Free Subscription</a> for Amazon, Walmart Search APIs </p>
+
+Set OpenAI Key:  
+```shell
+export OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Set Rapid API Key <a href="https://rapidapi.com/auth/sign-up" target="_blank">Free Subscription</a> for Amazon, Walmart Search APIs
+```shell
+export RAPID_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXX
+```
 
 ```python 
+# Additional lib needs to install
+# pip install superagentx-handlers
 # python3 superagentx_examples/ecom_iopipe.py
 
 import asyncio
@@ -64,14 +74,14 @@ from superagentx.memory import Memory
 
 sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__)))])
 
-from superagentx.agent.agent import Agent
-from superagentx.agent.engine import Engine
-from superagentx.handler.ecommerce.amazon import AmazonHandler
-from superagentx.handler.ecommerce.walmart import WalmartHandler
+from superagentx.agent import Agent
+from superagentx.engine import Engine
 from superagentx.llm import LLMClient
 from superagentx.agentxpipe import AgentXPipe
 from superagentx.pipeimpl.iopipe import IOPipe
 from superagentx.prompt import PromptTemplate
+from superagentx_handlers.ecommerce.amazon import AmazonHandler
+from superagentx_handlers.ecommerce.walmart import WalmartHandler
 
 
 async def main():
@@ -140,24 +150,24 @@ if __name__ == '__main__':
 ##### Usage - Example SuperAgentX Result
 SuperAgentX searches for product items requested by the user in the console, validates them against the set goal, and returns the result. It retains the context, allowing it to respond to the user's next prompt in the IO Console intelligently. 
 
-![Output](https://github.com/decisionfacts/superagentX/blob/master/docs/images/examples/ecom-output-console.png?raw=True)
+![Output](https://github.com/superagentxai/superagentX/blob/master/docs/images/examples/ecom-output-console.png?raw=True)
 
 ## Architecture
-<img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/architecture.png?raw=True" title="SuperAgentX Architecture"/>
+<img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/architecture.png?raw=True" title="SuperAgentX Architecture"/>
 
 ## Large Language Models
 
 | Icon                                                                                                                                    | LLM Name          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Status                                                                                   |
 |-----------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/openai.png?raw=True" title="OpenAI" height="20" width="20"/> | **OpenAI** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;        | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>           |
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/azure-icon.png?raw=True" title="Azure OpenAI" height="20" width="20"/>                                              | **Azure OpenAI**                                                                               | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>           |  
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/awsbedrock.png?raw=True" title="AWS Bedrock" height="20" width="20"/>                                               | **AWS Bedrock**                                                                                | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/beta.png?raw=True" title="Testing Inprogress" height="20" width="20"/>    |
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/gemini.png?raw=True" title="Google Gemini" height="20" width="20"/>                                                 | **Google Gemini**                                                                              | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/meta.png?raw=True" title="Google Gemini" height="20" width="20"/>                                                   | **Meta Llama**                                                                                 | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/ollama.png?raw=True" title="Ollama" height="20" width="20"/>                                                        | **Ollama**                                                                                     | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/claude-ai-logo.png?raw=True" title="Claude AI" height="20" width="20"/>                                             | **Claude AI**                                                                                  | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png?raw=True" title="Mistral AI" height="20" width="30"/>                                           | **Mistral AI**                                                                                 | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
-| <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/llms/ibm.png?raw=True" title="IBM WatsonX AI" height="20" width="30"/>                                                   | **IBM WatsonX**                                                                                | <img src="https://github.com/decisionfacts/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/openai.png?raw=True" title="OpenAI" height="20" width="20"/> | **OpenAI** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;        | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>           |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/azure-icon.png?raw=True" title="Azure OpenAI" height="20" width="20"/>                                              | **Azure OpenAI**                                                                               | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>           |  
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/awsbedrock.png?raw=True" title="AWS Bedrock" height="20" width="20"/>                                               | **AWS Bedrock**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/beta.png?raw=True" title="Testing Inprogress" height="20" width="20"/>    |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/gemini.png?raw=True" title="Google Gemini" height="20" width="20"/>                                                 | **Google Gemini**                                                                              | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/meta.png?raw=True" title="Google Gemini" height="20" width="20"/>                                                   | **Meta Llama**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ollama.png?raw=True" title="Ollama" height="20" width="20"/>                                                        | **Ollama**                                                                                     | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/wip.png?raw=True" title="Development Inprogress" height="20" width="20"/> |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/claude-ai-logo.png?raw=True" title="Claude AI" height="20" width="20"/>                                             | **Claude AI**                                                                                  | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png?raw=True" title="Mistral AI" height="20" width="30"/>                                           | **Mistral AI**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ibm.png?raw=True" title="IBM WatsonX AI" height="20" width="30"/>                                                   | **IBM WatsonX**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
 
 
 ## Key Features
@@ -200,5 +210,5 @@ $ source venv/bin/activate
 
 ## License
 
-SuperAgentX is released under the [MIT](https://github.com/decisionfacts/superagentX/blob/master/LICENSE) License.
+SuperAgentX is released under the [MIT](https://github.com/superagentxai/superagentX/blob/master/LICENSE) License.
 

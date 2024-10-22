@@ -1,22 +1,19 @@
 [tool.poetry]
 name = "superagentx"
-version = "0.1.1"
+version = "0.1.5"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = "MIT"
 authors = [
-    "SuperAgentX AI <prabhu@decisionfacts.io>",
+    "SuperAgentX AI <support@superagentx.ai>",
 ]
 maintainers = [
-    "SuperAgentX AI <prabhu@decisionfacts.io>",
+    "SuperAgentX AI <support@superagentx.ai>",
 ]
 readme = "README.md"
 homepage = "https://www.superagentx.ai/"
-repository = "https://github.com/decisionfacts/superagentX"
+repository = "https://github.com/superagentxai/superagentx"
 documentation = "https://docs.superagentx.ai/"
 keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM"]
-include = [
-    "superagentx_examples"
-]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
@@ -33,6 +30,7 @@ elasticsearch = "^8.15.1"
 aiohttp = "^3.10.8"
 rich = "^13.9.2"
 protobuf = "3.20.3"
+aiosqlite = "^0.20.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
