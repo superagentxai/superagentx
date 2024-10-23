@@ -14,11 +14,11 @@ class AIHandler(BaseHandler):
             self,
             llm: LLMClient,
             role: str | None = None,
-            back_story: str | None = None
+            story_content: str | None = None
     ):
         self.llm = llm
         self.role = role
-        self.back_story = back_story
+        self.story_content = story_content
 
         if not self.role:
             self.role = "You are a helpful assistant."
@@ -26,7 +26,6 @@ class AIHandler(BaseHandler):
     async def text_creation(
             self,
             *,
-            system_message: str = 'You are a helpful assistant.',
             instruction: str
     ):
         """
@@ -36,20 +35,19 @@ class AIHandler(BaseHandler):
 
         Args:
             @param instruction: A string containing the user instruction or prompt that guides the text generation process.
-            @param system_message: LLM System Message
 
         """
-        content = f"{self.role}"
-        if self.back_story:
-            content += f"\nBack Story: {self.back_story}"
+        content = instruction
+        if self.story_content:
+            content = f"\nBack Story: {self.story_content} Instruction: {instruction}"
         messages = [
             {
                 "role": "system",
-                "content": system_message
+                "content": self.role
             },
             {
                 "role": "user",
-                "content": instruction
+                "content": content
             }
         ]
         chat_completion = ChatCompletionParams(
