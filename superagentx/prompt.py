@@ -27,9 +27,11 @@ class PromptTemplate:
     def __init__(
             self,
             *,
-            prompt_type: str | Enum | None = None
+            prompt_type: str | Enum | None = None,
+            system_message: str | None = None
     ):
         self.prompt_type = prompt_type
+        self.system_message = system_message
         if self.prompt_type is None:
             self.prompt_type = "default"
 
@@ -62,4 +64,10 @@ class PromptTemplate:
             "content": format_string
         }
         prompt.append(content)
+        if self.system_message:
+            _system_content = {
+                "role": "system",
+                "content": self.system_message
+            }
+            prompt.append(_system_content)
         return prompt
