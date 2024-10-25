@@ -1,6 +1,7 @@
 import aiohttp
 
 from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
 
 
 class FinancialHandler(BaseHandler):
@@ -11,6 +12,7 @@ class FinancialHandler(BaseHandler):
             api_key: str,
             symbol: str
     ):
+        super().__init__()
         self.api_key = api_key
         self.symbol = symbol
 
@@ -35,6 +37,7 @@ class FinancialHandler(BaseHandler):
             async with session.get(_url) as resp:
                 return await resp.json()
 
+    @tool
     async def get_stock_price(self) -> list[dict]:
         """
             Asynchronously retrieves stock prices.
@@ -54,6 +57,7 @@ class FinancialHandler(BaseHandler):
         _endpoint = f'quote-order/{self.symbol}?apikey={self.api_key}'
         return await self._retrieve(_endpoint)
 
+    @tool
     async def get_company_financials(self) -> list[dict]:
         """
             Asynchronously retrieves financial data for a company or multiple companies.
@@ -73,6 +77,7 @@ class FinancialHandler(BaseHandler):
         _endpoint = f"profit/{self.symbol}?apikey={self.api_key}"
         return await self._retrieve(_endpoint)
 
+    @tool
     async def get_income_statement(self) -> list[dict]:
         """
             Asynchronously retrieves the income statement data for a company or multiple companies.
@@ -91,11 +96,3 @@ class FinancialHandler(BaseHandler):
 
         _endpoint = f"income-statement/{self.symbol}?apikey={self.api_key}"
         return await self._retrieve(_endpoint)
-
-
-    def __dir__(self):
-        return (
-            'get_stock_price',
-            'get_company_financials',
-            'get_income_statement'
-        )
