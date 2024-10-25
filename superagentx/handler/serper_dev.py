@@ -3,13 +3,16 @@ import json
 import aiohttp
 
 from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
 
 
 class SerperDevToolHandler(BaseHandler):
 
     def __init__(self):
+        super().__init__()
         self.search_url: str = "https://google.serper.dev/search"
 
+    @tool
     async def search(self, *, query: str, total_results: int = 10):
         """
         Serper is a powerful real-time search engine tool API that provides structured data from Google search engine results.
@@ -57,7 +60,7 @@ class SerperDevToolHandler(BaseHandler):
                             continue
             return results
 
-    def __dir__(self):
-        return (
-            'search',
-        )
+    # def __dir__(self):
+    #     return (
+    #         'search',
+    #     )
