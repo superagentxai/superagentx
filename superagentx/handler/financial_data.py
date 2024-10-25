@@ -96,11 +96,3 @@ class FinancialHandler(BaseHandler):
 
         _endpoint = f"income-statement/{self.symbol}?apikey={self.api_key}"
         return await self._retrieve(_endpoint)
-
-
-    # def __dir__(self):
-    #     return (
-    #         'get_stock_price',
-    #         'get_company_financials',
-    #         'get_income_statement'
-    #     )

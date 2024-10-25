@@ -124,8 +124,3 @@ class EmailHandler(BaseHandler):
             return res
         except Exception as e:
             raise SendEmailFailed(f"Failed to send email!\n{e}")
-
-    # def __dir__(self):
-    #     return (
-    #         "send_email",
-    #     )

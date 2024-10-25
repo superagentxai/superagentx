@@ -94,9 +94,3 @@ class ElasticsearchHandler(BaseHandler):
         except elasticsearch.ConnectionTimeout as ex:
             logger.error(f"Elasticsearch error! {ex}")
         return {}
-
-    # def __dir__(self):
-    #     return (
-    #         'search',
-    #         'create'
-    #     )

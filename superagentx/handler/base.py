@@ -16,6 +16,3 @@ class BaseHandler(abc.ABC):
                 if hasattr(_member, '_is_handler_tool') and getattr(_member, '_is_handler_tool'):
                     self.tools.append(_member.__name__)
         return self.tools
-
-    # def __dir__(self):
-    #     return super.__dir__()

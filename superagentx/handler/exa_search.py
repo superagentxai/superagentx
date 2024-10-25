@@ -55,8 +55,3 @@ class ExaHandler(BaseHandler):
             use_autoprompt=use_autoprompt,
             num_results=num_results,
             )
-
-    # def __dir__(self):
-    #     return (
-    #         'search_contents',
-    #     )

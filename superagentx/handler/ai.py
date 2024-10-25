@@ -79,8 +79,3 @@ class AIHandler(BaseHandler):
         """
         # TODO: Implement later
         pass
-
-    # def __dir__(self):
-    #     return (
-    #         'text_creation',
-    #     )

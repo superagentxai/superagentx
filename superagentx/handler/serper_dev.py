@@ -59,8 +59,3 @@ class SerperDevToolHandler(BaseHandler):
                         except KeyError:
                             continue
             return results
-
-    # def __dir__(self):
-    #     return (
-    #         'search',
-    #     )
