@@ -75,6 +75,7 @@ class BedrockClient(Client):
                     response = self.client.converse(
                         modelId=model_id,
                         messages=[user_message],
+                        system=assistant_message,
                         inferenceConfig=inference_config,
                         toolConfig=tools_config)
 
@@ -93,39 +94,21 @@ class BedrockClient(Client):
             if response is None:
                 raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
 
-            if tools:
-                messages = chat_completion_params.messages
-                conversations = self._construct_message(messages)
-                tools_config = {"tools": tools}
-
-                try:
-                    response = self.client.converse(
-                        modelId=model_id,
-                        messages=conversations,
-                        inferenceConfig=inference_config,
-                        toolConfig=tools_config,
-                    )
-                except Exception as e:
-                    raise RuntimeError(f"Failed to get response from Bedrock: {e}")
-
-                if not response:
-                    raise RuntimeError(f"Failed to get response from Bedrock after retrying {_retries} times.")
-
-                try:
-                    asyncio.get_running_loop()  # Triggers RuntimeError if no running event loop
-                    # Create a separate thread so we can block before returning
-                    with ThreadPoolExecutor(1) as pool:
-                        chat_completion: ChatCompletion = pool.submit(
-                            lambda: asyncio.run(
-                                self.__prepare_bedrock_formatted_output_(
-                                    response=response,
-                                    model_id=model_id,
-                                    is_async=True
-                                )
-                            )).result()
-                        return chat_completion
-                except RuntimeError as error:
-                    logger.error(f'Unable tp process the result from Bedrock response {error} ')
+            try:
+                asyncio.get_running_loop()  # Triggers RuntimeError if no running event loop
+                # Create a separate thread so we can block before returning
+                with ThreadPoolExecutor(1) as pool:
+                    chat_completion: ChatCompletion = pool.submit(
+                        lambda: asyncio.run(
+                            self.__prepare_bedrock_formatted_output_(
+                                response=response,
+                                model_id=model_id,
+                                is_async=True
+                            )
+                        )).result()
+                    return chat_completion
+            except RuntimeError as error:
+                logger.error(f'Unable to process the result from Bedrock response {error} ')
 
     async def achat_completion(
             self,
@@ -171,6 +154,7 @@ class BedrockClient(Client):
                     response = await sync_to_async(
                         self.client.converse,
                         modelId=model_id,
+                        system=assistant_message,
                         messages=[user_message],
                         inferenceConfig=inference_config,
                         toolConfig=tools_config,

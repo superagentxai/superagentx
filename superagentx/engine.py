@@ -58,7 +58,7 @@ class Engine:
         return _funcs_props
 
     async def _construct_tools(self) -> list[dict]:
-        funcs = dir(self.handler)
+        funcs = self.handler.tools or dir(self.handler)
         logger.debug(f"Handler Funcs => {funcs}")
         if not funcs:
             raise InvalidHandler(str(self.handler))

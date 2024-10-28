@@ -1,4 +1,5 @@
 from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
 from superagentx.llm import LLMClient
 from superagentx.llm.models import ChatCompletionParams
 
@@ -16,6 +17,7 @@ class AIHandler(BaseHandler):
             role: str | None = None,
             story_content: str | None = None
     ):
+        super().__init__()
         self.llm = llm
         self.role = role
         self.story_content = story_content
@@ -23,6 +25,7 @@ class AIHandler(BaseHandler):
         if not self.role:
             self.role = "You are a helpful assistant."
 
+    @tool
     async def text_creation(
             self,
             *,
@@ -76,8 +79,3 @@ class AIHandler(BaseHandler):
         """
         # TODO: Implement later
         pass
-
-    def __dir__(self):
-        return (
-            'text_creation',
-        )

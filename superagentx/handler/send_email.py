@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 from ssl import SSLContext
 
 from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
 from superagentx.utils.helper import sync_to_async
 
 
@@ -31,6 +32,7 @@ class EmailHandler(BaseHandler):
             ssl: bool = False,
             ssl_context: SSLContext | None = None
     ):
+        super().__init__()
         self.host = host
         self.port = port
         self.username = username
@@ -48,6 +50,7 @@ class EmailHandler(BaseHandler):
                 port=port
             )
 
+    @tool
     async def send_email(
             self,
             *,
@@ -121,8 +124,3 @@ class EmailHandler(BaseHandler):
             return res
         except Exception as e:
             raise SendEmailFailed(f"Failed to send email!\n{e}")
-
-    def __dir__(self):
-        return (
-            "send_email",
-        )
