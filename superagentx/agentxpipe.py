@@ -218,14 +218,7 @@ class AgentXPipe:
                             "content": f"{yaml.dump(_res.result)}",
                             "reason": _res.reason
                         }
-                    else:
-                        content = _res.content
-                        assistant = {
-                            "role": "assistant",
-                            "content": content,
-                            "reason": _res.error
-                        }
-                    await self.add_memory([assistant])
+                        await self.add_memory([assistant])
             except StopSuperAgentX as ex:
                 trigger_break = True
                 logger.warning(ex)
