@@ -31,7 +31,7 @@ class Memory(MemoryBase):
         if not self.vector_db:
             self.vector_db: BaseVectorStore = ChromaDB(
                 collection_name=COLLECTION_NAME,
-                embed_cli=llm_client.llm_config_model
+                embed_cli=llm_client
             )
 
     @staticmethod
