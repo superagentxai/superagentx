@@ -1,6 +1,7 @@
 from exa_py import Exa
 
 from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
 from superagentx.utils.helper import sync_to_async
 
 
@@ -15,8 +16,10 @@ class ExaHandler(BaseHandler):
             self,
             api_key: str
     ):
+        super().__init__()
         self.exa = Exa(api_key=api_key)
 
+    @tool
     async def search_contents(
             self,
             *,
@@ -52,8 +55,3 @@ class ExaHandler(BaseHandler):
             use_autoprompt=use_autoprompt,
             num_results=num_results,
             )
-
-    def __dir__(self):
-        return (
-            'search_contents',
-        )
