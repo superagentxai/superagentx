@@ -11,18 +11,26 @@ pages, spaces, and user information.
 ## Example
 This code connects to Confluence using stored credentials and retrieves all available spaces,
 making it easy to access and manage content from the platform.
+
+We need to setup Email, Token and Organization, For more details click the link given below.
+<a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account" target="_blank">Click Here</a>
+>Set up Email, Token and Organisation as an environmental variable and run the following code. <br />
+ ```python
+ export ATLASSIAN_EMAIL = "**********"
+ export ATLASSIAN_TOKEN = "*************"
+ export ATLASSIAN_ORGANIZATION = "***************"
+```
+
 ```python Confluence handler code
 import os
+import asyncio
 
 from superagentx_handlers.atlassian.confluence import ConfluenceHandler
 
 async def confluence_handler():
-    confluence_handler = ConfluenceHandler(
-        email=os.getenv('ATLASSIAN_EMAIL'),
-        token=os.getenv('ATLASSIAN_TOKEN'),
-        organization=os.getenv('ATLASSIAN_ORGANIZATION')
-    )
+    confluence_handler = ConfluenceHandler()
     return await confluence_handler.get_all_spaces()
+print(asyncio.run(confluence_handler()))
 ```
 
 ## Result

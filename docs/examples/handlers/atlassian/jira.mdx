@@ -9,25 +9,33 @@ for tracking bugs, managing tasks, or following project progress, this class mak
 to automate those activities using Python.
 
 ## Jira Handler Code
-The JiraHandler connects to Jira using an email, API token, and organization details. This setup allows the program to interact with Jira, making it easy to manage tasks, projects, and issues programmatically.
+The JiraHandler connects to Jira using an email, API token, and organization details. This setup allows the program to
+interact with Jira, making it easy to manage tasks, projects, and issues programmatically.
+
+We need to setup Email, Token and Organization, For more details click the link given below.
+<a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account" target="_blank">Click Here</a>
+>Set up Email, Token and Organisation as an environmental variable and run the following code. <br />
+ ```python
+ export ATLASSIAN_EMAIL = "**********"
+ export ATLASSIAN_TOKEN = "*************"
+ export ATLASSIAN_ORGANIZATION = "***************"
+```
 
 ```python jira handler code
 import os
+import asyncio
 
 from superagentx_handlers.atlassian.jira import JiraHandler
 
 async def jira_handler():
-    jira_handler = JiraHandler(
-        email=os.getenv('ATLASSIAN_EMAIL'),
-        token=os.getenv('ATLASSIAN_TOKEN'),
-        organization=os.getenv('ATLASSIAN_ORGANIZATION'),
-    )
+    jira_handler = JiraHandler()
 
     return await jira_handler.get_active_sprint(
         board_id=1,
         start=0,
         end=50
     )
+print(asyncio.run(jira_handler()))
 ```
 
 ## Output
