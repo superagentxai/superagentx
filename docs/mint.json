@@ -15,12 +15,11 @@
       "light": "#fff"
     }
   },
-  "topbarLinks": [
-    {
-      "name": "Support",
-      "url": "mailto:hi@mintlify.com"
-    }
-  ],
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/superagentxai/superagentX/"
+  },
+
   "tabs": [
     {
       "name": "API Reference",
@@ -136,7 +135,6 @@
   ],
   "footerSocials": {
     "x": "https://x.com/superagentxai",
-    "github": "https://github.com/decisionfacts/superagentX/",
-    "linkedin": "https://linkedin.com/company/decisionfacts"
+    "github": "https://github.com/superagentxai/superagentX/"
   }
 }
