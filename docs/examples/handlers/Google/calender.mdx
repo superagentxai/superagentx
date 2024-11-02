@@ -11,7 +11,14 @@ or the next month, as well as filtering events based on specific types.
 ## Example
 A CalendarHandler for Google Calendar using provided credentials. This setup enables the application to manage calendar
 events, schedule meetings, and interact with Google Calendar services programmatically.
+
+To create a new credentials follow the steps given in the
+<a href="https://developers.google.com/calendar/api/quickstart/python" target="_blank">Google Cloud.</a> <br />
+After creating and enabling the Google Cloud API, you need to provide the path to the credentials in the _credentials_ parameters.
+
 ``` python calender_handler_code.py
+import asyncio
+
 from superagentx_handlers.google.calender import CalenderHandler
 
 async def google_calender_handler():
@@ -19,6 +26,7 @@ async def google_calender_handler():
         credentials=""
     )
     return await calender_handler.get_today_events()
+print(asyncio.run(google_calender_handler()))
 ```
 
 ## Result

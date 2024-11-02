@@ -9,6 +9,14 @@ Serviceable pin codes across the country, it has become the go-to marketplace fo
 ## Example
 This code performs a product search on Amazon. It uses the AmazonHandler to connect to Amazon’s system and returns
 relevant product results based on the provided query.
+
+To access RapidAPI services, you'll need to create a RapidAPI account, obtain an API key, and subscribe the required
+API for your application.<br />
+>Set up a RapidAPI key as an environmental variable and run the following code. <br />
+ ```python
+ export RAPID_API_KEY = "**************************"
+```
+
 ```python amazon_handler_test.py
 import asyncio
 import os

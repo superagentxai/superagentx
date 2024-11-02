@@ -6,6 +6,7 @@ from elastic_transport import NodeConfig
 from elasticsearch import AsyncElasticsearch
 
 from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class ElasticsearchHandler(BaseHandler):
             password: str | None = None,
             ca_certs: str | None = None
     ):
+        super().__init__()
         self._conn = AsyncElasticsearch(
             hosts=hosts,
             cloud_id=cloud_id,
@@ -34,6 +36,7 @@ class ElasticsearchHandler(BaseHandler):
             ca_certs=ca_certs
         )
 
+    @tool
     async def search(
             self,
             index_name: str,
@@ -62,6 +65,7 @@ class ElasticsearchHandler(BaseHandler):
         )
         return result
 
+    @tool
     async def create(
             self,
             index_name: str,
@@ -90,9 +94,3 @@ class ElasticsearchHandler(BaseHandler):
         except elasticsearch.ConnectionTimeout as ex:
             logger.error(f"Elasticsearch error! {ex}")
         return {}
-
-    def __dir__(self):
-        return (
-            'search',
-            'create'
-        )
