@@ -3,24 +3,26 @@ title: 'Amazon (Tool)'
 icon: 'code'
 ---
 
-Amazon.in is the leading online shopping platform in India, attracting more customers than ever before.
-Serviceable pin codes across the country, it has become the go-to marketplace for small and medium-sized enterprises.
+AmazonHandler, for interacting with the Amazon data API using RapidAPI. It uses to fetch Amazon product
+data and customer reviews.
 
 ## Example
 This code performs a product search on Amazon. It uses the AmazonHandler to connect to Amazon’s system and returns
-relevant product results based on the provided query.
+relevant product results and reviews based on the provided query.
 
 To access RapidAPI services, you'll need to create a RapidAPI account, obtain an API key, and subscribe the required
-API for your application.<br />
->Set up a RapidAPI key as an environmental variable and run the following code. <br />
+API for your application. For more details refer <a href='https://rapidapi.com/hub' target='_blank'>here</a>.
+>Set up a RapidAPI key as an environmental variable and run the following code.
  ```python
  export RAPID_API_KEY = "**************************"
 ```
 
-```python amazon_handler_test.py
+```python amazon_handler.py
 import asyncio
 import os
+
 from superagentx_handlers.ecommerce.amazon import AmazonHandler
+
 
 async def search(query):
     amazon = AmazonHandler()

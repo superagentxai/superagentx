@@ -11,24 +11,40 @@ synchronous and asynchronous workflows.
 ## Example
 A HubSpotHandler using an API token from environment variables and creates a new contact in HubSpot with the specified
 email, first name, and last name. This allows the application to manage customer information directly within HubSpot.
-```python hubspot_handler_test.py
+
+To use Hubspot Token, you'll need to create an account and get an token. For more details refer
+ <a href='https://www.hubspot.com/products/crm' target='_blank'>here</a>.
+
+>Set up a HUBSPOT_TOKEN key as an environmental variable and run the following code.
+ ```python
+ export HUBSPOT_TOKEN = "**************************"
+```
+
+```python hubspot_handler.py
 import os
+import asyncio
 
 from superagentx_handlers.crm.hubspot_crm import HubSpotHandler
 
-async def hs_handler():
-    hs_handler = HubSpotHandler(
-        token=os.getenv("HUBSPOT_TOKEN")
-    )
+async def create_contact():
+    hs_handler = HubSpotHandler()
 
     return await hs_handler.create_contact(
         email='ram1234@gmail.com',
-        firstName="Ram",
-        lastName="Kumar"
+        first_name="Ram",
+        last_name="Kumar"
     )
+
+
+async def main():
+    res = await create_contact()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
 ```
 ## Result
-```python hs handler
+```python hubspot
 {'archived': False,
  'archived_at': None,
  'created_at': datetime.datetime(2024, 10, 22, 5, 46, 6, 926000, tzinfo=tzutc()),

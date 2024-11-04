@@ -8,19 +8,35 @@ and is useful for tasks requiring quick access to up-to-date information. It foc
 results, such as snippets and relevant URLs, making it ideal for developers who need web-based insights integrated
 into their applications.
 
-## Serper handler code
+## Example
 This code connects to the Serper Dev Tool and searches for the best city to visit based on factors like weather, season,
 and prices, returning the top result. It helps users find ideal travel destinations easily.
-```python serper handler
+
+To use SERPER_API_KEY, you'll need to create an  account and get an API key. For more details refer <a href='https://serper.dev/' target='_blank'>here</a>.
+
+>Set up a SERPER_API_KEY as an environmental variable and run the following code.
+ ```python
+ export SERPER_API_KEY = "**************************"
+```
+
+```python serper_handler.py
 from superagentx_handlers.serper_dev import SerperDevToolHandler
 
-async def serper_dev_handler():
+async def search(query):
     serper_dev_handler = SerperDevToolHandler()
     return await serper_dev_handler.search(
-    query='Select the best city based on weather, season, and prices',
+    query=query,
     total_results=1
     )
 
+
+async def main(query):
+    res = await search(query)
+    print(res)
+
+if __name__ == '__main__':
+    query='Select the best city based on weather, season, and prices'
+    asyncio.run(main(query))
 ```
 ## Result
 ```python serper dev

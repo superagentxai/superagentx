@@ -13,15 +13,17 @@ This code searches for products on Flipkart. It uses the FlipkartHandler to conn
 product results based on the given query.
 
 To access RapidAPI services, you'll need to create a RapidAPI account, obtain an API key, and subscribe the required
-API for your application.<br />
->Set up a RapidAPI key as an environmental variable and run the following code. <br />
+API for your application. For more details refer <a href='https://rapidapi.com/hub' target='_blank'>here</a>.
+>Set up a RapidAPI key as an environmental variable and run the following code.
 ```python
  export RAPID_API_KEY = "**************************"
 ```
-```python flipkart_handler_test.py
+```python flipkart_handler.py
 import asyncio
 import os
+
 from superagentx_handlers.ecommerce.flipkart import FlipkartHandler
+
 
 async def search(query):
     flipkart = FlipkartHandler()
@@ -30,9 +32,9 @@ async def search(query):
 query = input("Enter your query here: ")
 asyncio.run(search(query))
 ```
-## Output:
+## Result:
 
-```inline output
+```inline flipkart
 Enter Query: oneplus
 [{'pid': 'ACCGXAV7Z868V64N', 'itemId': 'ITM617E66D574EA4', 'listingId': 'LSTACCGXAV7Z868V64NMNDSVH',
 'brand': 'Flipkart SmartBuy', 'title': 'Flipkart SmartBuy USB Type C Cable 8 A 1 m Silver Wrap OEM 65W-10W/6.

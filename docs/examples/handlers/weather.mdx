@@ -10,52 +10,63 @@ APIs, and presenting it in a way that is easy to use in applications like websit
 ## Example
 This code initializes a WeatherHandler, which is designed to fetch weather-related data. This setup enables the
 application to access various weather services for retrieving current conditions and forecasts.
-```python weather handler code
-from pandas.core.frame import DataFrame
+
+```python weather_handler.py
+import asyncio
+
 from superagentx_handlers.weather import WeatherHandler
 
-async def weather_handler():
-    weather_handler = WeatherHandler()
+weather_handler = WeatherHandler()
 
-    return await weather_handler.get_forecast_weather(
-        location="Chennai",
-        forecast_days=7,
-        past_days=0,
-        current=True,
-        daily=True,
-        hourly=True,
-    )
+
+async def get_lat_long(place):
+
+    return await weather_handler.get_lat_long(place=place)
+
+
+async def get_weather(place):
+
+    lat_long = await get_lat_long(place)
+    return await weather_handler.get_weather(**lat_long)
+
+
+async def main(place):
+    res = await get_weather(place)
+    print(res)
+
+if __name__ == '__main__':
+    place="coimbatore"
+    asyncio.run(main(place))
 ```
 
 ## Result
 ```python weather
-{'current':    temperature_2m  relative_humidity_2m  apparent_temperature  is_day  precipitation  ...  pressure_msl  surface_pressure  wind_speed_10m  wind_direction_10m  wind_gusts_10m
-0       32.049999                  63.0             39.039062     1.0            0.0  ...        1010.5       1009.143616         4.61025           51.340172       19.799999
-
-[1 rows x 15 columns],
- 'daily':                        date  weather_code  temperature_2m_max  temperature_2m_min  ...  wind_speed_10m_max  wind_gusts_10m_max  wind_direction_10m_dominant  shortwave_radiation_sum
-0 2024-10-21 18:30:00+00:00          95.0           32.519501           26.619501  ...            7.517021           22.680000                    55.430141                    19.02
-1 2024-10-22 18:30:00+00:00           3.0           33.269501           25.319500  ...            6.924738           21.959999                   347.047211                    19.57
-2 2024-10-23 18:30:00+00:00          96.0           34.419502           25.719501  ...            7.968939           30.239998                   237.407425                    18.50
-3 2024-10-24 18:30:00+00:00          95.0           32.269501           25.319500  ...            6.489992           23.400000                   218.316177                    15.70
-4 2024-10-25 18:30:00+00:00           3.0           35.569500           25.669500  ...           10.163227           28.080000                   249.443878                    20.59
-5 2024-10-26 18:30:00+00:00          80.0           34.869499           26.319500  ...            9.178235           27.719999                   235.724396                    17.10
-6 2024-10-27 18:30:00+00:00           3.0           33.519501           25.619501  ...            6.915374           24.480000                   213.287552                    17.52
-
-[7 rows x 18 columns],
- 'hourly':                          date  temperature_2m  dew_point_2m  rain  ...  soil_temperature_6cm  soil_temperature_18cm  soil_moisture_0_to_1cm  soil_moisture_1_to_3cm
-0   2024-10-21 18:30:00+00:00       27.519501     25.160389   0.0  ...             28.519501              30.419500                   0.306                   0.308
-1   2024-10-21 19:30:00+00:00       27.319500     25.155630   0.0  ...             28.369501              30.269501                   0.304                   0.306
-2   2024-10-21 20:30:00+00:00       27.119501     25.148417   0.0  ...             28.219501              30.069500                   0.302                   0.305
-3   2024-10-21 21:30:00+00:00       26.919500     25.138788   0.0  ...             28.019501              29.869501                   0.301                   0.304
-4   2024-10-21 22:30:00+00:00       26.719501     25.126797   0.0  ...             27.869501              29.719501                   0.301                   0.303
-..                        ...             ...           ...   ...  ...                   ...                    ...                     ...                     ...
-163 2024-10-28 13:30:00+00:00       29.169500     25.152117   0.0  ...             30.719501              31.819500                   0.279                   0.283
-164 2024-10-28 14:30:00+00:00       28.769501     25.389315   0.0  ...             29.969501              31.619501                   0.283                   0.286
-165 2024-10-28 15:30:00+00:00       28.019501     25.260300   0.0  ...             29.369501              31.419500                   0.296                   0.299
-166 2024-10-28 16:30:00+00:00       27.119501     24.767332   0.0  ...             28.919500              31.219501                   0.313                   0.316
-167 2024-10-28 17:30:00+00:00       26.419500     24.458578   0.0  ...             28.519501              30.969501                   0.324                   0.327
-
-[168 rows x 29 columns]}
+{
+    "latitude": 11.0,
+    "longitude": 77.0,
+    "generationtime_ms": 0.04398822784423828,
+    "utc_offset_seconds": 0,
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT",
+    "elevation": 421.0,
+    "current_weather_units": {
+        "time": "iso8601",
+        "interval": "seconds",
+        "temperature": "°C",
+        "windspeed": "km/h",
+        "winddirection": "°",
+        "is_day": "",
+        "weathercode": "wmo code"
+    },
+    "current_weather": {
+        "time": "2024-11-04T17: 00",
+        "interval": 900,
+        "temperature": 23.5,
+        "windspeed": 3.3,
+        "winddirection": 13,
+        "is_day": 0,
+        "weathercode": 80
+    }
+}
 
 ```

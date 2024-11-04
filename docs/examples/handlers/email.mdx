@@ -1,5 +1,5 @@
 ---
-title: 'E-mail (Tool)'
+title: 'E-mail Handler (Tool)'
 icon: 'code'
 ---
 
@@ -13,17 +13,37 @@ receive a copy of the email without other recipients knowing their addresses. <b
 title of the email's content. <br /> **Body:** The main content or message of the email, where the sender communicates
 their thoughts or information.
 
+### Setup
+Install Postfix locally by running it on your machine. For more detail refer <a href="https://ubuntu.com/server/docs/install-and-configure-postfix" target="_blank">here</a>.<br />
+>**Note:** Postfix can run on UNIX-like systems including AIX, BSD, HP-UX, Linux, MacOS X, Solaris, and more.
 
 ## Example
 This code initializes an EmailHandler to connect to an email server using the specified host and port number.
 This setup enables sending, receiving, or managing emails programmatically.
-```python email_handler_test.py
+```python email_handler.py
+import asyncio
+
 from superagentx.handler.send_email import EmailHandler
 
-async def email_handler():
+
+async def send_email():
     email_handler = EmailHandler(
-        host="<HOST>",
+        host="mail.example.com",
         port=345
     )
-    return await email_handler.send_email(**{})
+    body = {
+        "sender": "sample123@gmail.com",
+        "to": ["test231@gmail.com"],
+        "subject": "test",
+        "body": "Hi"
+    }
+    return await email_handler.send_email(**body)
+
+
+async def main():
+    res = await send_email()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
 ```

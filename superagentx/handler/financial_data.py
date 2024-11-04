@@ -1,3 +1,5 @@
+import os
+
 import aiohttp
 
 from superagentx.handler.base import BaseHandler
@@ -9,11 +11,11 @@ class FinancialHandler(BaseHandler):
 
     def __init__(
             self,
-            api_key: str,
-            symbol: str
+            symbol: str,
+            api_key: str | None = None
     ):
         super().__init__()
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv("FINANCIAL_DATA_API_KEY")
         self.symbol = symbol
 
     async def _retrieve(

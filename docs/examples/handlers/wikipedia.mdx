@@ -12,14 +12,26 @@ results, and metadata.
 ## Example
 This code initializes a WikipediaHandler to retrieve a summary for a specified topic from Wikipedia. The query is
 currently empty, meaning users can input any subject they want to learn about, and the handler will provide a concise overview.
-```python wikipedia handler code
+```python wikipedia_handler.py
+import asyncio
+
 from superagentx_handlers.wikipedia import WikipediaHandler
 
-def wikipedia_handler():
+
+async def get_summary(query):
     search = WikipediaHandler()
     return await search.get_summary(
-        query="Sachin Tendulkar",
+        query=query,
     )
+
+
+async def main(query):
+    res = await get_summary(query)
+    print(res)
+
+if __name__ == '__main__':
+    query="Sachin Tendulkar"
+    asyncio.run(main(query))
 ```
 
 ## Result

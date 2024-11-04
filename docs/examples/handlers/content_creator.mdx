@@ -8,17 +8,24 @@ LLMs play a crucial role in streamlining workflows, increasing efficiency, and d
 experiences to audiences.
 
 ## Example
-This code sets up a content creation tool using a language model
-(GPT-4o). The configuration specifies the model type and service
+This code sets up a content creation tool using a language model. The configuration specifies the model type and service
 (OpenAI). The AIHandler uses the connected LLM (Language Model) client
 to generate or process text content efficiently.
-```python content_creator_handler_test.py
+
+To use OpenAI models, you'll need to create an OpenAI account and get an API key. For more details refer <a href='https://platform.openai.com/api-keys' target='_blank'>here</a>.
+>Set up a OpenAI API key as an environmental variable and run the following code.
+ ```python
+ export OPENAI_API_KEY = "**************************"
+```
+
+```python content_creator_handler.py
 import asyncio
 
 from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
 
-async def content_creator_handler():
+
+async def content_text_create(instruction: str):
     llm_config = {
     'model': 'gpt-4-turbo-2024-04-09',
     'llm_type': 'openai'
@@ -32,13 +39,19 @@ async def content_creator_handler():
     result = await content_creator_handler.text_creation(instruction=instruction)
     return result.choices[0].message.content
 
-instruction = input("Enter your instruction here: ")
-asyncio.run(content_creator(instruction))
 
+async def main():
+    instruction = input("Enter your instruction here: ")
+    res = await content_text_create(instruction=instruction)
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
 ```
 
 ## Result
-```log output
+```log content creator
+
 Enter Instruction: create robusting content
 Out[1]: 'Creating compelling and robust content requires attention to detail,creativity, and strategy.
 Whether you\'re creating content for a blog, social media, a website, or any other platform, here are

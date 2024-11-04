@@ -12,8 +12,7 @@ to automate those activities using Python.
 The JiraHandler connects to Jira using an email, API token, and organization details. This setup allows the program to
 interact with Jira, making it easy to manage tasks, projects, and issues programmatically.
 
-We need to setup Email, Token and Organization, For more details click the link given below.
-<a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account" target="_blank">Click Here</a>
+To set up Confluence with email, token, and organization access, you can follow these steps in the given <a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account" target="_blank">link</a>.
 >Set up Email, Token and Organisation as an environmental variable and run the following code. <br />
  ```python
  export ATLASSIAN_EMAIL = "**********"
@@ -21,24 +20,31 @@ We need to setup Email, Token and Organization, For more details click the link 
  export ATLASSIAN_ORGANIZATION = "***************"
 ```
 
-```python jira handler code
+```python jira_handler.py
 import os
 import asyncio
 
 from superagentx_handlers.atlassian.jira import JiraHandler
 
-async def jira_handler():
-    jira_handler = JiraHandler()
 
+async def get_active_sprint():
+    jira_handler = JiraHandler()
     return await jira_handler.get_active_sprint(
         board_id=1,
         start=0,
         end=50
     )
-print(asyncio.run(jira_handler()))
+
+
+async def main():
+    res = await get_active_sprint()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
 ```
 
-## Output
+## Result
 
 ```python jira
 [<JIRA Sprint: name='WDVG Sprint 27',id=28>]

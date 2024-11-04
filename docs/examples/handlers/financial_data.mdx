@@ -1,5 +1,5 @@
 ---
-title: 'Financial Data (Tool)'
+title: 'Financial Data  Handler(Tool)'
 icon: 'code'
 ---
 
@@ -8,22 +8,40 @@ It allows businesses or individuals to easily access real-time data like stock p
 details, and income statements. This information can be used for tracking market trends, analyzing a
 company’s performance, or making better investment decisions.
 
-Refer the link to know more details about symbol from the document.
-<a href="https://site.financialmodelingprep.com/developer/docs#symbol-list-stock-list" target="_blank">Click Here</a>
+Refer the link to know more details about symbol from the document
+<a href="https://site.financialmodelingprep.com/developer/docs#symbol-list-stock-list" target="_blank">here</a>.
 
 ## Example
 This code sets up a FinancialHandler to access financial data using an API key and specifies the stock symbol for Amazon
 (AMZN). This allows for retrieving stock market information and other financial data programmatically.
-```python financial_handler_test.py
+
+To use Financial Modeling, you'll need to create an Financial Modeling account and get an API key. For more details refer <a href='https://site.financialmodelingprep.com/' target='_blank'>here</a>.
+
+>Set up a FINANCIAL_DATA_API_KEY key as an environmental variable and run the following code.
+ ```python
+ export FINANCIAL_DATA_API_KEY = "**************************"
+```
+
+```python financial_handler.py
 import os
+import asyncio
+
 from superagentx.handler.financial_data import FinancialHandler
 
-async def financial_handler():
+
+async def get_stock_price():
     financial_handler = FinancialHandler(
-        api_key="",
         symbol='AMZN'
     )
     return await financial_handler.get_stock_price()
+
+
+async def main():
+    res = await get_stock_price()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
 ```
 ## Result
 ```inline Stock price Output:

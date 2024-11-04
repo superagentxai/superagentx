@@ -15,13 +15,25 @@ This code sets up an ExaHandler to perform a search using an API key. It retriev
 automatically determining the search type and returning up to five results, making it easy to find relevant information
 quickly.
 
-```python exa_handler_test.py
+To access ExaSearch services, you'll need to create an ExaSearch account, obtain an API key, and subscribe to the
+ required API for your application. For more details, refer to the
+  <a href='https://docs.exa.ai/reference/getting-started' target='_blank'>ExaSearch</a> documentation.
+
+>Set up a Exa API key as an environmental variable and run the following code.
+
+ ```python
+ export EXA_API_KEY = "**************************"
+```
+
+```python exa_handler.py
 import os
+import asyncio
+
 from superagentx.handler.exa_search import ExaHandler
 
-async def exa_handler_search(query):
-    exa_handler = ExaHandler(api_key="")
 
+async def search_contents(query):
+    exa_handler = ExaHandler()
     return await exa_handler.search_contents(
         query=query,
         search_type="auto",
@@ -29,13 +41,19 @@ async def exa_handler_search(query):
         num_results=5,
     )
 
-query = input("Enter your query here: ")
-asyncio.run(exa_handler_search(query))
+
+async def main(query):
+    res = await search_contents(query)
+    print(res)
+
+if __name__ == '__main__':
+    query = "What is Agentic AI Framework?"
+    asyncio.run(main(query))
 ```
 
 ## Result
 
-```log output
+```log exa search
 URL: https://aima.eecs.berkeley.edu/2nd-ed/ai.html
 ID: http://aima.eecs.berkeley.edu/2nd-ed/ai.html
 Score: 0.19881151616573334

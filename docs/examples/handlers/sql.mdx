@@ -15,9 +15,11 @@ largely unchanged.
 ## Example
 This code connects to a SQLite database (designated as DATABASE) and prepares to insert data into a table named test.
 It specifies the values to be added, making it easy to update the database with new information.
-```python sql handler
+
+```python sql_handler.py
 
 from superagentx_handlers.sql import SQLHandler
+
 
 async def sql_handler():
     sql_handler = SQLHandler(

@@ -12,18 +12,29 @@ various email-related tasks asynchronously.
 Set up a GmailHandler using the provided credentials, allowing the application to send, receive, and manage emails
 through Gmail programmatically.
 
-To create a new credentials follow the steps given in the
-<a href="https://developers.google.com/calendar/api/quickstart/python" target="_blank">Google Cloud.</a> <br />
+To setup and get a credentials refer <a href="https://developers.google.com/calendar/api/quickstart/python" target="_blank">here</a>.
+
 After creating and enabling the Google Cloud API, you need to provide the path to the credentials in the _credentials_ parameters.
 
-```python Gmail_handler_test.py
+```python Gmail_handler.py
+import asyncio
+
 from superagentx_handlers.google.gmail import GmailHandler
 
-async def gmail_handler():
+
+async def get_user_profile():
     gmail_handler = GmailHandler(
         credentials=""
     )
     return await gmail_handler.get_user_profile()
+
+
+async def main():
+    res = await get_user_profile()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
 ```
 
 ## Result

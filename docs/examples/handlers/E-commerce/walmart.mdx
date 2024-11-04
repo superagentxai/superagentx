@@ -13,23 +13,25 @@ This code sets up a WalmartHandler, which allows interacting with Walmart’s pl
 related data programmatically.
 
 To access RapidAPI services, you'll need to create a RapidAPI account, obtain an API key, and subscribe the required
-API for your application.<br />
->Set up a RapidAPI key as an environmental variable and run the following code. <br />
+API for your application. For more details refer <a href='https://rapidapi.com/hub' target='_blank'>here</a>.
+>Set up a RapidAPI key as an environmental variable and run the following code.
 ```python
  export RAPID_API_KEY = "**************************"
 ```
 
-```python walmart handler
+```python walmart_handler.py
 import os
+import asyncio
 
 from superagentx_handlers.ecommerce.walmart import WalmartHandler
 
-async def walmart_handler():
-    walmart_handler = WalmartHandler()
 
-    return await walmart_handler.product_search(
-        query="best one blender provide 5 ratings"
-    )
+async def search(query: str):
+    walmart_handler = WalmartHandler()
+    return await walmart_handler.product_search(query=query)
+
+query = input("Enter your query here: ")
+asyncio.run(search(query))
 ```
 
 ## Result
