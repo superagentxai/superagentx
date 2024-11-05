@@ -43,7 +43,7 @@ Make sure generate the result based on the given output format if provided.
     is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
 }}
 
-Always generate the JSON output.
+Always generate the JSON output. Don't include any command lines.
 """
 
 
@@ -145,8 +145,11 @@ class Agent:
             self,
             *,
             query_instruction: str,
-            results: list[Any]
+            results: list[Any],
+            old_memory: str | None = None
     ) -> GoalResult:
+        if old_memory:
+            results = f"output_context:\n{old_memory}\n\n{results}"
         prompt_message = await self.prompt_template.get_messages(
             input_prompt=_GOAL_PROMPT_TEMPLATE,
             goal=self.goal,
@@ -222,7 +225,8 @@ class Agent:
         logger.debug(f"Engine results =>\n{results}")
         final_result = await self._verify_goal(
             results=results,
-            query_instruction=query_instruction
+            query_instruction=query_instruction,
+            old_memory=old_memory
         )
         logger.debug(f"Final Result =>\n, {final_result.model_dump()}")
         return final_result
