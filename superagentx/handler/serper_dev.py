@@ -15,13 +15,14 @@ class SerperDevToolHandler(BaseHandler):
     @tool
     async def search(self, *, query: str, total_results: int = 10):
         """
-        Serper is a powerful real-time search engine tool API that provides structured data from Google search engine results.
-        This tool is designed to perform a semantic search for a specified query from a text's content across the internet. It utilizes the serper.dev API to fetch and display the most
-        relevant search results based on the query provided by the user.
+        A tool for performing real-time web searches and retrieving structured results based on the provided query.
 
-        @param query: Query text to search in Serper Dev service
-        @param total_results: Number of results
-        @return: List of results
+        Parameters:
+            query(str): The search text or query to find relevant information.
+            total_results(int): Number of total results
+
+        Return:
+            List of Dict
         """
 
         payload = json.dumps({
