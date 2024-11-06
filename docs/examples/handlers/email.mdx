@@ -29,11 +29,11 @@ from superagentx.handler.send_email import EmailHandler
 async def send_email():
     email_handler = EmailHandler(
         host="mail.example.com",
-        port=345
+        port=0
     )
     body = {
-        "sender": "sample123@gmail.com",
-        "to": ["test231@gmail.com"],
+        "sender": "sample123@abcd.io",
+        "to": ["test231@abcdf.io"],
         "subject": "test",
         "body": "Hi"
     }
