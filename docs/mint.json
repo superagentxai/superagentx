@@ -48,6 +48,7 @@
       "group": "Get Started",
       "pages": [
         "introduction",
+        "installation",
         "quickstart",
         "development"
       ]
@@ -64,7 +65,7 @@
     },
     {"group" :  "Examples Handlers (Tools)",
       "pages": [
-         {
+        {
           "group": "AWS",
           "icon": "code",
           "pages": [
