@@ -89,7 +89,7 @@ async def main():
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
     # Enable Memory
-    memory = Memory()
+    memory = Memory(memory_config={"llm_client": llm_client})
 
     # Add Two Handlers (Tools) - Amazon, Walmart
     amazon_ecom_handler = AmazonHandler()
