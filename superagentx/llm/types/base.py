@@ -3,7 +3,7 @@ import logging
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 
-from superagentx.utils.llm_config import LLMType, OPENAI_MODELS
+from superagentx.utils.llm_config import LLMType, OPENAI_MODELS, BEDROCK_MODELS
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,21 @@ class LLMModelConfig(BaseModel):
                 _msg = (
                     f'Invalid Open AI or Azure Open AI Model - '
                     f'{self.model}. It should be one of the following {", ".join(OPENAI_MODELS)}'
+                )
+                logger.error(_msg)
+                raise ValueError(_msg)
+        elif self.llm_type == LLMType.BEDROCK_CLIENT.value:
+            if not self.model:
+                _msg = (
+                    f'Please enable and grant access the model. Refer the following'
+                    f' link https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html'
+                )
+                logger.error(_msg)
+                raise ValueError(_msg)
+            elif self.model not in BEDROCK_MODELS:
+                _msg = (
+                    f'Invalid Bedrock model - '
+                    f'{self.model}. It should be one of the following {", ".join(BEDROCK_MODELS)}'
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
