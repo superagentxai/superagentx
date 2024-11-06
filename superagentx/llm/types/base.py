@@ -39,6 +39,11 @@ class LLMModelConfig(BaseModel):
         default=True
     )
 
+    embed_model: str = Field(
+        description='Embedding model name, supported models openai, azure-openai, mistral, llama 3.1',
+        default=None
+    )
+
     @model_validator(mode="after")
     def __validate_variables__(self) -> Self:
 

@@ -212,12 +212,13 @@ class AgentXPipe:
                         stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
                     )
                 if self.memory:
-                    assistant = {
-                        "role": "assistant",
-                        "content": f"{yaml.dump(_res.result)}",
-                        "reason": _res.reason
-                    }
-                    await self.add_memory([assistant])
+                    if _res.result and _res.reason:
+                        assistant = {
+                            "role": "assistant",
+                            "content": f"{yaml.dump(_res.result)}",
+                            "reason": _res.reason
+                        }
+                        await self.add_memory([assistant])
             except StopSuperAgentX as ex:
                 trigger_break = True
                 logger.warning(ex)

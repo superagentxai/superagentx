@@ -5,6 +5,7 @@ from typing import Any, final
 
 from pydantic import ValidationError
 
+from superagentx.llm import LLMClient
 from superagentx.memory.base import MemoryBase, MemoryItem
 from superagentx.memory.config import MemoryConfig
 from superagentx.memory.storage import SQLiteManager
@@ -21,13 +22,17 @@ class Memory(MemoryBase):
 
     def __init__(
             self,
-            memory_config: MemoryConfig = MemoryConfig()
+            memory_config: dict
     ):
-        self.memory_config = memory_config
+        self.memory_config = MemoryConfig(**memory_config)
         self.db = SQLiteManager(self.memory_config.db_path)
         self.vector_db: BaseVectorStore = self.memory_config.vector_store
+        llm_client: LLMClient = self.memory_config.llm_client
         if not self.vector_db:
-            self.vector_db: BaseVectorStore = ChromaDB(collection_name=COLLECTION_NAME)
+            self.vector_db: BaseVectorStore = ChromaDB(
+                collection_name=COLLECTION_NAME,
+                embed_cli=llm_client
+            )
 
     @staticmethod
     def _from_config(config_dict: dict[str, Any]):
