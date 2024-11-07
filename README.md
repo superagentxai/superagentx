@@ -6,7 +6,7 @@
 <br/>
 
 
-**SuperAgentX**: A Lightweight OpenSource AI Framework Built for Autonomous Multi-Agent Applications with AGI capabilities.
+**SuperAgentX**: A lightweight opensource AI framework built for autonomous multi-agent applications with AGI capabilities.
 
 <br/>
 
