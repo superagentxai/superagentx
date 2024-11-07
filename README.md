@@ -6,7 +6,9 @@
 <br/>
 
 
-**SuperAgentX**: A lightweight, open-source AI framework built for autonomous multi-agent applications with AGI (Artificial General Intelligence) capabilities.
+**SuperAgentX**: A Lightweight OpenSource AI Framework Built for Autonomous Multi-Agent Applications with AGI capabilities.
+
+<br/>
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![GitHub Repo stars](https://img.shields.io/github/stars/superagentxai/superagentX)](https://github.com/superagentxai/superagentX)
