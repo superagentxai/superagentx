@@ -3,6 +3,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 from superagentx.vector_stores.base import BaseVectorStore
+from superagentx.llm import LLMClient
 
 
 def _db_path():
@@ -23,6 +24,11 @@ class MemoryConfig(BaseModel):
     db_path: str = Field(
         description="Path to the history database",
         default=_db_path(),
+    )
+
+    llm_client: LLMClient = Field(
+        description="Configuration for the LLM",
+        default=None,
     )
 
     class Config:

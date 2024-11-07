@@ -9,7 +9,7 @@ APIs, and presenting it in a way that is easy to use in applications like websit
 
 ## Example
 This code initializes a WeatherHandler, which is designed to fetch weather-related data. This setup enables the
-application to access various weather services for retrieving current conditions and forecasts.
+application to access various weather services for retrieving current latitude and longitude.
 
 ```python weather_handler.py
 import asyncio
@@ -20,14 +20,17 @@ weather_handler = WeatherHandler()
 
 
 async def get_lat_long(place):
-
     return await weather_handler.get_lat_long(place=place)
 
 
 async def get_weather(place):
-
     lat_long = await get_lat_long(place)
-    return await weather_handler.get_weather(**lat_long)
+    latitude = lat_long.get("latitude")
+    longitude = lat_long.get("longitude")
+    return await weather_handler.get_weather(
+        latitude=latitude,
+        longitude=longitude
+        )
 
 
 async def main(place):

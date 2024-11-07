@@ -1,0 +1,186 @@
+---
+title: 'How To ...?'
+icon: 'circle-question'
+---
+
+Here's a step-by-step guide for creating a new handler in `superagentx` that inherits from
+`BaseHandler` (`superagentx.handler.base.BaseHandler`), designed to extend the functionality of an existing system.
+
+### Step 1: Creating a New Handler
+Now, we will create a new class `FileHandler` that inherits from `BaseHandler`. This class will handle reading a text file
+and filtering the contents based on a search query.
+
+Here's the FileHandler implementation:
+```python
+import asyncio
+import aiofiles
+
+from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
+
+
+class FileHandler(BaseHandler):
+    def __init__(self, file_path: str):
+        """
+        Initializes the FileHandler with the given file path.
+
+        Args:
+            file_path (str): The path to the text file to be read.
+        """
+        super().__init__()  # Call the parent class's constructor
+        self.file_path = file_path  # Store the file path for later use
+```
+### Step 2: Define a Method for Processing.
+Now, let’s define a method inside the handler to perform an action, like processing data from the given method.
+This `tool` (`superagentx.handler.decorators.tool`) decorator is used to preserve llm tool function
+when you wrap it in a new function, often used in custom decorators.
+
+<Tip>
+Write a docstring for the method based on the parameters provided. The docstring should be clear, detailed,
+and understandable by an LLM (Large Language Model). The description should be 3 to 4 lines long with a brief
+explanation, and parameter can be in a single line.
+</Tip>
+
+```python
+    @tool
+    async def read_file(self):
+        """
+        Reads the contents of the file specified by the file path.
+
+        Returns:
+            list: A list of lines from the file.
+        """
+         try:
+            async with aiofiles.open(self.file_path, 'r') as file:
+                lines = await file.readlines()
+            return lines
+        except FileNotFoundError:
+            print(f"Error: The file at {self.file_path} was not found.")
+            return []
+
+    @tool
+    async def search(
+        self,
+        query: str
+    ):
+        """
+        Searches for lines in the file that contain the provided query.
+
+        Args:
+            query (str): The string to search for in the file.
+
+        Returns:
+            list: A list of lines containing the query.
+        """
+        lines = await self.read_file()  # Get lines from the file
+        filtered_lines = [line for line in lines if query.lower() in line.lower()]  # Filter lines by query
+        return filtered_lines
+```
+
+### Step 3: Testing the Handler
+To test the FileHandler class, create a sample text file and use the handler to search for specific terms.
+
+## create the sample.txt file
+Create a file named `sample.txt` in the same directory as your script with the following content:
+
+```text
+Hello, welcome to the file handler example.
+This file contains several lines of text.
+You can search through it using queries.
+The FileHandler will help you find matching lines.
+```
+
+### Use the `FileHandler` class to search for the term `"file"`:
+```python
+# Create an instance of FileHandler with the path to your text file
+file_handler = FileHandler(file_path='sample.txt')
+
+# Search for the term 'file' in the file
+search_result = file_handler.search('file')
+
+# Print the search results
+print("Search Results:")
+for line in search_result:
+    print(line.strip())  # Strip removes the newline character
+```
+
+### Full Code
+```python
+import asyncio
+import aiofiles
+
+
+from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
+
+
+class FileHandler(BaseHandler):
+    def __init__(self, file_path: str):
+        """
+        Initializes the FileHandler with the given file path.
+
+        Args:
+            file_path (str): The path to the text file to be read.
+        """
+        super().__init__()  # Call the parent class's constructor
+        self.file_path = file_path  # Store the file path for later use
+
+    @tool
+    async def read_file(self):
+        """
+        Reads the contents of the file specified by the file path.
+
+        Returns:
+            list: A list of lines from the file.
+        """
+        try:
+            async with aiofiles.open(self.file_path, 'r') as file:
+                lines = await file.readlines()
+            return lines
+        except FileNotFoundError:
+            print(f"Error: The file at {self.file_path} was not found.")
+            return []
+
+    @tool
+    async def search(
+            self,
+            query: str
+    ):
+        """
+        Searches for lines in the file that contain the provided query.
+
+        Args:
+            query (str): The string to search for in the file.
+
+        Returns:
+            list: A list of lines containing the query.
+        """
+        lines = await self.read_file()  # Get lines from the file
+        filtered_lines = [line for line in lines if query.lower() in line.lower()]  # Filter lines by query
+        return filtered_lines
+
+
+# Create an instance of FileHandler with the path to your text file
+file_handler = FileHandler(file_path='sample.txt')
+
+if __name__ == "__main__":
+    # Search for the term 'file' in the file
+    search_result = asyncio.run(file_handler.search('file'))
+
+    # Print the search results
+    print("Search Results:")
+    for line in search_result:
+        print(line.strip())  # Strip removes the newline character
+
+```
+
+### Expected Output:
+When you run this code, it will output:
+
+```text
+Search Results:
+This file contains several lines of text.
+You can search through it using queries.
+The FileHandler will help you find matching lines.
+
+```

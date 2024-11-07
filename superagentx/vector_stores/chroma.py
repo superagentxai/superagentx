@@ -10,7 +10,6 @@ from chromadb.config import Settings
 from superagentx.llm import LLMClient
 from superagentx.vector_stores.base import BaseVectorStore
 from superagentx.utils.helper import sync_to_async, iter_to_aiter
-from superagentx.llm.client import Client
 from superagentx.vector_stores.constants import DEFAULT_EMBED_TYPE, DEFAULT_EMBED_MODEL
 
 logger = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ class ChromaDB(BaseVectorStore):
             host: str | None = None,
             port: int | None = None,
             path: str | None = None,
-            embed_cli: Client | None = None
+            embed_cli: LLMClient | None = None
     ):
         """
         Initialize the Chromadb vector store.

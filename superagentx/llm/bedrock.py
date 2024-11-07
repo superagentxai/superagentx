@@ -376,7 +376,25 @@ class BedrockClient(Client):
         return "".join(formatted_messages) + "\n\nAssistant:"
 
     def embed(self, text: str, **kwargs):
-        pass
+        # Create the request for the model.
+        native_request = {"inputText": text}
+
+        _embed_model = getattr(self.client, 'embed_model')
+
+        # Convert the native request to JSON.
+        request = json.dumps(native_request)
+
+        # Invoke the model with the request.
+        response = self.client.invoke_model(modelId=_embed_model, body=request)
+
+        if response:
+            # Decode the model's native response body.
+            model_response = json.loads(response["body"].read())
+            embedding = model_response["embedding"]
+            return embedding
 
     async def aembed(self, text: str, **kwargs):
-        pass
+        return await sync_to_async(
+            self.embed,
+            text
+        )

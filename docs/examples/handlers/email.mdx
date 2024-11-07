@@ -7,11 +7,12 @@ The EmailHandler is a simple and effective tool for managing email communication
 It allows you to send emails easily, handle multiple recipients, and include attachments, making it
 perfect for both personal and professional use.
 
->**From:** The email address of the sender. <br /> **To:** The primary recipient(s) of the email. <br />
-**Cc:** Additional recipients who will receive a copy of the email, visible to all. <br /> **Bcc:** Recipients who
-receive a copy of the email without other recipients knowing their addresses. <br /> **Subject:** A brief summary or
-title of the email's content. <br /> **Body:** The main content or message of the email, where the sender communicates
-their thoughts or information.
+>**From:** The email address of the sender. <br />
+**To:** The primary recipient(s) of the email. <br />
+**Cc:** Additional recipients who will receive a copy of the email, visible to all. <br />
+**Bcc:** Recipients who receive a copy of the email without other recipients knowing their addresses. <br />
+**Subject:** A brief summary or title of the email's content. <br />
+**Body:** The main content or message of the email, where the sender communicates their thoughts or information.
 
 ### Setup
 Install Postfix locally by running it on your machine. For more detail refer <a href="https://ubuntu.com/server/docs/install-and-configure-postfix" target="_blank">here</a>.<br />
@@ -29,11 +30,11 @@ from superagentx.handler.send_email import EmailHandler
 async def send_email():
     email_handler = EmailHandler(
         host="mail.example.com",
-        port=345
+        port=0
     )
     body = {
-        "sender": "sample123@gmail.com",
-        "to": ["test231@gmail.com"],
+        "sender": "sample123@abcd.io",
+        "to": ["test231@abcdf.io"],
         "subject": "test",
         "body": "Hi"
     }

@@ -48,6 +48,7 @@
       "group": "Get Started",
       "pages": [
         "introduction",
+        "installation",
         "quickstart",
         "development"
       ]
@@ -64,7 +65,8 @@
     },
     {"group" :  "Examples Handlers (Tools)",
       "pages": [
-         {
+        "examples/handlers/how_to",
+        {
           "group": "AWS",
           "icon": "code",
           "pages": [
@@ -81,6 +83,8 @@
         },
 
         "examples/handlers/content_creator",
+        "examples/handlers/csv_cli",
+
         {
           "group": "E-Commerce Handler",
           "icon": "code",

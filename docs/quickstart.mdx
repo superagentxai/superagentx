@@ -1,86 +1,275 @@
 ---
 title: 'Quickstart'
 description: 'Start building awesome documentation in under 5 minutes'
+icon: 'jet-fighter-up'
 ---
 
-## Setup your development
+### LLM Client object configuration
+The LLMClient object is a configuration-driven interface to interact with large language models (LLMs) from various
+providers, such as OpenAI, Hugging Face, or others. It allows users to set parameters specific to the model and provider
+they intend to use, making it easier to interact with and configure different types of LLMs in a unified manner.
 
-Learn how to update your docs locally and deploy them to the public.
+### Key Components of the LLM Client Configuration
+The configuration dictionary typically consists of the following essential elements:
 
-### Edit and preview
+- `model` : This specifies the language model you wish to use. The model is typically identified by a name or version, such as
+'gpt-4o', 'gpt-3.5-turbo', or another model version that the service provider supports.
 
-<AccordionGroup>
-  <Accordion icon="github" title="Clone your docs locally">
-    During the onboarding process, we created a repository on your Github with
-    your docs content. You can find this repository on our
-    [dashboard](https://dashboard.mintlify.com). To clone the repository
-    locally, follow these
-    [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    in your terminal.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Preview changes">
-    Previewing helps you make sure your changes look as intended. We built a
-    command line interface to render these changes locally. 1. Install the
-    [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the
-    documentation changes locally with this command: ``` npm i -g mintlify ```
-    2. Run the following command at the root of your documentation (where
-    `mint.json` is): ``` mintlify dev ```
-  </Accordion>
-</AccordionGroup>
+- `llm_type` : This key identifies the service provider or platform from which the language model is sourced. Common values are:
+'openai': Refers to OpenAI's GPT models.
+'huggingface': Refers to Hugging Face's models.
 
-### Deploy your changes
+```python
+from superagentx.llm import LLMClient
 
-<AccordionGroup>
+llm_config = {
+    'model': 'gpt-4o',
+    'llm_type': 'openai'
+}
+llm_client = LLMClient(llm_config=llm_config)
+```
 
-<Accordion icon="message-bot" title="Install our Github app">
-  Our Github app automatically deploys your changes to your docs site, so you
-  don't need to manage deployments yourself. You can find the link to install on
-  your [dashboard](https://dashboard.mintlify.com). Once the bot has been
-  successfully installed, there should be a check mark next to the commit hash
-  of the repo.
-</Accordion>
-<Accordion icon="rocket" title="Push your changes">
-  [Commit and push your changes to
-  Git](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository#about-git-push)
-  for your changes to update in your docs site. If you push and don't see that
-  the Github app successfully deployed your changes, you can also manually
-  update your docs through our [dashboard](https://dashboard.mintlify.com).
-</Accordion>
+### Creating Handlers
 
-</AccordionGroup>
+The WalmartHandler class are Python tools that make it easy to connect and automate tasks with
+Walmart’s online marketplaces. These class simplify the process of working with Walmart's complex APIs,
+allowing you to easily manage products, pricing, and reviews.
 
-## Update your docs
+Set up a RapidAPI key as an environmental variable and run the following code.
+ ```python
+ export RAPID_API_KEY = "**************************"
+```
 
-Add content directly in your files with MDX syntax and React components. You can use any of our components, or even build your own.
+```python
+# pip install superagentx-handlers
 
-<CardGroup>
+from superagentx_handlers import WalmartHandler
 
-<Card title="Style Your Docs" icon="paintbrush" href="/settings/global">
-  Add flair to your docs with personalized branding.
-</Card>
+walmart_ecom_handler = WalmartHandler()
+```
 
-<Card
-  title="Add API Endpoints"
-  icon="square-code"
-  href="/api-playground/configuration"
->
-  Implement your OpenAPI spec and enable API user interaction.
-</Card>
+### Prompt Template
 
-<Card
-  title="Integrate Analytics"
-  icon="chart-mixed"
-  href="/analytics/supported-integrations"
->
-  Draw insights from user interactions with your documentation.
-</Card>
+Prompt is the input to the model.Prompt is often constructed from multiple components and prompt values.
+Prompt classes and functions make constructing and working with prompts easy.
 
-<Card
-  title="Host on a Custom Domain"
-  icon="browser"
-  href="/settings/custom-domain/subdomain"
->
-  Keep your docs on your own website's subdomain.
-</Card>
+```python
+from superagentx.prompt import PromptTemplate
 
-</CardGroup>
+prompt_template = PromptTemplate()
+```
+
+### Engine
+The Engine class from the superagentx.engine module is designed to streamline the interaction between various components,
+such as e-commerce handlers, large language models (LLMs), and prompt templates. In the context of the provided code,
+the Engine object is used to integrate these components into a unified workflow for automating tasks related to e-commerce
+platforms like Walmart.
+
+### Engine Parameters
+- `handler` : This is the e-commerce handler, which is responsible for interacting with Walmart's platform. It manages tasks like
+updating product, rating and pricing information.
+
+- `llm_client` : This is the large language model client (e.g., GPT-4). The LLM is used to generate text-based outputs, such as summaries,
+product descriptions, or customer service responses. The LLM processes the inputs provided by the prompt_template and
+returns the corresponding outputs.
+
+- `prompt_template` : The prompt_template is used to structure the input to the LLM. It defines the format and placeholders that are
+dynamically filled with actual values at runtime. The template is responsible for generating consistent and relevant
+prompts for the LLM.
+
+
+```python
+from superagentx.engine import Engine
+
+walmart_engine = Engine(
+    handler=walmart_ecom_handler,
+    llm=llm_client,
+    prompt_template=prompt_template
+)
+```
+
+### Creating Agent
+The Agent class from the superagentx.agent module is used to create intelligent agents capable of interacting with
+e-commerce platforms to search for products and return optimized results based on a given goal. This class allows
+you to configure an agent to perform specific tasks, such as searching across multiple e-commerce platforms, processing
+search results, and making decisions based on the provided parameters.
+
+### Agent Parameters:
+- `name` : A string that assigns a name to the agent. This name is primarily used for identification purposes when
+logging or referencing the agent in your code.
+
+- `goal` :  A string describing the primary objective of the agent. The goal helps guide the agent's search process and
+decision-making, focusing its actions on achieving a specific outcome.
+
+- `role` : A string outlining the role the agent will fulfill. This defines the type of behavior the agent will exhibit
+and the responsibilities it will carry out while performing its tasks.
+
+- `llm` : The Large Language Model (LLM) client that the agent uses to process search queries and interpret results.
+The LLM can refine and adjust the agent's searches based on the provided goal and role.
+
+- `prompt_template` :  A string or template used to structure the queries the agent sends to the LLM.
+This template helps ensure the queries are formatted in a way that aligns with the agent's goal and role,
+guiding how the LLM generates its responses.
+
+- `engines` : A list of e-commerce search engines that the agent will query to retrieve product search results.
+Each element in the list is a sub-list containing the search engine objects.
+These engines are the platforms the agent will interact with to gather product data.
+
+```python
+from superagentx.agent import Agent
+
+ecom_agent = Agent(
+    name='Ecom Agent',
+    goal="Get me the best search results",
+    role="You are the best product searcher",
+    llm=llm_client,
+    prompt_template=prompt_template,
+    engines=[walmart_engine]
+)
+```
+
+### Memory
+The Memory class is designed to provide a persistent storage mechanism for storing and retrieving context, data, and
+state during interactions with agents in a pipeline. Memory allows the system to "remember" information across agent
+actions and queries, which is particularly useful for complex workflows or tasks that span multiple steps.
+
+The Memory class is initialized with a configuration that defines how it interacts with the agent pipeline. It can be
+used to persist important data, store intermediate results, or maintain context across different stages of the agent’s
+execution.
+
+### Memory Parameters
+- `memory_config` : A dictionary of configuration options used to initialize the memory object. The configuration
+can define how the memory interacts with the agent pipeline, what data it stores, and how it integrates with other
+components.
+
+```python
+from superagentx.memory import Memory
+
+Memory(memory_config={"llm_client": llm_client})
+```
+
+### AgentXPipe
+The AgentXPipe class from the superagentx.agent module is used to set up a pipeline that allows multiple agents to work
+together in sequence, facilitating more complex workflows. In this case, the AgentXPipe object enables the use of one or
+more agents (e.g., ecom_agent) in combination with a memory store, allowing the system to persist context, share
+information between agents, and maintain state across multiple interactions.
+
+### AgentXPipe Parameters
+- `agents` : A list of agent objects that will be part of the pipeline. Each agent can perform a specific task, such as
+searching for products, processing data, or interacting with APIs. The agents will execute in the order they are listed
+in the agents parameter.
+
+- `memory` : An object that provides memory storage for the pipeline. The memory stores context and allows agents to
+share data between themselves or persist information across tasks. This enables the system to maintain state across
+different agent actions.
+
+```python
+from superagentx.agentxpipe import AgentXPipe
+
+pipe = AgentXPipe(
+    agents=[ecom_agent],
+    memory=memory
+)
+```
+
+### Create IO Cli Console
+The IOPipe class is designed to facilitate interaction with the agent pipeline (AgentXPipe) through a user-friendly
+interface, enabling users to input data (such as search queries) and receive outputs in a seamless and organized manner.
+This class acts as the bridge between the user and the agent pipeline, handling input and output operations.
+
+The IOPipe class is particularly useful when building applications that require real-time user interaction with the
+underlying agents, such as conversational agents, search assistants, or interactive data processing tools.
+
+### IOPipe parameters
+- `search_name` :  A string that specifies the name or title of the search operation. This name will be used to reference
+the search or display it in the interface, providing context for the user. It is useful for labeling or distinguishing
+between different search tasks or agents.
+
+- `agentx_pipe` : The AgentXPipe object that contains a sequence of agents performing various tasks (e.g., product search,
+data processing, etc.). This is the core agent pipeline that will be executed when the user inputs a query.
+
+- `read_prompt` : A string that provides the prompt or message shown to the user when waiting for input. This message
+guides the user to enter a query or command that the agents will process. The prompt can include formatting
+(e.g., color, bold, etc.) for better user experience.
+
+```python
+from superagentx.pipeimpl.iopipe import IOPipe
+
+io_pipe = IOPipe(
+    search_name='SuperAgentX Ecom',
+    agentx_pipe=pipe,
+    read_prompt=f"\n[bold green]Enter your search here"
+)
+```
+
+## Putting it all together
+
+```python
+import asyncio
+
+from rich import print as rprint
+from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.engine import Engine
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.pipeimpl.iopipe import IOPipe
+from superagentx.prompt import PromptTemplate
+
+from superagentx_handlers.ecommerce.amazon import AmazonHandler
+from superagentx_handlers.ecommerce.walmart import WalmartHandler
+
+
+async def main():
+
+    # LLM Configuration
+    llm_config = {'llm_type': 'openai'}
+    llm_client: LLMClient = LLMClient(llm_config=llm_config)
+
+    # Enable Memory
+    memory = Memory(memory_config={"llm_client": llm_client})
+
+    # Add Handlers (Tools) -  Walmart
+    walmart_ecom_handler = WalmartHandler()
+
+    # Prompt Template
+    prompt_template = PromptTemplate()
+
+    # Walmart Engine to execute handlers
+    walmart_engine = Engine(
+        handler=walmart_ecom_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
+
+    # Create Agent with Walmart Engines execute in Parallel - Search Products from user prompts
+    ecom_agent = Agent(
+        name='Ecom Agent',
+        goal="Get me the best search results",
+        role="You are the best product searcher",
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[walmart_engine]
+    )
+
+    # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
+    pipe = AgentXPipe(
+        agents=[ecom_agent],
+        memory=memory
+    )
+
+    # Create IO Cli Console - Interface
+    io_pipe = IOPipe(
+        search_name='SuperAgentX Ecom',
+        agentx_pipe=pipe,
+        read_prompt=f"\n[bold green]Enter your search here"
+    )
+    await io_pipe.start()
+
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        rprint("\nUser canceled the [bold yellow][i]pipe[/i]!")
+```

@@ -49,3 +49,6 @@ OPENAI_PRICE1K = {
     "gpt-35-turbo-16k": (0.003, 0.004),
     "gpt-35-turbo-16k-0613": (0.003, 0.004),
 }
+
+DEFAULT_OPENAI_EMBED = "text-embedding-ada-002"
+DEFAULT_BEDROCK_EMBED = "amazon.titan-embed-g1-text-02"
