@@ -171,6 +171,8 @@ SuperAgentX searches for product items requested by the user in the console, val
 
 🚀 **Open-Source Framework**: A lightweight, open-source AI framework built for multi-agent applications with Artificial General Intelligence (AGI) capabilities.
 
+🎯 **Goal-Oriented Multi-Agents**: This technology enables the creation of agents with retry mechanisms to achieve set goals. Communication between agents is Parallel, Sequential, or hybrid.
+
 🏖️ **Easy Deployment**: Offers WebSocket, RESTful API, and IO console interfaces for rapid setup of agent-based AI solutions.
 
 ♨️ **Streamlined Architecture**: Enterprise-ready scalable and pluggable architecture. No major dependencies; built independently!
@@ -180,9 +182,6 @@ SuperAgentX searches for product items requested by the user in the console, val
 🧠 **Flexible LLM Configuration**: Supports simple configuration options of various Gen AI models.
 
 🤝🏻 **Extendable Handlers**: Allows integration with diverse APIs, databases, data warehouses, data lakes, IoT streams, and more, making them accessible for function-calling features.
-
-🎯 **Goal-Oriented Agents**: Enables the creation of agents with retry mechanisms to achieve set goals.
-
 
 ## Environment Setup
 ```shell
