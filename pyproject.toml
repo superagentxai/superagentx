@@ -13,7 +13,10 @@ readme = "README.md"
 homepage = "https://www.superagentx.ai/"
 repository = "https://github.com/superagentxai/superagentx"
 documentation = "https://docs.superagentx.ai/"
-keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM"]
+keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM", "cli"]
+
+[tool.poetry.scripts]
+superagentx-cli = "superagentx_cli.main:app"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.13"
@@ -31,6 +34,9 @@ aiohttp = "^3.10.8"
 rich = "^13.9.2"
 protobuf = "3.20.3"
 aiosqlite = "^0.20.0"
+typer = "^0.13.0"
+jinja2 = "^3.1.4"
+websockets = "^13.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
