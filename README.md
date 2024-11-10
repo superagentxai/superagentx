@@ -6,7 +6,7 @@
 <br/>
 
 
-**SuperAgentX**: A lightweight opensource AI framework built for autonomous multi-agent applications with AGI capabilities.
+**SuperAgentX**: A lightweight autonomous true multi-agent framework with AGI capabilities.
 
 <br/>
 
@@ -16,11 +16,27 @@
 
 </div>
 
+## Key Features
+
+🚀 **Open-Source Framework**: A lightweight, open-source AI framework built for multi-agent applications with Artificial General Intelligence (AGI) capabilities.
+
+🎯 **Goal-Oriented Multi-Agents**: This technology enables the creation of agents with retry mechanisms to achieve set goals. Communication between agents is Parallel, Sequential, or hybrid.
+
+🏖️ **Easy Deployment**: Offers WebSocket, RESTful API, and IO console interfaces for rapid setup of agent-based AI solutions.
+
+♨️ **Streamlined Architecture**: Enterprise-ready scalable and pluggable architecture. No major dependencies; built independently!
+
+📚 **Contextual Memory**: Uses SQL + Vector databases to store and retrieve user-specific context effectively.
+
+🧠 **Flexible LLM Configuration**: Supports simple configuration options of various Gen AI models.
+
+🤝🏻 **Extendable Handlers**: Allows integration with diverse APIs, databases, data warehouses, data lakes, IoT streams, and more, making them accessible for function-calling features.
+
+
 ## Table of contents
 - [What is SuperAgentX?](#what-is-superagentx)
 - [Why SuperAgentX?](#why-superagentx)
 - [Getting Started](#getting-started)
-- [Key Features](#key-features)
 - [Installing Dependencies](#installing-dependencies)
 - [Contribution](#contribution)
 - [License](#license)
@@ -32,7 +48,7 @@ SuperAgentX is an advanced agentic AI framework designed to accelerate the devel
 
 ## Why SuperAgentX?
 
-SuperAgentX is designed to address the growing need for highly capable, autonomous AI systems that can perform complex tasks with minimal human intervention. As we approach the limits of narrow AI, there's a need for an adaptable and scalable framework to bridge the gap toward AGI (Artificial General Intelligence). Here’s why SuperAgentX stands out:
+SuperAgentX addresses the growing need for highly capable, autonomous AI systems that can perform complex tasks with minimal human intervention. As we approach the limits of narrow AI, there's a need for an adaptable and scalable framework to bridge the gap toward AGI (Artificial General Intelligence). Here’s why SuperAgentX stands out:
 
 **Super**: Cutting-edge AI systems with exceptional capabilities, paving the way to **AGI** (Artificial General Intelligence) and **ASI** (Artificial Super Intelligence).</p>
 **Agent**: Autonomous Multi AI agent framework designed to make decisions, act independently, and handle complex tasks. </p>
@@ -165,23 +181,6 @@ SuperAgentX searches for product items requested by the user in the console, val
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/claude-ai-logo.png?raw=True" title="Claude AI" height="20" width="20"/>                                             | **Claude AI**                                                                                  | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png?raw=True" title="Mistral AI" height="20" width="30"/>                                           | **Mistral AI**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ibm.png?raw=True" title="IBM WatsonX AI" height="20" width="30"/>                                                   | **IBM WatsonX**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>                  |
-
-
-## Key Features
-
-🚀 **Open-Source Framework**: A lightweight, open-source AI framework built for multi-agent applications with Artificial General Intelligence (AGI) capabilities.
-
-🎯 **Goal-Oriented Multi-Agents**: This technology enables the creation of agents with retry mechanisms to achieve set goals. Communication between agents is Parallel, Sequential, or hybrid.
-
-🏖️ **Easy Deployment**: Offers WebSocket, RESTful API, and IO console interfaces for rapid setup of agent-based AI solutions.
-
-♨️ **Streamlined Architecture**: Enterprise-ready scalable and pluggable architecture. No major dependencies; built independently!
-
-📚 **Contextual Memory**: Uses SQL + Vector databases to store and retrieve user-specific context effectively.
-
-🧠 **Flexible LLM Configuration**: Supports simple configuration options of various Gen AI models.
-
-🤝🏻 **Extendable Handlers**: Allows integration with diverse APIs, databases, data warehouses, data lakes, IoT streams, and more, making them accessible for function-calling features.
 
 ## Environment Setup
 ```shell
