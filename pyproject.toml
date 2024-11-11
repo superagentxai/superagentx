@@ -14,7 +14,10 @@ homepage = "https://www.superagentx.ai/"
 repository = "https://github.com/superagentxai/superagentx"
 documentation = "https://docs.superagentx.ai/"
 keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM", "cli"]
-include = ["superagentx_cli"]
+packages = [
+    { include = "superagentx" },
+    { include = "superagentx_cli" }
+]
 
 [tool.poetry.scripts]
 superagentx-cli = "superagentx_cli.main:app"
