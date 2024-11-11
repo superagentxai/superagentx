@@ -17,6 +17,7 @@ from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
 from superagentx.utils.helper import iter_to_aiter
 from superagentx.utils.llm_config import LLMType
+from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,10 @@ class LLMClient:
                 # Set the model attribute
                 cli.model = self.llm_config_model.model
 
+                # Set the embed model attribute
+                embed_model = self.llm_config_model.embed_model
+                cli.embed_model = DEFAULT_OPENAI_EMBED if not embed_model else embed_model
+
                 # Assign the client to self.client
                 self.client = OpenAIClient(client=cli)
 
@@ -87,12 +92,13 @@ class LLMClient:
                 cli = client_class(
                     api_key=api_key,
                     azure_endpoint=base_url,
-                    azure_deployment=azure_deployment,
                     api_version=api_version
                 )
 
                 # Set the model attribute
                 cli.model = self.llm_config_model.model
+
+                cli.embed_model = self.llm_config_model.embed_model
 
                 # Assign the client to self.client
                 self.client = OpenAIClient(client=cli)
@@ -127,6 +133,10 @@ class LLMClient:
 
                 # Set the model attribute
                 aws_cli.model = self.llm_config_model.model
+
+                # Set the embed model attribute
+                embed_model = self.llm_config_model.embed_model
+                aws_cli.embed_model = DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
 
                 self.client = BedrockClient(client=aws_cli)
 

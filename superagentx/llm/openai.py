@@ -44,6 +44,7 @@ class OpenAIClient(Client):
             logger.info(
                 "OpenAI or Azure hosted Open AI client, is not valid!"
             )
+        self._embed_model = getattr(self.client, 'embed_model')
 
     def chat_completion(
             self,
@@ -88,7 +89,7 @@ class OpenAIClient(Client):
         text = text.replace("\n", " ")
         response = self.client.embeddings.create(
                 input=[text],
-                model=self._model,
+                model=self._embed_model,
                 **kwargs
             )
         return self._get_embeddings(response)
@@ -110,7 +111,7 @@ class OpenAIClient(Client):
         text = text.replace("\n", " ")
         response = await self.client.embeddings.create(
             input=[text],
-            model=self._model,
+            model=self._embed_model,
         )
         return await sync_to_async(
             self._get_embeddings,
