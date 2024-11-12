@@ -16,6 +16,7 @@ from superagentx.prompt import PromptTemplate
 # from superagentx_handlers import AmazonHandler
 # from superagentx_handlers.ecommerce.walmart import WalmartHandler
 
+
 async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     # LLM Configuration
     llm_config = {
@@ -62,7 +63,7 @@ async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     # )
 
     # Create Pipe - Interface
-    
+
     # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
     pipe = AgentXPipe(
         ###############################################
