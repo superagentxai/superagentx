@@ -9,6 +9,7 @@ class LLMType(str, Enum):
     MISTRAL_CLIENT = 'mistral'
     BEDROCK_CLIENT = 'bedrock'
     TOGETHER_CLIENT = 'together'
+    OLLAMA = 'ollama'
     GROQ_CLIENT = 'groq'
     ANTHROPIC_CLIENT = 'anthropic'
 
@@ -47,8 +48,6 @@ BEDROCK_MODELS = ['anthropic.claude-3-5-sonnet-20241022-v2:0', 'anthropic.claude
                   'cohere.command-r-plus-v1:0',
                   'meta.llama3-1-8b-instruct-v1:0',
                   'meta.llama3-1-70b-instruct-v1:0', 'meta.llama3-1-405b-instruct-v1:0',
-                  'meta.llama3-2-11b-instruct-v1:0', 'meta.llama3-2-90b-instruct-v1:0',
-                  'meta.llama3-2-1b-instruct-v1:0', 'meta.llama3-2-3b-instruct-v1:0',
                   'mistral.mistral-large-2402-v1:0', 'mistral.mistral-large-2407-v1:0']
 
 # Azure Open AI Version - Default

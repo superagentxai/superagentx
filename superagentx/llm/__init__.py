@@ -6,18 +6,20 @@ from typing import List
 
 import boto3
 from botocore.config import Config
+from ollama import AsyncClient
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
 from superagentx.llm.bedrock import BedrockClient
+from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
 from superagentx.llm.models import ChatCompletionParams
+from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
 from superagentx.utils.helper import iter_to_aiter
 from superagentx.utils.llm_config import LLMType
-from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +141,12 @@ class LLMClient:
                 aws_cli.embed_model = DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
 
                 self.client = BedrockClient(client=aws_cli)
+            case LLMType.OLLAMA:
+                host = kwargs.get("host", None) or os.getenv("OLLAMA_HOST")
 
+                cli = AsyncClient(host=host)
+                cli.model = self.llm_config_model.model
+                self.client = OllamaClient(client=cli)
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
 
