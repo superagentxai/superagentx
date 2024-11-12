@@ -196,4 +196,3 @@ $ source venv/bin/activate
 ## License
 
 SuperAgentX is released under the [MIT](https://github.com/superagentxai/superagentX/blob/master/LICENSE) License.
-

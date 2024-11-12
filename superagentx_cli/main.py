@@ -107,6 +107,15 @@ class CliApp:
         self.create_ws_file()
         self.create_rest_file()
 
+    def create_readme_file(self):
+        _readme_path = self._app_dir / 'README.md'
+        rprint(f'Creating readme file at [yellow]{_readme_path.resolve()}')
+        _readme_template_file = self._jinja_env.get_template('README.md.jinja2')
+        _render_readme = _readme_template_file.render(
+            app_name=self.app_name
+        )
+        _readme_path.write_text(_render_readme)
+
     def create_toml_file(self):
         _toml_path = self._app_dir / 'pyproject.toml'
         rprint(f'Creating toml file at [yellow]{_toml_path.resolve()}')
@@ -135,8 +144,9 @@ class CliApp:
 
     def create_base_pkg(self):
         self.create_package()
-        self.create_pipe_file()
         self.create_toml_file()
+        self.create_readme_file()
+        self.create_pipe_file()
 
     def create_project(self):
         rprint(

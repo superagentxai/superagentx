@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "superagentx"
-version = "0.1.7"
+version = "0.1.9"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = "MIT"
 authors = [
@@ -14,6 +14,10 @@ homepage = "https://www.superagentx.ai/"
 repository = "https://github.com/superagentxai/superagentx"
 documentation = "https://docs.superagentx.ai/"
 keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM", "cli"]
+packages = [
+    { include = "superagentx" },
+    { include = "superagentx_cli" }
+]
 
 [tool.poetry.scripts]
 superagentx-cli = "superagentx_cli.main:app"
