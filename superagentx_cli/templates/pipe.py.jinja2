@@ -6,12 +6,15 @@ from superagentx.llm import LLMClient
 from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 
+# Import handlers
+
+# Example
+# -------
 #################################################
 # Uncomment below lines to enable ecom handlers #
 #################################################
 # from superagentx_handlers import AmazonHandler
 # from superagentx_handlers.ecommerce.walmart import WalmartHandler
-
 
 async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     # LLM Configuration
@@ -21,22 +24,18 @@ async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     llm_client = LLMClient(llm_config=llm_config)
 
     # Enable Memory
-    memory = Memory()
+    memory = Memory(memory_config={"llm_client": llm_client})
 
-    #################################################
-    # Uncomment below lines to enable ecom handlers #
-    #################################################
-    ## Add Two Handlers (Tools) - Amazon, Walmart
+    # Example
+    # -------
     # amazon_ecom_handler = AmazonHandler()
     # walmart_ecom_handler = WalmartHandler()
 
     # Prompt Template
     prompt_template = PromptTemplate()
 
-    ################################################
-    # Uncomment below lines to enable ecom engines #
-    ################################################
-    ## Amazon & Walmart Engine to execute handlers
+    # Example - Engine(s)
+    # -------------------
     # amazon_engine = Engine(
     #     handler=amazon_ecom_handler,
     #     llm=llm_client,
@@ -48,10 +47,11 @@ async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     #     prompt_template=prompt_template
     # )
 
-    ##############################################
-    # Uncomment below lines to enable ecom agent #
-    ##############################################
-    ## Create Agent with Amazon, Walmart Engines execute in Parallel - Search Products from user prompts
+    # Create Agents
+
+    # Example - Agent(s)
+    # ------------------
+    # Create Agent with Amazon, Walmart Engines execute in Parallel - Search Products from user prompts
     # ecom_agent = Agent(
     #     name='Ecom Agent',
     #     goal="Get me the best search results",
@@ -61,6 +61,8 @@ async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     #     engines=[[amazon_engine, walmart_engine]]
     # )
 
+    # Create Pipe - Interface
+    
     # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
     pipe = AgentXPipe(
         ###############################################
