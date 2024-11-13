@@ -19,7 +19,6 @@
     "type": "github",
     "url": "https://github.com/superagentxai/superagentX/"
   },
-
   "tabs": [
     {
       "name": "API Reference",
@@ -49,85 +48,75 @@
       "pages": [
         "introduction",
         "installation",
-        "quickstart",
-        "development"
-      ]
-    },
-    {"group" :  "Examples AgentX Pipes",
-      "pages": [
-        "examples/pipes/ecommerce",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
-      ]
-    },
-    {"group" :  "Examples Handlers (Tools)",
-      "pages": [
-        "examples/handlers/how_to",
-        {
-          "group": "AWS",
-          "icon": "code",
-          "pages": [
-            "examples/handlers/aws/s3"
-          ]
-        },
-                {
-          "group": "Atlassian",
-          "icon": "code",
-          "pages": [
-            "examples/handlers/atlassian/confluence",
-            "examples/handlers/atlassian/jira"
-          ]
-        },
-
-        "examples/handlers/content_creator",
-        "examples/handlers/csv_cli",
-
-        {
-          "group": "E-Commerce Handler",
-          "icon": "code",
-          "pages": [
-            "examples/handlers/E-commerce/amazon",
-            "examples/handlers/E-commerce/flipkart",
-            "examples/handlers/E-commerce/walmart"
-          ]
-        },
-        "examples/handlers/exa",
-        "examples/handlers/elastic",
-        "examples/handlers/email",
-        "examples/handlers/financial_data",
-        {
-          "group": "Google",
-          "icon": "code",
-          "pages": [
-            "examples/handlers/Google/calender",
-            "examples/handlers/Google/gmail"
-          ]
-        },
-        "examples/handlers/hubspot",
-        "examples/handlers/serper_dev",
-        "examples/handlers/sql",
-        "examples/handlers/visualization",
-        "examples/handlers/weather",
-        "examples/handlers/wikipedia",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        "quickstart"
       ]
     },
     {
-      "group": "Essentials",
+      "group": "Key Components",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        "pipe",
+        "agent",
+        "memory",
+        "llm",
+        "engine",
+        "handler"
+      ]
+    },
+    {
+      "group": "Handlers (Tools)",
+      "pages": [
+        "examples/how_to",
+        {
+          "group": "Provided Handlers",
+          "icon": "screwdriver-wrench",
+          "pages": [
+            {
+              "group": "AWS",
+              "icon": "aws",
+              "pages": [
+                "examples/handlers/aws/s3"
+              ]
+            },
+            {
+              "group": "Atlassian",
+              "icon": "atlassian",
+              "pages": [
+                "examples/handlers/atlassian/confluence",
+                "examples/handlers/atlassian/jira"
+              ]
+            },
+            "examples/handlers/content_creator",
+            "examples/handlers/csv_cli",
+            {
+              "group": "E-Commerce Handler",
+              "icon": "cart-shopping",
+              "pages": [
+                "examples/handlers/E-commerce/amazon",
+                "examples/handlers/E-commerce/flipkart",
+                "examples/handlers/E-commerce/walmart"
+              ]
+            },
+            "examples/handlers/exa",
+            "examples/handlers/elastic",
+            "examples/handlers/email",
+            "examples/handlers/financial_data",
+            {
+              "group": "Google",
+              "icon": "circle-g",
+              "pages": [
+                "examples/handlers/Google/calender",
+                "examples/handlers/Google/gmail"
+              ]
+            },
+            "examples/handlers/hubspot",
+            "examples/handlers/serper_dev",
+            "examples/handlers/sql",
+            "examples/handlers/visualization",
+            "examples/handlers/weather",
+            "examples/handlers/wikipedia"
+
+          ]
+        }
       ]
     },
     {

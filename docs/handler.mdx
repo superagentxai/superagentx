@@ -1,0 +1,28 @@
+---
+title: 'Handler'
+icon: 'bars-progress'
+---
+
+A Handler is a programming component that responds to specific events, conditions, or prompts by executing predefined
+tasks or actions based on the input it receives. It contains the logic for managing particular operations, playing a
+key role in organizing and carrying out tasks.
+
+With the `BaseHandler` from `superagentx.handler.base`, you can create your own custom
+<a href="/examples/how_to" target='_blank'>handlers</a>.
+
+Additionally, we also provide <a href="/examples/handlers" target='_blank'>pre-build handlers</a> for various other
+services and libraries.
+
+Set up a RapidAPI key as an environmental variable and run the following code.
+```python
+export RAPID_API_KEY = "**************************"
+```
+
+```python
+# pip install superagentx-handlers
+
+from superagentx_handlers import WalmartHandler
+
+walmart_ecom_handler = WalmartHandler()
+```
+

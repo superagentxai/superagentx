@@ -1,0 +1,56 @@
+---
+title: 'LLM'
+icon: 'microchip-ai'
+---
+
+### LLM Client object configuration
+The `LLMClient` object from `superagentx.llm` is a configuration-driven interface to interact with large language models (LLMs) from various
+providers, such as OpenAI, AWSBedrock and more. It allows users to set parameters specific to the model and
+provider they intend to use, making it easier to configure different types of LLMs and interact with it.
+
+### Supported LLMs
+
+| Icon                                                                                                                                                                                         | LLM Name          |
+|:-----------------------------------------------------------------------------------------------------------------------------------------:                                                   | :--------------- |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/openai.png?raw=True" title="OpenAI" height="25" width="25" style={{ margin: 0 }} />                      | **OpenAI**        |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/azure-icon.png?raw=True" title="Azure OpenAI" height="25" width="25" style={{ margin: 0 }} />            | **Azure OpenAI**  |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/awsbedrock.png?raw=True" title="AWS Bedrock" height="25" width="25" style={{ margin: 0 }} />             | **AWS Bedrock**   |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/gemini.png?raw=True" title="Google Gemini" height="25" width="25" style={{ margin: 0 }} />               | **Google Gemini** |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/meta.png?raw=True" title="Google Gemini" height="25" width="25" style={{ margin: 0 }} />                 | **Meta Llama**    |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ollama.png?raw=True" title="Ollama" height="15" width="25" style={{ margin: 0 }} />                      | **Ollama**        |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/claude-ai-logo.png?raw=True" title="Claude AI" height="25" width="25" style={{ margin: 0 }} />           | **Claude AI**     |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png?raw=True" title="Mistral AI" height="25" width="35" style={{ margin: 0 }} />         | **Mistral AI**    |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ibm.png?raw=True" title="IBM WatsonX AI" height="25" width="35" style={{ margin: 0 }} />                 | **IBM WatsonX**   |
+
+
+### Parameters
+| Attribute                          | Parameters             | Description                                                                                                                                                                                                |
+| :--------------------              | :----------------      | :-------------------------------------                                                                                                                                                                     |
+| **Model** _(optional)_             | `model`                | This specifies the language model you wish to use. The model is typically identified by a name or version, such as ‘gpt-4o’, ‘gpt-3.5-turbo’, or another model version that the service provider supports. |
+| **LLM Type**                       | `llm_type`             | This key identifies the service provider or platform from which the language model is sourced. Common values are: ‘openai’: Refers to OpenAI’s GPT models.                                                 |
+| **API Key**  _(optional)_          | `api_key`              | You can provide the model API key either as a parameter or retrieve it from the environment.                                                                                                               |                                        |
+| **Base Url** _(optional)_          | `base_url`             | The base URL for the model API.                                                                                                                                                                            |
+| **API Version** _(optional)_       | `api_version`          | The required API version for the Azure OpenAI llm_type.                                                                                                                                                    |
+| **Async Mode**  _(optional)_       | `async_mode`           | Asynchronous mode of OpenAI or Azure OpenAI client.                                                                                                                                                        |
+| **Embedding Model** _(optional)_   | `embed_model`          | Embedding model name, supported models openai, azure-openai, mistral, llama 3.1                                                                                                                            |
+
+
+```python OpenAI
+from superagentx.llm import LLMClient
+
+llm_config = {
+    "model":'gpt-4o',
+    "llm_type":'openai'
+}
+llm_client = LLMClient(llm_config=llm_config)
+```
+
+```python AWSBedrock
+from superagentx.llm import LLMClient
+
+llm_config = {
+    "model":'anthropic.claude-3-5-sonnet-20241022-v2:0',
+    "llm_type":'bedrock'
+}
+llm_client = LLMClient(llm_config=llm_config)
+```
