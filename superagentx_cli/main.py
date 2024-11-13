@@ -121,7 +121,7 @@ class CliApp:
         rprint(f'Creating toml file at [yellow]{_toml_path.resolve()}')
         _toml_template_file = self._jinja_env.get_template('pyproject.toml.jinja2')
         _render_toml = _toml_template_file.render(
-            app_name=self.app_name,
+            package_name=self.package_name.replace('_', '-'),
             author_name=self.author_name,
             author_email=self.author_email,
             maintainer_name=self.maintainer_name,
