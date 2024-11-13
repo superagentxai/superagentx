@@ -3,8 +3,7 @@ title: 'Create Handler'
 icon: 'wrench'
 ---
 
-Here's a step-by-step guide for creating a new handler in `superagentx` that inherits from
-`BaseHandler` (`superagentx.handler.base.BaseHandler`), designed to extend the functionality of an existing system.
+Here's a step-by-step guide to creating a new custom handler in `SuperAgentX`, inheriting from `BaseHandler` (`superagentx.handler.base.BaseHandler`), to enhance and extend the system's functionality.
 
 ### Step 1: Creating a New Handler
 Now, we will create a new class `FileHandler` that inherits from `BaseHandler`. This class will handle reading a text file
@@ -30,7 +29,7 @@ class FileHandler(BaseHandler):
         super().__init__()  # Call the parent class's constructor
         self.file_path = file_path  # Store the file path for later use
 ```
-### Step 2: Define a Method for Processing.
+### Step 2: Define Handler Method(s).
 Now, let’s define a method inside the handler to perform an action, like processing data from the given method.
 This `tool` (`superagentx.handler.decorators.tool`) decorator is used to preserve llm tool function
 when you wrap it in a new function, often used in custom decorators.
