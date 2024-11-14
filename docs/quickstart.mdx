@@ -5,7 +5,13 @@ icon: 'rocket'
 ---
 
 ## Introduction
+In this guide, we'll walk you through:
 
+>**Installation:** How to install SuperAgentX on your system.<br />
+**Create an Application:** Set up a new SuperAgentX project with the basic structure.<br />
+**Virtual Environment Setup:** How to create and configure a Python virtual environment for your project.<br />
+**Building a Use Case:** Customizing the pipe.py file to fit your application's needs.<br />
+**Run the Application:** Finally, how to execute your new project with a simple command.
 
 ```shell
 $ python3.12 -m pip install superagentx
@@ -13,8 +19,8 @@ $ python3.12 -m pip install superagentx
 
 <Note>
 Note: <br />
-After running the above command, the `superagentx-cli` will be located in this path `~/.local/bin` in `linux`. We can
-set this in the environment path variable.
+After installation, the `superagentx-cli` will be available in the path `~/.local/bin` on `linux`. You may need to add
+this to your environment's path variable.
 </Note>
 
 ## Create an Application
@@ -58,8 +64,8 @@ Creating wspipe file at /home/ben/Content Creator/content_creator/wspipe.py
 Creating restpipe file at /home/ben/Content Creator/content_creator/restpipe.py
 ```
 
-### Create Python `venv`
-Create an virtual environment by using the command given below
+### Virtual Environment Setup
+Now, you'll need to create a Python virtual environment for your project:
 
 ```shell
 $ cd /home/ben/Content Creator
@@ -69,9 +75,9 @@ $ source venv/bin/activate
 (venv) $ poetry install
 ```
 
-### Build Use Case
+### Build Your Use Case
 
-If you're building a new use case, you first need to modify the file at `/home/ben/Content Creator/content_creator/pipe.py`.
+If you're building a new use case, You need to modify the file at `/home/ben/Content Creator/content_creator/pipe.py`.
 The path in this file will be generated based on the input you provide through the SuperAgentX application. In that
 file you can do your changes.
 
@@ -87,12 +93,10 @@ from superagentx.prompt import PromptTemplate
 # Import handlers
 
 # Example
-# -------
-#################################################
-# Uncomment below lines to enable ecom handlers #
-#################################################
-# from superagentx_handlers import AmazonHandler
-# from superagentx_handlers.ecommerce.walmart import WalmartHandler
+
+from superagentx.handler import SerperDevToolHandler
+from superagentx.handler import AIHandler
+from superagentx_handlers import ScrapeHandler
 
 
 async def get_content_creator_pipe() -> AgentXPipe:
@@ -106,56 +110,78 @@ async def get_content_creator_pipe() -> AgentXPipe:
     memory = Memory(memory_config={"llm_client": llm_client})
 
     # Example
-    # -------
-    # amazon_ecom_handler = AmazonHandler()
-    # walmart_ecom_handler = WalmartHandler()
+    serper_handler = SerperDevToolHandler()
+    crawler_handler = ScrapeHandler()
+    ai_handler = AIHandler(
+        llm=llm_client
+    )
+
 
     # Prompt Template
     prompt_template = PromptTemplate()
 
     # Example - Engine(s)
-    # -------------------
-    # amazon_engine = Engine(
-    #     handler=amazon_ecom_handler,
-    #     llm=llm_client,
-    #     prompt_template=prompt_template
-    # )
-    # walmart_engine = Engine(
-    #     handler=walmart_ecom_handler,
-    #     llm=llm_client,
-    #     prompt_template=prompt_template
-    # )
+    serper_engine = Engine(
+        handler=serper_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
+    crawler_engine = Engine(
+        handler=crawler_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
+    ai_engine = Engine(
+        handler=ai_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
 
-    # Create Agents
+    # Create Agent with serper, crawler, ai Engines execute in Parallel - Search Products from user prompts
+    serper_agent = Agent(
+        name='serper Agent',
+        role=f'You are the website link extractor.',
+        goal='Generate the list of website urls',
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[serper_engine]
+    )
 
-    # Example - Agent(s)
-    # ------------------
-    # Create Agent with Amazon, Walmart Engines execute in Parallel - Search Products from user prompts
-    # ecom_agent = Agent(
-    #     name='Ecom Agent',
-    #     goal="Get me the best search results",
-    #     role="You are the best product searcher",
-    #     llm=llm_client,
-    #     prompt_template=prompt_template,
-    #     engines=[[amazon_engine, walmart_engine]]
-    # )
+    crawler_agent = Agent(
+        name='Crawler Agent',
+        goal="Extract the content",
+        role="You are the Content Extractor",
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[crawler_engine]
+    )
+
+    ai_agent = Agent(
+        name='AI Agent',
+        goal="Summarize the given content",
+        role="You are the summarization.",
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[ai_engine]
+    )
+
 
     # Create Pipe - Interface
 
     # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
     pipe = AgentXPipe(
-        ###############################################
-        # Uncomment below lines to enable ecom agents #
-        ###############################################
-        # agents=[ecom_agent],
+        agents=[serper_agent, crawler_agent, ai_agent],
         memory=memory
     )
     return pipe
 ```
 
-### Run Command
+### Run the Application
+Once everything is set up, you can run your application with this command:
 
 ```shell
-# Using this command line you can run the command.
 $ python3.12 Content Creator/iopipe.py
 ```
+This will start your SuperAgentX application and execute the tasks you've configured.
+
+
