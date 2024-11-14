@@ -185,7 +185,7 @@ class AgentXPipe:
             pre_result = await self._pre_result(results=results)
             if self.memory:
                 old_memory = await self.retrieve_memory(query_instruction)
-                logger.info(f"Old Memory: {old_memory}")
+                logger.debug(f"Old Memory: {old_memory}")
                 if old_memory:
                     message_content = ""
                     async for _mem in iter_to_aiter(old_memory):
