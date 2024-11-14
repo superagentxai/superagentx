@@ -3,3 +3,159 @@ title: 'Quickstart'
 description: 'Start building awesome documentation in under 5 minutes'
 icon: 'rocket'
 ---
+
+## Introduction
+
+
+```shell
+$ python3.12 -m pip install superagentx
+```
+
+<Note>
+Note: <br />
+After running the above command, the `superagentx-cli` will be located in this path `~/.local/bin` in `linux`. We can
+set this in the environment path variable.
+</Note>
+
+## Create an Application
+To create a new `superagentx` project, run the following command in your terminal. This will prompt you to create
+project with the basic structure set up for your `superagentx`.
+
+```shell
+$ superagentx-cli create
+```
+
+### Follow the steps
+```shell
+# First you have to give a application name or folder name.
+Enter application name: Content Creator
+
+# Then you have to enter pipe name or it will take a default application name.
+Enter pipe name. Default is application name []: Story
+
+# Next you have to give any one of option given below or it be take a default value all.
+Enter one of the option (all, console, websocket, rest) [all]: all
+```
+
+After your inputs the `superagentx-cli` create a application like a below structure.
+
+```shell
+App Name ✈️ Content Creator
+Pacakge Name 📦 content_creator
+Pipe Name 🎢 story
+App Type 🛠️ all
+
+Creating app at /home/ben/Content Creator
+Creating toml file at /home/ben/Content Creator/pyproject.toml
+Creating readme file at /home/ben/Content Creator/README.md
+Creating pipe file at /home/ben/Content Creator/content_creator/pipe.py
+Your app type selection contains `websocket`, `rest api` option(s).
+
+Enter auth token for `websocket`, `rest api` [098765432asdfghjk09876543]:
+Creating config file at /home/ben/Content Creator/content_creator/config.py
+Creating iopipe file at /home/ben/Content Creator/content_creator/iopipe.py
+Creating wspipe file at /home/ben/Content Creator/content_creator/wspipe.py
+Creating restpipe file at /home/ben/Content Creator/content_creator/restpipe.py
+```
+
+### Create Python `venv`
+Create an virtual environment by using the command given below
+
+```shell
+$ cd /home/ben/Content Creator
+$ python3.12 -m venv venv
+$ source venv/bin/activate
+(venv) $ pip install poetry
+(venv) $ poetry install
+```
+
+### Build Use Case
+
+If you're building a new use case, you first need to modify the file at `/home/ben/Content Creator/content_creator/pipe.py`.
+The path in this file will be generated based on the input you provide through the SuperAgentX application. In that
+file you can do your changes.
+
+```python
+
+from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.engine import Engine
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.prompt import PromptTemplate
+
+# Import handlers
+
+# Example
+# -------
+#################################################
+# Uncomment below lines to enable ecom handlers #
+#################################################
+# from superagentx_handlers import AmazonHandler
+# from superagentx_handlers.ecommerce.walmart import WalmartHandler
+
+
+async def get_content_creator_pipe() -> AgentXPipe:
+    # LLM Configuration
+    llm_config = {
+        'llm_type': 'openai'
+    }
+    llm_client = LLMClient(llm_config=llm_config)
+
+    # Enable Memory
+    memory = Memory(memory_config={"llm_client": llm_client})
+
+    # Example
+    # -------
+    # amazon_ecom_handler = AmazonHandler()
+    # walmart_ecom_handler = WalmartHandler()
+
+    # Prompt Template
+    prompt_template = PromptTemplate()
+
+    # Example - Engine(s)
+    # -------------------
+    # amazon_engine = Engine(
+    #     handler=amazon_ecom_handler,
+    #     llm=llm_client,
+    #     prompt_template=prompt_template
+    # )
+    # walmart_engine = Engine(
+    #     handler=walmart_ecom_handler,
+    #     llm=llm_client,
+    #     prompt_template=prompt_template
+    # )
+
+    # Create Agents
+
+    # Example - Agent(s)
+    # ------------------
+    # Create Agent with Amazon, Walmart Engines execute in Parallel - Search Products from user prompts
+    # ecom_agent = Agent(
+    #     name='Ecom Agent',
+    #     goal="Get me the best search results",
+    #     role="You are the best product searcher",
+    #     llm=llm_client,
+    #     prompt_template=prompt_template,
+    #     engines=[[amazon_engine, walmart_engine]]
+    # )
+
+    # Create Pipe - Interface
+
+    # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
+    pipe = AgentXPipe(
+        ###############################################
+        # Uncomment below lines to enable ecom agents #
+        ###############################################
+        # agents=[ecom_agent],
+        memory=memory
+    )
+    return pipe
+```
+
+### Run Command
+
+```shell
+# Using this command line you can run the command.
+$ python3.12 Content Creator/iopipe.py
+```
