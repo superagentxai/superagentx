@@ -21,25 +21,25 @@
   },
   "tabs": [
     {
-      "name": "API Reference",
-      "url": "api-reference"
+      "name": "Examples",
+      "url": "examples-reference"
     }
   ],
   "anchors": [
     {
       "name": "Documentation",
       "icon": "book-open-cover",
-      "url": "https://www.superagentx.ai"
+      "url": "https://docs.superagentx.ai/introduction"
     },
     {
       "name": "Community",
-      "icon": "slack",
-      "url": "https://www.superagentx.ai"
+      "icon": "discord",
+      "url": "https://discord.gg/hX5pAzKGXD"
     },
     {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://www.superagentx.ai"
+      "name": "Github",
+      "icon": "github",
+      "url": "https://github.com/superagentxai/superagentX/"
     }
   ],
   "navigation": [
@@ -122,7 +122,7 @@
     {
       "group": "API Documentation",
       "pages": [
-        "api-reference/introduction"
+        "examples-reference/introduction"
       ]
     }
   ],
