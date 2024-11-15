@@ -54,3 +54,32 @@ llm_config = {
 }
 llm_client = LLMClient(llm_config=llm_config)
 ```
+
+### LLM Type and its Values
+
+| Type                               | value                  | Example                                                                                                                                                                                                |
+| :--------------------              | :----------------      | :-------------------------------------                                                                                                                                                                     |
+| **Open AI**                        | `openai`               | `llm_config = { 'llm_type':'openai'}`|
+| **Azure OpenAI**                   | `azure-openai`         | `llm_config = { 'llm_type':'azure-openai'}`|
+| **AWS Bedrock**                    | `bedrock`              | `llm_config = { 'llm_type':'bedrock'}`|
+| **LLama**                          | `llama`                | `llm_config = { 'llm_type':'llama'}`|
+| **Gemini**                         | `gemini`               | `llm_config = { 'llm_type':'gemini'}`|
+| **Anthropic**                      | `anthropic`            | `llm_config = { 'llm_type':'anthropic'}`|
+| **Mistral**                        | `mistral`              | `llm_config = { 'llm_type':'mistral'}`|
+| **Groq**                           | `groq`                 | `llm_config = { 'llm_type':'groq'}`|
+| **Together**                       | `together`             | `llm_config = { 'llm_type':'together'}`|
+
+### OpenAI Supported Models
+
+| Type                               | Example
+| :--------------------              | :---------------------------------------------------------- |
+| **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}``` |
+| **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}``` |
+
+
+### Bedrock Supported Models
+
+| Type                               | Example
+| :--------------------              | :---------------------------------------------------------- |
+| **anthropic.claude-3-5-sonnet-20241022-v2:0** | ```llm_config = { "model":'anthropic.claude-3-5-sonnet-20241022-v2:0', "llm_type":'bedrock'}``` |
+| **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}``` |
