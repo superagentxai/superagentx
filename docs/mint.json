@@ -65,11 +65,8 @@
     {
       "group": "Handlers (Tools)",
       "pages": [
-        "examples/how_to",
-        {
-          "group": "Provided Handlers",
-          "icon": "screwdriver-wrench",
-          "pages": [
+        "examples/create_handler",
+
             {
               "group": "AWS",
               "icon": "aws",
@@ -115,8 +112,7 @@
             "examples/handlers/weather",
             "examples/handlers/wikipedia"
 
-          ]
-        }
+
       ]
     },
     {

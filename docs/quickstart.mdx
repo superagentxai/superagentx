@@ -5,16 +5,16 @@ icon: 'rocket'
 ---
 
 ## Introduction
-In this guide, we'll walk you through:
+This simple walkthrough will help you get started with building powerful applications using SuperAgentX in just a few steps.<br />
 
->**Installation:** How to install SuperAgentX on your system.<br />
-**Create an Application:** Set up a new SuperAgentX project with the basic structure.<br />
-**Virtual Environment Setup:** How to create and configure a Python virtual environment for your project.<br />
-**Building a Use Case:** Customizing the pipe.py file to fit your application's needs.<br />
-**Run the Application:** Finally, how to execute your new project with a simple command.
+>**1. Installation:** How to install SuperAgentX on your system.<br />
+**2. Create an Application:** Set up a new SuperAgentX project with the basic structure.<br />
+**3. Virtual Environment Setup:** How to create and configure a Python virtual environment for your project.<br />
+**4. Building a Use Case:** Customizing the pipe.py file to fit your application's needs.<br />
+**5. Run the Application:** Finally, how to execute your new project with a simple command.
 
 ```shell
-$ python3.12 -m pip install superagentx
+$ python3 -m pip install superagentx
 ```
 
 <Note>
@@ -69,7 +69,7 @@ Now, you'll need to create a Python virtual environment for your project:
 
 ```shell
 $ cd /home/ben/Content Creator
-$ python3.12 -m venv venv
+$ python3 -m venv venv
 $ source venv/bin/activate
 (venv) $ pip install poetry
 (venv) $ poetry install
@@ -81,6 +81,10 @@ If you're building a new use case, You need to modify the file at `/home/ben/Con
 The path in this file will be generated based on the input you provide through the SuperAgentX application. In that
 file you can do your changes.
 
+### Step-by-Step process:
+
+#### 1. Import Package
+This method imports various components from the superagentx library.
 ```python
 
 from superagentx.agent import Agent
@@ -90,36 +94,47 @@ from superagentx.llm import LLMClient
 from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 
-# Import handlers
-
-# Example
-
 from superagentx.handler import SerperDevToolHandler
 from superagentx.handler import AIHandler
 from superagentx_handlers import ScrapeHandler
 
+```
 
+#### 2. Define Method
+
+This method `get_content_creator_pipe` initializes a content creation pipeline by configuring an LLM
+(Large Language Model) client using OpenAI's API. for more detail about `AgentXPipe` refer <a href="pipe" target='_blank'>here</a>.
+```python
 async def get_content_creator_pipe() -> AgentXPipe:
     # LLM Configuration
     llm_config = {
         'llm_type': 'openai'
     }
     llm_client = LLMClient(llm_config=llm_config)
+```
 
+#### 3. Define Memory
+This line enables memory functionality in the pipeline by configuring a Memory object that utilizes the previously created llm_client for storing and retrieving context.
+```python
     # Enable Memory
     memory = Memory(memory_config={"llm_client": llm_client})
+```
 
+```python
     # Example
     serper_handler = SerperDevToolHandler()
     crawler_handler = ScrapeHandler()
     ai_handler = AIHandler(
         llm=llm_client
     )
+```
 
-
+```python
     # Prompt Template
     prompt_template = PromptTemplate()
+```
 
+```python
     # Example - Engine(s)
     serper_engine = Engine(
         handler=serper_handler,
@@ -136,7 +151,9 @@ async def get_content_creator_pipe() -> AgentXPipe:
         llm=llm_client,
         prompt_template=prompt_template
     )
+```
 
+```python
     # Create Agent with serper, crawler, ai Engines execute in Parallel - Search Products from user prompts
     serper_agent = Agent(
         name='serper Agent',
@@ -164,8 +181,9 @@ async def get_content_creator_pipe() -> AgentXPipe:
         prompt_template=prompt_template,
         engines=[ai_engine]
     )
+```
 
-
+```python
     # Create Pipe - Interface
 
     # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
@@ -180,8 +198,18 @@ async def get_content_creator_pipe() -> AgentXPipe:
 Once everything is set up, you can run your application with this command:
 
 ```shell
-$ python3.12 Content Creator/iopipe.py
+# Console Pipe
+$ python3 Content Creator/iopipe.py
+
+or
+# WebSocket Pipe
+$ python3 Content Creator/wspipe.py
+
+or
+# RestAPI Pipe(FastAPI)
+$ python3 Content Creator/restpipe.py
 ```
+
 This will start your SuperAgentX application and execute the tasks you've configured.
 
 
