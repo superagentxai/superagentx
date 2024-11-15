@@ -11,7 +11,7 @@ provider they intend to use, making it easier to configure different types of LL
 ### Supported LLMs
 
 | Icon                                                                                                                                                                                         | LLM Name          |
-|:-----------------------------------------------------------------------------------------------------------------------------------------:                                                   | :--------------- |
+|:-----------------------------------------------------------------------------------------------------------------------------------------:                                                   | :---------------  |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/openai.png?raw=True" title="OpenAI" height="25" width="25" style={{ margin: 0 }} />                      | **OpenAI**        |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/azure-icon.png?raw=True" title="Azure OpenAI" height="25" width="25" style={{ margin: 0 }} />            | **Azure OpenAI**  |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/awsbedrock.png?raw=True" title="AWS Bedrock" height="25" width="25" style={{ margin: 0 }} />             | **AWS Bedrock**   |
@@ -28,7 +28,7 @@ provider they intend to use, making it easier to configure different types of LL
 | :--------------------              | :----------------      | :-------------------------------------                                                                                                                                                                     |
 | **Model** _(optional)_             | `model`                | This specifies the language model you wish to use. The model is typically identified by a name or version, such as ‘gpt-4o’, ‘gpt-3.5-turbo’, or another model version that the service provider supports. |
 | **LLM Type**                       | `llm_type`             | This key identifies the service provider or platform from which the language model is sourced. Common values are: ‘openai’: Refers to OpenAI’s GPT models.                                                 |
-| **API Key**  _(optional)_          | `api_key`              | You can provide the model API key either as a parameter or retrieve it from the environment.                                                                                                               |                                        |
+| **API Key**  _(optional)_          | `api_key`              | You can provide the model API key either as a parameter or retrieve it from the environment.                                                                                                               |
 | **Base Url** _(optional)_          | `base_url`             | The base URL for the model API.                                                                                                                                                                            |
 | **API Version** _(optional)_       | `api_version`          | The required API version for the Azure OpenAI llm_type.                                                                                                                                                    |
 | **Async Mode**  _(optional)_       | `async_mode`           | Asynchronous mode of OpenAI or Azure OpenAI client.                                                                                                                                                        |
@@ -57,29 +57,46 @@ llm_client = LLMClient(llm_config=llm_config)
 
 ### LLM Type and its Values
 
-| Type                               | value                  | Example                                                                                                                                                                                                |
-| :--------------------              | :----------------      | :-------------------------------------                                                                                                                                                                     |
-| **Open AI**                        | `openai`               | `llm_config = { 'llm_type':'openai'}`|
-| **Azure OpenAI**                   | `azure-openai`         | `llm_config = { 'llm_type':'azure-openai'}`|
-| **AWS Bedrock**                    | `bedrock`              | `llm_config = { 'llm_type':'bedrock'}`|
-| **LLama**                          | `llama`                | `llm_config = { 'llm_type':'llama'}`|
-| **Gemini**                         | `gemini`               | `llm_config = { 'llm_type':'gemini'}`|
-| **Anthropic**                      | `anthropic`            | `llm_config = { 'llm_type':'anthropic'}`|
-| **Mistral**                        | `mistral`              | `llm_config = { 'llm_type':'mistral'}`|
-| **Groq**                           | `groq`                 | `llm_config = { 'llm_type':'groq'}`|
-| **Together**                       | `together`             | `llm_config = { 'llm_type':'together'}`|
+| Type                               | value                  | Example                                     |
+| :--------------------              | :----------------      | :-------------------------------------      |
+| **Open AI**                        | `openai`               | `llm_config = { 'llm_type':'openai'}`       |
+| **Azure OpenAI**                   | `azure-openai`         | `llm_config = { 'llm_type':'azure-openai'}` |
+| **AWS Bedrock**                    | `bedrock`              | `llm_config = { 'llm_type':'bedrock'}`      |
+| **LLama**                          | `llama`                | `llm_config = { 'llm_type':'llama'}`        |
+| **Gemini**                         | `gemini`               | `llm_config = { 'llm_type':'gemini'}`       |
+| **Anthropic**                      | `anthropic`            | `llm_config = { 'llm_type':'anthropic'}`    |
+| **Mistral**                        | `mistral`              | `llm_config = { 'llm_type':'mistral'}`      |
+| **Groq**                           | `groq`                 | `llm_config = { 'llm_type':'groq'}`         |
+| **Together**                       | `together`             | `llm_config = { 'llm_type':'together'}`     |
 
 ### OpenAI Supported Models
 
-| Type                               | Example
-| :--------------------              | :---------------------------------------------------------- |
-| **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}``` |
-| **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}``` |
+| Type                               | Example                                                                          |
+| :--------------------              | :----------------------------------------------------------                      |
+| **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}```                      |
+| **gpt-4**                          | ```llm_config = { "model":'gpt-4', "llm_type":'openai'}```                       |
+| **gpt-4o-2024-05-13**              | ```llm_config = { "model":'gpt-4o-2024-05-13', "llm_type":'openai'}```           |
+| **gpt-4o-2024-08-06**              | ```llm_config = { "model":'gpt-4o-2024-08-06', "llm_type":'openai'}```           |
+| **gpt-4-turbo-2024-04-09**         | ```llm_config = { "model":'gpt-4-turbo-2024-04-09', "llm_type":'openai'}```      |
+| **gpt-4o-mini-2024-07-18**         | ```llm_config = { "model":'gpt-4o-mini-2024-07-18', "llm_type":'openai'}```      |
+| **gpt-4o-mini**                    | ```llm_config = { "model":'gpt-4o-mini', "llm_type":'openai'}```                 |
 
 
 ### Bedrock Supported Models
 
-| Type                               | Example
-| :--------------------              | :---------------------------------------------------------- |
-| **anthropic.claude-3-5-sonnet-20241022-v2:0** | ```llm_config = { "model":'anthropic.claude-3-5-sonnet-20241022-v2:0', "llm_type":'bedrock'}``` |
-| **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}``` |
+| Type                                           | Example                                                                                            |
+| :--------------------                          | :----------------------------------------------------------                                        |
+| **anthropic.claude-3-5-sonnet-20241022-v2:0**  | ```llm_config = { "model":'anthropic.claude-3-5-sonnet-20241022-v2:0', "llm_type":'bedrock'}```    |
+| **anthropic.claude-3-5-haiku-20241022-v1:0**   | ```llm_config = { "model":'anthropic.claude-3-5-haiku-20241022-v1:0', "llm_type":'bedrock'}```     |
+| **anthropic.claude-instant-v1:2:100k**         | ```llm_config = {"model":'anthropic.claude-instant-v1:2:100k',"llm_type":'bedrock'}```             |
+| **anthropic.claude-3-sonnet-20240229-v1:0**    | ```llm_config = {"model":'anthropic.claude-3-sonnet-20240229-v1:0',"llm_type":'bedrock'}```        |
+| **anthropic.claude-3-haiku-20240307-v1:0**     | ```llm_config = {"model":'anthropic.claude-3-haiku-20240307-v1:0',"llm_type":'bedrock'}```         |
+| **anthropic.claude-3-opus-20240229-v1:0**      | ```llm_config = {"model":'anthropic.claude-3-opus-20240229-v1:0',"llm_type":'bedrock'}```          |
+| **anthropic.claude-3-5-sonnet-20240620-v1:0**  | ```llm_config = {"model":'anthropic.claude-3-5-sonnet-20240620-v1:0',"llm_type":'bedrock'}```      |
+| **cohere.command-r-v1:0**                      | ```llm_config = {"model":'cohere.command-r-v1:0',"llm_type":'bedrock'}```                          |
+| **cohere.command-r-plus-v1:0**                 | ```llm_config = {"model":'cohere.command-r-plus-v1:0',"llm_type":'bedrock'}```                     |
+| **meta.llama3-1-8b-instruct-v1:0**             | ```llm_config = {"model":'meta.llama3-1-8b-instruct-v1:0',"llm_type":'bedrock'}```                 |
+| **meta.llama3-1-70b-instruct-v1:0**            | ```llm_config = {"model":'meta.llama3-1-70b-instruct-v1:0',"llm_type":'bedrock'}```                |
+| **meta.llama3-1-405b-instruct-v1:0**           | ```llm_config = {"model":'meta.llama3-1-405b-instruct-v1:0',"llm_type":'bedrock'}```               |
+| **mistral.mistral-large-2402-v1:0**            | ```llm_config = {"model":'mistral.mistral-large-2402-v1:0',"llm_type":'bedrock'}```                |
+| **mistral.mistral-large-2407-v1:0**            | ```llm_config = {"model":'mistral.mistral-large-2407-v1:0',"llm_type":'bedrock'}```                |

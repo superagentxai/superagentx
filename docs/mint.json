@@ -59,6 +59,7 @@
         "memory",
         "llm",
         "engine",
+        "prompt",
         "handler"
       ]
     },

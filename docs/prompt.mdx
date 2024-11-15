@@ -1,0 +1,20 @@
+---
+title: 'PromptTemplate'
+icon: 'rectangle-terminal'
+---
+
+A `PromptTemplate` class is used to create and organize the messages (prompts) that are sent to a language model.
+It allows you to define a basic structure for the prompt with placeholders (like {name} or {task}). These
+placeholders are then replaced with actual values before sending the prompt to the model, making it
+flexible and reusable for different situations.
+
+### Parameters
+| Attribute                          | Parameters             | Description                                                           |
+| :--------------------              | :----------------      | :-------------------------------------                                |
+| **Prompt_Type** _(optional)_       |`prompt_type`           | specifies the type of prompt (string, enum, or None)                  |
+| **System_Message**  _(optional)_   |`system_message`        | An optional string that defines a system-level message for the prompt.|
+
+
+```shell
+ prompt_template = PromptTemplate()
+```
