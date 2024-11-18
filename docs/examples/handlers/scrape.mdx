@@ -1,0 +1,53 @@
+---
+title: 'Scrape Handler'
+icon: 'spider'
+---
+
+The ScrapeHandler class is a specialized handler for scraping content from websites and
+other online data sources. It extends the BaseHandler class and is designed for use in
+asynchronous environments. This class encapsulates the logic for initiating and managing
+scraping operations, as well as processing and storing the scraped data efficiently.
+
+```python scrape_handler.py
+import asyncio
+
+from superagentx_handlers.scrape import ScrapeHandler
+
+
+async def scrap_content() -> ScrapeHandler:
+    scrap_handler = ScrapeHandler()
+    return await scrap_handler.scrap_content(domain_urls=["https://www.booking.com/"])
+
+
+async def main():
+    res = await scrap_content()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+### Result
+```shell
+
+ Synchronous WebCrawler is not available. Install crawl4ai[sync] for synchronous support. However,
+please note that the synchronous version will be deprecated soon.
+[LOG] 🌤️  Warming up the AsyncWebCrawler
+[LOG] 🌞 AsyncWebCrawler is ready to crawl
+[LOG] 🕸️ Crawling https://www.booking.com/ using AsyncPlaywrightCrawlerStrategy...
+[LOG] ✅ Crawled https://www.booking.com/ successfully!
+[LOG] 🚀 Crawling done for https://www.booking.com/, success: True, time taken: 5.25 seconds
+[LOG] 🚀 Content extracted for https://www.booking.com/, success: True, time taken: 0.78 seconds
+[LOG] 🔥 Extracting semantic blocks for https://www.booking.com/, Strategy: AsyncWebCrawler
+[LOG] 🚀 Extraction done for https://www.booking.com/, time taken: 0.78 seconds.
+['[ Skip to main content ](#indexsearch)\n\n[](https://www.booking.com/index.en-gb.html?label=gen173nr-
+1BCAEoggI46AdIM1gEaGyIAQGYAQm4ARfIAQzYAQHoAQGIAgGoAgO4At7Q67kGwAIB0gIkMjhlOTViMzAtOWI3Yy00NTM4LWEwNmEtOD
+I5NWJjMWFjOWJi2AIF4AIB&sid=e80cd7587c79910cad64ebb4460be87c&aid=304142)\n\nINR\n\n![](https://t-cf.bstatic
+.com/design-assets/assets/v3.134.0/images-flags/In@3x.png)\n\n[](https://secure.booking.com/help.en-gb.html
+?label=gen173nr-1BCAEoggI46AdIM1gEaGyIAQGYAQm4ARfIAQzYAQHoAQGIAgGoAgO4At7Q67kGwAIB0gIkMjhlOTViMzAtOWI3Yy00NT
+M4LWEwNmEtODI5NWJjMWFjOWJi2AIF4AIB&sid=e80cd7587c79910cad64ebb4460be87c&aid=304142&source=header&src=profile_
+contact_cs)[List your property](https://join.booking.com/?label=gen173nr-1BCAEoggI46AdIM1gEaGyIAQGYAQm4ARfIAQz
+YAQHoAQGIAgGoAgO4At7Q67kGwAIB0gIkMjhlOTViMzAtOWI3Yy00NTM4LWEwNmEtODI5NWJjMWFjOWJi2AIF4AIB&sid=e80cd7587c79910ca
+d64ebb4460be87c&aid=304142&lang=en-gb&utm_medium=frontend&utm_source=topbar)
+
+```

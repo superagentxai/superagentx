@@ -107,6 +107,7 @@
               ]
             },
             "examples/handlers/hubspot",
+            "examples/handlers/scrape",
             "examples/handlers/serper_dev",
             "examples/handlers/sql",
             "examples/handlers/visualization",
