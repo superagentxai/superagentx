@@ -34,10 +34,10 @@ $ superagentx-cli create
 ### Follow the steps
 ```shell
 # First you have to give a application name or folder name.
-Enter application name: Content Creator
+Enter application name: content creator
 
 # Then you have to enter pipe name or it will take a default application name.
-Enter pipe name. Default is application name []: Story
+Enter pipe name. Default is application name []: content
 
 # Next you have to give any one of option given below or it be take a default value all.
 Enter one of the option (all, console, websocket, rest) [all]: all
@@ -46,22 +46,23 @@ Enter one of the option (all, console, websocket, rest) [all]: all
 After your inputs the `superagentx-cli` create a application like a below structure.
 
 ```shell
-App Name ✈️ Content Creator
+App Name ✈️ content creator
 Pacakge Name 📦 content_creator
-Pipe Name 🎢 story
+Pipe Name 🎢 content
 App Type 🛠️ all
 
-Creating app at /home/ben/Content Creator
-Creating toml file at /home/ben/Content Creator/pyproject.toml
-Creating readme file at /home/ben/Content Creator/README.md
-Creating pipe file at /home/ben/Content Creator/content_creator/pipe.py
+Creating app at /home/vetharupini/content creator
+Creating toml file at /home/vetharupini/content creator/pyproject.toml
+Creating readme file at /home/vetharupini/content creator/README.md
+Creating pipe file at /home/vetharupini/content creator/content_creator/pipe.py
 Your app type selection contains `websocket`, `rest api` option(s).
 
-Enter auth token for `websocket`, `rest api` [098765432asdfghjk09876543]:
-Creating config file at /home/ben/Content Creator/content_creator/config.py
-Creating iopipe file at /home/ben/Content Creator/content_creator/iopipe.py
-Creating wspipe file at /home/ben/Content Creator/content_creator/wspipe.py
-Creating restpipe file at /home/ben/Content Creator/content_creator/restpipe.py
+Enter auth token for `websocket`, `rest api` [5499161e37cb46809791596c0ce49483]:
+Creating config file at /home/vetharupini/content creator/content_creator/config.py
+Creating iopipe file at /home/vetharupini/content creator/content_creator/iopipe.py
+Creating wspipe file at /home/vetharupini/content creator/content_creator/wspipe.py
+Creating restpipe file at /home/vetharupini/content creator/content_creator/restpipe.py
+
 ```
 
 ### Virtual Environment Setup
@@ -94,9 +95,7 @@ from superagentx.llm import LLMClient
 from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 
-from superagentx.handler import SerperDevToolHandler
 from superagentx.handler import AIHandler
-from superagentx_handlers import ScrapeHandler
 
 ```
 
@@ -122,13 +121,10 @@ for storing and retrieving,  for more detail about `Memory` refer <a href="memor
 ```
 
 #### 4. Handler
-This block initializes three handlers SerperDevToolHandler for interacting with external tools, ScrapeHandler for
-web scraping tasks, and AIHandler which is configured with the llm_client to handle AI-driven operations, for more details
+This block initializes AIHandler which is configured with the llm_client to handle AI-driven operations, for more details
 refer <a href="handler" target='_blank'>here</a>.
 ```python
     # Example
-    serper_handler = SerperDevToolHandler()
-    crawler_handler = ScrapeHandler()
     ai_handler = AIHandler(
         llm=llm_client
     )
@@ -147,16 +143,6 @@ This line initializes an `Engine` object for the `handlers`, combining it with t
 to process tasks with the specified handler and prompt structure, for more details refer <a href="engine" target='_blank'>here</a>.
 ```python
     # Example - Engine(s)
-    serper_engine = Engine(
-        handler=serper_handler,
-        llm=llm_client,
-        prompt_template=prompt_template
-    )
-    crawler_engine = Engine(
-        handler=crawler_handler,
-        llm=llm_client,
-        prompt_template=prompt_template
-    )
     ai_engine = Engine(
         handler=ai_handler,
         llm=llm_client,
@@ -168,25 +154,7 @@ to process tasks with the specified handler and prompt structure, for more detai
 This line creates an `Agent` with the role and goal to generate a list of URLs, and configuring it with the `llm_client`,
 `prompt_template`, and `engine` to perform, for more details about `engine` refer <a href="agent" target='_blank'>here</a>.
 ```python
-    # Create Agent with serper, crawler, ai Engines execute in Parallel - Search Products from user prompts
-    serper_agent = Agent(
-        name='serper Agent',
-        role=f'You are the website link extractor.',
-        goal='Generate the list of website urls',
-        llm=llm_client,
-        prompt_template=prompt_template,
-        engines=[serper_engine]
-    )
-
-    crawler_agent = Agent(
-        name='Crawler Agent',
-        goal="Extract the content",
-        role="You are the Content Extractor",
-        llm=llm_client,
-        prompt_template=prompt_template,
-        engines=[crawler_engine]
-    )
-
+    # Create Agent with ai Engines execute
     ai_agent = Agent(
         name='AI Agent',
         goal="Summarize the given content",
@@ -205,7 +173,7 @@ refer <a href="pipe" target='_blank'>here</a>.
 
     # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
     pipe = AgentXPipe(
-        agents=[serper_agent, crawler_agent, ai_agent],
+        agents=[ai_agent],
         memory=memory
     )
 ```
@@ -219,9 +187,8 @@ from superagentx.llm import LLMClient
 from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 
-from superagentx.handler import SerperDevToolHandler
 from superagentx.handler import AIHandler
-from superagentx_handlers import ScrapeHandler
+
 
 async def get_content_creator_pipe() -> AgentXPipe:
     # LLM Configuration
@@ -233,8 +200,6 @@ async def get_content_creator_pipe() -> AgentXPipe:
     # Enable Memory
     memory = Memory(memory_config={"llm_client": llm_client})
 
-    serper_handler = SerperDevToolHandler()
-    crawler_handler = ScrapeHandler()
     ai_handler = AIHandler(
         llm=llm_client
     )
@@ -243,41 +208,13 @@ async def get_content_creator_pipe() -> AgentXPipe:
     prompt_template = PromptTemplate()
 
     # Example - Engine(s)
-    serper_engine = Engine(
-        handler=serper_handler,
-        llm=llm_client,
-        prompt_template=prompt_template
-    )
-    crawler_engine = Engine(
-        handler=crawler_handler,
-        llm=llm_client,
-        prompt_template=prompt_template
-    )
     ai_engine = Engine(
         handler=ai_handler,
         llm=llm_client,
         prompt_template=prompt_template
     )
 
-    # Create Agent with serper, crawler, ai Engines execute in Parallel - Search Products from user prompts
-    serper_agent = Agent(
-        name='serper Agent',
-        role=f'You are the website link extractor.',
-        goal='Generate the list of website urls',
-        llm=llm_client,
-        prompt_template=prompt_template,
-        engines=[serper_engine]
-    )
-
-    crawler_agent = Agent(
-        name='Crawler Agent',
-        goal="Extract the content",
-        role="You are the Content Extractor",
-        llm=llm_client,
-        prompt_template=prompt_template,
-        engines=[crawler_engine]
-    )
-
+    # Create Agent with ai Engines execute
     ai_agent = Agent(
         name='AI Agent',
         goal="Summarize the given content",
@@ -289,7 +226,7 @@ async def get_content_creator_pipe() -> AgentXPipe:
 
     # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
     pipe = AgentXPipe(
-        agents=[serper_agent, crawler_agent, ai_agent],
+        agents=[ai_agent],
         memory=memory
     )
     return pipe
@@ -315,43 +252,22 @@ This will start your SuperAgentX application and execute the tasks you've config
 
 ### Result
 ```shell
+
 Enter your search here: Give me summary about Hon Solo
-INFO:superagentx.llm.types.base:Pipe AgentXPipe-b0466eebe94c4313921bef3d54eecfcc starting...
-( ●    ) Searching...
-(   ●  ) Searching...
-( ●    ) Searching...
-WARNING:chromadb.segment.impl.vector.local_persistent_hnsw:Number of requested results 10 is greater than number of elements in index 2, updating n_result(●     ) Searching...
-[LOG] 🚀 Crawl4AI 0.3.731
-[LOG] 🌤️  Warming up the AsyncWebCrawler
-[LOG] 🌞 AsyncWebCrawler is ready to crawl
-[LOG] 🕸️ Crawling https://en.wikipedia.org/wiki/Han_Solo using AsyncPlaywrightCrawlerStrategy...
-[LOG] 🕸️ Crawling https://www.starwars.com/databank/han-solo using AsyncPlaywrightCrawlerStrategy...
-[LOG] ✅ Crawled https://en.wikipedia.org/wiki/Han_Solo successfully!
-[LOG] 🚀 Crawling done for https://en.wikipedia.org/wiki/Han_Solo, success: True, time taken: 1.64 seconds
-[LOG] 🚀 Content extracted for https://en.wikipedia.org/wiki/Han_Solo, success: True, time taken: 1.06 seconds
-[LOG] 🔥 Extracting semantic blocks for https://en.wikipedia.org/wiki/Han_Solo, Strategy: AsyncWebCrawler
-[LOG] 🚀 Extraction done for https://en.wikipedia.org/wiki/Han_Solo, time taken: 1.06 seconds.
-(    ● ) Searching...
-(●     ) Searching...
-WARNING:chromadb.segment.impl.vector.local_persistent_hnsw:Number of requested results 10 is greater than number of elements in index 3, updating n_result( ●    ) Searching...
-(   ●  ) Searching...
 
 Result:
-"Han Solo is a fictional character in the Star Wars franchise first introduced in the 1977 film Star Wars.
-Originally a smuggler alongside his Wookiee friend Chewbacca, Solo becomes involved with the Rebel Alliance
-in their struggle against the Galactic Empire. He pilots the Millennium Falcon and develops a romantic
-relationship with Princess Leia. Harrison Ford portrayed Solo in the original trilogy (1977-1983) and
-sequel trilogy (2015-2019), while Alden Ehrenreich played a younger version in Solo: A Star Wars Story (2018).
-Solo joins the Rebel Alliance, becomes a general, and has a son named Ben Solo/Kylo Ren with Leia. In The Force
-Awakens (2015), Solo returns to smuggling but helps the Resistance against the First Order before being killed
-by his son Kylo Ren. The character was ranked as the 14th greatest film hero by the American Film Institute and
-was selected as the fourth greatest film character by Empire magazine."
+"Han Solo is a fictional character in the 'Star Wars' franchise, known for his quick
+wit and roguish charm as a smuggler. He becomes a key figure in the Rebel Alliance,
+aiding in significant battles like Yavin and Endor. Portrayed by Harrison Ford,
+Han transforms from a self-interested rogue to a dedicated ally, playing a
+crucial role in the storyline with connections to Princess Leia and Luke Skywalker."
 
-Reason:: The output context contains a comprehensive summary of Han Solo, including his character arc, portrayals, appearances, and cultural impact from
-the provided Star Wars franchise information.
+Reason:: The summary provides an accurate and concise overview of Han Solo's
+character based on the given output context.
 
 
 Goal Satisfied: True
+
 
 ────────────────────────────────────────────────────────────────────────── End ───────────────────────────────────────────────────────────────────────────
 ```
