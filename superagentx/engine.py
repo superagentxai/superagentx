@@ -120,12 +120,12 @@ class Engine:
             if message.tool_calls:
                 async for tool in iter_to_aiter(message.tool_calls):
                     if tool.tool_type == 'function':
-                        logger.debug(f'Checking tool function : {self.handler.__name__}.{tool.name}')
+                        logger.debug(f'Checking tool function : {self.handler.__class__}.{tool.name}')
                         func = getattr(self.handler, tool.name)
                         if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                             _kwargs = tool.arguments or {}
                             logger.debug(
-                                f'Executing tool function : {self.handler.__name__}.{tool.name}, '
+                                f'Executing tool function : {self.handler.__class__}.{tool.name}, '
                                 f'With arguments : {_kwargs}'
                             )
                             if inspect.iscoroutinefunction(func):
