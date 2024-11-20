@@ -51,7 +51,7 @@ class Engine:
         async for _func_name in iter_to_aiter(funcs):
             _func_name = _func_name.split('.')[-1]
             _func = getattr(self.handler, _func_name)
-            logger.debug(f"Func Name => {_func_name}, Func => {_func}")
+            logger.debug(f"Func Name : {_func_name}, Func : {_func}")
             if inspect.ismethod(_func) or inspect.isfunction(_func):
                 logger.debug(f"{_func_name} is function!")
                 _funcs_props.append(await self.llm.get_tool_json(func=_func))
@@ -59,7 +59,7 @@ class Engine:
 
     async def _construct_tools(self) -> list[dict]:
         funcs = self.handler.tools or dir(self.handler)
-        logger.debug(f"Handler Funcs => {funcs}")
+        logger.debug(f"Handler Funcs : {funcs}")
         if not funcs:
             raise InvalidHandler(str(self.handler))
 
@@ -100,18 +100,18 @@ class Engine:
             input_prompt=input_prompt,
             **kwargs
         )
-        logger.debug(f"Prompt message => {prompt_messages}")
+        logger.debug(f"Prompt Message : {prompt_messages}")
         tools = await self._construct_tools()
-        logger.debug(f"Handler Tools => {tools}")
+        logger.debug(f"Handler Tools : {tools}")
         chat_completion_params = ChatCompletionParams(
             messages=prompt_messages,
             tools=tools
         )
-        logger.debug(f"Chat completion params => {chat_completion_params.model_dump_json(exclude_none=True)}")
+        logger.debug(f"Chat Completion Params : {chat_completion_params.model_dump_json(exclude_none=True)}")
         messages = await self.llm.afunc_chat_completion(
             chat_completion_params=chat_completion_params
         )
-        logger.debug(f"Func chat completion => {messages}")
+        logger.debug(f"Func Chat Completion : {messages}")
         if not messages:
             raise ToolError("Tool not found for the inputs!")
 
@@ -120,13 +120,20 @@ class Engine:
             if message.tool_calls:
                 async for tool in iter_to_aiter(message.tool_calls):
                     if tool.tool_type == 'function':
+                        logger.debug(f'Checking tool function : {self.handler.__class__}.{tool.name}')
                         func = getattr(self.handler, tool.name)
                         if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                             _kwargs = tool.arguments or {}
+                            logger.debug(
+                                f'Executing tool function : {self.handler.__class__}.{tool.name}, '
+                                f'With arguments : {_kwargs}'
+                            )
                             if inspect.iscoroutinefunction(func):
                                 res = await func(**_kwargs)
                             else:
                                 res = await sync_to_async(func, **_kwargs)
+
+                            logger.debug(f'Tool function result : {res}')
 
                             if res:
                                 if not self.output_parser:

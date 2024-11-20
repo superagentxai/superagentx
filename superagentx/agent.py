@@ -7,7 +7,7 @@ from typing import Literal, Any
 
 from superagentx.engine import Engine
 from superagentx.result import GoalResult
-from superagentx.constants import SEQUENCE
+from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
@@ -101,6 +101,18 @@ class Agent:
         self.engines: list[Engine | list[Engine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry
+        logger.debug(
+            f'Initiating Agent...\n'
+            f'Id : {self.agent_id}\n'
+            f'Name : {self.name}\n'
+            f'Description : {self.description}\n'
+            f'Engines Associated : {",".join([str(_engine.handler.__class__) for _engine in self.engines])}\n'
+            f'Engine Role : {self.role}\nEngine Goal: {self.goal}\n'
+            f'LLM Client : {self.llm.llm_config}\n'
+            f'Prompt Template : Type - {self.prompt_template.prompt_type} '
+            f'| System Message - {self.prompt_template.system_message}\n'
+            f'Output Format : {self.output_format}\nMax Retry : {self.max_retry}\n'
+        )
 
     def __str__(self):
         return "Agent"
@@ -138,8 +150,10 @@ class Agent:
         """
         if execute_type == SEQUENCE:
             self.engines += engines
+            logger.debug(f'Engine(s) added as {SEQUENCE} : {",".join([str(_engine) for _engine in engines])}')
         else:
             self.engines.append(list(engines))
+            logger.debug(f'Engines added as {PARALLEL} : {",".join([str(_engine) for _engine in engines])}')
 
     async def _verify_goal(
             self,
@@ -150,6 +164,8 @@ class Agent:
     ) -> GoalResult:
         if old_memory:
             results = f"output_context:\n{old_memory}\n\n{results}"
+            logger.debug(f'Updated Output Context with old memory : {results}')
+
         prompt_message = await self.prompt_template.get_messages(
             input_prompt=_GOAL_PROMPT_TEMPLATE,
             goal=self.goal,
@@ -158,14 +174,14 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
-        messages = prompt_message
         chat_completion_params = ChatCompletionParams(
-            messages=messages
+            messages=prompt_message
         )
+        logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
-        logger.debug(f"Goal pre result => {messages}")
+        logger.debug(f"Goal Result : {messages}")
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
@@ -205,8 +221,10 @@ class Agent:
         instruction = query_instruction
         if old_memory:
             instruction = f"Context:\n{old_memory}\nQuestion: {query_instruction}"
+            logger.debug(f'Updated Query Instruction with old memory : {instruction}')
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
+                logger.debug(f'Engine(s) are executing : {",".join([str(_engine) for _engine in _engines])}')
                 _res = await asyncio.gather(
                     *[
                         _engine.start(
@@ -216,19 +234,21 @@ class Agent:
                         async for _engine in iter_to_aiter(_engines)
                     ]
                 )
+                logger.debug(f'Engine(s) results : {_res}')
             else:
+                logger.debug(f'Engine is executing : {_engines}')
                 _res = await _engines.start(
                     input_prompt=instruction,
                     pre_result=pre_result
                 )
+                logger.debug(f'Engine result : {_res}')
             results.append(_res)
-        logger.debug(f"Engine results =>\n{results}")
         final_result = await self._verify_goal(
             results=results,
             query_instruction=query_instruction,
             old_memory=old_memory
         )
-        logger.debug(f"Final Result =>\n, {final_result.model_dump()}")
+        logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
         return final_result
 
     async def execute(
