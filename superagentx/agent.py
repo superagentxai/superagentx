@@ -177,7 +177,7 @@ class Agent:
         chat_completion_params = ChatCompletionParams(
             messages=prompt_message
         )
-        logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump()}')
+        logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
