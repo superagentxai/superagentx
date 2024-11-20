@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import uuid
+from logging import StreamHandler
 from typing import Literal
 
 import yaml
@@ -25,7 +26,8 @@ class AgentXPipe:
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
             memory: Memory | None = None,
-            stop_if_goal_not_satisfied: bool = False
+            stop_if_goal_not_satisfied: bool = False,
+            verbose: bool = False
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -53,6 +55,8 @@ class AgentXPipe:
                 When set to True, the agentxpipe operation will halt if the defined goal is not met,
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
+            verbose: Use this option to display additional information about the processing steps, debug messages, or
+                progress updates. When set to False, only critical messages are displayed.
         """
         self.pipe_id = pipe_id
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
@@ -63,6 +67,14 @@ class AgentXPipe:
             self.memory_id = uuid.uuid4().hex
             self.chat_id = uuid.uuid4().hex
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
+        self.verbose = verbose
+
+        if self.verbose:
+            logging.basicConfig(
+                level=logging.DEBUG,
+                handlers=StreamHandler()
+            )
+
         logger.debug(
             f'Initiating AgentXPipe...\n'
             f'Id : {self.pipe_id}\n'
