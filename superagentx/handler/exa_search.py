@@ -1,3 +1,5 @@
+import os
+
 from exa_py import Exa
 
 from superagentx.handler.base import BaseHandler
@@ -14,9 +16,10 @@ class ExaHandler(BaseHandler):
 
     def __init__(
             self,
-            api_key: str
+            api_key: str | None = None
     ):
         super().__init__()
+        api_key = api_key or os.getenv("EXA_API_KEY")
         self.exa = Exa(api_key=api_key)
 
     @tool

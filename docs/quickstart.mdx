@@ -1,86 +1,273 @@
 ---
 title: 'Quickstart'
 description: 'Start building awesome documentation in under 5 minutes'
+icon: 'rocket'
 ---
 
-## Setup your development
+## Introduction
+This simple walkthrough will help you get started with building powerful applications using SuperAgentX in just a few steps.<br />
 
-Learn how to update your docs locally and deploy them to the public.
+>**1. Installation:** How to install SuperAgentX on your system.<br />
+**2. Create an Application:** Set up a new SuperAgentX project with the basic structure.<br />
+**3. Virtual Environment Setup:** How to create and configure a Python virtual environment for your project.<br />
+**4. Building a Use Case:** Customizing the pipe.py file to fit your application's needs.<br />
+**5. Run the Application:** Finally, how to execute your new project with a simple command.
 
-### Edit and preview
+```shell
+$ python3 -m pip install superagentx
+```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Clone your docs locally">
-    During the onboarding process, we created a repository on your Github with
-    your docs content. You can find this repository on our
-    [dashboard](https://dashboard.mintlify.com). To clone the repository
-    locally, follow these
-    [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    in your terminal.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Preview changes">
-    Previewing helps you make sure your changes look as intended. We built a
-    command line interface to render these changes locally. 1. Install the
-    [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the
-    documentation changes locally with this command: ``` npm i -g mintlify ```
-    2. Run the following command at the root of your documentation (where
-    `mint.json` is): ``` mintlify dev ```
-  </Accordion>
-</AccordionGroup>
+<Note>
+Note: <br />
+After installation, the `superagentx-cli` will be available in the path `~/.local/bin` on `linux`. You may need to add
+this to your environment's path variable.
+</Note>
 
-### Deploy your changes
+## Create an Application
+To create a new `superagentx` project, run the following command in your terminal. This will prompt you to create
+project with the basic structure set up for your `superagentx`.
 
-<AccordionGroup>
+```shell
+$ superagentx-cli create
+```
 
-<Accordion icon="message-bot" title="Install our Github app">
-  Our Github app automatically deploys your changes to your docs site, so you
-  don't need to manage deployments yourself. You can find the link to install on
-  your [dashboard](https://dashboard.mintlify.com). Once the bot has been
-  successfully installed, there should be a check mark next to the commit hash
-  of the repo.
-</Accordion>
-<Accordion icon="rocket" title="Push your changes">
-  [Commit and push your changes to
-  Git](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository#about-git-push)
-  for your changes to update in your docs site. If you push and don't see that
-  the Github app successfully deployed your changes, you can also manually
-  update your docs through our [dashboard](https://dashboard.mintlify.com).
-</Accordion>
+### Follow the steps
+```shell
+# First you have to give an application name or folder name.
+Enter application name: content creator
 
-</AccordionGroup>
+# Then you have to enter pipe name or it will take a default application name.
+Enter pipe name. Default is application name []: content
 
-## Update your docs
+# Next you have to give any one of option given below, or it be take a default value all.
+Enter one of the option (all, console, websocket, rest) [all]: all
+```
 
-Add content directly in your files with MDX syntax and React components. You can use any of our components, or even build your own.
+After your inputs the `superagentx-cli` create a application like a below structure.
 
-<CardGroup>
+```shell
+App Name ✈️ content creator
+Pacakge Name 📦 content_creator
+Pipe Name 🎢 content
+App Type 🛠️ all
 
-<Card title="Style Your Docs" icon="paintbrush" href="/settings/global">
-  Add flair to your docs with personalized branding.
-</Card>
+Creating app at /home/ben/content creator
+Creating toml file at /home/ben/content creator/pyproject.toml
+Creating readme file at /home/ben/content creator/README.md
+Creating pipe file at /home/ben/content creator/content_creator/pipe.py
+Your app type selection contains `websocket`, `rest api` option(s).
 
-<Card
-  title="Add API Endpoints"
-  icon="square-code"
-  href="/api-playground/configuration"
->
-  Implement your OpenAPI spec and enable API user interaction.
-</Card>
+Enter auth token for `websocket`, `rest api` [5499161e37cb46809791596c0ce49483]:
+Creating config file at /home/ben/content creator/content_creator/config.py
+Creating iopipe file at /home/ben/content creator/content_creator/iopipe.py
+Creating wspipe file at /home/ben/content creator/content_creator/wspipe.py
+Creating restpipe file at /home/ben/content creator/content_creator/restpipe.py
 
-<Card
-  title="Integrate Analytics"
-  icon="chart-mixed"
-  href="/analytics/supported-integrations"
->
-  Draw insights from user interactions with your documentation.
-</Card>
+```
 
-<Card
-  title="Host on a Custom Domain"
-  icon="browser"
-  href="/settings/custom-domain/subdomain"
->
-  Keep your docs on your own website's subdomain.
-</Card>
+### Virtual Environment Setup
+Now, you'll need to create a Python virtual environment for your project:
 
-</CardGroup>
+```shell
+$ cd /home/ben/Content Creator
+$ python3 -m venv venv
+$ source venv/bin/activate
+(venv) $ pip install poetry
+(venv) $ poetry install
+```
+
+### Build Your Use Case
+
+If you're building a new use case, You need to modify the file at `/home/ben/Content Creator/content_creator/pipe.py`.
+The path in this file will be generated based on the input you provide through the SuperAgentX application. In that
+file you can do your changes.
+
+### Step-by-Step process:
+
+#### 1. Import Package
+This method imports various components from the superagentx library.
+```python
+
+from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.engine import Engine
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.prompt import PromptTemplate
+
+from superagentx.handler import AIHandler
+
+```
+
+#### 2. Define Method
+
+This method `get_content_creator_pipe` initializes a content creation pipeline by configuring an LLM
+(Large Language Model) client using OpenAI's API, for more detail about `LLMClient` refer <a href="llm" target='_blank'>here</a>.
+```python
+async def get_content_creator_pipe() -> AgentXPipe:
+    # LLM Configuration
+    llm_config = {
+        'llm_type': 'openai'
+    }
+    llm_client = LLMClient(llm_config=llm_config)
+```
+
+#### 3. Memory
+This line enables `memory` functionality in the pipeline by configuring a `Memory` object that created `llm_client`
+for storing and retrieving,  for more detail about `Memory` refer <a href="memory" target='_blank'>here</a>.
+```python
+    # Enable Memory
+    memory = Memory(memory_config={"llm_client": llm_client})
+```
+
+#### 4. Handler
+This block initializes AIHandler which is configured with the llm_client to handle AI-driven operations, for more details
+refer <a href="handler" target='_blank'>here</a>.
+```python
+    # Example
+    ai_handler = AIHandler(
+        llm=llm_client
+    )
+```
+
+#### 5. PromptTemplate
+This line creates an instance of PromptTemplate, which is used to define and manage prompt structures for the language model,
+for more detail refer <a href="prompt" target='_blank'>here</a>.
+```python
+    # Prompt Template
+    prompt_template = PromptTemplate()
+```
+
+#### 6. Engine
+This line initializes an `Engine` object for the `handlers`, combining it with the `llm_client` and `prompt_template`
+to process tasks with the specified handler and prompt structure, for more details refer <a href="engine" target='_blank'>here</a>.
+```python
+    # Example - Engine(s)
+    ai_engine = Engine(
+        handler=ai_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
+```
+
+#### 7. Agent
+This line creates an `Agent` with the role and goal to generate a list of URLs, and configuring it with the `llm_client`,
+`prompt_template`, and `engine` to perform, for more details about `engine` refer <a href="agent" target='_blank'>here</a>.
+```python
+    # Create Agent with ai Engines execute
+    ai_agent = Agent(
+        name='AI Agent',
+        goal="Summarize the given content",
+        role="You are the summarization.",
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[ai_engine]
+    )
+```
+
+#### 8. AgentXPipe
+This line sets up an AgentXPipe, combining multiple agents (serper_agent, crawler_agent, and ai_agent)
+with shared memory to enable coordinated processing and communication between the agents, for more details
+refer <a href="pipe" target='_blank'>here</a>.
+```python
+
+    # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
+    pipe = AgentXPipe(
+        agents=[ai_agent],
+        memory=memory
+    )
+```
+
+### All Together
+```python
+from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.engine import Engine
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.prompt import PromptTemplate
+
+from superagentx.handler import AIHandler
+
+
+async def get_content_creator_pipe() -> AgentXPipe:
+    # LLM Configuration
+    llm_config = {
+        'llm_type': 'openai'
+    }
+    llm_client = LLMClient(llm_config=llm_config)
+
+    # Enable Memory
+    memory = Memory(memory_config={"llm_client": llm_client})
+
+    ai_handler = AIHandler(
+        llm=llm_client
+    )
+
+    # Prompt Template
+    prompt_template = PromptTemplate()
+
+    # Example - Engine(s)
+    ai_engine = Engine(
+        handler=ai_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
+
+    # Create Agent with ai Engines execute
+    ai_agent = Agent(
+        name='AI Agent',
+        goal="Summarize the given content",
+        role="You are the summarization.",
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[ai_engine]
+    )
+
+    # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
+    pipe = AgentXPipe(
+        agents=[ai_agent],
+        memory=memory
+    )
+    return pipe
+```
+
+### Run the Application
+Once everything is set up, you can run your application with this command:
+
+```shell
+# Console Pipe
+$ python3 Content Creator/iopipe.py
+
+or
+# WebSocket Pipe
+$ python3 Content Creator/wspipe.py
+
+or
+# RestAPI Pipe(FastAPI)
+$ python3 Content Creator/restpipe.py
+```
+
+This will start your SuperAgentX application and execute the tasks you've configured.
+
+### Result
+```shell
+
+Enter your search here: Give me summary about Hon Solo
+
+Result:
+"Han Solo is a fictional character in the 'Star Wars' franchise, known for his quick
+wit and roguish charm as a smuggler. He becomes a key figure in the Rebel Alliance,
+aiding in significant battles like Yavin and Endor. Portrayed by Harrison Ford,
+Han transforms from a self-interested rogue to a dedicated ally, playing a
+crucial role in the storyline with connections to Princess Leia and Luke Skywalker."
+
+Reason:: The summary provides an accurate and concise overview of Han Solo's
+character based on the given output context.
+
+
+Goal Satisfied: True
+
+
+────────────────────────────────────────────────────────────────────────── End ───────────────────────────────────────────────────────────────────────────
+```

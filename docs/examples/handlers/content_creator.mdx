@@ -1,0 +1,69 @@
+---
+title: 'Content Creator'
+icon: 'clipboard'
+---
+
+These tools enable creators to produce, enhance, and automate content across multiple platforms.
+LLMs play a crucial role in streamlining workflows, increasing efficiency, and delivering personalized
+experiences to audiences.
+
+## Example
+This code sets up a content creation tool using a language model. The configuration specifies the model type and service
+(OpenAI). The AIHandler uses the connected LLM (Language Model) client
+to generate or process text content efficiently.
+
+To use OpenAI models, you'll need to create an OpenAI account and get an API key. For more details refer <a href='https://platform.openai.com/api-keys' target='_blank'>here</a>.
+>Set up a OpenAI API key as an environmental variable and run the following code.
+ ```python
+ export OPENAI_API_KEY = "**************************"
+```
+
+```python content_creator_handler.py
+import asyncio
+
+from superagentx.handler.ai import AIHandler
+from superagentx.llm import LLMClient
+
+
+async def content_text_create(instruction: str):
+    llm_config = {
+    'model': 'gpt-4-turbo-2024-04-09',
+    'llm_type': 'openai'
+    }
+
+    llm_client: LLMClient = LLMClient(llm_config=llm_config)
+    content_creator_handler = AIHandler(
+        llm=llm_client
+    )
+
+    result = await content_creator_handler.text_creation(instruction=instruction)
+    return result.choices[0].message.content
+
+
+async def main():
+    instruction = input("Enter your instruction here: ")
+    res = await content_text_create(instruction=instruction)
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+## Result
+```log content creator
+
+Enter Instruction: create robusting content
+Out[1]: 'Creating compelling and robust content requires attention to detail,creativity, and strategy.
+Whether you\'re creating content for a blog, social media, a website, or any other platform, here are
+some key steps to help you produce effective content:\n\n### 1. **Understand Your Audience**\n   -
+**Research:** Know who your audience is. What are their needs, preferences, and challenges? Use surveys,
+social media listening tools, and analytics to gather insights.\n   - **Personas:** Develop buyer or reader
+personas to better target your content.\n\n### 2. **Define Your Goals**\n   - What do you want to achieve with
+your content? Goals could include increasing brand awareness, generating leads, educating your audience, or
+building community engagement.\n\n### 3. **Choose the Right Format**\n   - Depending on your audience and goals,
+decide on the best format. Options include blog posts, videos, infographics, podcasts, and more.\n   -
+Consider multimedia formats to increase engagement and appeal to different learning styles.\n\n###
+4. **Craft Compelling Headlines**\n   - Your headline is often the first impression. Make it catchy, intriguing,
+and clear to draw in readers.\n\n###'
+```
+

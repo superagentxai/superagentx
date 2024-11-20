@@ -1,0 +1,74 @@
+---
+title: 'Hubspot Handler'
+icon: 'chart-network'
+---
+
+This HubSpotHandler class simplifies managing interactions with the HubSpot API, offering seamless methods for
+creating, retrieving, and managing contacts, companies, deals, and tickets within a HubSpot environment. By
+encapsulating common operations, it ensures that users can efficiently communicate with the API using both
+synchronous and asynchronous workflows.
+
+## Example
+A HubSpotHandler using an API token from environment variables and creates a new contact in HubSpot with the specified
+email, first name, and last name. This allows the application to manage customer information directly within HubSpot.
+
+To use Hubspot Token, you'll need to create an account and get an token. For more details refer
+ <a href='https://www.hubspot.com/products/crm' target='_blank'>here</a>.
+
+>Set up a HUBSPOT_TOKEN key as an environmental variable and run the following code.
+ ```python
+ export HUBSPOT_TOKEN = "**************************"
+```
+
+```python hubspot_handler.py
+import os
+import asyncio
+
+from superagentx_handlers.crm.hubspot_crm import HubSpotHandler
+
+async def create_contact():
+    hs_handler = HubSpotHandler()
+
+    return await hs_handler.create_contact(
+        email='ram1234@gmail.com',
+        first_name="Ram",
+        last_name="Kumar"
+    )
+
+
+async def main():
+    res = await create_contact()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+## Result
+```python hubspot
+{'archived': False,
+ 'archived_at': None,
+ 'created_at': datetime.datetime(2024, 10, 22, 5, 46, 6, 926000, tzinfo=tzutc()),
+ 'id': '70443625133',
+ 'properties': {'createdate': '2024-10-22T05:46:06.926Z',
+                'email': 'ram1234@gmail.com',
+                'firstname': 'Ram',
+                'hs_all_contact_vids': '70443625133',
+                'hs_currently_enrolled_in_prospecting_agent': 'false',
+                'hs_email_domain': 'gmail.com',
+                'hs_is_contact': 'true',
+                'hs_is_unworked': 'true',
+                'hs_lifecyclestage_lead_date': '2024-10-22T05:46:06.926Z',
+                'hs_membership_has_accessed_private_content': '0',
+                'hs_object_id': '70443625133',
+                'hs_object_source': 'INTEGRATION',
+                'hs_object_source_id': '4114772',
+                'hs_object_source_label': 'INTEGRATION',
+                'hs_pipeline': 'contacts-lifecycle-pipeline',
+                'hs_registered_member': '0',
+                'lastmodifieddate': '2024-10-22T05:46:06.926Z',
+                'lastname': 'Kumar',
+                'lifecyclestage': 'lead'},
+ 'properties_with_history': None,
+ 'updated_at': datetime.datetime(2024, 10, 22, 5, 46, 6, 926000, tzinfo=tzutc())}
+
+```

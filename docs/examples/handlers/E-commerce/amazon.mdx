@@ -1,0 +1,83 @@
+---
+title: 'Amazon Handler'
+icon: 'amazon'
+---
+
+AmazonHandler, for interacting with the Amazon data API using RapidAPI. It uses to fetch Amazon product
+data and customer reviews.
+
+## Example
+This code performs a product search on Amazon. It uses the AmazonHandler to connect to Amazon’s system and returns
+relevant product results and reviews based on the provided query.
+
+To access RapidAPI services, you'll need to create a RapidAPI account, obtain an API key, and subscribe the required
+API for your application. For more details refer <a href='https://rapidapi.com/hub' target='_blank'>here</a>.
+>Set up a RapidAPI key as an environmental variable and run the following code.
+ ```python
+ export RAPID_API_KEY = "**************************"
+```
+
+```python amazon_handler.py
+import asyncio
+import os
+
+from superagentx_handlers.ecommerce.amazon import AmazonHandler
+
+
+async def search(query):
+    amazon = AmazonHandler()
+    return await amazon.product_search(query=query)
+
+query = input("Enter your query here: ")
+print(asyncio.run(search(query)))
+
+```
+## Result
+
+```inline amazon
+Enter Query: give a best juice blender under 2k
+[   {   'asin': 'B0DHXZQDD2',
+        'climate_pledge_friendly': False,
+        'currency': 'INR',
+        'delivery': 'FREE delivery Tue, 22 Oct Or fastest delivery Mon, 21 Oct',
+        'has_variations': False,
+        'is_amazon_choice': False,
+        'is_best_seller': False,
+        'is_prime': True,
+        'product_minimum_offer_price': '₹659',
+        'product_num_offers': 1,
+        'product_num_ratings': 31,
+        'product_original_price': '₹1,599',
+        'product_photo': 'https://m.media-amazon.com/images/I/714Xz3C8tNL._AC_UY654_FMwebp_QL65_.jpg',
+        'product_price': '₹659',
+        'product_star_rating': '5',
+        'product_title': 'ROMINO 380ml USB Rechargeable Mini Juicer Blender, '
+                         'Portable Juicer Bottle, Electric Fruit Juice Maker '
+                         'Machine, Personal Size Juicer Bottle Blender Grinder '
+                         'Mixer for Juices, Shakes &amp; Smoothies (Multi)',
+        'product_url': 'https://www.amazon.in/dp/B0DHXZQDD2',
+        'reviews': [],
+        'sales_volume': '400+ bought in past month'},
+    {   'asin': 'B0DFWCM981',
+        'climate_pledge_friendly': False,
+        'currency': 'INR',
+        'delivery': 'FREE delivery Sun, 20 Oct Or fastest delivery Tomorrow, '
+                    '19 Oct',
+        'has_variations': False,
+        'is_amazon_choice': False,
+        'is_best_seller': False,
+        'is_prime': True,
+        'product_minimum_offer_price': '₹999',
+        'product_num_offers': 1,
+        'product_num_ratings': 63,
+        'product_original_price': '₹2,599',
+        'product_photo': 'https://m.media-amazon.com/images/I/61AcxigXJvL._AC_UY654_FMwebp_QL65_.jpg',
+        'product_price': '₹999',
+        'product_star_rating': '4.4',
+        'product_title': 'SUPERSTUD Portable USB Juicer Blender for Juices and '
+                         'Smoothie, Milk Shakes, 380ML, built-in Jar (Rich '
+                         'Grey)',
+        'product_url': 'https://www.amazon.in/dp/B0DFWCM981',
+        'reviews': [],
+        'sales_volume': 'M.R.P: '}]
+```
