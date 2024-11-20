@@ -17,7 +17,7 @@ from superagentx.utils.helper import iter_to_aiter
 
 def is_verbose_enabled():
     verbose = os.environ.get('DEBUGGING') or os.environ.get('VERBOSE')
-    if verbose.lower() in ('1', 'true'):
+    if verbose and verbose.lower() in ('1', 'true'):
         logging.basicConfig(
             stream=sys.stdout,
             level=logging.DEBUG,
