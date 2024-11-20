@@ -1,0 +1,59 @@
+---
+title: 'Flipkart Handler'
+icon: 'circle-f'
+---
+
+Flipkart, a leading e-commerce platform in India, offers millions of products across categories
+like electronics, fashion, home appliances, and groceries. Efficient product search is crucial
+to its ecosystem, helping users quickly discover relevant items through filters, recommendations,
+and keyword-based search functionality.
+
+## Flipkart Code
+This code searches for products on Flipkart. It uses the FlipkartHandler to connect to Flipkart’s platform and returns
+product results based on the given query.
+
+To access RapidAPI services, you'll need to create a RapidAPI account, obtain an API key, and subscribe the required
+API for your application. For more details refer <a href='https://rapidapi.com/hub' target='_blank'>here</a>.
+>Set up a RapidAPI key as an environmental variable and run the following code.
+```python
+ export RAPID_API_KEY = "**************************"
+```
+```python flipkart_handler.py
+import asyncio
+import os
+
+from superagentx_handlers.ecommerce.flipkart import FlipkartHandler
+
+
+async def search(query):
+    flipkart = FlipkartHandler()
+    return await flipkart.product_search(query=query)
+
+query = input("Enter your query here: ")
+asyncio.run(search(query))
+```
+## Result:
+
+```inline flipkart
+Enter Query: oneplus
+[{'pid': 'ACCGXAV7Z868V64N', 'itemId': 'ITM617E66D574EA4', 'listingId': 'LSTACCGXAV7Z868V64NMNDSVH',
+'brand': 'Flipkart SmartBuy', 'title': 'Flipkart SmartBuy USB Type C Cable 8 A 1 m Silver Wrap OEM 65W-10W/6.
+5A VOOC/WARP/DASH/SUPERVOOC/SUPERDART CHARGER', 'subTitle': 'Compatible with oppo,realme,narzo,oneplus,vivo,iqoo,
+samsung,motorola,mi,redmi,poco, Red, White, One Cable', 'url': 'https://flipkart.com/flipkart-smartbuy-usb-type-c-
+cable-8-1-m-silver-wrap-oem-65w-10w-6-5a-vooc-warp-dash-supervooc-superdart-charger/p/itm617e66d574ea4?
+pid=ACCGXAV7Z868V64N', 'badge': None, 'stock': 'IN_STOCK', 'highlights': ['Length 1 m', 'Round Cable',
+'Connector One: USB Type A|Connector Two: Type C', 'Cable Speed: 980 Mbps', 'Mobile, Laptop, Power Bank, Wireless
+Earphones, Speaker, Trimmer, Tablet'], 'isSponsored': False, 'mrp': 999, 'price': 199, 'rating': {'average': 4.1,
+'count': 15168, 'reviewCount': 684, 'breakup': [1408, 596, 1330, 3449, 8385]}, 'images': ['https://rukminim2.
+flixcart.com/image/1160/1160/xif0q/data-cable/usb-type-c-cable/9/c/3/oem-65w-10w-6-5a-vooc-warp-dash-supervooc-
+superdart-charger-original-imah52f2rw3f6gzz.jpeg?q=90', 'https://rukminim2.flixcart.com/image/1160/1160/xif0q/data-
+cable/usb-type-c-cable/f/c/p/oem-65w-10w-6-5a-vooc-warp-dash-supervooc-superdart-charger-original-imahfa9cugzrfhya.
+jpeg?q=90', 'https://rukminim2.flixcart.com/image/1160/1160/xif0q/data-cable/usb-type-c-cable/4/z/v/oem-65w-10w-6-5a-
+vooc-warp-dash-supervooc-superdart-charger-original-imahfa9cwmgq7kwq.jpeg?q=90', 'https://rukminim2.
+flixcart.com/image/1160/1160/xif0q/data-cable/usb-type-c-cable/c/z/x/oem-65w-10w-6-5a-vooc-warp-dash-supervooc-
+superdart-charger-original-imahfa9cbgtqswwa.jpeg?q=90'], 'reviews': [{'rating': 4, 'title': 'Nice product',
+'review': 'I am using Realme gt ME.This cable is working for 65w Charger', 'images': [], 'reviewer': 'sarath kumar',
+'location': 'Hosur, Tamil Nadu', 'upvotes': 57, 'downvotes': 10, 'date': '6 months ago'}, {'rating': 5, 'title':
+'Simply awesome', 'review': 'Support 67 watt charging. Like it', 'images': [], 'reviewer': 'Satendra Kumar',
+'location': 'Baghpat, Uttar Pradesh', 'upvotes': 28, 'downvotes': 6, 'date': '6 months ago'}
+```

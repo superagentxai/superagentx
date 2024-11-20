@@ -1,0 +1,71 @@
+---
+title: 'Elastic Search Handler'
+icon: 'circle-e'
+---
+
+Elasticsearch is a powerful, open-source search and analytics engine based on Apache Lucene. It quickly stores,
+searches, and analyzes large amounts of data by creating indexes, rather than searching the text directly. With
+a document-based structure and easy-to-use REST APIs, it processes and returns data in JSON format, offering
+fast and scalable performance.
+
+### Setup
+Install Elasticsearch locally by running it on your machine. The simplest method is to use the official
+Elasticsearch Docker image. For more details, check the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html" target="_blank"> Elasticsearch Docker</a> documentation.
+
+## Example
+This code initializes an ElasticsearchHandler to connect to an Elasticsearch server running on localhost with specified
+username and password. This setup allows for searching and managing data stored in Elasticsearch efficiently.
+
+```python elastic_handler.py
+import asyncio
+
+from superagentx.handler.elastic_search import ElasticsearchHandler
+
+
+async def create_index():
+    elasticsearch_handler = ElasticsearchHandler(
+        hosts="http://localhost:9200",
+        username="<Elastic>",
+        password="<Password>"
+    )
+
+    return await elasticsearch_handler.create(
+        index_name="<INDEX_NAME>",
+        document_id="<DOCUMENT_ID>",
+        document={
+            "@timestamp": "2099-11-15T13:12:00",
+            "message": "GET /search HTTP/1.1 200 1070000",
+        }
+    )
+
+
+async def main():
+    res = await create_index()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+## Result
+```inline Index Create Output:
+{
+  "_index": "project8",
+  "_id": "project test",
+  "_version": 1,
+  "result": "created",
+  "_shards": {
+    "total": 2,
+    "successful": 1,
+    "failed": 0
+  },
+  "_seq_no": 0,
+  "_primary_term": 1
+}
+```
+
+
+
+
+
+

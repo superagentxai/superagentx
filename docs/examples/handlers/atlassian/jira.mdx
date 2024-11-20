@@ -1,0 +1,51 @@
+---
+title: 'Jira Handler'
+icon: 'jira'
+---
+
+The JiraHandler class is a tool that helps developers easily connect to Jira and perform common
+operations like creating, updating, and managing issues or projects. If you’ve ever used Jira
+for tracking bugs, managing tasks, or following project progress, this class makes it simpler
+to automate those activities using Python.
+
+## Jira Handler Code
+The JiraHandler connects to Jira using an email, API token, and organization details. This setup allows the program to
+interact with Jira, making it easy to manage tasks, projects, and issues programmatically.
+
+To set up Confluence with email, token, and organization access, you can follow these steps in the given <a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account" target="_blank">link</a>.
+>Set up Email, Token and Organisation as an environmental variable and run the following code. <br />
+ ```python
+ export ATLASSIAN_EMAIL = "**********"
+ export ATLASSIAN_TOKEN = "*************"
+ export ATLASSIAN_ORGANIZATION = "***************"
+```
+
+```python jira_handler.py
+import os
+import asyncio
+
+from superagentx_handlers.atlassian.jira import JiraHandler
+
+
+async def get_active_sprint():
+    jira_handler = JiraHandler()
+    return await jira_handler.get_active_sprint(
+        board_id=1,
+        start=0,
+        end=50
+    )
+
+
+async def main():
+    res = await get_active_sprint()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+## Result
+
+```python jira
+[<JIRA Sprint: name='WDVG Sprint 27',id=28>]
+```
