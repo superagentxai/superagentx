@@ -1,29 +1,17 @@
 import asyncio
 import logging
-import os
-import sys
 import uuid
 from typing import Literal
 
 import yaml
 
 from superagentx.agent import Agent
+from superagentx.config import is_verbose_enabled
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.memory import Memory
 from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter
-
-
-def is_verbose_enabled():
-    verbose = os.environ.get('DEBUGGING') or os.environ.get('VERBOSE')
-    if verbose and verbose.lower() in ('1', 'true'):
-        logging.basicConfig(
-            stream=sys.stdout,
-            level=logging.DEBUG,
-            force=True
-        )
-
 
 is_verbose_enabled()
 
@@ -40,8 +28,7 @@ class AgentXPipe:
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
             memory: Memory | None = None,
-            stop_if_goal_not_satisfied: bool = False,
-            # verbose: bool = False
+            stop_if_goal_not_satisfied: bool = False
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -69,8 +56,6 @@ class AgentXPipe:
                 When set to True, the agentxpipe operation will halt if the defined goal is not met,
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
-            # verbose: Use this option to display additional information about the processing steps, debug messages, or
-            #     progress updates. When set to False, only critical messages are displayed.
         """
         self.pipe_id = pipe_id
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
@@ -81,14 +66,6 @@ class AgentXPipe:
             self.memory_id = uuid.uuid4().hex
             self.chat_id = uuid.uuid4().hex
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
-        # self.verbose = verbose
-        #
-        # if self.verbose:
-        #     logging.basicConfig(
-        #         stream=sys.stdout,
-        #         level=logging.DEBUG,
-        #         force=True
-        #     )
 
         logger.debug(
             f'Initiating AgentXPipe...\n'
