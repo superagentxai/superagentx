@@ -72,7 +72,7 @@ class AgentXPipe:
         if self.verbose:
             logging.basicConfig(
                 level=logging.DEBUG,
-                handlers=StreamHandler(),
+                handlers=[StreamHandler()],
                 force=True
             )
 
