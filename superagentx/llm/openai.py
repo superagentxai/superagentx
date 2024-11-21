@@ -88,10 +88,10 @@ class OpenAIClient(Client):
         """
         text = text.replace("\n", " ")
         response = self.client.embeddings.create(
-                input=[text],
-                model=self._embed_model,
-                **kwargs
-            )
+            input=[text],
+            model=self._embed_model,
+            **kwargs
+        )
         return self._get_embeddings(response)
 
     async def aembed(
@@ -144,7 +144,7 @@ class OpenAIClient(Client):
                         "type": _type,
                         "description": f"The {param.replace('_', ' ')}.",
                         'items': {
-                            "type": await ptype_to_json_scheme(param_type.__args__[0].__name__)
+                            "type": "object"
                         }
                     }
                 else:
