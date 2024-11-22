@@ -88,10 +88,10 @@ class OpenAIClient(Client):
         """
         text = text.replace("\n", " ")
         response = self.client.embeddings.create(
-                input=[text],
-                model=self._embed_model,
-                **kwargs
-            )
+            input=[text],
+            model=self._embed_model,
+            **kwargs
+        )
         return self._get_embeddings(response)
 
     async def aembed(
@@ -138,10 +138,21 @@ class OpenAIClient(Client):
         _type_hints = typing.get_type_hints(func)
         async for param, param_type in iter_to_aiter(_type_hints.items()):
             if param != 'return':
-                _properties[param] = {
-                    "type": await ptype_to_json_scheme(param_type.__name__),
-                    "description": f"The {param.replace('_', ' ')}."
-                }
+                _type = await ptype_to_json_scheme(param_type.__name__)
+                if _type == "array":
+                    _properties[param] = {
+                        "type": _type,
+                        "description": f"The {param.replace('_', ' ')}.",
+                        'items': {
+                            "type": "object"
+                        }
+                    }
+                else:
+                    _properties[param] = {
+                        "type": _type,
+                        "description": f"The {param.replace('_', ' ')}."
+                    }
+
         return {
             'type': 'function',
             'function': {

@@ -1,0 +1,88 @@
+---
+title: 'Sql Handler'
+icon: 'database'
+---
+
+A SQL handler refers to a tool or interface that simplifies the process of interacting with SQL databases.
+Its main purpose is to help developers run SQL queries, manage data, and connect to databases with minimal
+complexity. It abstracts away repetitive tasks such as writing complex SQL syntax, handling connections,
+and managing query results, making it easier to work with databases.
+
+By modifying the database_type parameter, users can easily switch among various SQL databases while keeping their code
+largely unchanged.
+>**SQLite** , **MYSQL** , **Postgres** , **Mariadb** , **Oracle** , **Mssql**
+
+## Example
+This code connects to a SQLite database (designated as DATABASE) and prepares to insert data into a table named test.
+It specifies the values to be added, making it easy to update the database with new information.
+
+```python sql_handler.py
+
+from superagentx_handlers.sql import SQLHandler
+
+
+async def sql_handler():
+    sql_handler = SQLHandler(
+        database_type="sqlite",
+        database="<DATABASE>"
+    )
+
+    stmt = "insert into test (x, y) values (:x, :y)"
+    values = [{
+        "x": 23,
+        "y": 24
+    }]
+    return await sql_handler.insert(stmt=stmt, values=values)
+```
+
+## Result
+```python sqlite
+{
+ "root_connection": "<sqlalchemy.engine.base.Connection object at 0x7f3bb8f4d010>",
+    "_dbapi_connection": "<sqlalchemy.pool.base._ConnectionFairy object at 0x7f3bb8261f10>",
+    "dialect": "<sqlalchemy.dialects.sqlite.aiosqlite.SQLiteDialect_aiosqlite object at 0x7f3bb83991f0>",
+    "extracted_parameters": [
+      {
+        "name": "x",
+        "value": null,
+        "type": "NullType"
+      },
+      {
+        "name": "y",
+        "value": null,
+        "type": "NullType"
+      }
+    ],
+    "invoked_statement": "<sqlalchemy.sql.elements.TextClause object at 0x7f3bd440c140>",
+    "compiled": "<sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0x7f3bb6919610>",
+    "cache_hit": "CACHE_MISS",
+    "execution_options": {},
+    "result_column_struct": {
+      "columns": [],
+      "has_rows": true,
+      "is_complete": false,
+      "was_updated": false,
+      "was_deleted": false
+    },
+    "is_insert": false,
+    "is_update": false,
+    "is_delete": false,
+    "is_text_statement": true,
+    "compiled_parameters": [
+      {
+        "x": 23,
+        "y": 24
+      }
+    ],
+    "unicode_statement": "insert into test9 (x, y) values (?,?)",
+    "is_server_side": false,
+    "cursor": "<sqlalchemy.dialects.sqlite.aiosqlite.AsyncAdapt_aiosqlite_cursor object at 0x7f3bb6a80580>",
+    "statement": "insert into test9 (x, y) values (?,?)",
+    "parameters": [
+      [23, 24]
+    ],
+    "row_count": 1,
+    "is_soft_closed": true
+  }
+}
+```

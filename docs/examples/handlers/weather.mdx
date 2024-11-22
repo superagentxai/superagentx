@@ -1,0 +1,75 @@
+---
+title: 'Weather Handler'
+icon: 'cloud-bolt-sun'
+---
+
+A weather handler is a tool or library that helps developers integrate weather data into applications.
+It works by retrieving real-time or forecasted weather information from external sources, such as weather
+APIs, and presenting it in a way that is easy to use in applications like websites, mobile apps, or IoT devices.
+
+## Example
+This code initializes a WeatherHandler, which is designed to fetch weather-related data. This setup enables the
+application to access various weather services for retrieving current latitude and longitude.
+
+```python weather_handler.py
+import asyncio
+
+from superagentx_handlers.weather import WeatherHandler
+
+weather_handler = WeatherHandler()
+
+
+async def get_lat_long(place):
+    return await weather_handler.get_lat_long(place=place)
+
+
+async def get_weather(place):
+    lat_long = await get_lat_long(place)
+    latitude = lat_long.get("latitude")
+    longitude = lat_long.get("longitude")
+    return await weather_handler.get_weather(
+        latitude=latitude,
+        longitude=longitude
+        )
+
+
+async def main(place):
+    res = await get_weather(place)
+    print(res)
+
+if __name__ == '__main__':
+    place="coimbatore"
+    asyncio.run(main(place))
+```
+
+## Result
+```python weather
+{
+    "latitude": 11.0,
+    "longitude": 77.0,
+    "generationtime_ms": 0.04398822784423828,
+    "utc_offset_seconds": 0,
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT",
+    "elevation": 421.0,
+    "current_weather_units": {
+        "time": "iso8601",
+        "interval": "seconds",
+        "temperature": "°C",
+        "windspeed": "km/h",
+        "winddirection": "°",
+        "is_day": "",
+        "weathercode": "wmo code"
+    },
+    "current_weather": {
+        "time": "2024-11-04T17: 00",
+        "interval": 900,
+        "temperature": 23.5,
+        "windspeed": 3.3,
+        "winddirection": 13,
+        "is_day": 0,
+        "weathercode": 80
+    }
+}
+
+```

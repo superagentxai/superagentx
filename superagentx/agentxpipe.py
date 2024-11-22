@@ -1,16 +1,21 @@
 import asyncio
+import logging
 import uuid
 from typing import Literal
 
 import yaml
 
 from superagentx.agent import Agent
-from superagentx.result import GoalResult
-from superagentx.constants import SEQUENCE
+from superagentx.config import is_verbose_enabled
+from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
-from superagentx.llm.types.base import logger
 from superagentx.memory import Memory
+from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter
+
+is_verbose_enabled()
+
+logger = logging.getLogger(__name__)
 
 
 class AgentXPipe:
@@ -62,6 +67,16 @@ class AgentXPipe:
             self.chat_id = uuid.uuid4().hex
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
 
+        logger.debug(
+            f'Initiating AgentXPipe...\n'
+            f'Id : {self.pipe_id}\n'
+            f'Name : {self.name}\n'
+            f'Description : {self.description}\n'
+            f'Agents Associated : {",".join([str(_agent) for _agent in self.agents])}\n'
+            f'Memory Configured : {self.memory}\n'
+            f'Stop if goal not satisfied configured : {self.stop_if_goal_not_satisfied}\n'
+        )
+
     def __str__(self):
         return "AgentXPipe"
 
@@ -98,8 +113,10 @@ class AgentXPipe:
         """
         if execute_type == SEQUENCE:
             self.agents += agents
+            logger.debug(f'Agent(s) added as {SEQUENCE} : {",".join([str(_agent) for _agent in agents])}')
         else:
             self.agents.append(list(agents))
+            logger.debug(f'Agents added as {PARALLEL} : {",".join([str(_agent) for _agent in agents])}')
 
     @staticmethod
     async def _pre_result(
@@ -134,6 +151,7 @@ class AgentXPipe:
         Returns:
             None
         """
+        logger.debug(f'Add prompt instruction to the memory : {prompt_instruction}')
         async for prompt in iter_to_aiter(prompt_instruction):
             await self.memory.add(
                 memory_id=self.memory_id,
@@ -167,6 +185,7 @@ class AgentXPipe:
                 Each dictionary represents an instruction and may contain keys such as 'text', 'context',
                 and other relevant attributes that describe the prompt.
         """
+        logger.debug(f'Retrieving memory by query : {query_instruction}')
         return await self.memory.search(
             query=query_instruction,
             memory_id=self.memory_id,
@@ -183,16 +202,18 @@ class AgentXPipe:
         old_memory = None
         async for _agents in iter_to_aiter(self.agents):
             pre_result = await self._pre_result(results=results)
+            logger.debug(f'Updated with previous results.\nPrevious Result : {pre_result}')
             if self.memory:
                 old_memory = await self.retrieve_memory(query_instruction)
-                logger.debug(f"Old Memory: {old_memory}")
                 if old_memory:
                     message_content = ""
                     async for _mem in iter_to_aiter(old_memory):
                         message_content += f"{_mem.get('content')} "
-                    old_memory = f"Context:\n{message_content}\nQuestion: {query_instruction}"
+                    old_memory = f"Context :\n{message_content}\nQuestion : {query_instruction}"
+                logger.debug(f"Updated with old memory.\n{old_memory}")
             try:
                 if isinstance(_agents, list):
+                    logger.debug(f'Agent(s) are executing : {",".join([str(_agent) for _agent in _agents])}')
                     _res = await asyncio.gather(
                         *[
                             _agent.execute(
@@ -204,13 +225,16 @@ class AgentXPipe:
                             async for _agent in iter_to_aiter(_agents)
                         ]
                     )
+                    logger.debug(f'Agent(s) results : {_res}')
                 else:
+                    logger.debug(f'Agent is executing : {_agents}')
                     _res = await _agents.execute(
                         query_instruction=query_instruction,
                         pre_result=pre_result,
                         old_memory=old_memory,
                         stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
                     )
+                    logger.debug(f'Agent result : {_res}')
                 if self.memory:
                     if _res.result and _res.reason:
                         assistant = {

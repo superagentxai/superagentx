@@ -2,10 +2,10 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Starter Kit",
   "logo": {
-    "dark": "/logo/fulllogo_transparent_nobuffer.svg",
-    "light": "/logo/fulllogo_transparent_nobuffer.svg"
+    "dark": "/logo/fullLogo_transparent_dark_nobuffer.png",
+    "light": "/logo/fulllogo_transparent_nobuffer.png"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "favicon.svg",
   "colors": {
     "primary": "#0b5394",
     "light": "#E6FFA2",
@@ -15,33 +15,31 @@
       "light": "#fff"
     }
   },
-  "topbarLinks": [
-    {
-      "name": "Support",
-      "url": "mailto:hi@mintlify.com"
-    }
-  ],
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/superagentxai/superagentX/"
+  },
   "tabs": [
     {
-      "name": "API Reference",
-      "url": "api-reference"
+      "name": "Examples",
+      "url": "examples-reference"
     }
   ],
   "anchors": [
     {
       "name": "Documentation",
       "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
+      "url": "https://docs.superagentx.ai/introduction"
     },
     {
       "name": "Community",
-      "icon": "slack",
-      "url": "https://mintlify.com/community"
+      "icon": "discord",
+      "url": "https://discord.gg/hX5pAzKGXD"
     },
     {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
+      "name": "Github",
+      "icon": "github",
+      "url": "https://github.com/superagentxai/superagentX/"
     }
   ],
   "navigation": [
@@ -49,39 +47,85 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart",
-        "development"
+        "installation",
+        "quickstart"
       ]
     },
     {
-      "group": "Essentials",
+      "group": "Key Components",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        "pipe",
+        "agent",
+        "memory",
+        "llm",
+        "engine",
+        "prompt",
+        "handler"
       ]
     },
     {
-      "group": "API Documentation",
+      "group": "Handlers (Tools)",
       "pages": [
-        "api-reference/introduction"
+        "examples/create_handler",
+
+            {
+              "group": "AWS",
+              "icon": "aws",
+              "pages": [
+                "examples/handlers/aws/s3"
+              ]
+            },
+            {
+              "group": "Atlassian",
+              "icon": "atlassian",
+              "pages": [
+                "examples/handlers/atlassian/confluence",
+                "examples/handlers/atlassian/jira"
+              ]
+            },
+            "examples/handlers/content_creator",
+            "examples/handlers/csv_cli",
+            {
+              "group": "E-Commerce Handler",
+              "icon": "cart-shopping",
+              "pages": [
+                "examples/handlers/E-commerce/amazon",
+                "examples/handlers/E-commerce/flipkart",
+                "examples/handlers/E-commerce/walmart"
+              ]
+            },
+            "examples/handlers/exa",
+            "examples/handlers/elastic",
+            "examples/handlers/email",
+            "examples/handlers/financial_data",
+            {
+              "group": "Google",
+              "icon": "circle-g",
+              "pages": [
+                "examples/handlers/Google/calender",
+                "examples/handlers/Google/gmail"
+              ]
+            },
+            "examples/handlers/hubspot",
+            "examples/handlers/scrape",
+            "examples/handlers/serper_dev",
+            "examples/handlers/sql",
+            "examples/handlers/visualization",
+            "examples/handlers/weather",
+            "examples/handlers/wikipedia"
+
+
       ]
     },
     {
-      "group": "Endpoint Examples",
+      "group": "Tutorials",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+        "examples-reference/introduction"
       ]
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://linkedin.com/company/mintlify"
+    "x": "https://x.com/superagentxai",
+    "github": "https://github.com/superagentxai/superagentX/"
   }
 }

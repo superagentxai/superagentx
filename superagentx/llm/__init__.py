@@ -51,7 +51,8 @@ class LLMClient:
             llm_config: dict,
             **kwargs
     ):
-        self.llm_config_model = LLMModelConfig(**llm_config)
+        self.llm_config = llm_config
+        self.llm_config_model = LLMModelConfig(**self.llm_config)
 
         match self.llm_config_model.llm_type:
 

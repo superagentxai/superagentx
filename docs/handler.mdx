@@ -1,0 +1,36 @@
+---
+title: 'Handler'
+icon: 'bars-progress'
+---
+
+We use the term "handler" interchangeably with "tool calling." While "tool calling" is sometimes used to refer
+to the invocation of a single function. It contains the logic for managing particular operations, playing a
+key role in organizing and carrying out tasks.
+
+With the `BaseHandler` from `superagentx.handler.base`, you can create your own custom
+<a href="/examples/create_handler" target='_blank'>handlers</a>.
+
+Additionally, we also provide <a href="examples/handlers/aws/s3" target='_blank'>pre-build handlers</a> for various other
+services and libraries.
+
+### Tool:
+A tool is a method or function that performs a specific action within a larger system. In this context,
+tools are asynchronous functions that handle specific tasks, like fetching data from external APIs or
+performing calculations. The @tool decorator marks these methods as tools that can be invoked by the system.
+
+```python
+from superagentx.handler.decorators import tool
+
+class ExaHandler(BaseHandler):
+
+    @tool
+    async def search_contents(
+            self,
+            *,
+            query: str,
+            use_autoprompt: bool,
+            num_results: int = 10,
+            search_type: str | None = None
+    ):
+```
+
