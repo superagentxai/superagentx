@@ -140,13 +140,22 @@ class OpenAIClient(Client):
             if param != 'return':
                 _type = await ptype_to_json_scheme(param_type.__name__)
                 if _type == "array":
-                    _properties[param] = {
-                        "type": _type,
-                        "description": f"The {param.replace('_', ' ')}.",
-                        'items': {
-                            "type": "object"
+                    if hasattr(param_type, "__args__"):
+                        _properties[param] = {
+                            "type": _type,
+                            "description": f"The {param.replace('_', ' ')}.",
+                            'items': {
+                                "type": await ptype_to_json_scheme(param_type.__args__[0].__name__)
+                            }
                         }
-                    }
+                    else:
+                        _properties[param] = {
+                            "type": _type,
+                            "description": f"The {param.replace('_', ' ')}.",
+                            'items': {
+                                "type": "object"
+                            }
+                        }
                 else:
                     _properties[param] = {
                         "type": _type,
