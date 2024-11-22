@@ -28,6 +28,7 @@ class OllamaClient(Client):
     ):
         self.client = client
         self._model = getattr(self.client, 'model')
+        self._embed_model = getattr(self.client, 'embed_model')
 
     def chat_completion(
             self,
@@ -224,15 +225,15 @@ class OllamaClient(Client):
             list: The embedding vector.
         """
         text = text.replace("\n", " ")
-        response = self.client.embed(model=self._model, input=[text])
-        if response and response["embeddings"]:
-            return response["embeddings"][0]
+        response = self.client.embeddings(model=self._embed_model, prompt=text)
+        if response and response["embedding"]:
+            return [response["embedding"]]
 
     async def aembed(
             self,
             text: str,
             **kwargs
-    ) -> list[dict]:
+    ):
         """
         Get the embedding for the given text using AsyncClient
 
@@ -243,6 +244,6 @@ class OllamaClient(Client):
             list: The embedding vector.
         """
         text = text.replace("\n", " ")
-        response = await self.client.embed(model=self._model, input=[text])
-        if response and response["embeddings"]:
-            return response["embeddings"][0]
+        response = await self.client.embeddings(model=self._embed_model, prompt=text)
+        if response and response["embedding"]:
+            return [response["embedding"]]

@@ -12,7 +12,7 @@ from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
 from superagentx.llm.bedrock import BedrockClient
-from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
+from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
@@ -146,6 +146,8 @@ class LLMClient:
 
                 cli = AsyncClient(host=host)
                 cli.model = self.llm_config_model.model
+                embed_model = self.llm_config_model.embed_model
+                cli.embed_model = DEFAULT_OLLAMA_EMBED if not embed_model else embed_model
                 self.client = OllamaClient(client=cli)
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
