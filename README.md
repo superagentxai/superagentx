@@ -191,7 +191,7 @@ $ source venv/bin/activate
 (venv) $ poetry install
 ```
 
-## Documentation (_Coming Soon_)
+## [Documentation](https://docs.superagentx.ai/introduction)
 
 ## License
 

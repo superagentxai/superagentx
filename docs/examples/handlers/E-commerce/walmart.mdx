@@ -1,0 +1,62 @@
+---
+title: 'Walmart Handler'
+icon: 'basket-shopping'
+---
+
+A Walmart handler is a tool that makes it easy for developers to connect their apps or websites to Walmart’s system.
+With this tool, businesses can access Walmart’s product listings, prices, stock levels, and availability in real-time.
+It helps automate tasks like searching for products, tracking inventory, and monitoring price changes.
+This handler is very useful for e-commerce websites, price comparison tools, and inventory management systems.
+
+## Example
+This code sets up a WalmartHandler, which allows interacting with Walmart’s platform to search for products or access
+related data programmatically.
+
+To access RapidAPI services, you'll need to create a RapidAPI account, obtain an API key, and subscribe the required
+API for your application. For more details refer <a href='https://rapidapi.com/hub' target='_blank'>here</a>.
+>Set up a RapidAPI key as an environmental variable and run the following code.
+```python
+ export RAPID_API_KEY = "**************************"
+```
+
+```python walmart_handler.py
+import os
+import asyncio
+
+from superagentx_handlers.ecommerce.walmart import WalmartHandler
+
+
+async def search(query: str):
+    walmart_handler = WalmartHandler()
+    return await walmart_handler.product_search(query=query)
+
+query = input("Enter your query here: ")
+asyncio.run(search(query))
+```
+
+## Result
+```python walmart
+{'body': {'pagination': {'currentPage': 1, 'nextPage': 2, 'totalPages': 2},
+          'products': [{'image': 'https://i5.walmartimages.com/seo/VAVSEA-1000W-Countertop-Blender-for-Shake-and-Smoothies-for-Ice-Crush-Fruit-Protein-Drinks-Vegetable_7357b6c5-180c-4724-a87f-6c3aa4478ea7.55c0e5952798f4cb3fa4f542e91ccce9.jpeg?odnHeight=784&odnWidth=580&odnBg=FFFFFF',
+                        'isBestSeller': False,
+                        'link': 'https://www.walmart.com/sp/track?bt=1&eventST=click&plmt=sp-search-middle~desktop~&pos=1&tax=4044_90548&rdf=1&rd=https%3A%2F%2Fwww.walmart.com%2Fip%2FVAVSEA-1000W-Countertop-Blender-for-Shake-and-Smoothies-for-Ice-Crush-Fruit-Protein-Drinks-Vegetable%2F5508034320%3FclassType%3DVARIANT%26adsRedirect%3Dtrue&adUid=783f604f-db6b-447c-868e-f2754d136c63&mloc=sp-search-middle&pltfm=desktop&pgId=best%20one%20blender%20provide%205%20ratings&pt=search&spQs=Bh8fdeN9dkO0SpwJt6bexW-EJPUbTycqL1ZKTTwarC0NEfhAGg0Fbpr0X-_cGvl5jvxi1R7_GdjNEpdJf2fSWVdx3hbA2qIUSzwtQ06Pfj3fQCLeitKYJzKbWWKEgyULBf0-crnzapKUG9-C85yCe0y37G3LOnPI6QWXRrLIiIyBiBBB1749_CYKqswwKpZXrTHmwuqTRSxBi7l3KJXHtcQ0UJl7hiNx8z0jcfxHQeRWi7f_DU7vNw2RhH9uWOVjkneYhOD_GK-qwlh4Wmw0kg&storeId=2038&couponState=na&bkt=ace1_11168%7Cace2_11182%7Cace3_11181%7Ccoldstart_off%7Csearch_default&classType=VARIANT',
+                        'outOfStock': False,
+                        'position': 1,
+                        'price': {'currency': '$',
+                                  'currentPrice': '$56.99',
+                                  'originalPrice': '$179.99',
+                                  'rawPrice': '56.99'},
+                        'ratings': '4.8',
+                        'reviewsCount': '60',
+                        'shippingMessage': 'Free shipping, arrives in 2 days',
+                        'title': 'VAVSEA 1200W Blender for Smoothies and '
+                                 'Shakes, Personal Kitchen Blenders Mixer '
+                                 'Grinder with 2 Travel Cups 1 Grinding Cup '
+                                 'for Ice Crush Frozen Drinks, BPA-Free'}],
+           'productsCount': 49,
+          'resultInfo': 'Results for "best one blender provide 5 ratings"(60)'},
+ 'original_status': 200,
+ 'pc_status': 200,
+ 'url': 'https://www.walmart.com/search?q=best one blender provide 5 ratings'}
+
+```

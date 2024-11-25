@@ -1,0 +1,31 @@
+---
+title: 'Memory'
+icon: "memory"
+---
+
+The `Memory` class from `superagentx.memory` is designed to provide a persistent storage mechanism for storing and retrieving context,
+data, and state during interactions with agents in a pipeline. `Memory` allows the system to “remember” information
+across agent actions and queries, which is particularly useful for complex workflows or tasks that span multiple steps.
+
+The `Memory` class is initialized with a configuration that defines how it interacts with the agent pipeline.
+It can be used to persist important data, store intermediate results, or maintain context across different
+stages of the agent’s execution.
+
+### Memory config Parameters
+| Attribute                        | Parameters                  | Description                                                  |
+| :--------------------            | :----------------           | :-------------------------------------                       |
+| **Vector Store** _(optional)_    | `vector_store`              | Configuration for the vector store. Default is Chroma db.    |
+| **DB Path** _(optional)_         | `db_path`                   | Path to the history database. Default Sqlite memory.         |
+| **LLM Client**                   | `llm_client`                | Configuration for the LLM.                                   |
+
+### Parameters
+| Attribute                        | Parameters                  | Description                            |
+| :--------------------            | :----------------           | :------------------------------------- |
+| **Memory Config**                | `memory_config`             | Memory configuration                   |
+
+
+```python
+from superagentx.memory import Memory
+
+memory = Memory(memory_config={"llm_client": llm_client})
+```

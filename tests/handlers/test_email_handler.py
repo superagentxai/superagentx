@@ -9,6 +9,7 @@ from superagentx.handler.send_email import EmailHandler
     
 '''
 
+
 @pytest.fixture
 def email_client_init() -> EmailHandler:
     email_handler = EmailHandler(
@@ -16,6 +17,7 @@ def email_client_init() -> EmailHandler:
         port=345
     )
     return email_handler
+
 
 class TestEmail:
 

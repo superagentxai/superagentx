@@ -88,10 +88,10 @@ class OpenAIClient(Client):
         """
         text = text.replace("\n", " ")
         response = self.client.embeddings.create(
-                input=[text],
-                model=self._embed_model,
-                **kwargs
-            )
+            input=[text],
+            model=self._embed_model,
+            **kwargs
+        )
         return self._get_embeddings(response)
 
     async def aembed(
@@ -138,10 +138,30 @@ class OpenAIClient(Client):
         _type_hints = typing.get_type_hints(func)
         async for param, param_type in iter_to_aiter(_type_hints.items()):
             if param != 'return':
-                _properties[param] = {
-                    "type": await ptype_to_json_scheme(param_type.__name__),
-                    "description": f"The {param.replace('_', ' ')}."
-                }
+                _type = await ptype_to_json_scheme(param_type.__name__)
+                if _type == "array":
+                    if hasattr(param_type, "__args__"):
+                        _properties[param] = {
+                            "type": _type,
+                            "description": f"The {param.replace('_', ' ')}.",
+                            'items': {
+                                "type": await ptype_to_json_scheme(param_type.__args__[0].__name__)
+                            }
+                        }
+                    else:
+                        _properties[param] = {
+                            "type": _type,
+                            "description": f"The {param.replace('_', ' ')}.",
+                            'items': {
+                                "type": "object"
+                            }
+                        }
+                else:
+                    _properties[param] = {
+                        "type": _type,
+                        "description": f"The {param.replace('_', ' ')}."
+                    }
+
         return {
             'type': 'function',
             'function': {
@@ -165,12 +185,12 @@ class OpenAIClient(Client):
                 f'Model {model} is not found. The cost will be 0. In your config_list, add field {{"price" : ['
                 f'prompt_price_per_1k, completion_token_price_per_1k]}} for customized pricing.'
             )
-            return 0
+            return 0.0
 
-        n_input_tokens = response.usage.prompt_tokens if response.usage is not None else 0
-        n_output_tokens = response.usage.completion_tokens if response.usage is not None else 0
+        n_input_tokens = response.usage.prompt_tokens if response.usage is not None else 0.0
+        n_output_tokens = response.usage.completion_tokens if response.usage is not None else 0.0
         if n_output_tokens is None:
-            n_output_tokens = 0
+            n_output_tokens = 0.0
         tmp_price_1k = OPENAI_PRICE1K[model]
         # First value is input token rate, second value is output token rate
         if isinstance(tmp_price_1k, tuple):

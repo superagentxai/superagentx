@@ -1,0 +1,78 @@
+---
+title: 'Wikipedia Handler'
+icon: 'wikipedia-w'
+---
+
+A Wikipedia handler is a tool or library that simplifies access to Wikipedia's vast knowledge base.
+It enables developers to retrieve and manipulate Wikipedia content programmatically, making it useful
+for applications requiring summarized, factual, or historical information from the platform. This handler
+streamlines interactions with the Wikipedia API, ensuring easy extraction of data such as articles, search
+results, and metadata.
+
+## Example
+This code initializes a WikipediaHandler to retrieve a summary for a specified topic from Wikipedia. The query is
+currently empty, meaning users can input any subject they want to learn about, and the handler will provide a concise overview.
+```python wikipedia_handler.py
+import asyncio
+
+from superagentx_handlers.wikipedia import WikipediaHandler
+
+
+async def get_summary(query):
+    search = WikipediaHandler()
+    return await search.get_summary(
+        query=query,
+    )
+
+
+async def main(query):
+    res = await get_summary(query)
+    print(res)
+
+if __name__ == '__main__':
+    query="Sachin Tendulkar"
+    asyncio.run(main(query))
+```
+
+## Result
+```python wikipedia
+('Sachin Ramesh Tendulkar ( ; pronounced [sətɕin teːɳɖulkəɾ]; born 24 April '
+ '1973) is an Indian former international cricketer who captained the Indian '
+ 'national team. He is widely regarded as one of the greatest batsmen in the '
+ "history of cricket. Hailed as the world's most prolific batsman of all time, "
+ 'he is the all-time highest run-scorer in both ODI and Test cricket with more '
+ 'than 18,000 runs and 15,000 runs, respectively. He also holds the record for '
+ 'receiving the most player of the match awards in international cricket. '
+ 'Tendulkar was a Member of Parliament, Rajya Sabha by presidential nomination '
+ 'from 2012 to 2018.\n'
+ 'Tendulkar took up cricket at the age of eleven, made his Test match debut on '
+ '15 November 1989 against Pakistan in Karachi at the age of sixteen, and went '
+ 'on to represent Mumbai domestically and India internationally for over 24 '
+ 'years. In 2002, halfway through his career, Wisden ranked him the '
+ 'second-greatest Test batsman of all time, behind Don Bradman, and the '
+ 'second-greatest ODI batsman of all time, behind Viv Richards. The same year, '
+ 'Tendulkar was a part of the team that was one of the joint-winners of the '
+ '2002 ICC Champions Trophy. Later in his career, Tendulkar was part of the '
+ 'Indian team that won the 2011 Cricket World Cup, his first win in six World '
+ 'Cup appearances for India. He had previously been named "Player of the '
+ 'Tournament" at the 2003 World Cup.\n'
+ 'Tendulkar has received several awards from the government of India: the '
+ 'Arjuna Award (1994), the Khel Ratna Award (1997), the Padma Shri (1998), and '
+ 'the Padma Vibhushan (2008). After Tendulkar played his last match in '
+ "November 2013, the Prime Minister's Office announced the decision to award "
+ "him the Bharat Ratna, India's highest civilian award. He was the first "
+ 'sportsperson to receive the award and, as of 2024, is the youngest '
+ 'recipient. In 2010, Time included Tendulkar in its annual list of the most '
+ 'influential people in the world. Tendulkar was awarded the Sir Garfield '
+ 'Sobers Trophy for cricketer of the year at the 2010 International Cricket '
+ 'Council (ICC) Awards.\n'
+ 'Having retired from ODI cricket in 2012, he retired from all forms of '
+ 'cricket in November 2013 after playing his 200th Test match. Tendulkar '
+ 'played 664 international cricket matches in total, scoring 34,357 runs. In '
+ '2013, Tendulkar was included in an all-time Test World XI to mark the 150th '
+ "anniversary of Wisden Cricketers' Almanack, and he was the only specialist "
+ 'batsman of the post–World War II era, along with Viv Richards, to get '
+ 'featured in the team. In 2019, he was inducted into the ICC Cricket Hall of '
+ 'Fame.')
+
+```
