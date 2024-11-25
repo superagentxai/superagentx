@@ -43,6 +43,9 @@ class Engine:
         self.tools = tools
         self.output_parser = output_parser
 
+    def __str__(self):
+        return f'Engine {self.handler.__class__}'
+
     async def __funcs_props(
             self,
             funcs: list[str]

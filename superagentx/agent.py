@@ -106,7 +106,7 @@ class Agent:
             f'Id : {self.agent_id}\n'
             f'Name : {self.name}\n'
             f'Description : {self.description}\n'
-            f'Engines Associated : {",".join([str(_engine.handler.__class__) for _engine in self.engines])}\n'
+            f'Engines Associated : {",".join([str(_engine) for _engine in self.engines])}\n'
             f'Engine Role : {self.role}\nEngine Goal: {self.goal}\n'
             f'LLM Client : {self.llm.llm_config}\n'
             f'Prompt Template : Type - {self.prompt_template.prompt_type} '
