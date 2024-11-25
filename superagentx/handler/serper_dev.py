@@ -13,7 +13,12 @@ class SerperDevToolHandler(BaseHandler):
         self.search_url: str = "https://google.serper.dev/search"
 
     @tool
-    async def search(self, *, query: str, total_results: int = 10):
+    async def search(
+            self,
+            *,
+            query: str,
+            total_results: int = 5
+    ):
         """
         A tool for performing real-time web searches and retrieving structured results based on the provided query.
 
