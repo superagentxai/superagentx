@@ -184,10 +184,10 @@ SuperAgentX searches for product items requested by the user in the console, val
 
 ## Environment Setup
 ```shell
+$ python3.12 -m pip install poetry
 $ cd <path-to>/superagentx
 $ python3.12 -m venv venv
 $ source venv/bin/activate
-(venv) $ pip install poetry
 (venv) $ poetry install
 ```
 
