@@ -49,7 +49,7 @@ class BedrockClient(Client):
             tools = chat_completion_params.tools
 
             # Get model name from client object attribute and set,
-            model_id = ''.join(getattr(self.client, 'model'))
+            model_id = ''.join(self._model)
 
             inference_config = {}
 
@@ -126,7 +126,7 @@ class BedrockClient(Client):
             tools = chat_completion_params.tools
 
             # Get model name from client object attribute and set,
-            model_id = ''.join(getattr(self.client, 'model'))
+            model_id = ''.join(self._model)
 
             inference_config = {}
 
