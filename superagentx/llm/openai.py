@@ -31,11 +31,11 @@ class OpenAIClient(Client):
     def __init__(
             self,
             *,
-            client: OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI
+            client: OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI,
+            **kwargs
     ):
-
+        super().__init__(**kwargs)
         self.client = client
-        self._model = getattr(self.client, 'model')
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)
@@ -44,7 +44,6 @@ class OpenAIClient(Client):
             logger.info(
                 "OpenAI or Azure hosted Open AI client, is not valid!"
             )
-        self._embed_model = getattr(self.client, 'embed_model')
 
     def chat_completion(
             self,

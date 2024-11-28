@@ -1,9 +1,10 @@
+import asyncio
 import inspect
 import json
+import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Dict, Tuple, Any
-import asyncio
+from typing import List, Dict
 
 import boto3
 from openai.types import CompletionUsage
@@ -16,8 +17,6 @@ from superagentx.llm.models import ChatCompletionParams, Message
 from superagentx.utils.helper import iter_to_aiter, ptype_to_json_scheme
 from superagentx.utils.helper import sync_to_async
 
-import logging
-
 logger = logging.getLogger(__name__)
 
 _retries = 5
@@ -28,8 +27,10 @@ class BedrockClient(Client):
     def __init__(
             self,
             *,
-            client: boto3.client
+            client: boto3.client,
+            **kwargs
     ):
+        super().__init__(**kwargs)
         self.client = client
 
     def chat_completion(
@@ -379,13 +380,11 @@ class BedrockClient(Client):
         # Create the request for the model.
         native_request = {"inputText": text}
 
-        _embed_model = getattr(self.client, 'embed_model')
-
         # Convert the native request to JSON.
         request = json.dumps(native_request)
 
         # Invoke the model with the request.
-        response = self.client.invoke_model(modelId=_embed_model, body=request)
+        response = self.client.invoke_model(modelId=self._embed_model, body=request)
 
         if response:
             # Decode the model's native response body.
