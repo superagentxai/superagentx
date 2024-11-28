@@ -8,7 +8,9 @@ from typing import List, Dict
 
 import boto3
 from openai.types import CompletionUsage
-from openai.types.chat import ChatCompletion, ChatCompletionMessage, ChatCompletionMessageToolCall
+from openai.types.chat import ChatCompletion, ChatCompletionMessage
+from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
+
 from openai.types.chat.chat_completion import Choice
 from pydantic import typing
 
@@ -297,10 +299,10 @@ class BedrockClient(Client):
                 tool_calls.append(
                     ChatCompletionMessageToolCall(
                         id=tool["toolUseId"],
-                        function={
-                            "name": tool["name"],
-                            "arguments": json.dumps(tool["input"]),
-                        },
+                        function=Function(
+                            name=tool["name"],
+                            arguments=json.dumps(tool["input"]),
+                        ),
                         type="function",
                     )
                 )
