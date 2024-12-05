@@ -2,9 +2,9 @@ import inspect
 import logging
 
 from anthropic import Anthropic, AsyncAnthropic
+from fastembed import TextEmbedding
 from openai.types.chat import ChatCompletion
 from pydantic import typing
-from sentence_transformers import SentenceTransformer
 
 from superagentx.llm import ChatCompletionParams
 from superagentx.llm.client import Client
@@ -23,7 +23,7 @@ class AnthropicClient(Client):
     ):
         super().__init__(**kwargs)
         self.client = client
-        self._embed_model_cli = SentenceTransformer(model_name_or_path=self._embed_model)
+        self._embed_model_cli = TextEmbedding(model_name=self._embed_model)
 
     def chat_completion(
             self,
@@ -96,7 +96,7 @@ class AnthropicClient(Client):
             **kwargs
     ):
         text = text.replace('\n', ' ')
-        return self._embed_model_cli.encode(
+        return self._embed_model_cli.embed(
             sentences=text,
             **kwargs
         )
