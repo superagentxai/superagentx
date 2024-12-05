@@ -52,15 +52,13 @@ class OpenAIClient(Client):
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
-        chat_completion_response = self.client.chat.completions.create(**params)
-        return chat_completion_response
+        return self.client.chat.completions.create(**params)
 
     async def achat_completion(
             self,
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = await self.client.chat.completions.create(**params)

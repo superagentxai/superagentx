@@ -5,6 +5,7 @@ import typing
 from typing import List
 
 import boto3
+from anthropic import Anthropic, AsyncAnthropic
 from botocore.config import Config
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
@@ -12,7 +13,7 @@ from openai.types.chat import ChatCompletion
 from superagentx.exceptions import InvalidType
 from superagentx.llm.anthropic import AnthropicClient
 from superagentx.llm.bedrock import BedrockClient
-from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
+from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_ANTHROPIC_EMBED
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
@@ -62,16 +63,13 @@ class LLMClient:
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
             case LLMType.ANTHROPIC_CLIENT:
-                pass
+                self.client = self._init_anthropic_cli()
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
 
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
-        api_key = (
-            self.llm_config_model.api_key
-            if self.llm_config_model.api_key else os.getenv("OPENAI_API_KEY")
-        )
+        api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY")
 
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
@@ -79,12 +77,7 @@ class LLMClient:
         # Initialize the client with the API key
         cli = client_class(api_key=api_key)
 
-        # Set the model attribute
-        # cli.model = self.llm_config_model.model
-
-        # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
-        # cli.embed_model = DEFAULT_OPENAI_EMBED if not embed_model else embed_model
 
         # Assign the client to self.client
         return OpenAIClient(
@@ -137,28 +130,38 @@ class LLMClient:
         )
 
         # Assign Bedrock client to self.client
-        aws_cli = boto3.client(
+        cli = boto3.client(
             service_name="bedrock-runtime",
             aws_access_key_id=aws_access_key,
             aws_secret_access_key=aws_secret_key,
             config=bedrock_config
         )
 
-        # Set the model attribute
-        # aws_cli.model = self.llm_config_model.model
-
-        # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
-        # aws_cli.embed_model = DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
 
         return BedrockClient(
-            client=aws_cli,
+            client=cli,
             model=self.llm_config_model.model,
             embed_model=DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
         )
 
     def _init_anthropic_cli(self) -> AnthropicClient:
+        # Set the API Key from pydantic model class or from environment variables.
         api_key = self.llm_config_model.api_key or os.getenv("ANTHROPIC_API_KEY")
+
+        # Determine the client class based on async_mode
+        client_class = AsyncAnthropic if self.llm_config_model.async_mode else Anthropic
+
+        # Initialize the client with the API key
+        cli = client_class(api_key=api_key)
+
+        embed_model = self.llm_config_model.embed_model
+
+        return AnthropicClient(
+            client=cli,
+            model=self.llm_config_model.model,
+            embed_model=DEFAULT_ANTHROPIC_EMBED if not embed_model else embed_model
+        )
 
     def chat_completion(
             self,
