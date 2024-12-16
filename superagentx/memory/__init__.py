@@ -25,7 +25,7 @@ class Memory(MemoryBase):
             memory_config: dict
     ):
         self.memory_config = MemoryConfig(**memory_config)
-        self.db = SQLiteManager(self.memory_config.db_path)
+        self.db = SQLiteManager(db_path=self.memory_config.db_path)
         self.vector_db: BaseVectorStore = self.memory_config.vector_store
         llm_client: LLMClient = self.memory_config.llm_client
         if not self.vector_db:
