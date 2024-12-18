@@ -205,11 +205,11 @@ class AgentXPipe:
             logger.debug(f'Updated with previous results.\nPrevious Result : {pre_result}')
             if self.memory:
                 old_memory = await self.retrieve_memory(query_instruction)
-                if old_memory:
-                    message_content = ""
-                    async for _mem in iter_to_aiter(old_memory):
-                        message_content += f"{_mem.get('content')} "
-                    old_memory = f"Context :\n{message_content}\nQuestion : {query_instruction}"
+                # if old_memory:
+                #     message_content = ""
+                #     async for _mem in iter_to_aiter(old_memory):
+                #         message_content += f"{_mem.get('content')} "
+                #     old_memory = f"Context :\n{message_content}\nQuestion : {query_instruction}"
                 logger.debug(f"Updated with old memory.\n{old_memory}")
             try:
                 if isinstance(_agents, list):
