@@ -36,7 +36,7 @@ async def main():
     await ws_pipe.start()
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, asyncio.CancelledError):
