@@ -81,7 +81,6 @@ class Memory(MemoryBase):
             self,
             query: str,
             memory_id: str,
-            chat_id: str,
             limit: int = 10,
             filters: dict | None = None
     ) -> list[dict]:

@@ -189,7 +189,6 @@ class AgentXPipe:
         return await self.memory.search(
             query=query_instruction,
             memory_id=self.memory_id,
-            chat_id=self.chat_id,
             limit=10,
         )
 
