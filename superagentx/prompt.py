@@ -64,10 +64,4 @@ class PromptTemplate:
             "content": format_string
         }
         prompt.append(content)
-        if self.system_message:
-            _system_content = {
-                "role": "system",
-                "content": self.system_message
-            }
-            prompt.append(_system_content)
         return prompt

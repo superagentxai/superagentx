@@ -56,7 +56,7 @@ tools = [
 @pytest.fixture
 def ollama_client_init() -> dict:
     # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock'}
-    llm_config = {'model': 'mistral', 'llm_type': 'ollama', 'async_mode': True}
+    llm_config = {'model': 'llama3.1', 'llm_type': 'ollama', 'async_mode': True}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client}
     return response

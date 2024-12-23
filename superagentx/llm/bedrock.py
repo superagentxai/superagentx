@@ -31,6 +31,7 @@ class BedrockClient(Client):
             client: boto3.client
     ):
         self.client = client
+        self.llm_params: dict = getattr(self.client, 'kwargs')
 
     def chat_completion(
             self,

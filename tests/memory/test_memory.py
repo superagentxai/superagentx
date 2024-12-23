@@ -18,7 +18,6 @@ Run Pytest:
    4. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_search
 """
 llm_config = {
-    "model": "gpt-4o",
     "llm_type": "openai",
 }
 
@@ -27,7 +26,7 @@ llm_client = LLMClient(llm_config=llm_config)
 
 @pytest.fixture
 def test_memory_init() -> dict:
-    memory_client: Memory = Memory()
+    memory_client: Memory = Memory(memory_config={"llm_client": llm_client})
     datas = {
         "memory_id": "55e497f4010d4eda909691272eaf31fb",
         "chat_id": "915ec91bc2654f8da3af800c0bf6eca9"
@@ -101,3 +100,5 @@ class TestMemory:
         )
         logger.info(response)
         return response
+
+

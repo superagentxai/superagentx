@@ -77,6 +77,8 @@ class LLMClient:
                 embed_model = self.llm_config_model.embed_model
                 cli.embed_model = DEFAULT_OPENAI_EMBED if not embed_model else embed_model
 
+                cli.kwargs = kwargs
+
                 # Assign the client to self.client
                 self.client = OpenAIClient(client=cli)
 
@@ -102,6 +104,8 @@ class LLMClient:
                 cli.model = self.llm_config_model.model
 
                 cli.embed_model = self.llm_config_model.embed_model
+
+                cli.kwargs = kwargs
 
                 # Assign the client to self.client
                 self.client = OpenAIClient(client=cli)
@@ -141,6 +145,10 @@ class LLMClient:
                 embed_model = self.llm_config_model.embed_model
                 aws_cli.embed_model = DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
 
+                for _key in ["aws_region", "aws_access_key", "aws_secret_key"]:
+                    kwargs.pop(_key, None)
+                aws_cli.kwargs = kwargs
+                
                 self.client = BedrockClient(client=aws_cli)
             case LLMType.OLLAMA:
                 host = kwargs.get("host", None) or os.getenv("OLLAMA_HOST")
@@ -149,6 +157,7 @@ class LLMClient:
                 cli.model = self.llm_config_model.model
                 embed_model = self.llm_config_model.embed_model
                 cli.embed_model = DEFAULT_OLLAMA_EMBED if not embed_model else embed_model
+                cli.kwargs = kwargs
                 self.client = OllamaClient(client=cli)
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')

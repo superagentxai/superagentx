@@ -1,9 +1,11 @@
 import inspect
 import json
 import logging
+import re
 import time
 import uuid
 
+import yaml
 from ollama import AsyncClient
 from ollama import Client as OllamaCli
 from openai.types import CompletionUsage
@@ -29,6 +31,7 @@ class OllamaClient(Client):
         self.client = client
         self._model = getattr(self.client, 'model')
         self._embed_model = getattr(self.client, 'embed_model')
+        self.llm_params: dict = getattr(self.client, 'kwargs')
 
     def chat_completion(
             self,
@@ -42,6 +45,7 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
+            chat_completion_params = self.__replace_instance_values(chat_completion_params)
             tools = chat_completion_params.tools
             model = ''.join(getattr(self.client, 'model'))
             options = {}
@@ -55,12 +59,16 @@ class OllamaClient(Client):
                     response = self.client.chat(
                         model=self._model,
                         messages=messages,
-                        tools=tools
+                        tools=tools,
+                        options=options,
+                        format='json'
                     )
                 else:
                     response = self.client.chat(
                         model=self._model,
-                        messages=messages
+                        messages=messages,
+                        options=options,
+                        format='json'
                     )
             except Exception as e:
                 raise RuntimeError(f"Failed to get response from Ollama: {e}")
@@ -86,26 +94,26 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
+            chat_completion_params = await sync_to_async(self.__replace_instance_values,chat_completion_params)
             tools = chat_completion_params.tools
             model = ''.join(getattr(self.client, 'model'))
-            options = {}
-            if chat_completion_params.top_p:
-                options["top_p"] = chat_completion_params.top_p
-            if chat_completion_params.temperature:
-                options["temperature"] = chat_completion_params.temperature
             messages = [message.dict() async for message in iter_to_aiter(chat_completion_params.messages)]
             try:
                 if tools:
                     response = await self.client.chat(
                         model=self._model,
                         messages=messages,
-                        tools=tools
+                        tools=tools,
+                        options=self.llm_params,
+                        format='json'
 
                     )
                 else:
                     response = await self.client.chat(
                         model=self._model,
-                        messages=messages
+                        messages=messages,
+                        options=self.llm_params,
+                        format='json'
                     )
             except Exception as e:
                 raise RuntimeError(f"Failed to get response from Ollama: {e}")
@@ -140,19 +148,39 @@ class OllamaClient(Client):
         return tool_calls
 
     @staticmethod
+    def __prepare_json_formatted(content: str):
+        start = '```json\n'
+        end = '```'
+        if '```json' in content:
+            trim_res = re.findall(
+                re.escape(start) + "(.+?)" + re.escape(end),
+                content,
+                re.DOTALL
+            )
+            if trim_res:
+                return trim_res[0]
+            else:
+                return content
+        else:
+            return content
+
     def __prepare_ollama_formatted_output(
+            self,
             response,
             model: str
     ):
         logging.info(f"Response: {response}")
-        response_message = response["message"]["content"]
+        time.sleep(1)
+        response_message = response.message.content
+        if response_message:
+            response_message = self.__prepare_json_formatted(response_message)
         finish_reason = "stop"
         tool_calls = None
         if not response_message:
-            message_keys = response["message"].keys()
-            if "tool_calls" in message_keys:
+            tool_calls = response.message.tool_calls
+            if tool_calls:
                 tool_calls = OllamaClient.convert_tool_response_to_openai_format(
-                    response["message"]["tool_calls"]
+                    response.message.tool_calls
                 )
                 finish_reason = "tool_calls"
         message = ChatCompletionMessage(
@@ -160,12 +188,14 @@ class OllamaClient(Client):
             content=response_message,
             tool_calls=tool_calls
         )
-        total_tokens = response["prompt_eval_count"] + response["eval_count"]
-        usage = CompletionUsage(
-            prompt_tokens=response["prompt_eval_count"],
-            completion_tokens=response["eval_count"],
-            total_tokens=total_tokens,
-        )
+        usage = None
+        if response["prompt_eval_count"] and response["eval_count"]:
+            total_tokens = response["prompt_eval_count"] + response["eval_count"]
+            usage = CompletionUsage(
+                prompt_tokens=response["prompt_eval_count"],
+                completion_tokens=response["eval_count"],
+                total_tokens=total_tokens,
+            )
 
         return ChatCompletion(
             id=uuid.uuid4().hex,
@@ -183,20 +213,37 @@ class OllamaClient(Client):
             usage=usage
         )
 
-    async def get_tool_json(
-            self,
-            func: typing.Callable
-    ) -> dict:
+    async def get_tool_json(self, func: typing.Callable) -> dict:
         _func_name = func.__name__
         _doc_str = inspect.getdoc(func)
         _properties = {}
         _type_hints = typing.get_type_hints(func)
         async for param, param_type in iter_to_aiter(_type_hints.items()):
             if param != 'return':
-                _properties[param] = {
-                    "type": await ptype_to_json_scheme(param_type.__name__),
-                    "description": f"The {param.replace('_', ' ')}."
-                }
+                _type = await ptype_to_json_scheme(param_type.__name__)
+                if _type == "array":
+                    if hasattr(param_type, "__args__"):
+                        _properties[param] = {
+                            "type": _type,
+                            "description": f"The {param.replace('_', ' ')}.",
+                            'items': {
+                                "type": await ptype_to_json_scheme(param_type.__args__[0].__name__)
+                            }
+                        }
+                    else:
+                        _properties[param] = {
+                            "type": _type,
+                            "description": f"The {param.replace('_', ' ')}.",
+                            'items': {
+                                "type": "object"
+                            }
+                        }
+                else:
+                    _properties[param] = {
+                        "type": _type,
+                        "description": f"The {param.replace('_', ' ')}."
+                    }
+
         return {
             'type': 'function',
             'function': {
@@ -227,7 +274,7 @@ class OllamaClient(Client):
         text = text.replace("\n", " ")
         response = self.client.embeddings(model=self._embed_model, prompt=text)
         if response and response["embedding"]:
-            return [response["embedding"]]
+            return response["embedding"]
 
     async def aembed(
             self,
@@ -246,4 +293,11 @@ class OllamaClient(Client):
         text = text.replace("\n", " ")
         response = await self.client.embeddings(model=self._embed_model, prompt=text)
         if response and response["embedding"]:
-            return [response["embedding"]]
+            return response["embedding"]
+
+    def __replace_instance_values(self, source_instance: ChatCompletionParams):
+        params = self.llm_params.keys()
+        for _key in params:
+            if _key in source_instance.__fields__:
+                setattr(source_instance, _key, self.llm_params[_key])
+        return source_instance
