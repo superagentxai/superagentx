@@ -10,14 +10,15 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
+from superagentx.llm.anthropic import AnthropicClient
 from superagentx.llm.bedrock import BedrockClient
+from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
 from superagentx.utils.helper import iter_to_aiter
 from superagentx.utils.llm_config import LLMType
-from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
 
 logger = logging.getLogger(__name__)
 
@@ -54,95 +55,110 @@ class LLMClient:
 
         match self.llm_config_model.llm_type:
 
-            case LLMType.OPENAI_CLIENT:  # OPEN AI Client Type
-
-                # Set the API Key from pydantic model class or from environment variables.
-                api_key = (
-                    self.llm_config_model.api_key
-                    if self.llm_config_model.api_key else os.getenv("OPENAI_API_KEY")
-                )
-
-                # Determine the client class based on async_mode
-                client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
-
-                # Initialize the client with the API key
-                cli = client_class(api_key=api_key)
-
-                # Set the model attribute
-                cli.model = self.llm_config_model.model
-
-                # Set the embed model attribute
-                embed_model = self.llm_config_model.embed_model
-                cli.embed_model = DEFAULT_OPENAI_EMBED if not embed_model else embed_model
-
-                # Assign the client to self.client
-                self.client = OpenAIClient(client=cli)
-
+            case LLMType.OPENAI_CLIENT:
+                self.client = self._init_openai_cli()
             case LLMType.AZURE_OPENAI_CLIENT:
-
-                # Set the parameters from pydantic model class or from environment variables.
-                api_key = self.llm_config_model.api_key or os.getenv("AZURE_OPENAI_API_KEY")
-                base_url = self.llm_config_model.base_url or os.getenv("AZURE_ENDPOINT")
-                azure_deployment = self.llm_config_model.model or os.getenv("AZURE_DEPLOYMENT")
-                api_version = self.llm_config_model.api_version or os.getenv("API_VERSION")
-
-                # Determine the client class based on async_mode
-                client_class = AsyncAzureOpenAI if self.llm_config_model.async_mode else AzureOpenAI
-
-                # Initialize the client with the gathered configuration
-                cli = client_class(
-                    api_key=api_key,
-                    azure_endpoint=base_url,
-                    api_version=api_version
-                )
-
-                # Set the model attribute
-                cli.model = self.llm_config_model.model
-
-                cli.embed_model = self.llm_config_model.embed_model
-
-                # Assign the client to self.client
-                self.client = OpenAIClient(client=cli)
-
+                self.client = self._init_azure_openai_cli()
             case LLMType.BEDROCK_CLIENT:
-
-                aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
-
-                if aws_region is None:
-                    raise ValueError("Region is required to use the Amazon Bedrock API.")
-
-                aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY")
-                aws_secret_key = kwargs.get("aws_secret_key", None) or os.getenv("AWS_SECRET_KEY")
-
-                # Initialize Bedrock client, session, and runtime
-                bedrock_config = Config(
-                    region_name=aws_region,
-                    signature_version="v4",
-                    retries={
-                        "max_attempts": _retries,
-                        "mode": "standard"
-                    },
-                )
-
-                # Assign Bedrock client to self.client
-                aws_cli = boto3.client(
-                    service_name="bedrock-runtime",
-                    aws_access_key_id=aws_access_key,
-                    aws_secret_access_key=aws_secret_key,
-                    config=bedrock_config
-                )
-
-                # Set the model attribute
-                aws_cli.model = self.llm_config_model.model
-
-                # Set the embed model attribute
-                embed_model = self.llm_config_model.embed_model
-                aws_cli.embed_model = DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
-
-                self.client = BedrockClient(client=aws_cli)
-
+                self.client = self._init_bedrock_cli(**kwargs)
+            case LLMType.ANTHROPIC_CLIENT:
+                pass
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
+
+    def _init_openai_cli(self) -> OpenAIClient:
+        # Set the API Key from pydantic model class or from environment variables.
+        api_key = (
+            self.llm_config_model.api_key
+            if self.llm_config_model.api_key else os.getenv("OPENAI_API_KEY")
+        )
+
+        # Determine the client class based on async_mode
+        client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
+
+        # Initialize the client with the API key
+        cli = client_class(api_key=api_key)
+
+        # Set the model attribute
+        # cli.model = self.llm_config_model.model
+
+        # Set the embed model attribute
+        embed_model = self.llm_config_model.embed_model
+        # cli.embed_model = DEFAULT_OPENAI_EMBED if not embed_model else embed_model
+
+        # Assign the client to self.client
+        return OpenAIClient(
+            client=cli,
+            model=self.llm_config_model.model,
+            embed_model=DEFAULT_OPENAI_EMBED if not embed_model else embed_model
+        )
+
+    def _init_azure_openai_cli(self) -> OpenAIClient:
+        # Set the parameters from pydantic model class or from environment variables.
+        api_key = self.llm_config_model.api_key or os.getenv("AZURE_OPENAI_API_KEY")
+        base_url = self.llm_config_model.base_url or os.getenv("AZURE_ENDPOINT")
+        azure_deployment = self.llm_config_model.model or os.getenv("AZURE_DEPLOYMENT")
+        api_version = self.llm_config_model.api_version or os.getenv("API_VERSION")
+
+        # Determine the client class based on async_mode
+        client_class = AsyncAzureOpenAI if self.llm_config_model.async_mode else AzureOpenAI
+
+        # Initialize the client with the gathered configuration
+        cli = client_class(
+            api_key=api_key,
+            azure_endpoint=base_url,
+            api_version=api_version
+        )
+
+        # Assign the client to self.client
+        return OpenAIClient(
+            client=cli,
+            model=self.llm_config_model.model,
+            embed_model=self.llm_config_model.embed_model
+        )
+
+    def _init_bedrock_cli(self, **kwargs) -> BedrockClient:
+        aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
+
+        if aws_region is None:
+            raise ValueError("Region is required to use the Amazon Bedrock API.")
+
+        aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY")
+        aws_secret_key = kwargs.get("aws_secret_key", None) or os.getenv("AWS_SECRET_KEY")
+
+        # Initialize Bedrock client, session, and runtime
+        bedrock_config = Config(
+            region_name=aws_region,
+            signature_version="v4",
+            retries={
+                "max_attempts": _retries,
+                "mode": "standard"
+            },
+        )
+
+        # Assign Bedrock client to self.client
+        aws_cli = boto3.client(
+            service_name="bedrock-runtime",
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            config=bedrock_config
+        )
+
+        # Set the model attribute
+        # aws_cli.model = self.llm_config_model.model
+
+        # Set the embed model attribute
+        embed_model = self.llm_config_model.embed_model
+        # aws_cli.embed_model = DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
+
+        return BedrockClient(
+            client=aws_cli,
+            model=self.llm_config_model.model,
+            embed_model=DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
+        )
+
+    def _init_anthropic_cli(self) -> AnthropicClient:
+        api_key = self.llm_config_model.api_key or os.getenv("ANTHROPIC_API_KEY")
 
     def chat_completion(
             self,

@@ -5,6 +5,15 @@ from pydantic import typing
 
 class Client(metaclass=ABCMeta):
 
+    def __init__(
+            self,
+            model: str | None,
+            embed_model: str | None
+    ):
+        self._model = model
+        self._embed_model = embed_model
+
+
     @abstractmethod
     def chat_completion(
             self,

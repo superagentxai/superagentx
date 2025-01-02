@@ -69,10 +69,10 @@ Creating restpipe file at /home/ben/content creator/content_creator/restpipe.py
 Now, you'll need to create a Python virtual environment for your project:
 
 ```shell
+$ python3 -m pip install poetry
 $ cd /home/ben/Content Creator
 $ python3 -m venv venv
 $ source venv/bin/activate
-(venv) $ pip install poetry
 (venv) $ poetry install
 ```
 
@@ -249,6 +249,22 @@ $ python3 Content Creator/restpipe.py
 ```
 
 This will start your SuperAgentX application and execute the tasks you've configured.
+
+#### Run the Application with `Verbose`
+
+```shell
+# Console Pipe
+$ VERBOSE=1 python3 Content Creator/iopipe.py
+
+or
+# Console Pipe
+$ DEBUGGING=1 python3 Content Creator/iopipe.py
+```
+
+<Note>
+This is applicable for `wspipe.py` and `restpipe.py`. Even with your custom implementation.
+Valid options are `1`, `True`, `true` and `TRUE`
+</Note>
 
 ### Result
 ```shell

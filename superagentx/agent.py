@@ -106,7 +106,7 @@ class Agent:
             f'Id : {self.agent_id}\n'
             f'Name : {self.name}\n'
             f'Description : {self.description}\n'
-            f'Engines Associated : {",".join([str(_engine.handler.__class__) for _engine in self.engines])}\n'
+            f'Engines Associated : {",".join([str(_engine) for _engine in self.engines])}\n'
             f'Engine Role : {self.role}\nEngine Goal: {self.goal}\n'
             f'LLM Client : {self.llm.llm_config}\n'
             f'Prompt Template : Type - {self.prompt_template.prompt_type} '
@@ -215,13 +215,10 @@ class Agent:
             self,
             query_instruction: str,
             pre_result: str | None = None,
-            old_memory: str | None = None
+            old_memory: list[dict] | None = None
     ) -> GoalResult:
         results = []
         instruction = query_instruction
-        if old_memory:
-            instruction = f"Context:\n{old_memory}\nQuestion: {query_instruction}"
-            logger.debug(f'Updated Query Instruction with old memory : {instruction}')
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 logger.debug(f'Engine(s) are executing : {",".join([str(_engine) for _engine in _engines])}')
@@ -256,7 +253,7 @@ class Agent:
             *,
             query_instruction: str,
             pre_result: str | None = None,
-            old_memory: str | None = None,
+            old_memory: list[dict] | None = None,
             stop_if_goal_not_satisfied: bool = False
     ) -> GoalResult | None:
         """
