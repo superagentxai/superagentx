@@ -26,11 +26,11 @@ class OllamaClient(Client):
 
     def __init__(
             self,
-            client: AsyncClient | OllamaCli
+            client: AsyncClient | OllamaCli,
+            **kwargs
     ):
+        super().__init__(**kwargs)
         self.client = client
-        self._model = getattr(self.client, 'model')
-        self._embed_model = getattr(self.client, 'embed_model')
         self.llm_params: dict = getattr(self.client, 'kwargs')
 
     def chat_completion(
@@ -45,9 +45,8 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
-            chat_completion_params = self.__replace_instance_values(chat_completion_params)
+            # chat_completion_params = self.__replace_instance_values(chat_completion_params)
             tools = chat_completion_params.tools
-            model = ''.join(getattr(self.client, 'model'))
             options = {}
             if chat_completion_params.top_p:
                 options["top_p"] = chat_completion_params.top_p
@@ -78,7 +77,7 @@ class OllamaClient(Client):
 
             chat_completion: ChatCompletion = self.__prepare_ollama_formatted_output(
                 response=response,
-                model=model
+                model=self._model
             )
             return chat_completion
 
@@ -94,9 +93,8 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
-            chat_completion_params = await sync_to_async(self.__replace_instance_values,chat_completion_params)
+            # chat_completion_params = await sync_to_async(self.__replace_instance_values,chat_completion_params)
             tools = chat_completion_params.tools
-            model = ''.join(getattr(self.client, 'model'))
             messages = [message.dict() async for message in iter_to_aiter(chat_completion_params.messages)]
             try:
                 if tools:
@@ -124,7 +122,7 @@ class OllamaClient(Client):
             chat_completion: ChatCompletion = await sync_to_async(
                 self.__prepare_ollama_formatted_output,
                 response=response,
-                model=model
+                model=self._model
             )
             return chat_completion
 
@@ -171,16 +169,16 @@ class OllamaClient(Client):
     ):
         logging.info(f"Response: {response}")
         time.sleep(1)
-        response_message = response.message.content
+        response_message = response.get("message", {}).get("content", "")
         if response_message:
             response_message = self.__prepare_json_formatted(response_message)
         finish_reason = "stop"
         tool_calls = None
         if not response_message:
-            tool_calls = response.message.tool_calls
+            tool_calls = response.get("message", {}).get("tool_calls", None)
             if tool_calls:
                 tool_calls = OllamaClient.convert_tool_response_to_openai_format(
-                    response.message.tool_calls
+                    response.get("message", {}).get("tool_calls", None)
                 )
                 finish_reason = "tool_calls"
         message = ChatCompletionMessage(
@@ -192,9 +190,9 @@ class OllamaClient(Client):
         if response["prompt_eval_count"] and response["eval_count"]:
             total_tokens = response["prompt_eval_count"] + response["eval_count"]
             usage = CompletionUsage(
-                prompt_tokens=response["prompt_eval_count"],
-                completion_tokens=response["eval_count"],
-                total_tokens=total_tokens,
+                prompt_tokens=0,
+                completion_tokens=0,
+                total_tokens=0,
             )
 
         return ChatCompletion(

@@ -31,11 +31,11 @@ class OpenAIClient(Client):
     def __init__(
             self,
             *,
-            client: OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI
+            client: OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI,
+            **kwargs
     ):
-
+        super().__init__(**kwargs)
         self.client = client
-        self._model = getattr(self.client, 'model')
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)
@@ -44,7 +44,6 @@ class OpenAIClient(Client):
             logger.info(
                 "OpenAI or Azure hosted Open AI client, is not valid!"
             )
-        self._embed_model = getattr(self.client, 'embed_model')
 
         self.llm_params: dict = getattr(self.client, 'kwargs')
 
@@ -53,7 +52,7 @@ class OpenAIClient(Client):
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        chat_completion_params = self.__replace_instance_values(chat_completion_params)
+        # chat_completion_params = self.__replace_instance_values(chat_completion_params)
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = self.client.chat.completions.create(**params)
@@ -64,7 +63,7 @@ class OpenAIClient(Client):
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        chat_completion_params = await sync_to_async(self.__replace_instance_values,chat_completion_params)
+        # chat_completion_params = await sync_to_async(self.__replace_instance_values,chat_completion_params)
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = await self.client.chat.completions.create(**params)
