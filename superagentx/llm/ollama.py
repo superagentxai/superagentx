@@ -5,7 +5,6 @@ import re
 import time
 import uuid
 
-import yaml
 from ollama import AsyncClient
 from ollama import Client as OllamaCli
 from openai.types import CompletionUsage
@@ -187,13 +186,13 @@ class OllamaClient(Client):
             tool_calls=tool_calls
         )
         usage = None
-        if response["prompt_eval_count"] and response["eval_count"]:
-            total_tokens = response["prompt_eval_count"] + response["eval_count"]
-            usage = CompletionUsage(
-                prompt_tokens=0,
-                completion_tokens=0,
-                total_tokens=0,
-            )
+        # if response["prompt_eval_count"] and response["eval_count"]:
+        #     total_tokens = response["prompt_eval_count"] + response["eval_count"]
+        usage = CompletionUsage(
+            prompt_tokens=0,
+            completion_tokens=0,
+            total_tokens=0,
+        )
 
         return ChatCompletion(
             id=uuid.uuid4().hex,
