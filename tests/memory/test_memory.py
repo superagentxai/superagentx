@@ -95,8 +95,7 @@ class TestMemory:
         client: Memory = test_memory_init.get("client")
         response = await client.search(
             query="agentic",
-            memory_id=datas.get("memory_id"),
-            chat_id=datas.get("chat_id")
+            memory_id=datas.get("memory_id")
         )
         logger.info(response)
         return response

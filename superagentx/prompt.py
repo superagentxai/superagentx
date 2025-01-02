@@ -46,6 +46,7 @@ class PromptTemplate:
             self,
             *,
             input_prompt: str,
+            old_memory: list[dict] | None = None,
             **kwargs: Any
     ) -> list[dict]:
         """
@@ -53,6 +54,7 @@ class PromptTemplate:
 
         Args:
             input_prompt (str): Give the instruction of your expected result.
+            old_memory (list[dict]): An optional previous context of the user's instruction
             kwargs (Any): Format the variable's value in the given prompt.
         """
         prompt = await self._get_prompt()
@@ -64,4 +66,14 @@ class PromptTemplate:
             "content": format_string
         }
         prompt.append(content)
+
+        if old_memory:
+            prompt += old_memory
+
+        if self.system_message:
+            _system_content = {
+                "role": "system",
+                "content": self.system_message
+            }
+            prompt.append(_system_content)
         return prompt

@@ -77,6 +77,7 @@ class Engine:
             self,
             input_prompt: str,
             pre_result: str | None = None,
+            old_memory: list[dict] | None = None,
             **kwargs
     ) -> list[typing.Any]:
         """
@@ -87,6 +88,7 @@ class Engine:
                  based on the context.
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
+            old_memory: An optional previous context of the user's instruction
             kwargs: Additional keyword arguments to update the `input_prompt` dynamically.
 
         Returns:
@@ -101,6 +103,7 @@ class Engine:
             kwargs = {}
         prompt_messages = await self.prompt_template.get_messages(
             input_prompt=input_prompt,
+            old_memory=old_memory,
             **kwargs
         )
         logger.debug(f"Prompt Message : {prompt_messages}")

@@ -215,13 +215,10 @@ class Agent:
             self,
             query_instruction: str,
             pre_result: str | None = None,
-            old_memory: str | None = None
+            old_memory: list[dict] | None = None
     ) -> GoalResult:
         results = []
         instruction = query_instruction
-        if old_memory:
-            instruction = f"Context:\n{old_memory}\nQuestion: {query_instruction}"
-            logger.debug(f'Updated Query Instruction with old memory : {instruction}')
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 logger.debug(f'Engine(s) are executing : {",".join([str(_engine) for _engine in _engines])}')
@@ -256,7 +253,7 @@ class Agent:
             *,
             query_instruction: str,
             pre_result: str | None = None,
-            old_memory: str | None = None,
+            old_memory: list[dict] | None = None,
             stop_if_goal_not_satisfied: bool = False
     ) -> GoalResult | None:
         """
