@@ -30,7 +30,7 @@ class OllamaClient(Client):
     ):
         super().__init__(**kwargs)
         self.client = client
-        self.llm_params: dict = getattr(self.client, 'kwargs')
+        self.kwargs = kwargs
 
     def chat_completion(
             self,
@@ -92,7 +92,7 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
-            # chat_completion_params = await sync_to_async(self.__replace_instance_values,chat_completion_params)
+            chat_completion_params = await sync_to_async(self.__replace_instance_values, chat_completion_params)
             tools = chat_completion_params.tools
             messages = [message.dict() async for message in iter_to_aiter(chat_completion_params.messages)]
             try:
@@ -101,7 +101,7 @@ class OllamaClient(Client):
                         model=self._model,
                         messages=messages,
                         tools=tools,
-                        options=self.llm_params,
+                        options=chat_completion_params.dict(),
                         format='json'
 
                     )
@@ -109,7 +109,7 @@ class OllamaClient(Client):
                     response = await self.client.chat(
                         model=self._model,
                         messages=messages,
-                        options=self.llm_params,
+                        options=chat_completion_params.dict(),
                         format='json'
                     )
             except Exception as e:
@@ -167,7 +167,6 @@ class OllamaClient(Client):
             model: str
     ):
         logging.info(f"Response: {response}")
-        time.sleep(1)
         response_message = response.get("message", {}).get("content", "")
         if response_message:
             response_message = self.__prepare_json_formatted(response_message)
@@ -185,14 +184,16 @@ class OllamaClient(Client):
             content=response_message,
             tool_calls=tool_calls
         )
-        usage = None
-        # if response["prompt_eval_count"] and response["eval_count"]:
-        #     total_tokens = response["prompt_eval_count"] + response["eval_count"]
         usage = CompletionUsage(
             prompt_tokens=0,
-            completion_tokens=0,
             total_tokens=0,
+            completion_tokens=0,
         )
+        if response.get("prompt_eval_count", None) and response.get("eval_count", None):
+            total_tokens = response.get("prompt_eval_count") + response.get("eval_count")
+            usage.prompt_tokens = response.get("prompt_eval_count")
+            usage.completion_tokens = response.get("eval_count")
+            usage.total_tokens = total_tokens
 
         return ChatCompletion(
             id=uuid.uuid4().hex,
@@ -292,9 +293,9 @@ class OllamaClient(Client):
         if response and response["embedding"]:
             return response["embedding"]
 
-    def __replace_instance_values(self, source_instance: ChatCompletionParams):
-        params = self.llm_params.keys()
+    def __replace_instance_values(self, source_instance: ChatCompletionParams) -> ChatCompletionParams:
+        params = self.kwargs.keys()
         for _key in params:
             if _key in source_instance.__fields__:
-                setattr(source_instance, _key, self.llm_params[_key])
+                setattr(source_instance, _key, self.kwargs[_key])
         return source_instance

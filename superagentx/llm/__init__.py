@@ -170,11 +170,11 @@ class LLMClient:
         cli = AsyncClient(host=host)
         embed_model = self.llm_config_model.embed_model
         cli.embed_model = DEFAULT_OLLAMA_EMBED if not embed_model else embed_model
-        cli.kwargs = self.kwargs
         return OllamaClient(
             client=cli,
             embed_model=DEFAULT_OLLAMA_EMBED if not embed_model else embed_model,
-            model=self.llm_config_model.model
+            model=self.llm_config_model.model,
+            **self.kwargs
         )
 
     def chat_completion(
