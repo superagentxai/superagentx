@@ -2,7 +2,7 @@
 import asyncio
 
 from rich import print as rprint
-from superagentx.pipeimpl.voice_impl.whisper_voice import WhisperPipe
+from superagentx.pipeimpl.openaivoicepipe import WhisperPipe
 
 from create_pipe import get_superagentx_voice_to_text_pipe
 

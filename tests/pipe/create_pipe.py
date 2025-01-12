@@ -23,7 +23,7 @@ async def get_superagentx_voice_to_text_pipe() -> AgentXPipe:
 
     # Enable Handler
     gmail_handler = GmailHandler(
-        credentials="/home/keerthivasan/Projects/credentials.json"
+        credentials="//path to json crendentials."
     )
     hubspot_handler = HubSpotHandler()
 
