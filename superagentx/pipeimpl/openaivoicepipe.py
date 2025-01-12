@@ -32,18 +32,18 @@ class WhisperPipe:
 
     async def record_audio(self):
         """Record audio for a fixed duration."""
-        self._console.status("[bold yellow]Ask your query...\n", spinner='aesthetic')
+        # Display the status message while recording
+        with self._console.status("[bold yellow]Ask your query...[/bold yellow]"):
+            audio_frames = []
 
-        audio_frames = []
+            def audio_callback(indata, frames, time, status):
+                if status:
+                    self._console.print(f"Status: {status}")
+                audio_frames.append(indata.copy())
 
-        def audio_callback(indata, frames, time, status):
-            if status:
-                self._console.print(f"Status: {status}")
-            audio_frames.append(indata.copy())
-
-        # Start recording
-        with sd.InputStream(samplerate=sample_rate, channels=channels, dtype=dtype, callback=audio_callback):
-            await asyncio.sleep(record_duration)
+            # Start recording
+            with sd.InputStream(samplerate=sample_rate, channels=channels, dtype=dtype, callback=audio_callback):
+                await asyncio.sleep(record_duration)
 
         # Combine recorded audio frames
         recorded_audio = np.concatenate(audio_frames, axis=0)
@@ -51,7 +51,6 @@ class WhisperPipe:
         # Save to a temporary WAV file
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio_file:
             write(temp_audio_file.name, sample_rate, recorded_audio)
-            self._console.print(f"Audio saved to {temp_audio_file.name}")
             return temp_audio_file.name
 
     async def transcribe_audio(self, file_path):
