@@ -22,14 +22,14 @@ async def get_superagentx_voice_to_text_pipe() -> AgentXPipe:
     memory = Memory(memory_config={"llm_client": llm_client})
 
     # Enable Handler
-    # gmail_handler = GmailHandler(
-    #     credentials="//path to json crendentials."
-    # )
+    gmail_handler = GmailHandler(
+        credentials="//path to json crendentials."
+    )
     hubspot_handler = HubSpotHandler()
 
-    # system_prompt = """
-    #     1. Get last email which is which is subject contains insurance or policy or claim
-    # """
+    system_prompt = """
+        1. Get last email which is which is subject contains insurance or policy or claim
+    """
 
     hubspot_system_prompt = """
             1. Create only one ticket at a time in hubspot crm
@@ -37,9 +37,9 @@ async def get_superagentx_voice_to_text_pipe() -> AgentXPipe:
 
     # Prompt Template
 
-    # gmail_prompt_template = PromptTemplate(
-    #     system_message=system_prompt
-    # )
+    gmail_prompt_template = PromptTemplate(
+        system_message=system_prompt
+    )
 
     hubspot_prompt_template = PromptTemplate(
         system_message=hubspot_system_prompt
@@ -48,11 +48,11 @@ async def get_superagentx_voice_to_text_pipe() -> AgentXPipe:
     # Read last email to create a new ticket in HubSpot.
     # Example - Engine(s)
     # -------------------
-    # gmail_engine = Engine(
-    #     handler=gmail_handler,
-    #     llm=llm_client,
-    #     prompt_template=gmail_prompt_template
-    # )
+    gmail_engine = Engine(
+        handler=gmail_handler,
+        llm=llm_client,
+        prompt_template=gmail_prompt_template
+    )
     hubspot_engine = Engine(
         handler=hubspot_handler,
         llm=llm_client,
@@ -61,13 +61,13 @@ async def get_superagentx_voice_to_text_pipe() -> AgentXPipe:
 
     # Create Agents
     # Create Agent with Gmail, Hubspot Engines execute in sequential
-    # gmail_agent = Agent(
-    #     goal="Get me the best search results",
-    #     role="You are the best gmail reader",
-    #     llm=llm_client,
-    #     prompt_template=gmail_prompt_template,
-    #     engines=[[gmail_engine]]
-    # )
+    gmail_agent = Agent(
+        goal="Get me the best search results",
+        role="You are the best gmail reader",
+        llm=llm_client,
+        prompt_template=gmail_prompt_template,
+        engines=[[gmail_engine]]
+    )
 
     hubspot_agent = Agent(
         name='CRM Agent',
@@ -81,7 +81,7 @@ async def get_superagentx_voice_to_text_pipe() -> AgentXPipe:
     # Create Pipe - Interface
     # Pipe Interface to send it to public accessible interface (Cli Console / WebSocket / Restful API)
     pipe = AgentXPipe(
-        agents=[hubspot_agent],
+        agents=[gmail_agent, hubspot_agent],
         memory=memory
     )
     return pipe
