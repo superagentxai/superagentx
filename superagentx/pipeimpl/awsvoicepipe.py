@@ -7,7 +7,7 @@ from amazon_transcribe.model import TranscriptEvent
 from superagentx.agentxpipe import AgentXPipe
 
 
-class VoicePipe:
+class AWSVoicePipe:
     def __init__(
             self,
             *,

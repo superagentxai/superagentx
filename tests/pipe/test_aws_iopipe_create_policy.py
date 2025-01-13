@@ -2,7 +2,7 @@
 import asyncio
 
 from rich import print as rprint
-from superagentx.pipeimpl.awsvoicepipe import VoicePipe
+from superagentx.pipeimpl.awsvoicepipe import AWSVoicePipe
 
 from create_pipe import get_superagentx_voice_to_text_pipe
 
@@ -15,7 +15,7 @@ async def main():
     pipe = await get_superagentx_voice_to_text_pipe()
 
     # Create IO Cli Console - Interface
-    io_pipe = VoicePipe(
+    io_pipe = AWSVoicePipe(
         search_name='SuperAgentX - Voice To Text',
         agentx_pipe=pipe,
         read_prompt=f"\n[bold green]Enter your search here"

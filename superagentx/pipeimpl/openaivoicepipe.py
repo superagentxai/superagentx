@@ -9,10 +9,10 @@ from rich.console import Console
 from superagentx.agentxpipe import AgentXPipe
 
 # Parameters for recording
-sample_rate = 44100  # Hz
-channels = 1
-dtype = 'int16'
-record_duration = 10
+SAMPLE_RATE = 44100  # Hz
+CHANNELS = 1
+DTYPE = 'int16'
+RECORD_DURATION = 10
 
 
 class WhisperPipe:
@@ -42,8 +42,8 @@ class WhisperPipe:
                 audio_frames.append(indata.copy())
 
             # Start recording
-            with sd.InputStream(samplerate=sample_rate, channels=channels, dtype=dtype, callback=audio_callback):
-                await asyncio.sleep(record_duration)
+            with sd.InputStream(samplerate=SAMPLE_RATE, channels=CHANNELS, dtype=DTYPE, callback=audio_callback):
+                await asyncio.sleep(RECORD_DURATION)
 
         # Combine recorded audio frames
         recorded_audio = np.concatenate(audio_frames, axis=0)
@@ -56,9 +56,17 @@ class WhisperPipe:
     async def transcribe_audio(self, file_path):
         """Transcribe the recorded audio using Whisper."""
         self._console.print("[bold yellow]Transcribing audio...[/bold yellow]")
+
         # Run Whisper transcription
         result = self.model.transcribe(file_path)
-        return result["text"]
+
+        # Check the transcription result
+        if "text" in result and result["text"].strip():
+            self._console.print(f"[bold green]Transcription successful:[/bold green] {result['text']}")
+            return result["text"]
+        else:
+            self._console.print("[bold red]Transcription failed or resulted in empty text.[/bold red]")
+            return ""
 
     async def start(self):
         """Start the recording and transcription process."""
