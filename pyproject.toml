@@ -40,6 +40,10 @@ aiosqlite = "^0.20.0"
 typer = { version = "^0.13.0", optional = true }
 jinja2 = { version = "^3.1.4", optional = true }
 websockets = "^13.1"
+sounddevice = "^0.5.1"
+scipy = "^1.15.1"
+amazon-transcribe = "^0.6.2"
+numpy = "^2.2.1"
 
 [tool.poetry.extras]
 cli = ["jinja2", "typer", "rich"]
