@@ -41,7 +41,6 @@ typer = { version = "^0.13.0", optional = true }
 jinja2 = { version = "^3.1.4", optional = true }
 websockets = "^13.1"
 anthropic = "^0.39.0"
-openapi-core = "^0.19.4"
 
 [tool.poetry.extras]
 cli = ["jinja2", "typer", "rich"]
