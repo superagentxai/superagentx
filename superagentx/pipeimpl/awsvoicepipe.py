@@ -6,8 +6,15 @@ from amazon_transcribe.model import TranscriptEvent
 
 from superagentx.agentxpipe import AgentXPipe
 
+# Class-level constants for audio configuration
+CHANNELS = 1
+SAMPLERATE = 16000
+BLOCKSIZE = 1024 * 2
+DTYPE = "int16"
+
 
 class AWSVoicePipe:
+
     def __init__(
             self,
             *,
@@ -17,24 +24,6 @@ class AWSVoicePipe:
             read_prompt: str | None = None,
             write_prompt: str | None = None
     ):
-        """
-        Initializes the VoicePipe with necessary parameters for configuring an agentxpipe that interacts with a specified
-        search mechanism and handles websocket connections.
-
-        Args:
-            search_name: The name of the search mechanism or service that the VoicePipe will utilize. This name is used
-                to identify the search functionality within the broader system.
-            agentx_pipe: An instance of AgentXPipe that facilitates communication between the agent, engine, and other
-                components of the system. This pipe is crucial for data transfer and message handling within the
-                agent's operational context.
-            region: AWS region to be used for the TranscribeStreamingClient.
-            read_prompt: An optional prompt string used for guiding the reading information.
-                This prompt can help shape the queries made during the search operation. Defaults to None
-                if not provided.
-            write_prompt: An optional prompt string used for guiding the writing of information.
-                This prompt may assist in structuring the responses or data being sent. Defaults to None
-                if not provided.
-        """
         self.input_stream = None
         self.search_name = search_name
         self.agentx_pipe = agentx_pipe
@@ -53,7 +42,7 @@ class AWSVoicePipe:
                 self.transcriptions.append(alt.transcript)
 
     @staticmethod
-    async def mic_stream(self):
+    async def mic_stream():
         # This method streams audio from the microphone
         loop = asyncio.get_event_loop()
         input_queue = asyncio.Queue()
@@ -62,11 +51,11 @@ class AWSVoicePipe:
             loop.call_soon_threadsafe(input_queue.put_nowait, (bytes(in_data), _status))
 
         stream = sounddevice.RawInputStream(
-            channels=1,
-            samplerate=16000,
+            channels=CHANNELS,
+            samplerate=SAMPLERATE,
             callback=callback,
-            blocksize=1024 * 2,
-            dtype="int16",
+            blocksize=BLOCKSIZE,
+            dtype=DTYPE,
         )
         with stream:
             while True:
@@ -75,7 +64,7 @@ class AWSVoicePipe:
 
     async def consume_stream(self, stream, timeout=5):
         # This method consumes the microphone stream and sends audio to Transcribe
-        async for chunk, status in self.mic_stream(self):
+        async for chunk, status in self.mic_stream():
             if not chunk or len(chunk) == 0:
                 print("Received empty chunk, stopping the stream.")
                 await stream.input_stream.end_stream()
