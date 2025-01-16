@@ -18,7 +18,8 @@ async def main():
     io_pipe = AWSVoicePipe(
         search_name='SuperAgentX - Voice To Text',
         agentx_pipe=pipe,
-        read_prompt=f"\n[bold green]Enter your search here"
+        read_prompt=f"\n[bold green]Enter your search here",
+        region="us-east-1"
     )
     await io_pipe.start()
 

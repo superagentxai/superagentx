@@ -13,6 +13,7 @@ class AWSVoicePipe:
             *,
             search_name: str,
             agentx_pipe: AgentXPipe,
+            region: str,
             read_prompt: str | None = None,
             write_prompt: str | None = None
     ):
@@ -23,9 +24,10 @@ class AWSVoicePipe:
         Args:
             search_name: The name of the search mechanism or service that the VoicePipe will utilize. This name is used
                 to identify the search functionality within the broader system.
-            agentx_pipe: An instance of AgentXPipe that facilitates communication between the agent, engine and other
+            agentx_pipe: An instance of AgentXPipe that facilitates communication between the agent, engine, and other
                 components of the system. This pipe is crucial for data transfer and message handling within the
                 agent's operational context.
+            region: AWS region to be used for the TranscribeStreamingClient.
             read_prompt: An optional prompt string used for guiding the reading information.
                 This prompt can help shape the queries made during the search operation. Defaults to None
                 if not provided.
@@ -36,6 +38,7 @@ class AWSVoicePipe:
         self.input_stream = None
         self.search_name = search_name
         self.agentx_pipe = agentx_pipe
+        self.region = region
         self._read_prompt = read_prompt or ''
         self._write_prompt = write_prompt or ''
         self._console = Console()
@@ -89,13 +92,13 @@ class AWSVoicePipe:
 
     async def basic_transcribe(self):
         # Main transcription function, connecting to Transcribe service and sending audio
-        client = TranscribeStreamingClient(region="us-east-1")
+        client = TranscribeStreamingClient(region=self.region)
         stream = await client.start_stream_transcription(
             language_code="en-US",
             media_sample_rate_hz=16000,
             media_encoding="pcm"
         )
-        self.input_stream = stream.input_stream  # Set the input_stream for later use
+        self.input_stream = stream.input_stream
 
         # This will handle transcription events concurrently
         async def handle_transcriptions():
@@ -135,4 +138,3 @@ class AWSVoicePipe:
             else:
                 self._console.print("\nNo results found!\n")
         self._console.rule('[bold green]End')
-
