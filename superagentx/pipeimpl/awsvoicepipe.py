@@ -42,7 +42,7 @@ class AWSVoicePipe:
                 self.transcriptions.append(alt.transcript)
 
     @staticmethod
-    async def mic_stream():
+    async def mic_stream(self):
         # This method streams audio from the microphone
         loop = asyncio.get_event_loop()
         input_queue = asyncio.Queue()
@@ -64,7 +64,7 @@ class AWSVoicePipe:
 
     async def consume_stream(self, stream, timeout=5):
         # This method consumes the microphone stream and sends audio to Transcribe
-        async for chunk, status in self.mic_stream():
+        async for chunk, status in self.mic_stream(self):
             if not chunk or len(chunk) == 0:
                 print("Received empty chunk, stopping the stream.")
                 await stream.input_stream.end_stream()
