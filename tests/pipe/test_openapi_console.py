@@ -53,7 +53,7 @@ if __name__ == "__main__":
     llm_config = {"model": 'anthropic.claude-3-5-haiku-20241022-v1:0', "llm_type": 'bedrock'}
 
     # Set System Prompt to provide instructions for the LLM
-    system_prompt = """ You're an OpenAPI client based on standard OpenAPI standard specification. Invoke petstore API
+    _system_prompt = """ You're an OpenAPI client based on standard OpenAPI standard specification. Invoke petstore API
         to get status using the endpoint '/pet/findByStatus'. The query parameter for the API, in the below format
 
         "{'status': 'sold'}" 
@@ -65,16 +65,16 @@ if __name__ == "__main__":
         Generate ONLY the expected JSON
         """
 
-    openapi_handler = OpenAPIHandler(base_url=BASE_URL, spec_url_path=SPEC_PATH)
-    llm_client: LLMClient = LLMClient(llm_config=llm_config)
+    _openapi_handler = OpenAPIHandler(base_url=BASE_URL, spec_url_path=SPEC_PATH)
+    _llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
     # Initialize the parser
-    parser = OpenAPISpecAgent(llm_client=llm_client, openapi_handler=openapi_handler)
+    parser = OpenAPISpecAgent(llm_client=_llm_client, openapi_handler=_openapi_handler)
 
-    user_input = input("User: ")
+    _user_input = input("User: ")
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(parser.openapi_agent(system_prompt=system_prompt, user_input=user_input))
+    result = loop.run_until_complete(parser.openapi_agent(system_prompt=_system_prompt, user_input=_user_input))
     loop.close()
     print(result)

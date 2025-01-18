@@ -26,6 +26,6 @@ class TestOpenAPIHandler:
         response = await openapi_handler_init.call_endpoint(
             endpoint="/pet/findByStatus",
             method="GET",
-            params={"query": {'status': 'sold'}})
+            params={'status': 'sold'})
         logger.info(f"Response {response}")
 

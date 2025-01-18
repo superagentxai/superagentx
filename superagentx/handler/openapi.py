@@ -76,9 +76,9 @@ class OpenAPIHandler(BaseHandler):
             self,
             endpoint: str,
             method: str,
-            params=None,
-            body=None,
-            headers=None
+            params: dict = None,
+            body: dict = None,
+            headers: dict = None
     ):
         """
         Make an API call to the specified endpoint.
