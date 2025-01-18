@@ -43,6 +43,7 @@ websockets = "^13.1"
 amazon-transcribe = "^0.6.2"
 scipy = "^1.15.1"
 numpy = "^2.2.1"
+aiofiles = "^24.1.0"
 
 [tool.poetry.extras]
 cli = ["jinja2", "typer", "rich"]
