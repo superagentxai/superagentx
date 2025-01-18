@@ -12,6 +12,11 @@ SAMPLERATE = 16000
 BLOCKSIZE = 1024 * 2
 DTYPE = "int16"
 
+# Constants for transcribe
+LANGUAGECODE = "en-US"
+SAMPLEHZ = 16000
+MEDIAENCODING = "pcm"
+
 
 class AWSVoicePipe:
 
@@ -83,9 +88,9 @@ class AWSVoicePipe:
         # Main transcription function, connecting to Transcribe service and sending audio
         client = TranscribeStreamingClient(region=self.region)
         stream = await client.start_stream_transcription(
-            language_code="en-US",
-            media_sample_rate_hz=16000,
-            media_encoding="pcm"
+            language_code=LANGUAGECODE,
+            media_sample_rate_hz=SAMPLEHZ,
+            media_encoding=MEDIAENCODING
         )
         self.input_stream = stream.input_stream
 
