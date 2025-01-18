@@ -12,11 +12,6 @@ SAMPLERATE = 16000
 BLOCKSIZE = 1024 * 2
 DTYPE = "int16"
 
-# Constants for transcribe
-LANGUAGECODE = "en-US"
-SAMPLEHZ = 16000
-MEDIAENCODING = "pcm"
-
 
 class AWSVoicePipe:
 
@@ -84,13 +79,18 @@ class AWSVoicePipe:
             print(f"No input received within {timeout} seconds, stopping the stream.")
             await self.input_stream.end_stream()
 
-    async def basic_transcribe(self):
+    async def basic_transcribe(
+            self,
+            language_code: str = 'en-US',
+            media_sample_rate_hz: int = 16000,
+            media_encoding: str = 'pcm'
+    ):
         # Main transcription function, connecting to Transcribe service and sending audio
         client = TranscribeStreamingClient(region=self.region)
         stream = await client.start_stream_transcription(
-            language_code=LANGUAGECODE,
-            media_sample_rate_hz=SAMPLEHZ,
-            media_encoding=MEDIAENCODING
+            language_code=language_code,
+            media_sample_rate_hz=media_sample_rate_hz,
+            media_encoding=media_encoding
         )
         self.input_stream = stream.input_stream
 
