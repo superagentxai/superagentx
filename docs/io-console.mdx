@@ -1,0 +1,61 @@
+---
+title: 'IO Console'
+icon: 'terminal'
+---
+
+This documentation provides an overview of the code used to implement a console-based client for interacting
+with the trip planner pipeline using SuperagentX. The client allows users to input search queries via the command
+line interface (CLI) and receive results in real-time.
+
+## Overview
+The code sets up an interactive CLI using the IOPipe class from SuperagentX. The client allows users to enter a
+search query, which is processed by the trip planner pipeline, and results are returned dynamically through the console interface.
+
+## Setup Environment
+
+```shell
+$ pip install superagentx
+```
+
+Implementation
+
+Import the dependencies.
+```python
+import asyncio
+
+from rich import print as rprint
+from superagentx.pipeimpl.iopipe import IOPipe
+
+from trip_planner.pipe import get_trip_planner_pipe
+```
+
+
+The main function initializes the trip planner pipeline by calling the get_trip_planner_pipe function.
+It then creates an IOPipe object, which serves as the console interface for interacting with the pipeline.
+The read_prompt parameter customizes the prompt displayed to users when they are asked to input a query.
+
+```python
+async def main():
+    """
+    Launches the trip_planner pipeline console client for processing requests and handling data.
+    """
+
+    pipe = await get_trip_planner_pipe()
+
+    # Create IO Cli Console - Interface
+    io_pipe = IOPipe(
+        search_name='SuperAgentX trip_planner',
+        agentx_pipe=pipe,
+        read_prompt=f"\n[bold green]Enter your search here"
+    )
+    await io_pipe.start()
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        rprint("\nUser canceled the [bold yellow][i]pipe[/i]!")
+```
+
+This IO console client provides a simple way for users to interact with the trip planner pipeline, entering search
+queries and receiving immediate feedback through the command line interface.

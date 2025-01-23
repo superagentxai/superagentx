@@ -1,0 +1,101 @@
+---
+title: 'Rest API'
+icon: 'gears'
+---
+
+This documentation provides an overview of the code used to implement a RESTful API server for the pipeline using
+the SuperagentX library and FastAPI. The server processes incoming requests, authenticates users via API tokens,
+and handles search queries related to the trip planner.
+
+## Overview
+The code sets up a FastAPI server that processes search requests using the AgentXPipe class from SuperagentX.
+It incorporates a custom authentication mechanism to validate client requests via an API token. The API exposes
+an endpoint that allows users to submit a query and receive results from the trip planner pipeline.
+
+## Setup Environment
+``` shell
+$ pip install superagentx 'fastapi[standard]'
+```
+
+## Implementation
+Import the dependencies.
+
+```python
+from contextlib import asynccontextmanager
+
+from fastapi import Depends, FastAPI, HTTPException  # https://fastapi.tiangolo.com/
+from fastapi.security import APIKeyHeader
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.result import GoalResult
+
+from trip_planner.config import AUTH_TOKEN
+from trip_planner.pipe import get_trip_planner_pipe
+```
+
+The lifespan function initializes the trip planner pipeline when the FastAPI application starts and clears
+it when the app shuts down. The pipes dictionary is used to store the pipeline for later use in request handling.
+
+```python
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    pipes['trip_planner_pipe'] = await get_trip_planner_pipe()
+    yield
+    pipes.clear()
+
+```
+
+A custom dependency function, verify_api_token, checks the validity of the API token passed in the api-token header.
+If the token is invalid, the function raises an HTTP 401 Unauthorized error.
+
+```python
+
+async def verify_api_token(
+    api_token: str = Depends(APIKeyHeader(name='api-token', auto_error=False))
+):
+    if api_token != AUTH_TOKEN:
+        raise HTTPException(status_code=401, detail='Invalid API Token!')
+
+```
+
+The main API application (ecom_app) is created using FastAPI. The /search endpoint processes search queries
+related to the trip planner. The verify_api_token function is included as a dependency to authenticate requests before processing them.
+
+```python
+
+@ecom_app.get('/search', dependencies=[Depends(verify_api_token)])
+async def search(query: str) -> list[GoalResult]:
+    trip_planner_pipe: AgentXPipe = pipes.get('trip_planner_pipe')
+    return await trip_planner_pipe.flow(query_instruction=query)
+
+```
+
+The FastAPI app is set up to run in two modes: development and server. To run the app in development mode or in a server
+environment, use the commands below.
+
+# Development Mode
+```shell
+$ fastapi dev superagentx_examples/ecom/ecom_fastapi.py
+```
+
+# Server Mode
+```shell
+$ fastapi run superagentx_examples/ecom/ecom_fastapi.py
+```
+
+This RESTful API provides a simple yet powerful interface for interacting with the trip planner pipeline, ensuring
+secure access via API token validation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

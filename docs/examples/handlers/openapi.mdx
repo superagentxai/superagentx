@@ -1,0 +1,56 @@
+---
+title: 'Openapi Handler'
+icon: 'webhook'
+---
+
+The OpenAPIHandler class provides a simple way to interact with APIs that follow the OpenAPI specification.
+It allows you to load the OpenAPI specification from either a URL or a local file in JSON or YAML format.
+You can easily retrieve all available API endpoints, get the supported HTTP methods for each endpoint,
+and view detailed information about specific operations. The class also includes a call_endpoint method
+that makes it easy to send API requests with customizable parameters, request bodies, and headers. This
+makes the OpenAPIHandler class a powerful tool for automating interactions with APIs in a Python-based workflow.
+
+```python openapi_handler.py
+import asyncio
+
+from superagentx.handler.openapi import OpenAPIHandler
+
+async def openapi_handler():
+    openapi_handler = OpenAPIHandler(base_url='https://petstore.swagger.io/v2/', spec_url_path='swagger.json')
+
+    return await openapi_handler.call_endpoint(
+        endpoint="/pet/findByStatus",
+        method="GET",
+        params={'status': 'sold'})
+
+async def main():
+    res = await create_contact()
+    print(res)
+
+if __name__ == '__main__':
+    asyncio.run(main())
+
+```
+
+## Result
+```shell
+
+platform linux -- Python 3.12.3, pytest-8.3.3, pluggy-1.5.0
+rootdir: /home/ram/Projects/superagentX
+configfile: pyproject.toml
+plugins: asyncio-0.24.0, anyio-4.6.2.post1
+asyncio: mode=Mode.AUTO, default_loop_scope=None
+collected 1 item
+
+tests/handlers/test_openapi_spec_handler.py::TestOpenAPIHandler::test_openapi_handler
+INFO     tests.handlers.test_openapi_spec_handler:test_openapi_spec_handler.py:30 Response
+[{'id': 360274, 'category': {'id': 126898, 'name': 'tbhBBPKt'}, 'name': 'doggie', 'photoUrls': ['AcPwDp'],
+'tags': [{'id': 530594, 'name': 'cgAhLGLz'}], 'status': 'sold'}, {'id': 7, 'category': {'id': 51, 'name': 'cat'},
+'name': 'Milo', 'photoUrls': ['string'], 'tags': [{'id': 871, 'name': 'siamese'}], 'status': 'sold'}, {'id': 13,
+'category': {'id': 0, 'name': 'cats'}, 'photoUrls': ['string'], 'tags': [{'id': 0, 'name': 'string'}], 'status': 'sold'},
+{'id': 102, 'category': {'id': 102, 'name': 'Qwerty'}, 'name': 'Mufasa', 'photoUrls': ['string'], 'tags': [{'id': 102,
+'name': 'Mufasa'}], 'status': 'sold'}, {'id': 1346780, 'name': '見響见响仮仏!$%&()*+,-ƄƅƆḞḟṀʶʷʸăĄą', 'photoUrls':
+['https://petstore3.swagger.io/resources/photos/623389095.jpg'], 'tags': [], 'status': 'sold'}]
+PASSED                                                                                                                                             [100%]
+
+```
