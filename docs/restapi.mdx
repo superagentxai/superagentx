@@ -70,22 +70,66 @@ async def search(query: str) -> list[GoalResult]:
 
 ```
 
-The FastAPI app is set up to run in two modes: development and server. To run the app in development mode or in a server
-environment, use the commands below.
-
-# Development Mode
-```shell
-$ fastapi dev superagentx_examples/ecom/ecom_fastapi.py
-```
-
-# Server Mode
-```shell
-$ fastapi run superagentx_examples/ecom/ecom_fastapi.py
-```
-
 This RESTful API provides a simple yet powerful interface for interacting with the trip planner pipeline, ensuring
 secure access via API token validation.
 
+
+## Run the script
+```shell
+$ fastapi dev trip_planner/trip_planner/restpipe.py
+```
+
+## Result
+```shell
+(venv) ➜  superagentx_examples git:(dev) ✗ fastapi dev trip_planner/trip_planner/restpipe.py
+INFO     Using path trip_planner/trip_planner/restpipe.py
+INFO     Resolved absolute path /home/john/Projects/superagentX-examples/superagentx_examples/trip_planner/trip_planner/restpipe.py
+INFO     Searching for package john structure from directories with __init__.py files
+INFO     Importing from /home/john/Projects/superagentX-examples/superagentx_examples/trip_planner
+
+ ╭─ Python package file structure ─╮
+ │                                 │
+ │  📁 trip_planner                │
+ │  ├── 🐍 __init__.py             │
+ │  └── 🐍 restpipe.py             │
+ │                                 │
+ ╰─────────────────────────────────╯
+
+INFO     Importing module trip_planner.restpipe
+Warning: Synchronous WebCrawler is not available. Install crawl4ai[sync] for synchronous support. However, please note that the synchronous version will be deprecated soon.
+INFO     Found importable FastAPI app
+
+ ╭─────────── Importable FastAPI app ───────────╮
+ │                                              │
+ │  from trip_planner.restpipe import ecom_app  │
+ │                                              │
+ ╰──────────────────────────────────────────────╯
+
+INFO     Using import string trip_planner.restpipe:ecom_app
+
+ ╭────────── FastAPI CLI - Development mode ───────────╮
+ │                                                     │
+ │  Serving at: http://127.0.0.1:8000                  │
+ │                                                     │
+ │  API docs: http://127.0.0.1:8000/docs               │
+ │                                                     │
+ │  Running in development mode, for production use:   │
+ │                                                     │
+ │  fastapi run                                        │
+ │                                                     │
+ ╰─────────────────────────────────────────────────────╯
+
+INFO:     Will watch for changes in these directories: ['/home/john/Projects/superagentX-examples/superagentx_examples']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [8869] using WatchFiles
+Warning: Synchronous WebCrawler is not available. Install crawl4ai[sync] for synchronous support. However, please note that the synchronous version will be deprecated soon.
+INFO:     Started server process [8882]
+INFO:     Waiting for application startup.
+INFO:watchfiles.main:4 changes detected
+INFO:     Application startup complete.
+INFO:watchfiles.main:4 changes detected
+
+```
 
 
 

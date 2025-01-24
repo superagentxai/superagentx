@@ -76,3 +76,20 @@ if __name__ == '__main__':
 ```
 This WebSocket server provides a secure and efficient interface for real-time interaction with the trip planner pipeline.
 By leveraging token-based authentication, it ensures that only authorized users can access the service.
+
+## Run the script
+```shell
+$ python3 wspipe.py
+```
+
+## Result
+
+```shell
+(venv) ➜  trip_planner git:(dev) ✗ python3 wspipe.py
+Warning: Synchronous WebCrawler is not available. Install crawl4ai[sync] for synchronous support. However, please note that the synchronous version will be deprecated soon.
+───────────────────────────────────────────────────────────────────── SuperAgentX trip_planner Websocket Server ─────────────────────────────────────────────────────────────────────
+🚀 Starting SuperagentX websocket server
+😃 Host: localhost
+😃 Port: 8765
+INFO:websockets.server:server listening on 127.0.0.1:8765
+```
