@@ -11,6 +11,7 @@ class LLMType(str, Enum):
     TOGETHER_CLIENT = 'together'
     GROQ_CLIENT = 'groq'
     ANTHROPIC_CLIENT = 'anthropic'
+    OLLAMA = 'ollama'
 
     @classmethod
     def has_member_key(cls, key):
