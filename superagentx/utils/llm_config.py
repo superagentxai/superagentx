@@ -12,6 +12,7 @@ class LLMType(str, Enum):
     TOGETHER_CLIENT = 'together'
     GROQ_CLIENT = 'groq'
     ANTHROPIC_CLIENT = 'anthropic'
+    OLLAMA = 'ollama'
 
     @classmethod
     def has_member_key(cls, key):
@@ -54,6 +55,11 @@ BEDROCK_MODELS = ['anthropic.claude-3-5-sonnet-20241022-v2:0', 'anthropic.claude
                   'meta.llama3-2-11b-instruct-v1:0', 'meta.llama3-2-90b-instruct-v1:0',
                   'meta.llama3-2-1b-instruct-v1:0', 'meta.llama3-2-3b-instruct-v1:0',
                   'mistral.mistral-large-2402-v1:0', 'mistral.mistral-large-2407-v1:0']
+
+OLLAMA_MODELS = [
+    "mistral:latest",
+    "llama3.3:latest",
+]
 
 # Azure Open AI Version - Default
 DEFAULT_AZURE_API_VERSION = "2024-02-01"
