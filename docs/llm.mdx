@@ -12,6 +12,7 @@ provider they intend to use, making it easier to configure different types of LL
 
 | Icon                                                                                                                                                                                         | LLM Name          |
 |:-----------------------------------------------------------------------------------------------------------------------------------------:                                                   | :---------------  |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/deepseek.png?raw=True" title="deepseek" height="25" width="25" style={{ margin: 0}} />                   | **DeepSeek**      |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/openai.png?raw=True" title="OpenAI" height="25" width="25" style={{ margin: 0 }} />                      | **OpenAI**        |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/azure-icon.png?raw=True" title="Azure OpenAI" height="25" width="25" style={{ margin: 0 }} />            | **Azure OpenAI**  |
 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/awsbedrock.png?raw=True" title="AWS Bedrock" height="25" width="25" style={{ margin: 0 }} />             | **AWS Bedrock**   |
@@ -34,6 +35,16 @@ provider they intend to use, making it easier to configure different types of LL
 | **Async Mode**  _(optional)_       | `async_mode`      | `bool`      | Asynchronous mode of OpenAI or Azure OpenAI client. Default `None`                                                                                                                                                         |
 | **Embedding Model** _(optional)_   | `embed_model`     | `str`       | Embedding model name, supported models openai, azure-openai, mistral, llama 3.1. Default `None`                                                                                                                            |
 
+```python DeepSeek
+from superagentx.llm import LLMClient
+
+llm_config = {
+    'model': "deepseek-chat",
+    'llm_type': 'deepseek',
+    'base_url': 'https://api.deepseek.com/'
+}
+llm_client: LLMClient = LLMClient(llm_config=llm_config)
+```
 
 ```python OpenAI
 from superagentx.llm import LLMClient
@@ -45,7 +56,6 @@ llm_config = {
 llm_client = LLMClient(llm_config=llm_config)
 ```
 
-
 ```python AWSBedrock
 from superagentx.llm import LLMClient
 
@@ -56,10 +66,21 @@ llm_config = {
 llm_client = LLMClient(llm_config=llm_config)
 ```
 
+```python ollama
+from superagentx.llm import LLMClient
+
+llm_config = {
+    'model': 'mistral',
+    'llm_type': 'ollama',
+}
+llm_client: LLMClient = LLMClient(llm_config=llm_config)
+```
+
 ### LLM Type and its Values
 
 | Type                               | value                  | Example                                     |
 | :--------------------              | :----------------      | :-------------------------------------      |
+| **DeepSeek**                       | `deepseek`             | `llm_config = { 'llm_type':'deepseek'}`     |
 | **Open AI**                        | `openai`               | `llm_config = { 'llm_type':'openai'}`       |
 | **Azure OpenAI**                   | `azure-openai`         | `llm_config = { 'llm_type':'azure-openai'}` |
 | **AWS Bedrock**                    | `bedrock`              | `llm_config = { 'llm_type':'bedrock'}`      |
