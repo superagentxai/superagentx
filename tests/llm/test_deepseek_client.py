@@ -11,28 +11,27 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
     
-   1. pytest --log-cli-level=INFO tests/llm/test_openai_client.py::TestOpenAIClient::test_achat_completion
-   2. pytest --log-cli-level=INFO tests/llm/test_openai_client.py::TestOpenAIClient::test_chat_completion
+   1. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_achat_completion
+   2. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_chat_completion
 '''
 
 
 @pytest.fixture
-def openai_client_init() -> dict:
-    # llm_config = {'model': 'DFGPT4o', 'llm_type': 'azure-openai'}
-    llm_config = {'llm_type': 'openai'}
+def deepseek_client_init() -> dict:
+    llm_config = {'llm_type': 'deepseek', 'base_url': 'https://api.deepseek.com/'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
-    response = {'llm': llm_client, 'llm_type': 'openai'}
+    response = {'llm': llm_client, 'llm_type': 'deepseek'}
     return response
 
 
-class TestOpenAIClient:
+class TestDeepSeekClient:
 
-    async def test_openai_client(self, openai_client_init: dict):
-        llm_client: LLMClient = openai_client_init.get('llm').client
+    async def test_openai_client(self, deepseek_client_init: dict):
+        llm_client: LLMClient = deepseek_client_init.get('llm').client
         assert isinstance(llm_client, OpenAIClient)
 
-    async def test_chat_completion(self, openai_client_init: dict):
-        llm_client: LLMClient = openai_client_init.get('llm')
+    async def test_chat_completion(self, deepseek_client_init: dict):
+        llm_client: LLMClient = deepseek_client_init.get('llm')
         messages = [
             {
                 "role": "system",
@@ -77,10 +76,10 @@ class TestOpenAIClient:
         result: [Message] = await llm_client.afunc_chat_completion(chat_completion_params=chat_completion_params)
         logger.info(f'Result {result}')
 
-        assert isinstance(openai_client_init.get('llm'), LLMClient)
+        assert isinstance(deepseek_client_init.get('llm'), LLMClient)
 
-    async def test_achat_completion(self, openai_client_init: dict):
-        llm_client: LLMClient = openai_client_init.get('llm')
+    async def test_achat_completion(self, deepseek_client_init: dict):
+        llm_client: LLMClient = deepseek_client_init.get('llm')
 
         messages = [
             {

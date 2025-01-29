@@ -33,10 +33,6 @@ class OllamaClient(Client):
         self.client = client
         self.kwargs = kwargs
 
-        self._model = getattr(self.client, 'model')
-
-        self._embed_model = getattr(self.client, 'embed_model')
-
     def chat_completion(
             self,
             *,
