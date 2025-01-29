@@ -4,6 +4,7 @@ from enum import Enum
 class LLMType(str, Enum):
     OPENAI_CLIENT = 'openai'
     AZURE_OPENAI_CLIENT = 'azure-openai'
+    DEEPSEEK = 'deepseek'
     LLAMA_CLIENT = 'llama'
     GEMINI_CLIENT = 'gemini'
     MISTRAL_CLIENT = 'mistral'
@@ -36,6 +37,10 @@ OPENAI_MODELS = [
     "text-embedding-ada-002",
     "text-embedding-3-small",
     "text-embedding-3-large"
+]
+
+DEEPSEEK_MODELS = [
+    "deepseek-chat",
 ]
 
 BEDROCK_MODELS = ['anthropic.claude-3-5-sonnet-20241022-v2:0', 'anthropic.claude-3-5-haiku-20241022-v1:0',
