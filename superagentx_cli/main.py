@@ -4,13 +4,91 @@ import sys
 import uuid
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 import typer
 from jinja2 import Environment, FileSystemLoader
+from pydantic import BaseModel, ValidationError
 from rich import print as rprint
+
+from superagentx_cli.exceptions import AppConfigError
 
 PKG_NAME_COMP = re.compile(r'^[A-Za-z][a-zA-Z0-9_ -]*$')
 EMAIL_COMP = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+
+
+class LLMConfig(BaseModel):
+    title: str
+    llm_type: str
+    model: str
+    api_key: str | None = None
+    base_url: str | None = None
+    api_version: str | None = None
+    async_mode: bool | None = None
+    embed_model: str | None = None
+
+
+class MemoryConfig(BaseModel):
+    title: str
+    memory_config: dict
+
+
+class HandlerConfig(BaseModel):
+    title: str
+    handler_name: str
+    src_path: str
+    attributes: dict | None
+
+
+class PromptTemplateConfig(BaseModel):
+    title: str
+    prompt_type: str | None = None
+    system_message: str | None = None
+
+
+class EngineConfig(BaseModel):
+    title: str
+    handler: str
+    llm: str
+    prompt_template: str
+    tools: list | None = None
+    output_parser: Any | None = None
+
+
+class AgentConfig(BaseModel):
+    title: str
+    goal: str
+    role: str
+    llm: str
+    prompt_template: str
+    agent_id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    engines: list[str | list[str]]
+    output_format: str | None = None
+    max_retry: int = 5
+
+
+class PipeConfig(BaseModel):
+    title: str
+    pipe_id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    agents: list[str | list[str]]
+    memory: str | None = None
+    stop_if_goal_not_satisfied: bool = False
+
+
+class AppConfig(BaseModel):
+    app_name: str
+    app_type: str
+    llm_config: list[LLMConfig]
+    memory: list[MemoryConfig]
+    handler_config: list[HandlerConfig]
+    engine_config: list[EngineConfig]
+    agent_config: list[AgentConfig]
+    pipe_config: list[PipeConfig]
+    app_auth_token: str | None = None
 
 
 class CliAppTypeEnum(str, Enum):
@@ -25,21 +103,23 @@ class CliApp:
     def __init__(
             self,
             name: str,
-            pipe_name: str,
-            app_type: str,
+            pipe_name: str | None = None,
+            app_type: str = CliAppTypeEnum.all.value,
             author_name: str = 'Example Author',
             author_email: str = 'author@example.com',
             maintainer_name: str = 'Example Maintainer',
-            maintainer_email: str = 'maintainer@example.com'
+            maintainer_email: str = 'maintainer@example.com',
+            app_config: dict | None = None
     ):
         self.app_name = name
         self.app_type = app_type
         self.package_name = self.to_snake(s=name)
-        self.pipe_name = self.to_snake(s=pipe_name)
+        self.pipe_name = self.to_snake(s=pipe_name or name)
         self.author_name = author_name
         self.author_email =author_email
         self.maintainer_name = maintainer_name
         self.maintainer_email = maintainer_email
+        self.app_config = app_config
         self._app_dir = Path().cwd() / self.app_name
         self._config_dir = self._app_dir / 'config'
         self._pkg_dir = self._app_dir / self.package_name
@@ -69,6 +149,17 @@ class CliApp:
             pipe_name=self.pipe_name
         )
         _pipe_path.write_text(_render_pipe)
+
+    def create_pipe_file_from_app_config(self):
+        if not self.app_config:
+            raise AppConfigError('Not valida app configuration!')
+
+        try:
+            app_config = AppConfig(**self.app_config)
+        except ValidationError as ex:
+            raise AppConfigError(ex)
+        else:
+            pass
 
     def _create_app_pipe_file(self, app_type: str):
         _app_type_pipe_path = self._pkg_dir / f'{app_type}pipe.py'
