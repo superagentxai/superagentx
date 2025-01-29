@@ -69,6 +69,16 @@ class LLMModelConfig(BaseModel):
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
+        elif self.llm_type == LLMType.DEEPSEEK:
+            if not self.model:
+                self.model = 'deepseek-chat'
+            elif self.model not in OPENAI_MODELS:
+                _msg = (
+                    f'Invalid Deepseek AI Model - '
+                    f'{self.model}. It should be one of the following {", ".join(OPENAI_MODELS)}'
+                )
+                logger.error(_msg)
+                raise ValueError(_msg)
         elif self.llm_type == LLMType.BEDROCK_CLIENT.value:
             if not self.model:
                 _msg = (
