@@ -92,7 +92,7 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
-            chat_completion_params = await sync_to_async(self.__replace_instance_values, chat_completion_params)
+            # chat_completion_params = await sync_to_async(self.__replace_instance_values, chat_completion_params)
             tools = chat_completion_params.tools
             messages = [message.dict() async for message in iter_to_aiter(chat_completion_params.messages)]
             try:
@@ -101,7 +101,7 @@ class OllamaClient(Client):
                         model=self._model,
                         messages=messages,
                         tools=tools,
-                        options=chat_completion_params.dict(),
+                        # options=chat_completion_params.dict(),
                         format='json'
 
                     )
@@ -109,7 +109,7 @@ class OllamaClient(Client):
                     response = await self.client.chat(
                         model=self._model,
                         messages=messages,
-                        options=chat_completion_params.dict(),
+                        # options=chat_completion_params.dict(),
                         format='json'
                     )
             except Exception as e:
