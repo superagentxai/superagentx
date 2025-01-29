@@ -157,7 +157,6 @@ class LLMClient:
 
         cli = AsyncClient(host=host)
         embed_model = self.llm_config_model.embed_model
-        cli.embed_model = DEFAULT_OLLAMA_EMBED if not embed_model else embed_model
         return OllamaClient(
             client=cli,
             embed_model=DEFAULT_OLLAMA_EMBED if not embed_model else embed_model,
