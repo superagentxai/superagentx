@@ -79,12 +79,8 @@ class LLMClient:
         # Initialize the client with the API key
         cli = client_class(api_key=api_key, base_url=self.llm_config_model.base_url or None)
 
-        # Set the model attribute
-        # cli.model = self.llm_config_model.model
-
         # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
-        # cli.embed_model = DEFAULT_OPENAI_EMBED if not embed_model else embed_model
 
         # Assign the client to self.client
         return OpenAIClient(
@@ -144,12 +140,8 @@ class LLMClient:
             config=bedrock_config
         )
 
-        # Set the model attribute
-        # aws_cli.model = self.llm_config_model.model
-
         # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
-        # aws_cli.embed_model = DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
 
         return BedrockClient(
             client=aws_cli,
