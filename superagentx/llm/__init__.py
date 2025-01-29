@@ -6,13 +6,15 @@ from typing import List
 
 import boto3
 from botocore.config import Config
+from ollama import AsyncClient
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
 from superagentx.llm.bedrock import BedrockClient
-from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED
+from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED
 from superagentx.llm.models import ChatCompletionParams
+from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
@@ -52,7 +54,6 @@ class LLMClient:
     ):
         self.llm_config = llm_config
         self.llm_config_model = LLMModelConfig(**self.llm_config)
-        self.kwargs = kwargs
 
         match self.llm_config_model.llm_type:
             case LLMType.OPENAI_CLIENT | LLMType.DEEPSEEK:
@@ -63,6 +64,8 @@ class LLMClient:
                 self.client = self._init_azure_openai_cli()
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
+            case LLMType.OLLAMA:
+                self.client = self._init_ollama_cli(**kwargs)
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
 
@@ -147,6 +150,18 @@ class LLMClient:
             client=aws_cli,
             model=self.llm_config_model.model,
             embed_model=DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
+        )
+
+    def _init_ollama_cli(self, **kwargs):
+        host = kwargs.get("host", None) or os.getenv("OLLAMA_HOST")
+
+        cli = AsyncClient(host=host)
+        embed_model = self.llm_config_model.embed_model
+        return OllamaClient(
+            client=cli,
+            embed_model=DEFAULT_OLLAMA_EMBED if not embed_model else embed_model,
+            model=self.llm_config_model.model,
+            **kwargs
         )
 
     def chat_completion(
