@@ -51,7 +51,6 @@ class OpenAIClient(Client):
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        # chat_completion_params = self.__replace_instance_values(chat_completion_params)
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = self.client.chat.completions.create(**params)
@@ -62,7 +61,6 @@ class OpenAIClient(Client):
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        # chat_completion_params = await sync_to_async(self.__replace_instance_values,chat_completion_params)
         params = chat_completion_params.model_dump(exclude_none=True)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = await self.client.chat.completions.create(**params)
