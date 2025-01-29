@@ -44,19 +44,18 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
-            # chat_completion_params = self.__replace_instance_values(chat_completion_params)
             tools = chat_completion_params.tools
             options = {}
             if chat_completion_params.top_p:
                 options["top_p"] = chat_completion_params.top_p
             if chat_completion_params.temperature:
                 options["temperature"] = chat_completion_params.temperature
-            messages = [message.dict() for message in chat_completion_params.messages]
+            messages = chat_completion_params.model_dump()
             try:
                 if tools:
                     response = self.client.chat(
                         model=self._model,
-                        messages=messages,
+                        messages=messages.get("messages", []),
                         tools=tools,
                         options=options,
                         format='json'
@@ -64,14 +63,14 @@ class OllamaClient(Client):
                 else:
                     response = self.client.chat(
                         model=self._model,
-                        messages=messages,
+                        messages=messages.get("messages", []),
                         options=options,
                         format='json'
                     )
             except Exception as e:
                 raise RuntimeError(f"Failed to get response from Ollama: {e}")
 
-            if response is None:
+            if not response:
                 raise RuntimeError(f"Failed to get response from Ollama after retrying {_retries} times.")
 
             chat_completion: ChatCompletion = self.__prepare_ollama_formatted_output(
@@ -91,24 +90,28 @@ class OllamaClient(Client):
         @return ChatCompletion:
         """
         if chat_completion_params:
-            # chat_completion_params = await sync_to_async(self.__replace_instance_values, chat_completion_params)
+            options = {}
             tools = chat_completion_params.tools
-            messages = [message.dict() async for message in iter_to_aiter(chat_completion_params.messages)]
+            if chat_completion_params.top_p:
+                options["top_p"] = chat_completion_params.top_p
+            if chat_completion_params.temperature:
+                options["temperature"] = chat_completion_params.temperature
+            messages = chat_completion_params.model_dump()
             try:
                 if tools:
                     response = await self.client.chat(
                         model=self._model,
-                        messages=messages,
+                        messages=messages.get("messages", []),
                         tools=tools,
-                        # options=chat_completion_params.dict(),
+                        options=options,
                         format='json'
 
                     )
                 else:
                     response = await self.client.chat(
                         model=self._model,
-                        messages=messages,
-                        # options=chat_completion_params.dict(),
+                        messages=messages.get("messages", []),
+                        options=options,
                         format='json'
                     )
             except Exception as e:
