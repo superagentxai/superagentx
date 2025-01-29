@@ -1,0 +1,164 @@
+---
+title: 'Voice Pipe'
+icon: "microphone-lines"
+---
+
+## Voice
+The VoicePipe module provides a console-based interface for utilizing the SuperAgentX voice-to-text pipelines.
+It supports various backend implementations, including OpenAI Whisper and AWS Transcribe, offering flexible and
+efficient voice-to-text conversion.
+
+### Dependency
+```shell
+$ sudo apt install portaudio19-dev
+```
+
+
+## Implementation
+
+### OpenAI Whisper Integration
+The OpenAI Whisper integration uses the WhisperPipe class from superagentx.pipeimpl.openaivoicepipe.
+It processes voice-to-text requests with the following steps:
+
+> Set up a OpenAI API key as an environmental variable and run the following code.
+```shell
+export OPENAI_API_KEY = "**************************"
+```
+
+### Installation:
+```shell
+$ sudo apt-get install ffmpeg
+$ pip install openai-whisper NumPy=="2.1"
+```
+
+```python openaivoicepipe
+import asyncio
+
+from rich import print as rprint
+from superagentx.pipeimpl.openaivoicepipe import WhisperPipe
+
+from create_pipe import get_superagentx_voice_to_text_pipe
+
+async def main():
+    """
+    Launches the superagentx-voice-to-text pipeline console client for processing requests and handling data.
+    """
+
+    pipe = await get_superagentx_voice_to_text_pipe()
+
+    # Create IO Cli Console - Interface
+    io_pipe = WhisperPipe(
+        search_name='SuperAgentX - Voice To Text',
+        agentx_pipe=pipe,
+        read_prompt=f"\n[bold green]Enter your search here"
+    )
+    await io_pipe.start()
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+### Result of openaivoicepipe
+```shell
+(venv) ➜  pipe git:(update_docs) ✗ python3.12 test_openai_iopipe_create_policy.py
+Transcribing audio...
+/home/vetharupini/Projects/superagentX/venv/lib/python3.12/site-packages/whisper/transcribe.py:126: UserWarning: FP16 is not supported on CPU; using FP32 instead
+  warnings.warn("FP16 is not supported on CPU; using FP32 instead")
+Transcription successful:  frames that I associated with with the
+(  ●   ) Transcribing audio...
+(  ●   ) Transcribing audio...
+(   ●  ) Transcribing audio...
+( ●    ) Transcribing audio...
+(    ● ) Transcribing audio...
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+( ●    ) Transcribing audio...
+(     ●) Transcribing audio...
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+(   ●  ) Transcribing audio...
+(    ● ) Transcribing audio...
+( ●    ) Transcribing audio...
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+
+Result:
+"To create a single ticket in the HubSpot CRM, I'll need some specific details from you. Please provide the following information for the ticket:\n\n1. **Subject**: What is the subject or title of the ticket?\n2. **Content**: Please describe the content or body of the ticket.\n3. **Pipeline**: Which pipeline does this ticket belong to? (Provide the ID or default to 0 if unknown)\n4. **Pipeline Stage**: What is the stage of the pipeline for this ticket? (Provide the ID or default to 1 if unknown)\n5. **Source From**: Where is this ticket originating from? (e.g., \"EMAIL\", \"Chat\", etc., or default to \"EMAIL\")\n6. **Priority**: What is the priority level of the ticket? (e.g., \"Low\", \"Medium\", \"High\", or default to \"Low\")\n\nOnce you provide these details, I can create the ticket for you."
+
+Reason:: The Output_Context provides a clear set of instructions to gather specific details required to create a single ticket in the HubSpot CRM.
+
+
+Goal Satisfied: True
+
+──────────────────────────────────────────────────────────────────────────────────────── End ────────────────────────────────────────────────────────────────────────────────────────
+
+```
+
+### AWS Transcribe Integration
+The AWS Transcribe integration uses the AWSVoicePipe class from superagentx.pipeimpl.awsvoicepipe. It includes
+region-specific configurations and follows these steps:
+
+> Set up a AWS Access key ID as an environmental variable and run the following code.
+
+```shell
+export AWS_ACCESS_KEY=***********************
+export AWS_REGION=******
+export AWS_SECRET_KEY=*****************************
+
+```
+
+```python awsvoicepipe
+import asyncio
+
+from rich import print as rprint
+from superagentx.pipeimpl.awsvoicepipe import AWSVoicePipe
+
+from create_pipe import get_superagentx_voice_to_text_pipe
+
+async def main():
+    """
+    Launches the superagentx-voice-to-text pipeline console client for processing requests and handling data.
+    """
+
+    pipe = await get_superagentx_voice_to_text_pipe()
+
+    # Create IO Cli Console - Interface
+    io_pipe = AWSVoicePipe(
+        search_name='SuperAgentX - Voice To Text',
+        agentx_pipe=pipe,
+        read_prompt=f"\n[bold green]Enter your search here",
+        region="us-east-1"
+    )
+    await io_pipe.start()
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+### Result of AWSVoicePipe
+```shell
+(venv) ➜  pipe git:(update_docs) ✗ python3.12 test_aws_iopipe_create_policy.py
+Warning: Synchronous WebCrawler is not available. Install crawl4ai[sync] for synchronous support. However, please note that the synchronous version will be deprecated soon.
+No input received within 15 seconds, stopping the stream.
+Final transcriptions: ['you can get', 'you can get me the', 'you can get me the contact', 'you can get me the contact name', 'you can get me the contact name from', 'you can get me the contact name from HubSpo', 'you can get me the contact name from HubSpot.', 'me.', 'People', 'People', 'People', 'People', 'People.']
+Question Asked : you can get me the contact name from HubSpot.
+
+INFO:superagentx.agentxpipe:Pipe AgentXPipe-b0e8c00d02c74a028d382407b0e4f563 starting...
+(  ●   ) Searching...
+( ●    ) Searching...
+( ●    ) Searching...
+(  ●   ) Searching...
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+(    ● ) Searching...
+(  ●   ) Searching...
+(  ●   ) Searching...
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+
+Result:
+"Contact names available from the given data: Arul Vivek, Arul I, Ram Kumar"
+
+Reason:: The output context provides the contact names from HubSpot needed to create a new ticket.
+
+
+Goal Satisfied: True
+
+──────────────────────────────────────────────────────────────────────────────────────── End ────────────────────────────────────────────────────────────────────────────────────────
+```
+
