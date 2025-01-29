@@ -68,7 +68,8 @@
       "pages": [
         "io-console",
         "restapi",
-        "websocket"
+        "websocket",
+        "voice_pipe"
       ]
     },
     {
