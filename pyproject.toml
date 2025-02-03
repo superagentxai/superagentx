@@ -45,6 +45,8 @@ scipy = "^1.15.1"
 numpy = "^2.2.1"
 aiofiles = "^24.1.0"
 ollama = "^0.4.7"
+camel-converter = "^4.0.1"
+yapf = "^0.43.0"
 
 [tool.poetry.extras]
 cli = ["jinja2", "typer", "rich"]

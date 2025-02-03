@@ -23,7 +23,7 @@ class AgentXPipe:
     def __init__(
             self,
             *,
-            pipe_id: str = uuid.uuid4().hex,
+            pipe_id: str | None = uuid.uuid4().hex,
             name: str | None = None,
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,

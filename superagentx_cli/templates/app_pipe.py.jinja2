@@ -1,0 +1,33 @@
+{# templates/app_pipe.py.jinja2 #}
+{%- for import in imports %}
+{{ import }}
+{%- endfor %}
+
+async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
+    # LLM Configuration
+    {%- for llm in llms %}
+    {{ llm }}
+    {%- endfor %}
+    # Enable Memory
+    {%- for memory in memories %}
+    {{ memory }}
+    {%- endfor %}
+    # Handlers
+    {%- for handler in handlers %}
+    {{ handler }}
+    {%- endfor %}
+    # Prompt Templates
+    {%- for prompt_template in prompt_templates %}
+    {{ prompt_template }}
+    {%- endfor %}
+    # Engines
+    {%- for engine in engines %}
+    {{ engine }}
+    {%- endfor %}
+    # Agents
+    {%- for agent in agents %}
+    {{ agent }}
+    {%- endfor %}
+    # Pipe
+    {{ pipe }}
+    return {{ pipe_name }}{{'\n'}}
