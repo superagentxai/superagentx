@@ -27,11 +27,11 @@ def dict_to_kwargs(d: dict) -> list:
 
 def str_to_obj_str(l: list) -> str:
     _l = '['
-    for _engine in l:
-        if isinstance(_engine, list):
-            _l = _l + str_to_obj_str(_engine)
+    for __l in l:
+        if isinstance(__l, list):
+            _l = _l + str_to_obj_str(__l)
         else:
-            _l = _l + to_snake(_engine)
+            _l = _l + to_snake(__l)
     _l = _l + ']'
     return _l
 
