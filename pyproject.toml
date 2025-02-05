@@ -1,6 +1,6 @@
 [project]
 name = "superagentx"
-version = "0.1.15a"
+version = "0.1.15c"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = { text = "MIT" }
 authors = [
@@ -13,10 +13,6 @@ readme = "README.md"
 
 keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM", "cli"]
 requires-python = ">=3.10,<=3.13"
-packages = [
-    { include = "superagentx" },
-    { include = "superagentx_cli" }
-]
 
 dependencies = [
     "pydantic>=2.8.2",
@@ -48,9 +44,16 @@ documentation = "https://docs.superagentx.ai/"
 
 [project.scripts]
 superagentx-cli = "superagentx_cli.main:app"
+superagentx-app = "superagentx_cli.cli_app:app"
 
 [project.optional-dependencies]
 cli = [ "jinja2>=3.1.4", "typer>=0.13.0", "rich>=13.9.2", "yapf>=0.43.0" ]
+
+[tool.poetry]
+packages = [
+    { include = "superagentx" },
+    { include = "superagentx_cli" }
+]
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
