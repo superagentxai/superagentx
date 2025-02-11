@@ -119,7 +119,7 @@ class LLMClient:
     def _init_bedrock_cli(self, **kwargs) -> BedrockClient:
         aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
 
-        if not aws_region is None:
+        if aws_region is None:
             raise ValueError("Region is required to use the Amazon Bedrock API.")
 
         aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY")
