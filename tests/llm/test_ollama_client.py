@@ -55,7 +55,7 @@ tools = [
 @pytest.fixture
 def ollama_client_init() -> dict:
     # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock'}
-    llm_config = {'model': 'llama3.1', 'llm_type': 'ollama', 'async_mode': True}
+    llm_config = {'model': 'deepseek-r1:8b', 'llm_type': 'ollama', 'async_mode': False}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client}
     return response
@@ -83,7 +83,6 @@ class TestOllamaClient:
 
         chat_completion_params = ChatCompletionParams(
             messages=conversations,
-            tools=tools
         )
 
         response = llm_client.chat_completion(chat_completion_params=chat_completion_params)
@@ -95,7 +94,6 @@ class TestOllamaClient:
 
         chat_completion_params = ChatCompletionParams(
             messages=conversations,
-            tools=tools
         )
 
         result: [Message] = await llm_client.afunc_chat_completion(chat_completion_params=chat_completion_params)
