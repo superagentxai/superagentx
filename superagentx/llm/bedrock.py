@@ -34,7 +34,6 @@ class BedrockClient(Client):
     ):
         super().__init__(**kwargs)
         self.client = client
-        self.llm_params: dict = getattr(self.client, 'kwargs')
 
     def chat_completion(
             self,
@@ -73,24 +72,21 @@ class BedrockClient(Client):
             assistant_message = conversations['assistant'] if len(conversations['assistant']) > 0 else None
 
             try:
-                if tools:
-                    tools_config = {"tools": tools}
-                    # Convert from synchronous to asynchronous mode and invoke Bedrock client!
-                    response = self.client.converse(
-                        modelId=model_id,
-                        messages=[user_message],
-                        system=assistant_message,
-                        inferenceConfig=inference_config,
-                        toolConfig=tools_config)
+                kwargs = {
+                    "modelId": model_id,
+                    "messages": [user_message],
+                    "inferenceConfig": inference_config,
+                }
 
-                    logger.debug(f"Bedrock Tool Response {response}")
-                else:
-                    response = self.client.converse(
-                        modelId=model_id,
-                        messages=[user_message],
-                        system=assistant_message,
-                        inferenceConfig=inference_config)
-                    logger.debug(f"Bedrock Message ==> Bedrock no tool {response} ")
+                if assistant_message is not None:
+                    kwargs["system"] = assistant_message
+
+                if tools is not None:
+                    kwargs["toolConfig"] = {"tools": tools}
+
+                response = self.client.converse(**kwargs)
+
+                logger.debug(f"Bedrock Message ==> Bedrock no tool {response} ")
 
             except Exception as e:
                 raise RuntimeError(f"Failed to get response from Bedrock: {e}")
@@ -152,27 +148,21 @@ class BedrockClient(Client):
             assistant_message = conversations['assistant'] if len(conversations['assistant']) > 0 else None
 
             try:
-                if tools:
-                    tools_config = {"tools": tools}
-                    # Convert from synchronous to asynchronous mode and invoke Bedrock client!
-                    response = await sync_to_async(
-                        self.client.converse,
-                        modelId=model_id,
-                        system=assistant_message,
-                        messages=[user_message],
-                        inferenceConfig=inference_config,
-                        toolConfig=tools_config,
-                    )
-                    logger.debug(f"Bedrock Tool Response {response}")
-                else:
-                    response = await sync_to_async(
-                        self.client.converse,
-                        modelId=model_id,
-                        messages=[user_message],
-                        system=assistant_message,
-                        inferenceConfig=inference_config,
-                    )
-                    logger.debug(f"Bedrock Message ==> Bedrock no tool {response} ")
+                kwargs = {
+                    "modelId": model_id,
+                    "messages": [user_message],
+                    "inferenceConfig": inference_config,
+                }
+
+                if assistant_message is not None:
+                    kwargs["system"] = assistant_message
+
+                if tools is not None:
+                    kwargs["toolConfig"] = {"tools": tools}
+
+                response = self.client.converse(**kwargs)
+
+                logger.debug(f"Bedrock Message ==> Bedrock no tool {response} ")
 
             except Exception as e:
                 raise RuntimeError(f"Failed to get response from Bedrock: {e}")

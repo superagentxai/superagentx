@@ -45,8 +45,8 @@ tools = [
 
 @pytest.fixture
 def aws_bedrock_client_init() -> dict:
-    # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock'}
-    llm_config = {'model': 'mistral.mistral-large-2402-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
+    llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock'}
+    # llm_config = {'model': 'mistral.mistral-large-2402-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client}
     return response
