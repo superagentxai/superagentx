@@ -41,7 +41,7 @@ def create(
             callback=validate_project_name
         ),
         app_type: CliAppTypeEnum = typer.Option(
-            CliAppTypeEnum.all.value,
+            default=CliAppTypeEnum.all.value,
             prompt='Enter one of the option',
             rich_help_panel='App Types'
         )

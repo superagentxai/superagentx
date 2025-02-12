@@ -3,6 +3,7 @@ import re
 import sys
 import uuid
 from enum import Enum
+from os import PathLike
 from pathlib import Path
 from typing import Any
 
@@ -246,7 +247,8 @@ class CliApp:
             author_email: str = 'author@example.com',
             maintainer_name: str = 'Example Maintainer',
             maintainer_email: str = 'maintainer@example.com',
-            app_config: dict | None = None
+            app_config: dict | None = None,
+            app_dir_path: str | PathLike | None = None
     ):
 
         self.app_name = name
@@ -267,7 +269,8 @@ class CliApp:
         self.author_email =author_email
         self.maintainer_name = maintainer_name
         self.maintainer_email = maintainer_email
-        self._app_dir = Path().cwd() / self.app_name
+        _app_dir = Path(app_dir_path) if app_dir_path else Path().cwd()
+        self._app_dir = _app_dir / self.app_name
         self._config_dir = self._app_dir / 'config'
         self._pkg_dir = self._app_dir / self.package_name
         self._jinja_env = Environment(
