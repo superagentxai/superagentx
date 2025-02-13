@@ -72,15 +72,11 @@ class ChromaDB(BaseVectorStore):
             name: str,
             **kwargs
     ):
-        # Skip creating collection if already exists
-        try:
-            return await sync_to_async(
-                self.client.get_or_create_collection,
-                name=name,
-                **kwargs
-            )
-        except Exception as ex:
-            print(ex)
+        return await sync_to_async(
+            self.client.get_or_create_collection,
+            name=name,
+            **kwargs
+        )
 
     async def create(
             self,
