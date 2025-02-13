@@ -27,7 +27,7 @@ llm_client = LLMClient(llm_config=llm_config)
 
 @pytest.fixture
 def test_memory_init() -> dict:
-    memory_client: Memory = Memory()
+    memory_client: Memory = Memory(memory_config={"llm_client":llm_client})
     datas = {
         "memory_id": "55e497f4010d4eda909691272eaf31fb",
         "chat_id": "915ec91bc2654f8da3af800c0bf6eca9"
@@ -53,7 +53,8 @@ class TestMemory:
             chat_id=datas.get("chat_id"),
             message_id=str(uuid.uuid4().hex),
             role=role,
-            message=user_input,
+            data=user_input,
+            reason="test",
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
             is_deleted=False
@@ -75,7 +76,8 @@ class TestMemory:
             chat_id=datas.get("chat_id"),
             message_id=str(uuid.uuid4().hex),
             role=role,
-            message=result
+            data=result,
+            reason="test"
         )
 
     async def test_get_history(self, test_memory_init: dict):
