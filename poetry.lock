@@ -2713,10 +2713,10 @@ xmp = ["defusedxml"]
 name = "platformdirs"
 version = "4.3.6"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
-optional = true
+optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version <= \"3.11\" and extra == \"cli\" or python_version >= \"3.12\" and extra == \"cli\""
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
     {file = "platformdirs-4.3.6-py3-none-any.whl", hash = "sha256:73e575e1408ab8103900836b97580d5307456908a03e92031bab39e4554cc3fb"},
     {file = "platformdirs-4.3.6.tar.gz", hash = "sha256:357fb2acbc885b0419afd3ce3ed34564c13c9b95c89360cd9563f73aa5e2b907"},
@@ -4069,10 +4069,10 @@ files = [
 name = "yapf"
 version = "0.43.0"
 description = "A formatter for Python code"
-optional = true
+optional = false
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "python_version <= \"3.11\" and extra == \"cli\" or python_version >= \"3.12\" and extra == \"cli\""
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
     {file = "yapf-0.43.0-py3-none-any.whl", hash = "sha256:224faffbc39c428cb095818cf6ef5511fdab6f7430a10783fdfb292ccf2852ca"},
     {file = "yapf-0.43.0.tar.gz", hash = "sha256:00d3aa24bfedff9420b2e0d5d9f5ab6d9d4268e72afbf59bb3fa542781d5218e"},
@@ -4207,4 +4207,4 @@ cli = ["jinja2", "rich", "typer", "yapf"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<=3.13"
-content-hash = "0770ffae639313d16c19505cb1b00a413ce7ebf295dadd09337f81216fdbd4a1"
+content-hash = "62c69ef2cf3bbc55d4fd012d26074f12b7195a95fde679775183551d6cb93038"

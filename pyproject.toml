@@ -34,7 +34,8 @@ dependencies = [
     "numpy>=2.2.1",
     "aiofiles>=24.1.0",
     "ollama>=0.4.7",
-    "camel-converter>=4.0.1"
+    "camel-converter>=4.0.1",
+    "yapf (>=0.43.0,<0.44.0)"
 ]
 
 [project.urls]
