@@ -107,7 +107,7 @@ class PipeConfig(BaseModel):
 
 class AppConfig(BaseModel):
     app_name: str
-    app_type: str
+    app_type: str  # TODO: Change this with CliAppTypeEnum
     llm: list[LLM]
     memory: list[Memory]
     handler_config: list[HandlerConfig]
