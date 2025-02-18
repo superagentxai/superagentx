@@ -226,7 +226,8 @@ class Agent:
                     *[
                         _engine.start(
                             input_prompt=instruction,
-                            pre_result=pre_result
+                            pre_result=pre_result,
+                            old_memory=old_memory
                         )
                         async for _engine in iter_to_aiter(_engines)
                     ]
@@ -236,7 +237,8 @@ class Agent:
                 logger.debug(f'Engine is executing : {_engines}')
                 _res = await _engines.start(
                     input_prompt=instruction,
-                    pre_result=pre_result
+                    pre_result=pre_result,
+                    old_memory=old_memory
                 )
                 logger.debug(f'Engine result : {_res}')
             results.append(_res)
