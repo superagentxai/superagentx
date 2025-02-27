@@ -4,6 +4,7 @@ from enum import Enum
 class LLMType(str, Enum):
     OPENAI_CLIENT = 'openai'
     AZURE_OPENAI_CLIENT = 'azure-openai'
+    DEEPSEEK = 'deepseek'
     LLAMA_CLIENT = 'llama'
     GEMINI_CLIENT = 'gemini'
     MISTRAL_CLIENT = 'mistral'
@@ -11,6 +12,7 @@ class LLMType(str, Enum):
     TOGETHER_CLIENT = 'together'
     GROQ_CLIENT = 'groq'
     ANTHROPIC_CLIENT = 'anthropic'
+    OLLAMA = 'ollama'
 
     @classmethod
     def has_member_key(cls, key):
@@ -65,6 +67,15 @@ ANTHROPIC_MODELS = [
     'claude-3-opus-20240229',
     'claude-3-sonnet-20240229',
     'claude-3-haiku-20240307'
+]
+
+DEEPSEEK_MODELS = [
+    "deepseek-chat",
+]
+
+OLLAMA_MODELS = [
+    "mistral:latest",
+    "llama3.3:latest",
 ]
 
 # Azure Open AI Version - Default

@@ -1,0 +1,109 @@
+---
+title: 'IO Console'
+icon: 'terminal'
+---
+
+This documentation provides an overview of the code used to implement a console-based client for interacting
+with the trip planner pipeline using SuperagentX. The client allows users to input search queries via the command
+line interface (CLI) and receive results in real-time.
+
+## Overview
+The code sets up an interactive CLI using the IOPipe class from SuperagentX. The client allows users to enter a
+search query, which is processed by the trip planner pipeline, and results are returned dynamically through the console interface.
+
+## Setup Environment
+
+```shell
+$ pip install superagentx
+```
+
+Implementation
+
+Import the dependencies.
+```python
+import asyncio
+
+from rich import print as rprint
+from superagentx.pipeimpl.iopipe import IOPipe
+
+from trip_planner.pipe import get_trip_planner_pipe
+```
+
+
+The main function initializes the trip planner pipeline by calling the get_trip_planner_pipe function.
+It then creates an IOPipe object, which serves as the console interface for interacting with the pipeline.
+The read_prompt parameter customizes the prompt displayed to users when they are asked to input a query.
+
+```python
+async def main():
+    """
+    Launches the trip_planner pipeline console client for processing requests and handling data.
+    """
+
+    pipe = await get_trip_planner_pipe()
+
+    # Create IO Cli Console - Interface
+    io_pipe = IOPipe(
+        search_name='SuperAgentX trip_planner',
+        agentx_pipe=pipe,
+        read_prompt=f"\n[bold green]Enter your search here"
+    )
+    await io_pipe.start()
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        rprint("\nUser canceled the [bold yellow][i]pipe[/i]!")
+```
+
+This IO console client provides a simple way for users to interact with the trip planner pipeline, entering search
+queries and receiving immediate feedback through the command line interface.
+
+## Run the script
+```shell
+$ python3 iopipe.py
+```
+
+## Result
+```shell
+(venv) ➜  superagentx_examples git:(dev) ✗ python3.12 trip_planner/trip_planner/iopipe.py
+Warning: Synchronous WebCrawler is not available. Install crawl4ai[sync] for synchronous support. However, please note that the synchronous version will be deprecated soon.
+───────────────────────────────────────────────────────────────────────────── SuperAgentX trip_planner ──────────────────────────────────────────────────────────────────────────────
+
+Enter your search here: give me a trip plan for goa
+INFO:superagentx.agentxpipe:Pipe Trip Planner Pipe starting...
+(●     ) Searching...
+(    ● ) Searching...
+(●     ) Searching...
+WARNING:chromadb.segment.impl.vector.local_persistent_hnsw:Number of requested results 10 is greater than number of elements in index 1, updating n_results = 1
+[LOG] 🚀 Crawl4AI 0.3.731
+[LOG] 🌤️  Warming up the AsyncWebCrawler
+[LOG] 🌞 AsyncWebCrawler is ready to crawl
+[LOG] 🕸️ Crawling https://www.tripoto.com/goa/trips/top-things-to-do-in-goa-in-4-days-58a3ef7c589e0 using AsyncPlaywrightCrawlerStrategy...
+[LOG] 🕸️ Crawling https://www.nomadasaurus.com/first-timers-guide-goa-india/ using AsyncPlaywrightCrawlerStrategy...
+[LOG] 🕸️ Crawling https://the-shooting-star.com/perfect-3-day-goa-itinerary/ using AsyncPlaywrightCrawlerStrategy...
+[LOG] 🕸️ Crawling https://www.tripadvisor.com/Attractions-g297604-Activities-Goa.html using AsyncPlaywrightCrawlerStrategy...
+[LOG] ✅ Crawled https://the-shooting-star.com/perfect-3-day-goa-itinerary/ successfully!
+[LOG] 🚀 Crawling done for https://the-shooting-star.com/perfect-3-day-goa-itinerary/, success: True, time taken: 2.83 seconds
+[LOG] 🚀 Content extracted for https://the-shooting-star.com/perfect-3-day-goa-itinerary/, success: True, time taken: 0.90 seconds
+[LOG] 🔥 Extracting semantic blocks for https://the-shooting-star.com/perfect-3-day-goa-itinerary/, Strategy: AsyncWebCrawler
+[LOG] 🚀 Extraction done for https://the-shooting-star.com/perfect-3-day-goa-itinerary/, time taken: 0.91 seconds.
+[LOG] ✅ Crawled https://www.nomadasaurus.com/first-timers-guide-goa-india/ successfully!
+[LOG] 🚀 Crawling done for https://www.nomadasaurus.com/first-timers-guide-goa-india/, success: True, time taken: 6.08 seconds
+[LOG] 🚀 Content extracted for https://www.nomadasaurus.com/first-timers-guide-goa-india/, success: True, time taken: 2.28 seconds
+[LOG] 🔥 Extracting semantic blocks for https://www.nomadasaurus.com/first-timers-guide-goa-india/, Strategy: AsyncWebCrawler
+[LOG] 🚀 Extraction done for https://www.nomadasaurus.com/first-timers-guide-goa-india/, time taken: 2.29 seconds.
+[LOG] ✅ Crawled https://www.tripoto.com/goa/trips/top-things-to-do-in-goa-in-4-days-58a3ef7c589e0 successfully!
+[LOG] 🚀 Crawling done for https://www.tripoto.com/goa/trips/top-things-to-do-in-goa-in-4-days-58a3ef7c589e0, success: True, time taken: 8.86 seconds
+[LOG] 🚀 Content extracted for https://www.tripoto.com/goa/trips/top-things-to-do-in-goa-in-4-days-58a3ef7c589e0, success: True, time taken: 0.68 seconds
+[LOG] 🔥 Extracting semantic blocks for https://www.tripoto.com/goa/trips/top-things-to-do-in-goa-in-4-days-58a3ef7c589e0, Strategy: AsyncWebCrawler
+[LOG] 🚀 Extraction done for https://www.tripoto.com/goa/trips/top-things-to-do-in-goa-in-4-days-58a3ef7c589e0, time taken: 0.69 seconds.
+[LOG] ✅ Crawled https://www.tripadvisor.com/Attractions-g297604-Activities-Goa.html successfully!
+[LOG] 🚀 Crawling done for https://www.tripadvisor.com/Attractions-g297604-Activities-Goa.html, success: True, time taken: 9.57 seconds
+[LOG] 😧 Error: After processing the crawled HTML and removing irrelevant tags, nothing was left in the page. Check the markdown for further details.
+[LOG] 🚀 Content extracted for https://www.tripadvisor.com/Attractions-g297604-Activities-Goa.html, success: True, time taken: 0.01 seconds
+[LOG] 🔥 Extracting semantic blocks for https://www.tripadvisor.com/Attractions-g297604-Activities-Goa.html, Strategy: AsyncWebCrawler
+[LOG] 🚀 Extraction done for https://www.tripadvisor.com/Attractions-g297604-Activities-Goa.html, time taken: 0.01 seconds.
+( ●    ) Searching...
+```

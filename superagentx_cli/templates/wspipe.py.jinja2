@@ -30,12 +30,13 @@ async def main():
     pipe = await get_{{ pipe_name }}_pipe()
     ws_pipe = WSPipe(
         search_name='SuperAgentX {{ app_name }} Websocket Server',
-        agentx_pipe=pipe
+        agentx_pipe=pipe,
+        process_request=query_param_auth
     )
-    await ws_pipe.start(process_request=query_param_auth)
+    await ws_pipe.start()
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, asyncio.CancelledError):

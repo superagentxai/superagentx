@@ -72,11 +72,6 @@ class ChromaDB(BaseVectorStore):
             name: str,
             **kwargs
     ):
-        # Skip creating collection if already exists
-        collections = await self.list_cols()
-        async for collection in iter_to_aiter(collections):
-            if collection.name == name:
-                logger.debug(f"Collection {name} already exists. Skipping creation.")
         return await sync_to_async(
             self.client.get_or_create_collection,
             name=name,

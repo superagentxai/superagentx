@@ -64,6 +64,15 @@
       ]
     },
     {
+      "group": "Pipe Interface",
+      "pages": [
+        "io-console",
+        "restapi",
+        "websocket",
+        "voice_pipe"
+      ]
+    },
+    {
       "group": "Handlers (Tools)",
       "pages": [
         "examples/create_handler",
@@ -107,12 +116,14 @@
               ]
             },
             "examples/handlers/hubspot",
+            "examples/handlers/openapi",
             "examples/handlers/scrape",
             "examples/handlers/serper_dev",
             "examples/handlers/sql",
             "examples/handlers/visualization",
             "examples/handlers/weather",
             "examples/handlers/wikipedia"
+
 
 
       ]

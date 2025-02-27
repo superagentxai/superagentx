@@ -7,14 +7,19 @@ from typing import List
 import boto3
 from anthropic import Anthropic, AsyncAnthropic
 from botocore.config import Config
+from ollama import AsyncClient
+from ollama import Client as OllamaCli
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
 from superagentx.llm.anthropic import AnthropicClient
 from superagentx.llm.bedrock import BedrockClient
-from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_ANTHROPIC_EMBED
+from superagentx.llm.constants import (
+    DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED
+)
 from superagentx.llm.models import ChatCompletionParams
+from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
@@ -24,6 +29,7 @@ from superagentx.utils.llm_config import LLMType
 logger = logging.getLogger(__name__)
 
 _retries = 5
+_deepseek_base_url = 'https://api.deepseek.com'
 
 
 class LLMClient:
@@ -55,7 +61,6 @@ class LLMClient:
         self.llm_config_model = LLMModelConfig(**self.llm_config)
 
         match self.llm_config_model.llm_type:
-
             case LLMType.OPENAI_CLIENT:
                 self.client = self._init_openai_cli()
             case LLMType.AZURE_OPENAI_CLIENT:
@@ -64,19 +69,22 @@ class LLMClient:
                 self.client = self._init_bedrock_cli(**kwargs)
             case LLMType.ANTHROPIC_CLIENT:
                 self.client = self._init_anthropic_cli()
+            case LLMType.OLLAMA:
+                self.client = self._init_ollama_cli(**kwargs)
             case _:
                 raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
 
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
-        api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY")
+        api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY")
 
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
 
         # Initialize the client with the API key
-        cli = client_class(api_key=api_key)
+        cli = client_class(api_key=api_key, base_url=self.llm_config_model.base_url or None)
 
+        # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
 
         # Assign the client to self.client
@@ -113,7 +121,7 @@ class LLMClient:
     def _init_bedrock_cli(self, **kwargs) -> BedrockClient:
         aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
 
-        if aws_region is None:
+        if not aws_region:
             raise ValueError("Region is required to use the Amazon Bedrock API.")
 
         aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY")
@@ -130,17 +138,17 @@ class LLMClient:
         )
 
         # Assign Bedrock client to self.client
-        cli = boto3.client(
+        aws_cli = boto3.client(
             service_name="bedrock-runtime",
             aws_access_key_id=aws_access_key,
             aws_secret_access_key=aws_secret_key,
             config=bedrock_config
         )
-
+        # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
 
         return BedrockClient(
-            client=cli,
+            client=aws_cli,
             model=self.llm_config_model.model,
             embed_model=DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
         )
@@ -161,6 +169,20 @@ class LLMClient:
             client=cli,
             model=self.llm_config_model.model,
             embed_model=DEFAULT_ANTHROPIC_EMBED if not embed_model else embed_model
+        )
+
+    def _init_ollama_cli(self, **kwargs):
+        host = kwargs.get("host", None) or os.getenv("OLLAMA_HOST")
+
+        # Async & Sync Ollama Cli
+        cli = AsyncClient(host=host) if self.llm_config_model.async_mode else OllamaCli(host=host)
+
+        embed_model = self.llm_config_model.embed_model
+        return OllamaClient(
+            client=cli,
+            embed_model=DEFAULT_OLLAMA_EMBED if not embed_model else embed_model,
+            model=self.llm_config_model.model,
+            **kwargs
         )
 
     def chat_completion(

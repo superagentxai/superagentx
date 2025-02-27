@@ -6,7 +6,7 @@ from fastembed import TextEmbedding
 from openai.types.chat import ChatCompletion
 from pydantic import typing
 
-from superagentx.llm import ChatCompletionParams
+from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.client import Client
 from superagentx.utils.helper import iter_to_aiter, ptype_to_json_scheme, sync_to_async
 
