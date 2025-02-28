@@ -5,7 +5,6 @@ import typing
 from typing import List
 
 import boto3
-from anthropic import Anthropic, AsyncAnthropic
 from botocore.config import Config
 from ollama import AsyncClient
 from ollama import Client as OllamaCli
@@ -68,7 +67,7 @@ class LLMClient:
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
             case LLMType.ANTHROPIC_CLIENT:
-                self.client = self._init_anthropic_cli()
+                self.client = self._init_openai_cli()
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
@@ -76,7 +75,12 @@ class LLMClient:
 
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
-        api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY")
+        api_key = (
+                self.llm_config_model.api_key or
+                os.getenv("OPENAI_API_KEY") or
+                os.getenv("DEEPSEEK_API_KEY") or
+                os.getenv("ANTHROPIC_API_KEY")
+        )
 
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
@@ -151,24 +155,6 @@ class LLMClient:
             client=aws_cli,
             model=self.llm_config_model.model,
             embed_model=DEFAULT_BEDROCK_EMBED if not embed_model else embed_model
-        )
-
-    def _init_anthropic_cli(self) -> AnthropicClient:
-        # Set the API Key from pydantic model class or from environment variables.
-        api_key = self.llm_config_model.api_key or os.getenv("ANTHROPIC_API_KEY")
-
-        # Determine the client class based on async_mode
-        client_class = AsyncAnthropic if self.llm_config_model.async_mode else Anthropic
-
-        # Initialize the client with the API key
-        cli = client_class(api_key=api_key)
-
-        embed_model = self.llm_config_model.embed_model
-
-        return AnthropicClient(
-            client=cli,
-            model=self.llm_config_model.model,
-            embed_model=DEFAULT_ANTHROPIC_EMBED if not embed_model else embed_model
         )
 
     def _init_ollama_cli(self, **kwargs):
