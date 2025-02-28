@@ -102,7 +102,8 @@ class TestIOConsolePipe:
             role="spamfilter",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_agent_engine]
+            engines=[ai_agent_engine],
+            max_retry=1
         )
 
         pipe = AgentXPipe(

@@ -12,8 +12,11 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
+from superagentx.llm.anthropic import AnthropicClient
 from superagentx.llm.bedrock import BedrockClient
-from superagentx.llm.constants import DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED
+from superagentx.llm.constants import (
+    DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED
+)
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
@@ -57,14 +60,14 @@ class LLMClient:
         self.llm_config_model = LLMModelConfig(**self.llm_config)
 
         match self.llm_config_model.llm_type:
-            case LLMType.OPENAI_CLIENT | LLMType.DEEPSEEK:
+            case LLMType.OPENAI_CLIENT:
                 self.client = self._init_openai_cli()
-                if LLMType.DEEPSEEK:
-                    self.client.base_url = _deepseek_base_url
             case LLMType.AZURE_OPENAI_CLIENT:
                 self.client = self._init_azure_openai_cli()
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
+            case LLMType.ANTHROPIC_CLIENT:
+                self.client = self._init_openai_cli()
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
@@ -73,8 +76,10 @@ class LLMClient:
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
         api_key = (
-            self.llm_config_model.api_key
-            if self.llm_config_model.api_key else os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY")
+                self.llm_config_model.api_key or
+                os.getenv("OPENAI_API_KEY") or
+                os.getenv("DEEPSEEK_API_KEY") or
+                os.getenv("ANTHROPIC_API_KEY")
         )
 
         # Determine the client class based on async_mode
@@ -143,7 +148,6 @@ class LLMClient:
             aws_secret_access_key=aws_secret_key,
             config=bedrock_config
         )
-
         # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
 

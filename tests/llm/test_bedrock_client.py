@@ -8,6 +8,16 @@ from superagentx.llm.bedrock import BedrockClient
 
 logger = logging.getLogger(__name__)
 
+'''
+ Run Pytest:  
+
+    1. pytest --log-cli-level=INFO tests/llm/test_bedrock_client.py::TestAWSBedrockClient::test_bedrock_client_init
+    2. pytest --log-cli-level=INFO tests/llm/test_bedrock_client.py::TestAWSBedrockClient::test_bedrock_aclient_converse
+    3. pytest --log-cli-level=INFO tests/llm/test_bedrock_client.py::TestAWSBedrockClient::test_bedrock_client_converse
+    4. pytest --log-cli-level=INFO tests/llm/test_bedrock_client.py::TestAWSBedrockClient::test_bedrock_func_client_converse
+
+'''
+
 # Start a conversation with the user message.
 user_message = "What is the most famous song on ABCD?"
 

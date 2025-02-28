@@ -40,21 +40,38 @@ OPENAI_MODELS = [
     "text-embedding-3-large"
 ]
 
+BEDROCK_MODELS = [
+    'anthropic.claude-3-5-sonnet-20241022-v2:0',
+    'anthropic.claude-3-5-haiku-20241022-v1:0',
+    'anthropic.claude-instant-v1:2:100k',
+    'anthropic.claude-3-sonnet-20240229-v1:0',
+    'anthropic.claude-3-haiku-20240307-v1:0',
+    'anthropic.claude-3-opus-20240229-v1:0',
+    'anthropic.claude-3-5-sonnet-20240620-v1:0',
+    'cohere.command-r-v1:0',
+    'cohere.command-r-plus-v1:0',
+    'meta.llama3-1-8b-instruct-v1:0',
+    'meta.llama3-1-70b-instruct-v1:0',
+    'meta.llama3-1-405b-instruct-v1:0',
+    'meta.llama3-2-11b-instruct-v1:0',
+    'meta.llama3-2-90b-instruct-v1:0',
+    'meta.llama3-2-1b-instruct-v1:0',
+    'meta.llama3-2-3b-instruct-v1:0',
+    'mistral.mistral-large-2402-v1:0',
+    'mistral.mistral-large-2407-v1:0'
+]
+
+ANTHROPIC_MODELS = [
+    'claude-3-5-sonnet-20241022',
+    'claude-3-5-haiku-20241022',
+    'claude-3-opus-20240229',
+    'claude-3-sonnet-20240229',
+    'claude-3-haiku-20240307'
+]
+
 DEEPSEEK_MODELS = [
     "deepseek-chat",
 ]
-
-BEDROCK_MODELS = ['anthropic.claude-3-5-sonnet-20241022-v2:0', 'anthropic.claude-3-5-haiku-20241022-v1:0',
-                  'anthropic.claude-instant-v1:2:100k', 'anthropic.claude-3-sonnet-20240229-v1:0',
-                  'anthropic.claude-3-haiku-20240307-v1:0',
-                  'anthropic.claude-3-opus-20240229-v1:0',
-                  'anthropic.claude-3-5-sonnet-20240620-v1:0', 'cohere.command-r-v1:0',
-                  'cohere.command-r-plus-v1:0',
-                  'meta.llama3-1-8b-instruct-v1:0',
-                  'meta.llama3-1-70b-instruct-v1:0', 'meta.llama3-1-405b-instruct-v1:0',
-                  'meta.llama3-2-11b-instruct-v1:0', 'meta.llama3-2-90b-instruct-v1:0',
-                  'meta.llama3-2-1b-instruct-v1:0', 'meta.llama3-2-3b-instruct-v1:0',
-                  'mistral.mistral-large-2402-v1:0', 'mistral.mistral-large-2407-v1:0']
 
 OLLAMA_MODELS = [
     "mistral:latest",

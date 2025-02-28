@@ -10,11 +10,13 @@ logger = logging.getLogger(__name__)
 
 '''
  Run Pytest:
-   1. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_aclient_chat
-   2. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_client_chat
-   3. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_func_client_chat
-   4. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_aclient_embed
-   5. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_client_embed
+ 
+   1. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_client_init
+   2. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_aclient_chat
+   3. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_client_chat
+   4. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_func_client_chat
+   5. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_aclient_embed
+   6. pytest --log-cli-level=INFO tests/llm/test_ollama_client.py::TestOllamaClient::test_ollama_client_embed
 '''
 
 # Start a conversation with the user message.
@@ -55,7 +57,7 @@ tools = [
 @pytest.fixture
 def ollama_client_init() -> dict:
     # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock'}
-    llm_config = {'model': 'deepseek-r1:8b', 'llm_type': 'ollama', 'async_mode': False}
+    llm_config = {'model': 'mistral:latest', 'llm_type': 'ollama', 'async_mode': True}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client}
     return response
