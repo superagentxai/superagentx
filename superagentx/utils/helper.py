@@ -4,10 +4,6 @@ import asyncio
 
 
 async def sync_to_async(func, *args, **kwargs) -> Any:
-    """
-
-    @rtype: Any
-    """
     return await asyncio.to_thread(func, *args, **kwargs)
 
 
