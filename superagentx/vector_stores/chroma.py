@@ -244,3 +244,10 @@ class ChromaDB(BaseVectorStore):
             result.append(entry)
 
         return result
+
+    async def delete_by_conversation_id(self, conversation_id):
+        collection = await self._get_or_create_collection(self.collection_name)
+        await sync_to_async(
+            collection.delete,
+            where={"conversation_id": conversation_id}
+        )
