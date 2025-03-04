@@ -78,6 +78,7 @@ class Engine:
             input_prompt: str,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
+            conversation_id: str | None = None,
             **kwargs
     ) -> list[typing.Any]:
         """
@@ -98,6 +99,8 @@ class Engine:
         """
         if pre_result:
             input_prompt = f'{input_prompt}\n\n{pre_result}'
+
+        input_prompt = f"{input_prompt}\nConversation Id: {conversation_id}"
 
         if not kwargs:
             kwargs = {}

@@ -16,6 +16,7 @@ Run Pytest:
    2. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_get_history
    3. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_reset
    4. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_search
+   5. pytest --log-cli-level=INFO tests/memory/test_memory.py::TestMemory::test_delete_by_id
 """
 llm_config = {
     "model": "gpt-4o",
@@ -27,10 +28,10 @@ llm_client = LLMClient(llm_config=llm_config)
 
 @pytest.fixture
 def test_memory_init() -> dict:
-    memory_client: Memory = Memory(memory_config={"llm_client":llm_client})
+    memory_client: Memory = Memory(memory_config={"llm_client": llm_client})
     datas = {
         "memory_id": "55e497f4010d4eda909691272eaf31fb",
-        "chat_id": "915ec91bc2654f8da3af800c0bf6eca9"
+        "conversation_id": "915ec91bc2654f8da3af800c0bf6eca9"
     }
     response = {
         "data": datas,
@@ -47,10 +48,10 @@ class TestMemory:
         user_input = "Tell me about a Agentic AI Framework"
         role = "user"
         logger.info(f"User Id: {datas.get('memory_id')}")
-        logger.info(f"Chat Id: {datas.get('chat_id')}")
+        logger.info(f"Chat Id: {datas.get('conversation_id')}")
         await client.add(
             memory_id=datas.get("memory_id"),
-            chat_id=datas.get("chat_id"),
+            conversation_id=datas.get("conversation_id"),
             message_id=str(uuid.uuid4().hex),
             role=role,
             data=user_input,
@@ -73,7 +74,7 @@ class TestMemory:
         result = response.choices[0].message.content
         await client.add(
             memory_id=datas.get("memory_id"),
-            chat_id=datas.get("chat_id"),
+            conversation_id=datas.get("conversation_id"),
             message_id=str(uuid.uuid4().hex),
             role=role,
             data=result,
@@ -85,7 +86,7 @@ class TestMemory:
         client: Memory = test_memory_init.get("client")
         response = await client.get(
             memory_id=datas.get('memory_id'),
-            chat_id=datas.get('chat_id')
+            conversation_id=datas.get('conversation_id')
         )
         logger.info(f"Result History: {response}")
 
@@ -102,3 +103,7 @@ class TestMemory:
         )
         logger.info(response)
         return response
+
+    async def test_delete_by_id(self, test_memory_init: dict):
+        client: Memory = test_memory_init.get("client")
+        await client.delete_by_conversation_id(conversation_id="123456789")

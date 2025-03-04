@@ -82,14 +82,23 @@ class Memory(MemoryBase):
             query: str,
             memory_id: str,
             limit: int = 10,
-            filters: dict | None = None
+            filters: dict | None = None,
+            conversation_id: str | None = None
     ) -> list[dict]:
         filters = filters or {}
-        if memory_id:
-            filters["memory_id"] = memory_id
+        # if memory_id:
+        #     filters["memory_id"] = memory_id
+        # if conversation_id:
+        #     filters["conversation_id"] = conversation_id
+        where = {"$and": [{
+            "memory_id": memory_id
+        }, {
+            "conversation_id": conversation_id
+        }
+        ]}
         result = await self._search_vector_store(
             query=query,
-            filters=filters,
+            filters=where,
             limit=limit
         )
         return await self._get_history(
@@ -110,7 +119,7 @@ class Memory(MemoryBase):
         )
         excluded_keys = {
             "memory_id",
-            "chat_id",
+            "conversation_id",
             "role",
             "message_id",
             "data",
@@ -130,7 +139,8 @@ class Memory(MemoryBase):
                     updated_at=mem.payload.get("updated_at"),
                     score=mem.score,
                 ).model_dump(),
-                **{key: mem.payload[key] for key in ["memory_id", "chat_id", "message_id"] if key in mem.payload},
+                **{key: mem.payload[key] for key in ["memory_id", "conversation_id", "message_id"] if
+                   key in mem.payload},
                 **(
                     {"metadata": {k: v for k, v in mem.payload.items() if k not in excluded_keys}}
                     if any(k for k in mem.payload if k not in excluded_keys)
@@ -146,7 +156,7 @@ class Memory(MemoryBase):
             self,
             *,
             memory_id: str,
-            chat_id: str,
+            conversation_id: str,
             message_id: str,
             role: str | Enum,
             data: str,
@@ -163,7 +173,7 @@ class Memory(MemoryBase):
         metadata["memory_id"] = memory_id
         metadata["data"] = data
         metadata["reason"] = reason
-        metadata["chat_id"] = chat_id
+        metadata["conversation_id"] = conversation_id
         metadata["message_id"] = message_id
         metadata["role"] = role
         metadata["created_at"] = str(created_at)
@@ -174,3 +184,6 @@ class Memory(MemoryBase):
             payloads=metadata,
             ids=[message_id]
         )
+
+    async def delete_by_conversation_id(self, **kwargs):
+        await self.vector_db.delete_by_conversation_id(**kwargs)

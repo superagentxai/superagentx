@@ -64,7 +64,6 @@ class AgentXPipe:
         self.memory = memory
         if self.memory:
             self.memory_id = uuid.uuid4().hex
-            self.chat_id = uuid.uuid4().hex
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
 
         logger.debug(
@@ -133,7 +132,8 @@ class AgentXPipe:
 
     async def add_memory(
             self,
-            prompt_instruction: list[dict]
+            prompt_instruction: list[dict],
+            conversation_id: str | None = None
     ) -> None:
         """
         Adds a list of prompt instructions to the memory of the engine.
@@ -155,7 +155,7 @@ class AgentXPipe:
         async for prompt in iter_to_aiter(prompt_instruction):
             await self.memory.add(
                 memory_id=self.memory_id,
-                chat_id=self.chat_id,
+                conversation_id=conversation_id,
                 message_id=uuid.uuid4().hex,
                 role=prompt.get("role"),
                 data=prompt.get("content"),
@@ -164,7 +164,8 @@ class AgentXPipe:
 
     async def retrieve_memory(
             self,
-            query_instruction: str
+            query_instruction: str,
+            conversation_id: str | None = None
     ) -> list[dict]:
         """
         Retrieves a list of prompt instructions from the engine's memory based on the provided query instruction.
@@ -190,11 +191,13 @@ class AgentXPipe:
             query=query_instruction,
             memory_id=self.memory_id,
             limit=10,
+            conversation_id=conversation_id
         )
 
     async def _flow(
             self,
-            query_instruction: str
+            query_instruction: str,
+            conversation_id: str | None = None
     ):
         trigger_break = False
         results = []
@@ -203,7 +206,7 @@ class AgentXPipe:
             pre_result = await self._pre_result(results=results)
             logger.debug(f'Updated with previous results.\nPrevious Result : {pre_result}')
             if self.memory:
-                old_memory = await self.retrieve_memory(query_instruction)
+                old_memory = await self.retrieve_memory(query_instruction, conversation_id=conversation_id)
                 logger.debug(f"Updated with old memory.\n{old_memory}")
             try:
                 if isinstance(_agents, list):
@@ -214,7 +217,8 @@ class AgentXPipe:
                                 query_instruction=query_instruction,
                                 pre_result=pre_result,
                                 old_memory=old_memory,
-                                stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
+                                stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
+                                conversation_id=conversation_id
                             )
                             async for _agent in iter_to_aiter(_agents)
                         ]
@@ -226,7 +230,8 @@ class AgentXPipe:
                         query_instruction=query_instruction,
                         pre_result=pre_result,
                         old_memory=old_memory,
-                        stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied
+                        stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
+                        conversation_id=conversation_id
                     )
                     logger.debug(f'Agent result : {_res}')
                 if self.memory:
@@ -236,7 +241,10 @@ class AgentXPipe:
                             "content": f"{yaml.dump(_res.result)}",
                             "reason": _res.reason
                         }
-                        await self.add_memory([assistant])
+                        await self.add_memory(
+                            [assistant],
+                            conversation_id=conversation_id
+                        )
             except StopSuperAgentX as ex:
                 trigger_break = True
                 logger.warning(ex)
@@ -249,7 +257,8 @@ class AgentXPipe:
 
     async def flow(
             self,
-            query_instruction: str
+            query_instruction: str,
+            conversation_id: str | None = None
     ) -> list[GoalResult]:
         """
         Processes the specified query instruction and executes a flow of operations.
@@ -272,5 +281,6 @@ class AgentXPipe:
         """
         logger.info(f"Pipe {self.name} starting...")
         return await self._flow(
-            query_instruction=query_instruction
+            query_instruction=query_instruction,
+            conversation_id=conversation_id
         )
