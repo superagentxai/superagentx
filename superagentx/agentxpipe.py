@@ -273,6 +273,8 @@ class AgentXPipe:
             query_instruction: A string representing the instruction or query that defines the goal to be achieved.
                 This should be a clear and actionable statement that the method can execute.
 
+            conversation_id: A string representing the unique identifier of the conversation.
+
         Returns:
             list[GoalResult]
                 A list of GoalResult instances representing the outcomes of the operations executed in response to

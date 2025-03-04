@@ -280,6 +280,7 @@ class Agent:
                 When set to True, the engine operation will halt if the defined goal is not met,
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
+            conversation_id: A string representing the unique identifier of the conversation.
 
         Returns:
             GoalResult | None

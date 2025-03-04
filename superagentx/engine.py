@@ -90,6 +90,7 @@ class Engine:
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
             old_memory: An optional previous context of the user's instruction
+            conversation_id: A string representing the unique identifier of the conversation.
             kwargs: Additional keyword arguments to update the `input_prompt` dynamically.
 
         Returns:
