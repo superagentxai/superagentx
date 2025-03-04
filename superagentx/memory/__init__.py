@@ -90,6 +90,8 @@ class Memory(MemoryBase):
         #     filters["memory_id"] = memory_id
         # if conversation_id:
         #     filters["conversation_id"] = conversation_id
+        if not conversation_id:
+            conversation_id = ""
         where = {"$and": [{
             "memory_id": memory_id
         }, {
@@ -170,6 +172,8 @@ class Memory(MemoryBase):
             created_at = datetime.datetime.now()
         if not updated_at:
             updated_at = datetime.datetime.now()
+        if not conversation_id:
+            conversation_id = ""
         metadata["memory_id"] = memory_id
         metadata["data"] = data
         metadata["reason"] = reason
