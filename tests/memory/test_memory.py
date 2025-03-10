@@ -31,7 +31,7 @@ def test_memory_init() -> dict:
     memory_client: Memory = Memory(memory_config={"llm_client": llm_client})
     datas = {
         "memory_id": "55e497f4010d4eda909691272eaf31fb",
-        "conversation_id": None
+        "conversation_id": "55e497f4010d4eda909691272eaf31fb"
     }
     response = {
         "data": datas,
