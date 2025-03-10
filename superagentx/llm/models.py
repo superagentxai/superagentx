@@ -97,3 +97,8 @@ class ChatCompletionParams(BaseModel):
         description="Unique identifier for end-user monitoring and abuse detection.",
         default=f'{uuid.uuid4()}'
     )
+    performance_config: dict | None = Field(
+        description="Latency-optimized inference for foundation models in Amazon Bedrock delivers faster response"
+                    " times and improved responsiveness for AI applications",
+        default=None
+    )
