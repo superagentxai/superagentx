@@ -68,6 +68,8 @@ class LLMClient:
                 self.client = self._init_bedrock_cli(**kwargs)
             case LLMType.ANTHROPIC_CLIENT:
                 self.client = self._init_openai_cli()
+            case LLMType.DEEPSEEK:
+                self.client = self._init_openai_cli()
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
@@ -85,6 +87,9 @@ class LLMClient:
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
 
+        logger.info(f"DeepSeek API Key: {os.getenv("DEEPSEEK_API_KEY")}")
+        logger.info(f"DeepSeek API Key: {api_key}")
+
         # Initialize the client with the API key
         cli = client_class(api_key=api_key, base_url=self.llm_config_model.base_url or None)
 
@@ -95,7 +100,8 @@ class LLMClient:
         return OpenAIClient(
             client=cli,
             model=self.llm_config_model.model,
-            embed_model=DEFAULT_OPENAI_EMBED if not embed_model else embed_model
+            embed_model=DEFAULT_OPENAI_EMBED if not embed_model else embed_model,
+            llm_type=self.llm_config_model.llm_type
         )
 
     def _init_azure_openai_cli(self) -> OpenAIClient:

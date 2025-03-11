@@ -9,10 +9,13 @@ from superagentx.llm.openai import OpenAIClient
 logger = logging.getLogger(__name__)
 
 '''
- Run Pytest:  
+Run Pytest:  
     
-   1. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_achat_completion
-   2. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_chat_completion
+    1. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_achat_completion
+    2. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_chat_completion
+    3. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_client_embed
+    4. pytest --log-cli-level=INFO tests/llm/test_deepseek_client.py::TestDeepSeekClient::test_aclient_embed
+
 '''
 
 
@@ -100,3 +103,15 @@ class TestDeepSeekClient:
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
         logger.info(f"Open AI Async ChatCompletion Response {response}")
         assert isinstance(response, ChatCompletion)
+
+    async def test_aclient_embed(self, deepseek_client_init: dict):
+        llm_client: LLMClient = deepseek_client_init.get('llm')
+
+        response = await llm_client.aembed(text="Hi")
+        logger.info(response)
+
+    async def test_client_embed(self, deepseek_client_init: dict):
+        llm_client: LLMClient = deepseek_client_init.get('llm')
+
+        response = llm_client.embed(text="Hi")
+        logger.info(response)

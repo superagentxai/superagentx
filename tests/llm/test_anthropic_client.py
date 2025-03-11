@@ -11,11 +11,12 @@ logger = logging.getLogger(__name__)
 '''
 Run Pytest:  
 
-   1. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_client_init
-   2. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_aclient_converse
-   3. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_client_converse
-   4. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_func_client_converse
-
+    1. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_client_init
+    2. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_aclient_converse
+    3. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_client_converse
+    4. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_func_client_converse
+    5. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_aclient_embed
+    6. pytest --log-cli-level=INFO tests/llm/test_anthropic_client.py::TestAnthropicClient::test_anthropic_client_embed
 '''
 
 # Start a conversation with the user message.
@@ -59,7 +60,6 @@ def anthropic_client_init() -> dict:
         'model': 'claude-3-7-sonnet-20250219',
         'llm_type': 'anthropic',
         'async_mode': True,
-        'api_key': "<apiKey>",
         'base_url': "https://api.anthropic.com/v1/"
     }
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
@@ -120,3 +120,15 @@ class TestAnthropicClient:
 
         result: [Message] = await llm_client.afunc_chat_completion(chat_completion_params=chat_completion_params)
         logger.info(f'Result {result}')
+
+    async def test_anthropic_aclient_embed(self, anthropic_client_init: dict):
+        llm_client: LLMClient = anthropic_client_init.get('llm')
+
+        response = await llm_client.aembed(text="Hi")
+        logger.info(response)
+
+    async def test_anthropic_client_embed(self, anthropic_client_init: dict):
+        llm_client: LLMClient = anthropic_client_init.get('llm')
+
+        response = llm_client.embed(text="Hi")
+        logger.info(response)
