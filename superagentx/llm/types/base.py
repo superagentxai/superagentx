@@ -87,11 +87,4 @@ class LLMModelConfig(BaseModel):
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
-            elif self.model not in BEDROCK_MODELS:
-                _msg = (
-                    f'Invalid Bedrock model - '
-                    f'{self.model}. It should be one of the following {", ".join(BEDROCK_MODELS)}'
-                )
-                logger.error(_msg)
-                raise ValueError(_msg)
         return self
