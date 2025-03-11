@@ -84,6 +84,11 @@ class BedrockClient(Client):
                 if tools is not None:
                     kwargs["toolConfig"] = {"tools": tools}
 
+                if chat_completion_params.performance_config:
+                    kwargs["performanceConfig"] = {
+                        "latency": "optimized"
+                    }
+
                 response = self.client.converse(**kwargs)
 
                 logger.debug(f"Bedrock Message ==> Bedrock no tool {response} ")
@@ -159,6 +164,11 @@ class BedrockClient(Client):
 
                 if tools is not None:
                     kwargs["toolConfig"] = {"tools": tools}
+
+                if chat_completion_params.performance_config:
+                    kwargs["performanceConfig"] = {
+                        "latency": "optimized"
+                    }
 
                 response = self.client.converse(**kwargs)
 

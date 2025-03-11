@@ -67,3 +67,13 @@ class MemoryBase(ABC):
             memory_id (str): ID of the memory to delete.
         """
         raise NotImplementedError
+
+    @abstractmethod
+    async def delete_by_conversation_id(self, conversation_id: str):
+        """
+        Delete a conversation by ID.
+
+        Args:
+            conversation_id (str): ID of the memory to delete.
+        """
+        raise NotImplementedError

@@ -78,6 +78,7 @@ class Engine:
             input_prompt: str,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
+            conversation_id: str | None = None,
             **kwargs
     ) -> list[typing.Any]:
         """
@@ -89,6 +90,7 @@ class Engine:
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
             old_memory: An optional previous context of the user's instruction
+            conversation_id: A string representing the unique identifier of the conversation.
             kwargs: Additional keyword arguments to update the `input_prompt` dynamically.
 
         Returns:
@@ -98,6 +100,8 @@ class Engine:
         """
         if pre_result:
             input_prompt = f'{input_prompt}\n\n{pre_result}'
+
+        input_prompt = f"{input_prompt}\nConversation Id: {conversation_id}"
 
         if not kwargs:
             kwargs = {}

@@ -64,7 +64,7 @@ class SQLiteManager:
             CREATE TABLE IF NOT EXISTS history (
                 id TEXT PRIMARY KEY,
                 memory_id TEXT,
-                chat_id TEXT,
+                conversation_id TEXT,
                 message_id TEXT,
                 created_at DATETIME,
                 updated_at DATETIME,
@@ -80,7 +80,7 @@ class SQLiteManager:
             self,
             *,
             memory_id: str,
-            chat_id: str
+            conversation_id: str
     ):
         """
         Asynchronously retrieves the chat history for a specific user and chat session.
@@ -88,17 +88,17 @@ class SQLiteManager:
         Parameters:
             memory_id : str
                 The unique identifier of the user whose chat history is being requested.
-            chat_id : str
+            conversation_id : str
                 The unique identifier of the chat session to retrieve the history from.
         """
         cursor = await self.connection.execute(
             """
-            SELECT id, memory_id, chat_id, message_id, role, data, reason, created_at, updated_at, is_deleted
+            SELECT id, memory_id, conversation_id, message_id, role, data, reason, created_at, updated_at, is_deleted
             FROM history
-            WHERE memory_id = ? AND chat_id = ?
+            WHERE memory_id = ? AND conversation_id = ?
             ORDER BY created_at ASC
         """,
-            (memory_id, chat_id),
+            (memory_id, conversation_id),
         )
         rows = await cursor.fetchall()
         if rows:
@@ -106,7 +106,7 @@ class SQLiteManager:
                 {
                     "id": row[0],
                     "memory_id": row[1],
-                    "chat_id": row[2],
+                    "conversation_id": row[2],
                     "message_id": row[3],
                     "role": row[4],
                     "data": row[5],
@@ -135,7 +135,7 @@ class SQLiteManager:
         """
         cursor = await self.connection.execute(
                 """
-                SELECT id, memory_id, chat_id, message_id, role, data, reason, created_at, updated_at, is_deleted
+                SELECT id, memory_id, conversation_id, message_id, role, data, reason, created_at, updated_at, is_deleted
                 FROM history
                 WHERE memory_id = ?
                 ORDER BY updated_at ASC
@@ -157,7 +157,7 @@ class SQLiteManager:
             self,
             *,
             memory_id: str,
-            chat_id: str,
+            conversation_id: str,
             message_id: str,
             role: str | Enum,
             data: str,
@@ -176,7 +176,7 @@ class SQLiteManager:
         Parameters:
             memory_id : str
                 The unique identifier of the user who sent the message.
-            chat_id : str
+            conversation_id : str
                 The unique identifier of the chat session where the message was sent.
             message_id : str
                 A unique identifier for the message being added to the history.
@@ -199,13 +199,13 @@ class SQLiteManager:
             updated_at = datetime.datetime.now()
         await self.connection.execute(
             """
-            INSERT INTO history (id, memory_id, chat_id, message_id, role, data, reason, created_at, updated_at, is_deleted)
+            INSERT INTO history (id, memory_id, conversation_id, message_id, role, data, reason, created_at, updated_at, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 uuid.uuid4().hex,
                 memory_id,
-                chat_id,
+                conversation_id,
                 message_id,
                 role,
                 data,

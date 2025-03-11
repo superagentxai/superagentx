@@ -193,3 +193,6 @@ class Opensearch(BaseVectorStore):
         return await self.client.indices.delete(
             index=index_name
         )
+
+    async def delete_by_conversation_id(self, **kwargs):
+        raise NotImplementedError

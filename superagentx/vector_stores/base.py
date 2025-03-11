@@ -31,3 +31,8 @@ class BaseVectorStore(metaclass=ABCMeta):
     async def delete_collection(self, *args, **kwargs):
         """Delete a collection."""
         raise NotImplementedError
+
+    @abstractmethod
+    async def delete_by_conversation_id(self, **kwargs):
+        """Delete by conversation id."""
+        raise NotImplementedError

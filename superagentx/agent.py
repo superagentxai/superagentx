@@ -215,7 +215,8 @@ class Agent:
             self,
             query_instruction: str,
             pre_result: str | None = None,
-            old_memory: list[dict] | None = None
+            old_memory: list[dict] | None = None,
+            conversation_id: str | None = None
     ) -> GoalResult:
         results = []
         instruction = query_instruction
@@ -227,7 +228,8 @@ class Agent:
                         _engine.start(
                             input_prompt=instruction,
                             pre_result=pre_result,
-                            old_memory=old_memory
+                            old_memory=old_memory,
+                            conversation_id=conversation_id
                         )
                         async for _engine in iter_to_aiter(_engines)
                     ]
@@ -238,7 +240,8 @@ class Agent:
                 _res = await _engines.start(
                     input_prompt=instruction,
                     pre_result=pre_result,
-                    old_memory=old_memory
+                    old_memory=old_memory,
+                    conversation_id=conversation_id
                 )
                 logger.debug(f'Engine result : {_res}')
             results.append(_res)
@@ -256,7 +259,8 @@ class Agent:
             query_instruction: str,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
-            stop_if_goal_not_satisfied: bool = False
+            stop_if_goal_not_satisfied: bool = False,
+            conversation_id: str | None = None
     ) -> GoalResult | None:
         """
         Executes the specified query instruction to achieve a defined goal.
@@ -276,6 +280,7 @@ class Agent:
                 When set to True, the engine operation will halt if the defined goal is not met,
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
+            conversation_id: A string representing the unique identifier of the conversation.
 
         Returns:
             GoalResult | None
@@ -284,12 +289,13 @@ class Agent:
                 execution cannot be completed or if an error occurs, the method may return `None`.
         """
         _goal_result = None
-        for _retry in range(1, self.max_retry+1):
+        for _retry in range(1, self.max_retry + 1):
             logger.info(f"Agent `{self.name}` retry {_retry}")
             _goal_result = await self._execute(
                 query_instruction=query_instruction,
                 pre_result=pre_result,
-                old_memory=old_memory
+                old_memory=old_memory,
+                conversation_id=conversation_id
             )
             if _goal_result.is_goal_satisfied:
                 return _goal_result
