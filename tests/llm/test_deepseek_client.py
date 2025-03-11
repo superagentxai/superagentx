@@ -21,7 +21,7 @@ Run Pytest:
 
 @pytest.fixture
 def deepseek_client_init() -> dict:
-    llm_config = {'llm_type': 'deepseek', 'base_url': 'https://api.deepseek.com/'}
+    llm_config = {'llm_type': 'deepseek'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'deepseek'}
     return response

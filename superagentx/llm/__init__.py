@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 _retries = 5
 _deepseek_base_url = 'https://api.deepseek.com'
+_anthropic_base_url = "https://api.anthropic.com/v1/"
 
 
 class LLMClient:
@@ -60,16 +61,12 @@ class LLMClient:
         self.llm_config_model = LLMModelConfig(**self.llm_config)
 
         match self.llm_config_model.llm_type:
-            case LLMType.OPENAI_CLIENT:
+            case LLMType.OPENAI_CLIENT | LLMType.ANTHROPIC_CLIENT | LLMType.DEEPSEEK:
                 self.client = self._init_openai_cli()
             case LLMType.AZURE_OPENAI_CLIENT:
                 self.client = self._init_azure_openai_cli()
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
-            case LLMType.ANTHROPIC_CLIENT:
-                self.client = self._init_openai_cli()
-            case LLMType.DEEPSEEK:
-                self.client = self._init_openai_cli()
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
@@ -87,8 +84,19 @@ class LLMClient:
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
 
+        base_url = self.llm_config_model.base_url
+
+        if (LLMType.ANTHROPIC_CLIENT == self.llm_config_model.llm_type
+                and not self.llm_config_model.base_url
+        ):
+            base_url = _anthropic_base_url
+        if (LLMType.DEEPSEEK == self.llm_config_model.llm_type
+                and not self.llm_config_model.base_url
+        ):
+            base_url = _deepseek_base_url
+
         # Initialize the client with the API key
-        cli = client_class(api_key=api_key, base_url=self.llm_config_model.base_url or None)
+        cli = client_class(api_key=api_key, base_url=base_url or None)
 
         # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model

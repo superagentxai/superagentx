@@ -59,8 +59,7 @@ def anthropic_client_init() -> dict:
     llm_config = {
         'model': 'claude-3-7-sonnet-20250219',
         'llm_type': 'anthropic',
-        'async_mode': True,
-        'base_url': "https://api.anthropic.com/v1/"
+        'async_mode': True
     }
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client}
