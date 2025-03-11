@@ -87,9 +87,6 @@ class LLMClient:
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
 
-        logger.info(f"DeepSeek API Key: {os.getenv("DEEPSEEK_API_KEY")}")
-        logger.info(f"DeepSeek API Key: {api_key}")
-
         # Initialize the client with the API key
         cli = client_class(api_key=api_key, base_url=self.llm_config_model.base_url or None)
 

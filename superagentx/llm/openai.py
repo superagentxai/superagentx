@@ -119,7 +119,8 @@ class OpenAIClient(Client):
         """
         text = text.replace("\n", " ")
         if self.llm_type == LLMType.DEEPSEEK or self.llm_type == LLMType.ANTHROPIC_CLIENT:
-            response = self._embed_model_cli.embed(
+            response = await sync_to_async(
+                self._embed_model_cli.embed,
                 documents=[text],
                 **kwargs
             )
