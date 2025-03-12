@@ -115,3 +115,16 @@ class TestAWSBedrockClient:
 
         result: [Message] = await llm_client.afunc_chat_completion(chat_completion_params=chat_completion_params)
         logger.info(f'Result {result}')
+
+
+    async def test_ollama_aclient_embed(self, aws_bedrock_client_init: dict):
+        llm_client: LLMClient = aws_bedrock_client_init.get('llm')
+
+        response = await llm_client.aembed(text="Hi")
+        logger.info(response)
+
+    async def test_ollama_client_embed(self, aws_bedrock_client_init: dict):
+        llm_client: LLMClient = aws_bedrock_client_init.get('llm')
+
+        response = llm_client.embed(text="Hi")
+        logger.info(response)

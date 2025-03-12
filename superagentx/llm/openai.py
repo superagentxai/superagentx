@@ -6,11 +6,13 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types import CreateEmbeddingResponse
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
+from fastembed import TextEmbedding
 from pydantic import typing
 
 from superagentx.llm import ChatCompletionParams
 from superagentx.llm.client import Client
 from superagentx.llm.constants import OPENAI_PRICE1K
+from superagentx.utils.llm_config import LLMType
 from superagentx.utils.helper import sync_to_async, iter_to_aiter, ptype_to_json_scheme
 
 logger = logging.getLogger(__name__)
@@ -37,6 +39,8 @@ class OpenAIClient(Client):
         super().__init__(**kwargs)
         self.client = client
         self.llm_params: dict = kwargs
+        self.llm_type = kwargs.get("llm_type")
+        self._embed_model_cli = TextEmbedding()
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)
@@ -90,6 +94,14 @@ class OpenAIClient(Client):
             model=self._embed_model,
             **kwargs
         )
+        if self.llm_type == LLMType.DEEPSEEK or self.llm_type == LLMType.ANTHROPIC_CLIENT:
+            response = self._embed_model_cli.embed(
+                documents=[text],
+                **kwargs
+            )
+            response = [res for res in response]
+            if response:
+                return response[0]
         return self._get_embeddings(response)
 
     async def aembed(
@@ -107,6 +119,15 @@ class OpenAIClient(Client):
             list: The embedding vector.
         """
         text = text.replace("\n", " ")
+        if self.llm_type == LLMType.DEEPSEEK or self.llm_type == LLMType.ANTHROPIC_CLIENT:
+            response = await sync_to_async(
+                self._embed_model_cli.embed,
+                documents=[text],
+                **kwargs
+            )
+            response = [res async for res in iter_to_aiter(response)]
+            if response:
+                return response[0]
         response = await self.client.embeddings.create(
             input=[text],
             model=self._embed_model,
