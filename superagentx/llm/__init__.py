@@ -74,26 +74,26 @@ class LLMClient:
 
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
-        api_key = (
-                self.llm_config_model.api_key or
-                os.getenv("OPENAI_API_KEY") or
-                os.getenv("DEEPSEEK_API_KEY") or
-                os.getenv("ANTHROPIC_API_KEY")
-        )
 
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
 
-        base_url = self.llm_config_model.base_url
+        base_url = None
+        api_key = None
 
-        if (LLMType.ANTHROPIC_CLIENT == self.llm_config_model.llm_type
-                and not self.llm_config_model.base_url
-        ):
-            base_url = _anthropic_base_url
-        if (LLMType.DEEPSEEK == self.llm_config_model.llm_type
-                and not self.llm_config_model.base_url
-        ):
-            base_url = _deepseek_base_url
+        if LLMType.ANTHROPIC_CLIENT == self.llm_config_model.llm_type:
+            base_url = self.llm_config_model.base_url or _anthropic_base_url
+            api_key = self.llm_config_model.api_key or os.getenv("ANTHROPIC_API_KEY")
+            logger.info(f"API: {api_key}")
+
+        if LLMType.DEEPSEEK == self.llm_config_model.llm_type:
+            base_url = self.llm_config_model.base_url or _deepseek_base_url
+            api_key = self.llm_config_model.api_key or os.getenv("DEEPSEEK_API_KEY")
+
+        if LLMType.OPENAI_CLIENT == self.llm_config_model.llm_type:
+            api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY")
+
+        logger.info(f"API Key: {api_key}, {base_url}")
 
         # Initialize the client with the API key
         cli = client_class(api_key=api_key, base_url=base_url or None)
