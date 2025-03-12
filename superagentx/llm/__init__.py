@@ -12,7 +12,6 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
-from superagentx.llm.anthropic import AnthropicClient
 from superagentx.llm.bedrock import BedrockClient
 from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED
@@ -84,7 +83,6 @@ class LLMClient:
         if LLMType.ANTHROPIC_CLIENT == self.llm_config_model.llm_type:
             base_url = self.llm_config_model.base_url or _anthropic_base_url
             api_key = self.llm_config_model.api_key or os.getenv("ANTHROPIC_API_KEY")
-            logger.info(f"API: {api_key}")
 
         if LLMType.DEEPSEEK == self.llm_config_model.llm_type:
             base_url = self.llm_config_model.base_url or _deepseek_base_url
@@ -92,8 +90,6 @@ class LLMClient:
 
         if LLMType.OPENAI_CLIENT == self.llm_config_model.llm_type:
             api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY")
-
-        logger.info(f"API Key: {api_key}, {base_url}")
 
         # Initialize the client with the API key
         cli = client_class(api_key=api_key, base_url=base_url or None)
@@ -105,7 +101,7 @@ class LLMClient:
         return OpenAIClient(
             client=cli,
             model=self.llm_config_model.model,
-            embed_model=DEFAULT_OPENAI_EMBED if not embed_model else embed_model,
+            embed_model=embed_model or DEFAULT_OPENAI_EMBED,
             llm_type=self.llm_config_model.llm_type
         )
 
