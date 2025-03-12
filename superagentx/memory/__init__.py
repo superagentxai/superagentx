@@ -94,11 +94,6 @@ class Memory(MemoryBase):
             filters: dict | None = None,
             conversation_id: str | None = None
     ) -> list[dict]:
-        filters = filters or {}
-        # if memory_id:
-        #     filters["memory_id"] = memory_id
-        # if conversation_id:
-        #     filters["conversation_id"] = conversation_id
         if not conversation_id:
             conversation_id = ""
         now = datetime.datetime.now()
@@ -109,18 +104,10 @@ class Memory(MemoryBase):
         five_seconds_ago = (now - timedelta(seconds=5)).timestamp()
         five_minutes_ago = (now - timedelta(minutes=5)).timestamp()
         five_hours_ago = (now - timedelta(hours=5)).timestamp()
-        where = {
-            "$and": [
-                # {
-                #     "memory_id": {
-                #         "$eq": memory_id
-                #     }
-                # },
-                # {
-                #     "conversation_id": {
-                #         "$eq": conversation_id
-                #     }
-                # },
+        if not filters:
+            filters["$and"] = [
+                {"conversation_id": {"$eq": conversation_id}},
+                {"memory_id": {"$eq": memory_id}},  # Direct condition
                 {
                     "$or": [
                         {
@@ -144,14 +131,11 @@ class Memory(MemoryBase):
                     ]
                 }
             ]
-        }
-
         result = await self._search_vector_store(
             query=query,
-            filters=where,
+            filters=filters,
             limit=limit
         )
-        logger.info(f"Memories: {result}")
         return await self._get_history(
             memory_id=memory_id,
             data=result

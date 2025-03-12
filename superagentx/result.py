@@ -2,6 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+
 class GoalResult(BaseModel):
     name: str
     agent_id: str
@@ -10,3 +11,4 @@ class GoalResult(BaseModel):
     content: Any | None = None
     error: str | None = None
     is_goal_satisfied: bool | None = None
+    conversation_id: str | None = None

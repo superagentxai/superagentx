@@ -202,6 +202,8 @@ class AgentXPipe:
         trigger_break = False
         results = []
         old_memory = None
+        if not conversation_id:
+            conversation_id = uuid.uuid4().hex
         async for _agents in iter_to_aiter(self.agents):
             pre_result = await self._pre_result(results=results)
             logger.debug(f'Updated with previous results.\nPrevious Result : {pre_result}')
