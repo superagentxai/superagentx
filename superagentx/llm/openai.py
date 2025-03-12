@@ -100,7 +100,8 @@ class OpenAIClient(Client):
                 **kwargs
             )
             response = [res for res in response]
-            return response[0]
+            if response:
+                return response[0]
         return self._get_embeddings(response)
 
     async def aembed(
@@ -125,7 +126,8 @@ class OpenAIClient(Client):
                 **kwargs
             )
             response = [res async for res in iter_to_aiter(response)]
-            return response[0]
+            if response:
+                return response[0]
         response = await self.client.embeddings.create(
             input=[text],
             model=self._embed_model,
