@@ -160,8 +160,7 @@ class Agent:
             *,
             query_instruction: str,
             results: list[Any],
-            old_memory: str | None = None,
-            conversation_id: str | None = None
+            old_memory: str | None = None
     ) -> GoalResult:
         if old_memory:
             results = f"output_context:\n{old_memory}\n\n{results}"
@@ -249,8 +248,7 @@ class Agent:
         final_result = await self._verify_goal(
             results=results,
             query_instruction=query_instruction,
-            old_memory=old_memory,
-            conversation_id=conversation_id
+            old_memory=old_memory
         )
         logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
         return final_result
