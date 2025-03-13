@@ -105,7 +105,7 @@ class Memory(MemoryBase):
         five_minutes_ago = (now - timedelta(minutes=5)).timestamp()
         five_hours_ago = (now - timedelta(hours=5)).timestamp()
         if not filters:
-            filters["$and"] = [
+            filters = {"$and": [
                 {"conversation_id": {"$eq": conversation_id}},
                 {"memory_id": {"$eq": memory_id}},  # Direct condition
                 {
@@ -130,7 +130,7 @@ class Memory(MemoryBase):
                         }
                     ]
                 }
-            ]
+            ]}
         result = await self._search_vector_store(
             query=query,
             filters=filters,

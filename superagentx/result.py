@@ -11,4 +11,3 @@ class GoalResult(BaseModel):
     content: Any | None = None
     error: str | None = None
     is_goal_satisfied: bool | None = None
-    conversation_id: str | None = None
