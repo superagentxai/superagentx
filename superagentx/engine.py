@@ -9,6 +9,7 @@ from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, sync_to_async
 from superagentx.utils.parsers.base import BaseParser
+from superagentx.utils.helper import rm_trailing_spaces
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,7 @@ class Engine:
             old_memory=old_memory,
             **kwargs
         )
+        prompt_messages = await rm_trailing_spaces(prompt_messages)
         logger.debug(f"Prompt Message : {prompt_messages}")
         tools = await self._construct_tools()
         logger.debug(f"Handler Tools : {tools}")
