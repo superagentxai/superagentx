@@ -9,6 +9,7 @@ from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, sync_to_async
 from superagentx.utils.parsers.base import BaseParser
+from superagentx.llm.utils import rm_trailing_spaces
 
 logger = logging.getLogger(__name__)
 
@@ -73,17 +74,6 @@ class Engine:
             _tools = await self.__funcs_props(funcs=funcs)
         return _tools
 
-    async def _remove_trailing_whitespace(self, data):
-        """Recursively remove trailing whitespace from all string values in a JSON-like structure."""
-        if isinstance(data, dict):
-            return {k: await self._remove_trailing_whitespace(v) for k, v in data.items()}
-        elif isinstance(data, list):
-            return [await self._remove_trailing_whitespace(v) for v in data]
-        elif isinstance(data, str):
-            return data.rstrip()  # Remove trailing whitespace
-        else:
-            return data
-
     async def start(
             self,
             input_prompt: str,
@@ -121,7 +111,7 @@ class Engine:
             old_memory=old_memory,
             **kwargs
         )
-        prompt_messages = await self._remove_trailing_whitespace(prompt_messages)
+        prompt_messages = await rm_trailing_spaces(prompt_messages)
         logger.debug(f"Prompt Message : {prompt_messages}")
         tools = await self._construct_tools()
         logger.debug(f"Handler Tools : {tools}")
