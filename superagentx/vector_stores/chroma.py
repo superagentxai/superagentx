@@ -121,7 +121,7 @@ class ChromaDB(BaseVectorStore):
             ids=ids,
             embeddings=vectors,
             metadatas=payloads,
-            documents=texts[0]
+            documents=texts
         )
 
     async def search(

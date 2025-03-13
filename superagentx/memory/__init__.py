@@ -78,7 +78,8 @@ class Memory(MemoryBase):
                 messages.append(message)
         return messages
 
-    async def _epoch_to_timestamp(self, epoch_time):
+    @staticmethod
+    async def _epoch_to_timestamp(epoch_time):
         # Convert to datetime (UTC)
         dt_object = datetime.datetime.fromtimestamp(epoch_time)
 
@@ -90,7 +91,7 @@ class Memory(MemoryBase):
             self,
             query: str,
             memory_id: str,
-            limit: int = 5,
+            limit: int = 10,
             filters: dict | None = None,
             conversation_id: str | None = None
     ) -> list[dict]:
