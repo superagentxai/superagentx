@@ -12,7 +12,6 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
-from superagentx.llm.anthropic import AnthropicClient
 from superagentx.llm.bedrock import BedrockClient
 from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED
@@ -29,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 _retries = 5
 _deepseek_base_url = 'https://api.deepseek.com'
+_anthropic_base_url = "https://api.anthropic.com/v1/"
 
 
 class LLMClient:
@@ -60,14 +60,12 @@ class LLMClient:
         self.llm_config_model = LLMModelConfig(**self.llm_config)
 
         match self.llm_config_model.llm_type:
-            case LLMType.OPENAI_CLIENT:
+            case LLMType.OPENAI_CLIENT | LLMType.ANTHROPIC_CLIENT | LLMType.DEEPSEEK:
                 self.client = self._init_openai_cli()
             case LLMType.AZURE_OPENAI_CLIENT:
                 self.client = self._init_azure_openai_cli()
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
-            case LLMType.ANTHROPIC_CLIENT:
-                self.client = self._init_openai_cli()
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
@@ -75,18 +73,26 @@ class LLMClient:
 
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
-        api_key = (
-                self.llm_config_model.api_key or
-                os.getenv("OPENAI_API_KEY") or
-                os.getenv("DEEPSEEK_API_KEY") or
-                os.getenv("ANTHROPIC_API_KEY")
-        )
 
         # Determine the client class based on async_mode
         client_class = AsyncOpenAI if self.llm_config_model.async_mode else OpenAI
 
+        base_url = None
+        api_key = None
+
+        if LLMType.ANTHROPIC_CLIENT == self.llm_config_model.llm_type:
+            base_url = self.llm_config_model.base_url or _anthropic_base_url
+            api_key = self.llm_config_model.api_key or os.getenv("ANTHROPIC_API_KEY")
+
+        if LLMType.DEEPSEEK == self.llm_config_model.llm_type:
+            base_url = self.llm_config_model.base_url or _deepseek_base_url
+            api_key = self.llm_config_model.api_key or os.getenv("DEEPSEEK_API_KEY")
+
+        if LLMType.OPENAI_CLIENT == self.llm_config_model.llm_type:
+            api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY")
+
         # Initialize the client with the API key
-        cli = client_class(api_key=api_key, base_url=self.llm_config_model.base_url or None)
+        cli = client_class(api_key=api_key, base_url=base_url or None)
 
         # Set the embed model attribute
         embed_model = self.llm_config_model.embed_model
@@ -95,7 +101,8 @@ class LLMClient:
         return OpenAIClient(
             client=cli,
             model=self.llm_config_model.model,
-            embed_model=DEFAULT_OPENAI_EMBED if not embed_model else embed_model
+            embed_model=embed_model or DEFAULT_OPENAI_EMBED,
+            llm_type=self.llm_config_model.llm_type
         )
 
     def _init_azure_openai_cli(self) -> OpenAIClient:

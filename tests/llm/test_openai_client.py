@@ -101,3 +101,16 @@ class TestOpenAIClient:
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
         logger.info(f"Open AI Async ChatCompletion Response {response}")
         assert isinstance(response, ChatCompletion)
+
+
+    async def test_aclient_embed(self, openai_client_init: dict):
+        llm_client: LLMClient = openai_client_init.get('llm')
+
+        response = await llm_client.aembed(text="Hi")
+        logger.info(response)
+
+    async def test_client_embed(self, openai_client_init: dict):
+        llm_client: LLMClient = openai_client_init.get('llm')
+
+        response = llm_client.embed(text="Hi")
+        logger.info(response)
