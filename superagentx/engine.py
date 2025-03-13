@@ -9,7 +9,7 @@ from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, sync_to_async
 from superagentx.utils.parsers.base import BaseParser
-from superagentx.llm.utils import rm_trailing_spaces
+from superagentx.utils.helper import rm_trailing_spaces
 
 logger = logging.getLogger(__name__)
 
