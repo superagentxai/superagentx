@@ -73,6 +73,17 @@ class Engine:
             _tools = await self.__funcs_props(funcs=funcs)
         return _tools
 
+    def _remove_trailing_whitespace(self, data):
+        """Recursively remove trailing whitespace from all string values in a JSON-like structure."""
+        if isinstance(data, dict):
+            return {k: self._remove_trailing_whitespace(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self._remove_trailing_whitespace(v) for v in data]
+        elif isinstance(data, str):
+            return data.rstrip()  # Remove trailing whitespace
+        else:
+            return data
+
     async def start(
             self,
             input_prompt: str,
@@ -110,6 +121,7 @@ class Engine:
             old_memory=old_memory,
             **kwargs
         )
+        prompt_messages = await sync_to_async(self._remove_trailing_whitespace, prompt_messages)
         logger.debug(f"Prompt Message : {prompt_messages}")
         tools = await self._construct_tools()
         logger.debug(f"Handler Tools : {tools}")
