@@ -13,6 +13,7 @@ from superagentx.memory.storage import SQLiteManager
 from superagentx.utils.helper import iter_to_aiter
 from superagentx.vector_stores import ChromaDB
 from superagentx.vector_stores.base import BaseVectorStore
+from superagentx.constants import date_time_format
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +83,7 @@ class Memory(MemoryBase):
     async def _epoch_to_timestamp(epoch_time):
         # Convert to datetime (UTC)
         dt_object = datetime.datetime.fromtimestamp(epoch_time)
-
-        # Format as string
-        formatted_time = dt_object.strftime("%Y-%m-%d %H:%M:%S.%f")
-        return formatted_time
+        return dt_object.strftime(date_time_format)
 
     async def search(
             self,
@@ -97,41 +95,11 @@ class Memory(MemoryBase):
     ) -> list[dict]:
         if not conversation_id:
             conversation_id = ""
-        now = datetime.datetime.now()
-        # Calculate time ranges
-        now_epoch = now.timestamp()
-
-        # Calculate past time ranges
-        five_seconds_ago = (now - timedelta(seconds=5)).timestamp()
-        five_minutes_ago = (now - timedelta(minutes=5)).timestamp()
-        five_hours_ago = (now - timedelta(hours=5)).timestamp()
         if not filters:
-            filters = {"$and": [
-                {"conversation_id": {"$eq": conversation_id}},
-                {"memory_id": {"$eq": memory_id}},  # Direct condition
-                {
-                    "$or": [
-                        {
-                            "$and": [
-                                {"created_at": {"$gte": five_seconds_ago}},
-                                {"created_at": {"$lte": now_epoch}}
-                            ]
-                        },
-                        {
-                            "$and": [
-                                {"created_at": {"$gte": five_minutes_ago}},
-                                {"created_at": {"$lte": now_epoch}}
-                            ]
-                        },
-                        {
-                            "$and": [
-                                {"created_at": {"$gte": five_hours_ago}},
-                                {"created_at": {"$lte": now_epoch}}
-                            ]
-                        }
-                    ]
-                }
-            ]}
+            filters = await self._filter(
+                conversation_id=conversation_id,
+                memory_id=memory_id
+            )
         result = await self._search_vector_store(
             query=query,
             filters=filters,
@@ -231,3 +199,42 @@ class Memory(MemoryBase):
 
     async def delete_by_conversation_id(self, **kwargs):
         await self.vector_db.delete_by_conversation_id(**kwargs)
+
+    @staticmethod
+    async def _filter(conversation_id: str, memory_id: str):
+        now = datetime.datetime.now()
+        # Calculate time ranges
+        now_epoch = now.timestamp()
+
+        # Calculate past time ranges
+        five_seconds_ago = (now - timedelta(seconds=5)).timestamp()
+        five_minutes_ago = (now - timedelta(minutes=5)).timestamp()
+        five_hours_ago = (now - timedelta(hours=5)).timestamp()
+
+        filters = {"$and": [
+            {"conversation_id": {"$eq": conversation_id}},
+            {"memory_id": {"$eq": memory_id}},  # Direct condition
+            {
+                "$or": [
+                    {
+                        "$and": [
+                            {"created_at": {"$gte": five_seconds_ago}},
+                            {"created_at": {"$lte": now_epoch}}
+                        ]
+                    },
+                    {
+                        "$and": [
+                            {"created_at": {"$gte": five_minutes_ago}},
+                            {"created_at": {"$lte": now_epoch}}
+                        ]
+                    },
+                    {
+                        "$and": [
+                            {"created_at": {"$gte": five_hours_ago}},
+                            {"created_at": {"$lte": now_epoch}}
+                        ]
+                    }
+                ]
+            }
+        ]}
+        return filters

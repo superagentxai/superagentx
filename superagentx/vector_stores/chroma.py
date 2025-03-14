@@ -243,8 +243,11 @@ class ChromaDB(BaseVectorStore):
                 ),
             )
             result.append(entry)
-        sorted_documents = await sync_to_async(sorted,result, key=lambda doc: doc.payload['created_at'])
-        return sorted_documents
+        return await sync_to_async(
+            sorted,
+            result,
+            key=lambda doc: doc.payload['created_at']
+        )
 
     async def delete_by_conversation_id(self, conversation_id):
         collection = await self._get_or_create_collection(self.collection_name)
