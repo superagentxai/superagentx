@@ -8,4 +8,4 @@ DEFAULT = [
 SEQUENCE = 'SEQUENCE'
 PARALLEL = 'PARALLEL'
 
-date_time_format = "%Y-%m-%d %H:%M:%S.%f"
+DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"

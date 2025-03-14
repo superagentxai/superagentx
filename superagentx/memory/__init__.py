@@ -13,7 +13,7 @@ from superagentx.memory.storage import SQLiteManager
 from superagentx.utils.helper import iter_to_aiter
 from superagentx.vector_stores import ChromaDB
 from superagentx.vector_stores.base import BaseVectorStore
-from superagentx.constants import date_time_format
+from superagentx.constants import DATE_TIME_FORMAT
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ class Memory(MemoryBase):
     async def _epoch_to_timestamp(epoch_time):
         # Convert to datetime (UTC)
         dt_object = datetime.datetime.fromtimestamp(epoch_time)
-        return dt_object.strftime(date_time_format)
+        return dt_object.strftime(DATE_TIME_FORMAT)
 
     async def search(
             self,
