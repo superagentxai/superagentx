@@ -2,6 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+
 class GoalResult(BaseModel):
     name: str
     agent_id: str
