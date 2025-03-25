@@ -169,9 +169,7 @@ class AppCreation:
                 _vector_store = to_snake(_vector_store)
             _db_path = memory.memory_config.get('db_path')
             self.memories[memory.title] = (f"{title_2_var} = Memory("
-               f"memory_config={
-                    {'llm_client': {_llm_client}, 'vector_store': {_vector_store}, 'db_path': {_db_path}}
-                }"
+               f"memory_config={{'llm_client': {_llm_client}, 'vector_store': {_vector_store}, 'db_path': {_db_path}}}"
            f")")
         if self.memories:
             self.imports.append(
