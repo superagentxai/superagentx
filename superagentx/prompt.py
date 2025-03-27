@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class PromptTemplate:
-
     """
     Prompt is the input to the model.
 

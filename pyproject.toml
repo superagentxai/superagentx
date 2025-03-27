@@ -38,7 +38,8 @@ dependencies = [
     "yapf (>=0.43.0,<0.44.0)",
     "anthropic (>=0.47.2,<0.48.0)",
     "fastembed (>=0.6.0,<0.7.0)",
-    "httpx (>=0.28.1,<0.29.0)"
+    "httpx (>=0.28.1,<0.29.0)",
+    "playwright (>=1.50.0,<2.0.0)"
 ]
 
 [project.urls]

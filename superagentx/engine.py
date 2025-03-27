@@ -2,6 +2,7 @@ import inspect
 import logging
 import typing
 
+from superagentx.base_engine import BaseEngine
 from superagentx.exceptions import ToolError
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.exceptions import InvalidHandler
@@ -13,17 +14,10 @@ from superagentx.utils.parsers.base import BaseParser
 logger = logging.getLogger(__name__)
 
 
-class Engine:
+class Engine(BaseEngine):
 
-    def __init__(
-            self,
-            *,
-            handler: BaseHandler,
-            llm: LLMClient,
-            prompt_template: PromptTemplate,
-            tools: list[dict] | list[str] | None = None,
-            output_parser: BaseParser | None = None
-    ):
+    def __init__(self, *args, handler: BaseHandler, llm: LLMClient, prompt_template: PromptTemplate,
+                 tools: list[dict] | list[str] | None = None, output_parser: BaseParser | None = None, **kwargs):
         """
         Initializes a new instance of the Engine class.
 
@@ -37,6 +31,8 @@ class Engine:
                 Defaults to `None`. If nothing provide `Engine` will get it dynamically using `dir(handler)`.
             output_parser: An optional parser to format and process the handler tools output. Defaults to `None`.
         """
+
+        super().__init__(*args, **kwargs)
         self.handler = handler
         self.llm = llm
         self.prompt_template = prompt_template
@@ -46,7 +42,7 @@ class Engine:
     def __str__(self):
         return f'Engine {self.handler.__class__}'
 
-    async def __funcs_props(
+    async def  __funcs_props(
             self,
             funcs: list[str]
     ) -> list[dict]:

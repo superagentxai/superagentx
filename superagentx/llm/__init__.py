@@ -12,7 +12,6 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
-from superagentx.llm.anthropic import AnthropicClient
 from superagentx.llm.bedrock import BedrockClient
 from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED

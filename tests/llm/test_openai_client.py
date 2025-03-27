@@ -5,6 +5,7 @@ from openai.types.chat.chat_completion import ChatCompletion
 from superagentx.llm import LLMClient, Message
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.openai import OpenAIClient
+from superagentx.constants import BROWSER_SYSTEM_MESSAGE
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,29 @@ class TestOpenAIClient:
                 "content": "Generate random mobiles products as list. Minimum 25 product items. Strictly "
                            "format array of string python format."
                            "[iPhone 14, iPhone 15, iPhone 16 Samsung Galaxy S23, Samsung Galaxy S24, Motorola Edge 40]"
+            }
+        ]
+
+        chat_completion_params = ChatCompletionParams(
+            messages=messages,
+        )
+        response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
+        logger.info(f"Open AI Async ChatCompletion Response {response}")
+        assert isinstance(response, ChatCompletion)
+
+    async def test_browser_achat_completion(self, openai_client_init: dict):
+        llm_client: LLMClient = openai_client_init.get('llm')
+
+        messages = [
+            {
+                "role": "system",
+                "content": BROWSER_SYSTEM_MESSAGE
+            },
+            {
+                "role": "user",
+                "content": "Your ultimate task is: \"Go to hackernews show hn and give me the first  5 posts\". If "
+                           "you achieved your ultimate task, stop everything and use the done action in the next step "
+                           "to complete the task. If not, continue as usual."
             }
         ]
 
