@@ -161,7 +161,7 @@ class Agent:
             query_instruction: str,
             results: list[Any],
             old_memory: str | None = None
-    ) -> GoalResult:
+    ) -> GoalResult | None:
         if old_memory:
             results = f"output_context:\n{old_memory}\n\n{results}"
             logger.debug(f'Updated Output Context with old memory : {results}')
@@ -216,6 +216,7 @@ class Agent:
             query_instruction: str,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
+            verify_goal: bool = True,
             conversation_id: str | None = None
     ) -> GoalResult:
         results = []
@@ -245,13 +246,24 @@ class Agent:
                 )
                 logger.debug(f'Engine result : {_res}')
             results.append(_res)
-        final_result = await self._verify_goal(
-            results=results,
-            query_instruction=query_instruction,
-            old_memory=old_memory
-        )
-        logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
-        return final_result
+
+        logger.debug(f'Verifying agent goal `{verify_goal}`')
+        if verify_goal:
+            final_result = await self._verify_goal(
+                results=results,
+                query_instruction=query_instruction,
+                old_memory=old_memory
+            )
+            logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
+            return final_result
+        else:
+            return GoalResult(
+                name=self.name,
+                agent_id=self.agent_id,
+                content=results,
+                verify_goal=False,
+                is_goal_satisfied=None
+            )
 
     async def execute(
             self,
@@ -259,6 +271,7 @@ class Agent:
             query_instruction: str,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
+            verify_goal: bool = True,
             stop_if_goal_not_satisfied: bool = False,
             conversation_id: str | None = None
     ) -> GoalResult | None:
@@ -276,6 +289,7 @@ class Agent:
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
             old_memory: An optional previous context of the user's instruction
+            verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
             stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
                 When set to True, the engine operation will halt if the defined goal is not met,
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
@@ -295,9 +309,10 @@ class Agent:
                 query_instruction=query_instruction,
                 pre_result=pre_result,
                 old_memory=old_memory,
+                verify_goal=verify_goal,
                 conversation_id=conversation_id
             )
-            if _goal_result.is_goal_satisfied:
+            if not verify_goal or _goal_result.is_goal_satisfied:
                 return _goal_result
             elif _goal_result.is_goal_satisfied is False and stop_if_goal_not_satisfied:
                 raise StopSuperAgentX(
