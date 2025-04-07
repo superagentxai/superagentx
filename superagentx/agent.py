@@ -161,7 +161,7 @@ class Agent:
             query_instruction: str,
             results: list[Any],
             old_memory: str | None = None
-    ) -> GoalResult:
+    ) -> GoalResult | None:
         if old_memory:
             results = f"output_context:\n{old_memory}\n\n{results}"
             logger.debug(f'Updated Output Context with old memory : {results}')
@@ -216,7 +216,8 @@ class Agent:
             query_instruction: str,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
-            conversation_id: str | None = None
+            conversation_id: str | None = None,
+            verify_goal: bool = True
     ) -> GoalResult:
         results = []
         instruction = query_instruction
@@ -245,13 +246,22 @@ class Agent:
                 )
                 logger.debug(f'Engine result : {_res}')
             results.append(_res)
-        final_result = await self._verify_goal(
-            results=results,
-            query_instruction=query_instruction,
-            old_memory=old_memory
-        )
-        logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
-        return final_result
+
+        logger.debug(f'Verifying agent goal `{verify_goal}`')
+        if verify_goal:
+            final_result = await self._verify_goal(
+                results=results,
+                query_instruction=query_instruction,
+                old_memory=old_memory
+            )
+            logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
+            return final_result
+        else:
+            return GoalResult(
+                name=self.name,
+                agent_id=self.agent_id,
+                content=results
+            )
 
     async def execute(
             self,
@@ -260,7 +270,8 @@ class Agent:
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             stop_if_goal_not_satisfied: bool = False,
-            conversation_id: str | None = None
+            conversation_id: str | None = None,
+            verify_goal: bool = True
     ) -> GoalResult | None:
         """
         Executes the specified query instruction to achieve a defined goal.
@@ -281,6 +292,7 @@ class Agent:
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
             conversation_id: A string representing the unique identifier of the conversation.
+            verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
 
         Returns:
             GoalResult | None
