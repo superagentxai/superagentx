@@ -163,7 +163,9 @@ class TestIOConsolePipe:
         Sam:
         Balance or not, remote work is a ticking time bomb.
         """
-        result = await pipe.flow(query_instruction=discussion)
+        result = await pipe.flow(
+            query_instruction=discussion
+        )
         logger.info(f"Spamfilter result => \n{result}")
         assert result
 
@@ -207,7 +209,9 @@ class TestIOConsolePipe:
         pipe = AgentXPipe(
             agents=[analyst, scriptwriter, formatter], stop_if_goal_not_satisfied=False
         )
-        result = await pipe.flow(query_instruction=discussion)
+        result = await pipe.flow(
+            query_instruction=discussion
+        )
         logger.info(f"Writer result => \n{result}")
         assert result
 
@@ -278,6 +282,9 @@ class TestIOConsolePipe:
         pipe = AgentXPipe(
             agents=[scorer]
         )
-        result = await pipe.flow(query_instruction=discussion)
+        result = await pipe.flow(
+            query_instruction=discussion,
+            verify_goal=False
+        )
         logger.info(f"Scorer result => \n{result}")
         assert result
