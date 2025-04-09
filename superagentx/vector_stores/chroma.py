@@ -120,7 +120,8 @@ class ChromaDB(BaseVectorStore):
             collection.add,
             ids=ids,
             embeddings=vectors,
-            metadatas=payloads
+            metadatas=payloads,
+            documents=texts
         )
 
     async def search(
@@ -242,8 +243,11 @@ class ChromaDB(BaseVectorStore):
                 ),
             )
             result.append(entry)
-
-        return result
+        return await sync_to_async(
+            sorted,
+            result,
+            key=lambda doc: doc.payload['created_at']
+        )
 
     async def delete_by_conversation_id(self, conversation_id):
         collection = await self._get_or_create_collection(self.collection_name)

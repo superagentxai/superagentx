@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 import logging
 from enum import Enum
 from typing import Any, final
@@ -12,6 +13,7 @@ from superagentx.memory.storage import SQLiteManager
 from superagentx.utils.helper import iter_to_aiter
 from superagentx.vector_stores import ChromaDB
 from superagentx.vector_stores.base import BaseVectorStore
+from superagentx.constants import DATE_TIME_FORMAT
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +79,12 @@ class Memory(MemoryBase):
                 messages.append(message)
         return messages
 
+    @staticmethod
+    async def _epoch_to_timestamp(epoch_time):
+        # Convert to datetime (UTC)
+        dt_object = datetime.datetime.fromtimestamp(epoch_time)
+        return dt_object.strftime(DATE_TIME_FORMAT)
+
     async def search(
             self,
             query: str,
@@ -85,22 +93,16 @@ class Memory(MemoryBase):
             filters: dict | None = None,
             conversation_id: str | None = None
     ) -> list[dict]:
-        filters = filters or {}
-        # if memory_id:
-        #     filters["memory_id"] = memory_id
-        # if conversation_id:
-        #     filters["conversation_id"] = conversation_id
         if not conversation_id:
             conversation_id = ""
-        where = {"$and": [{
-            "memory_id": memory_id
-        }, {
-            "conversation_id": conversation_id
-        }
-        ]}
+        if not filters:
+            filters = await self._filter(
+                conversation_id=conversation_id,
+                memory_id=memory_id
+            )
         result = await self._search_vector_store(
             query=query,
-            filters=where,
+            filters=filters,
             limit=limit
         )
         return await self._get_history(
@@ -137,8 +139,8 @@ class Memory(MemoryBase):
                     memory=mem.payload["data"],
                     reason=mem.payload["reason"],
                     role=mem.payload["role"],
-                    created_at=mem.payload.get("created_at"),
-                    updated_at=mem.payload.get("updated_at"),
+                    created_at=await self._epoch_to_timestamp(mem.payload.get("created_at")),
+                    updated_at=await self._epoch_to_timestamp(mem.payload.get("updated_at")),
                     score=mem.score,
                 ).model_dump(),
                 **{key: mem.payload[key] for key in ["memory_id", "conversation_id", "message_id"] if
@@ -174,14 +176,20 @@ class Memory(MemoryBase):
             updated_at = datetime.datetime.now()
         if not conversation_id:
             conversation_id = ""
+        if isinstance(created_at, datetime.datetime):
+            created_at = created_at.timestamp()
+
+        if isinstance(updated_at, datetime.datetime):
+            updated_at = updated_at.timestamp()
+
         metadata["memory_id"] = memory_id
         metadata["data"] = data
         metadata["reason"] = reason
         metadata["conversation_id"] = conversation_id
         metadata["message_id"] = message_id
         metadata["role"] = role
-        metadata["created_at"] = str(created_at)
-        metadata["updated_at"] = str(updated_at)
+        metadata["created_at"] = created_at
+        metadata["updated_at"] = updated_at
         metadata["is_deleted"] = is_deleted
         await self.vector_db.insert(
             texts=[data],
@@ -191,3 +199,42 @@ class Memory(MemoryBase):
 
     async def delete_by_conversation_id(self, **kwargs):
         await self.vector_db.delete_by_conversation_id(**kwargs)
+
+    @staticmethod
+    async def _filter(conversation_id: str, memory_id: str):
+        now = datetime.datetime.now()
+        # Calculate time ranges
+        now_epoch = now.timestamp()
+
+        # Calculate past time ranges
+        five_seconds_ago = (now - timedelta(seconds=5)).timestamp()
+        five_minutes_ago = (now - timedelta(minutes=5)).timestamp()
+        five_hours_ago = (now - timedelta(hours=5)).timestamp()
+
+        filters = {"$and": [
+            {"conversation_id": {"$eq": conversation_id}},
+            {"memory_id": {"$eq": memory_id}},  # Direct condition
+            {
+                "$or": [
+                    {
+                        "$and": [
+                            {"created_at": {"$gte": five_seconds_ago}},
+                            {"created_at": {"$lte": now_epoch}}
+                        ]
+                    },
+                    {
+                        "$and": [
+                            {"created_at": {"$gte": five_minutes_ago}},
+                            {"created_at": {"$lte": now_epoch}}
+                        ]
+                    },
+                    {
+                        "$and": [
+                            {"created_at": {"$gte": five_hours_ago}},
+                            {"created_at": {"$lte": now_epoch}}
+                        ]
+                    }
+                ]
+            }
+        ]}
+        return filters

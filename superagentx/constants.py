@@ -139,3 +139,4 @@ COT_BROWSER_SYSTEM_MESSAGE = (
     "- Include evaluation of previous steps, current memory status, and next goals.\n"
     "- Structure actions sequentially with clear dependencies.\n"
 )
+DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"

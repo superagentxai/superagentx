@@ -147,6 +147,7 @@ class AgentXPipe:
             prompt_instruction: A list of dictionaries containing prompt instructions to be added to the engine's memory.
                 Each dictionary should contain structured data relevant to the prompts, which may include keys such as
                 'text', 'context', or any other relevant attributes that define the prompt instructions.
+            conversation_id: A string representing the unique identifier of the conversation.
 
         Returns:
             None
@@ -179,6 +180,7 @@ class AgentXPipe:
             query_instruction: A string representing the query used to search the engine's memory.
                 This instruction should be formulated in a way that allows the engine to identify relevant stored
                 prompts.
+            conversation_id: A string representing the unique identifier of the conversation.
 
         Returns:
             list[dict]
@@ -197,6 +199,7 @@ class AgentXPipe:
     async def _flow(
             self,
             query_instruction: str,
+            verify_goal: bool = True,
             conversation_id: str | None = None
     ):
         trigger_break = False
@@ -217,6 +220,7 @@ class AgentXPipe:
                                 query_instruction=query_instruction,
                                 pre_result=pre_result,
                                 old_memory=old_memory,
+                                verify_goal=verify_goal,
                                 stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
                                 conversation_id=conversation_id
                             )
@@ -230,6 +234,7 @@ class AgentXPipe:
                         query_instruction=query_instruction,
                         pre_result=pre_result,
                         old_memory=old_memory,
+                        verify_goal=verify_goal,
                         stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
                         conversation_id=conversation_id
                     )
@@ -258,6 +263,7 @@ class AgentXPipe:
     async def flow(
             self,
             query_instruction: str,
+            verify_goal: bool = True,
             conversation_id: str | None = None
     ) -> list[GoalResult]:
         """
@@ -272,8 +278,8 @@ class AgentXPipe:
         Args:
             query_instruction: A string representing the instruction or query that defines the goal to be achieved.
                 This should be a clear and actionable statement that the method can execute.
-
-            conversation_id: A string representing the unique identifier of the conversation.
+            verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
+            conversation_id: A string representing the unique identifier of the conversation. Default `None`
 
         Returns:
             list[GoalResult]
@@ -284,5 +290,6 @@ class AgentXPipe:
         logger.info(f"Pipe {self.name} starting...")
         return await self._flow(
             query_instruction=query_instruction,
+            verify_goal=verify_goal,
             conversation_id=conversation_id
         )

@@ -21,14 +21,19 @@
             "title": "memory-1",
             "memoryConfig": {
                 "llmClient": "llm-1",
-                "vectorStore": "string",
-                "dbPath": "string"
+                "vectorStore": null,
+                "dbPath": null
             }
         }
     ],
     "handlerConfig": [
         {
             "title": "Handler-1",
+            "handlerName": "AIHandler",
+            "attributes": {},
+            "srcPath": "superagentx.handler"
+        },{
+            "title": "Handler-2",
             "handlerName": "AIHandler",
             "attributes": {},
             "srcPath": "superagentx.handler"
@@ -49,6 +54,13 @@
             "promptTemplate": "prompt 1",
             "tools": null,
             "outputParser": null
+        }, {
+            "title": "Engine 2",
+            "handler": "Handler-2",
+            "llm": "LLM-1",
+            "promptTemplate": "prompt 1",
+            "tools": null,
+            "outputParser": null
         }
     ],
     "agentConfig": [
@@ -62,7 +74,7 @@
             "name": null,
             "description": "string",
             "engines": [
-                "Engine 1"
+                "Engine 1", "Engine 2"
             ],
             "outputFormat": null,
             "maxRetry": 2
