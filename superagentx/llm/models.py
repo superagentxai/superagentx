@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from pydantic import BaseModel, Field, conlist, conint
 
@@ -8,7 +9,7 @@ class Message(BaseModel):
         description='the role of the messenger (either system, user, assistant or tool)',
         default='system'
     )
-    content: str = Field(
+    content: Any = Field(
         description='the content of the message (e.g., Write me a beautiful poem)'
     )
     name: str | None = Field(
