@@ -40,7 +40,7 @@ class OpenAIClient(Client):
         self.client = client
         self.llm_params: dict = kwargs
         self.llm_type = kwargs.get("llm_type")
-        self._embed_model_cli = TextEmbedding()
+        self._embed_model_cli = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)

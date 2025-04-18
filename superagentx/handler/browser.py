@@ -98,19 +98,17 @@ class BrowserHandler(BaseHandler):
     @tool
     async def go_to_url(
             self,
-            url: str,
-            flag: bool = False,
-            success_url: str = None,
-            success_selector: str = None
+            url: str
     ):
         """
-        Navigates to the specified URL in the current tab or login or signin tab.
+        Navigates to the specified URL in the current tab.
 
         Args:
-            @param url: The URL to navigate to the current tab or login or signin tab.
-            @param flag: If the url is login portal related set the flag as True. Default is False
-            @param success_url: A URL pattern to wait for after login. If flag is True.
-            @param success_selector: DOM selector that confirms login success. If flag is True.
+            url (str):
+                The URL to navigate to.
+
+        Returns:
+            None
 
         """
         page = await self.browser_context.get_current_page()
@@ -118,39 +116,39 @@ class BrowserHandler(BaseHandler):
         await page.wait_for_load_state()
         msg = f'🔗  Navigated to {url}'
         logger.info(msg)
-        if not flag:
-            flag = await self._is_login_page(page)
-        if flag and not success_url:
-            error_msg = "❗ 'success_url' must be provided when 'flag' is set to True."
-            logger.error(error_msg)
-            return ActionResult(
-                is_done=True,
-                extracted_content=error_msg,
-                include_memory=True
-            )
-
-        if flag and success_url:
-            timeout = 300000  # 5 minutes
-            logger.info("Please complete login manually in the browser...")
-
-            # Wait indefinitely until login is successful
-            try:
-                # Wait for a specific selector to appear
-                await page.wait_for_url(success_url, timeout=timeout)
-                msg = "✅ Login complete!"
-                logger.info(msg)
-                return ActionResult(
-                    extracted_content=msg,
-                    include_memory=True
-                )
-            except Exception as e:
-                msg = f"❌ Login timeout after {timeout} seconds: {e}"
-                logger.error(msg)
-                await self.browser_context.close()
-                return ActionResult(
-                    is_done=True,
-                    error=msg
-                )
+        # if not flag:
+        #     flag = await self._is_login_page(page)
+        # if flag and not success_url:
+        #     error_msg = "❗ 'success_url' must be provided when 'flag' is set to True."
+        #     logger.error(error_msg)
+        #     return ActionResult(
+        #         is_done=True,
+        #         extracted_content=error_msg,
+        #         include_memory=True
+        #     )
+        #
+        # if flag and success_url:
+        #     timeout = 300000  # 5 minutes
+        #     logger.info("Please complete login manually in the browser...")
+        #
+        #     # Wait indefinitely until login is successful
+        #     try:
+        #         # Wait for a specific selector to appear
+        #         await page.wait_for_url(success_url, timeout=timeout)
+        #         msg = "✅ Login complete!"
+        #         logger.info(msg)
+        #         return ActionResult(
+        #             extracted_content=msg,
+        #             include_memory=True
+        #         )
+        #     except Exception as e:
+        #         msg = f"❌ Login timeout after {timeout} seconds: {e}"
+        #         logger.error(msg)
+        #         await self.browser_context.close()
+        #         return ActionResult(
+        #             is_done=True,
+        #             error=msg
+        #         )
 
         return ActionResult(
             extracted_content=msg
@@ -167,12 +165,31 @@ class BrowserHandler(BaseHandler):
         return ActionResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def wait(self, seconds: int = 3):
+    async def wait(self, seconds: int = 60):
         """
         Pauses execution for a specified duration.
 
+        This method is typically used to allow time for page elements to load,
+        or to accommodate manual user actions such as login or CAPTCHA.
+
+        **Login/Signin Handling**:
+            - When waiting for manual user login, limit total wait time to a maximum of **5 minutes**.
+            - Break the wait into shorter intervals (e.g., 30 seconds), and **check for page state changes**
+              after each interval using actions like `check_page`.
+            - Example usage pattern:
+                [
+                    {"wait": {"seconds": 60}}
+                ]
+                Repeat this cycle until login is complete or timeout is reached.
+            - If login is not completed after 5 minutes, mark `evaluation_previous_goal` as `Failed`
+              and log this state in `memory`.
+
         Args:
-            @param seconds: The number of seconds to wait (default is 3 seconds).
+            seconds (int, optional):
+                Number of seconds to pause execution. Default is 60 seconds.
+
+        Returns:
+            None
         """
         msg = f'🕒  Waiting for {seconds} seconds'
         logger.info(msg)
@@ -180,13 +197,16 @@ class BrowserHandler(BaseHandler):
         return ActionResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def wait_for_element(self, selector: str, timeout: int = 10000):
+    async def wait_for_element(self, selector: str, timeout: float = 10000):
         """
-        Waits for an element, specified by a CSS selector, to become visible within a given timeout.
+        Waits for an element matching the given CSS selector to become visible.
 
         Args:
-            @param selector: The CSS selector for the element to wait for.
-            @param timeout : The maximum time to wait in milliseconds (default is 10,000ms).
+            selector (str): The CSS selector of the element.
+            timeout (float): The maximum time to wait for the element to be visible (in milliseconds).
+
+        Raises:
+            TimeoutError: If the element does not become visible within the specified timeout.
         """
         try:
             await self.browser_context.wait_for_element(selector, timeout)
@@ -266,11 +286,11 @@ class BrowserHandler(BaseHandler):
 
             await page.wait_for_load_state()
 
-            tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
-            last_tab = tabs[-1]
-            logger.info(f"Tabs: {tabs}")
-            await self.browser_context.switch_to_tab(last_tab.page_id)
-            msg = f"Clicked Element Successfully and switch in to {last_tab} tab"
+            # tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
+            # last_tab = tabs[-1]
+            # logger.info(f"Tabs: {tabs}")
+            # await self.browser_context.switch_to_tab(last_tab.page_id)
+            msg = f"Clicked Element Successfully"
             return ActionResult(extracted_content=msg, include_in_memory=True)
         except Exception as ex:
             msg = f"Click Element failed {index}: {ex}"
@@ -307,15 +327,21 @@ class BrowserHandler(BaseHandler):
             @param index: The index of the input element to interact with.
             @param text: The text to input into the selected element.
         """
-        state = await self.browser_context.get_state()
-        await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
+        try:
+            state = await self.browser_context.get_state()
+            # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
 
-        node_element = state.selector_map[int(index)]
-        await self.browser_context._input_text_element_node(node_element, text)
-        msg = f'⌨️  Input data into index {index}'
-        logger.info(msg)
-        logger.debug(f'Element xpath: {node_element.xpath}')
-        return ActionResult(extracted_content=msg, include_in_memory=True)
+            node_element = state.selector_map[int(index)]
+            # await self.wait(seconds=3)
+            await self.browser_context._input_text_element_node(node_element, text)
+            msg = f'⌨️  Input data into index {index}'
+            logger.info(msg)
+            logger.debug(f'Element xpath: {node_element.xpath}')
+            return ActionResult(extracted_content=msg, include_in_memory=True)
+        except Exception as ex:
+            msg = f'⌨️  Content was Failed input into the text box.{ex}'
+            logger.info(msg)
+            return ActionResult(error=msg)
 
     @tool
     async def extract_content(

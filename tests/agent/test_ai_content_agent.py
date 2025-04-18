@@ -1,4 +1,7 @@
 import warnings
+
+from superagentx.agentxpipe import AgentXPipe
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", category=UserWarning)
 
@@ -22,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o-mini', 'llm_type': 'openai'}
     # llm_config = {
     #     "model": 'anthropic.claude-3-5-haiku-20241022-v1:0',
     #     "llm_type": 'bedrock'
@@ -56,7 +59,16 @@ class TestContentCreatorAgent:
 
         goal = """Complete the user's input."""
 
-        marketing_agent = Agent(
+        content_creator_agent = Agent(
+            goal="Generate the content. Don't provide steps to automate the browser.",
+            role="You are the Content Creator",
+            llm=llm_client,
+            prompt_template=prompt_template,
+            max_retry=2,
+            engines=[content_creator_handler_engine]
+        )
+
+        browser_agent = Agent(
             goal=goal,
             role="You are the AI Assistant",
             llm=llm_client,
@@ -65,10 +77,27 @@ class TestContentCreatorAgent:
             engines=[browser_engine]
         )
 
-        query_instruction = input("Enter Your Instruction: ")
+        pipe = AgentXPipe(
+            agents=[browser_agent],
+        )
 
-        result = await marketing_agent.execute(
-            query_instruction=query_instruction
+        task = """
+                Wait for the content input from previous Agent and your job should be just to open x.com, login and post the content.
+                DO NOT search content in the browser by your OWN. Properly understand the dom element and then create actions.
+
+                Instructions:
+                -------------
+
+                Step 1: Formalize and summarise the input content
+                Step 2: Open X.com, wait for user manual login
+                Step 3: Go to the https://x.com/compose/post and write "Automated: Hello from SuperAgentX - Browser AI Agent" in the text box.
+                Step 4: Review and post the tweet.
+
+                Follow instructions carefully!
+                """
+
+        result = await pipe.flow(
+            query_instruction=task
         )
         logger.info(f'Result ==> {result}')
         assert result

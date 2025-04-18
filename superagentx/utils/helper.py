@@ -30,6 +30,7 @@ async def ptype_to_json_scheme(ptype: str) -> str:
         case 'dict' | _:
             return "object"
 
+
 async def rm_trailing_spaces(data):
     """Recursively remove trailing whitespace from all string values in a JSON-like structure."""
     if isinstance(data, dict):

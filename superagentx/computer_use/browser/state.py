@@ -36,9 +36,12 @@ class BrowserStateHistory:
     screenshot: Optional[str] = None
 
     def to_dict(self) -> dict[str, Any]:
-        data = {'tabs': [tab.model_dump() for tab in self.tabs], 'screenshot': self.screenshot,
-                'interacted_element': [el.to_dict() if el else None for el in self.interacted_element], 'url': self.url,
-                'title': self.title}
+        data = {}
+        data['tabs'] = [tab.model_dump() for tab in self.tabs]
+        data['screenshot'] = self.screenshot
+        data['interacted_element'] = [el.to_dict() if el else None for el in self.interacted_element]
+        data['url'] = self.url
+        data['title'] = self.title
         return data
 
 

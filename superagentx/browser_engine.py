@@ -4,7 +4,6 @@ import logging
 from datetime import datetime
 from typing import TypeVar
 
-import yaml
 
 from superagentx.base_engine import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
@@ -15,7 +14,7 @@ from superagentx.handler.browser import BrowserHandler
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces
 
 logger = logging.getLogger(__name__)
 
@@ -115,10 +114,13 @@ class BrowserEngine(BaseEngine):
         return _tools
 
     @staticmethod
-    async def _get_user_message(state, step_info, action_result, use_vision: bool = True):
-        include_attributes = []
-        elements_text = state.element_tree.clickable_elements_to_string(
-            include_attributes=include_attributes)
+    async def _get_user_message(state, step_info, action_result, use_vision: bool = False, elements_text: str = None):
+        include_attributes = ['title', 'type', 'name', 'role', 'aria-label', 'placeholder', 'value', 'alt',
+                              'aria-expanded', 'data-date-format']
+
+        if not elements_text:
+            elements_text = state.element_tree.clickable_elements_to_string(
+                include_attributes=include_attributes)
 
         has_content_above = (state.pixels_above or 0) > 0
         has_content_below = (state.pixels_below or 0) > 0
@@ -189,6 +191,37 @@ Interactive elements from top layer of the current page inside the viewport:
         if len(messages) > 2 and isinstance(messages[-1], dict):
             del self.msgs[-1]
 
+    @staticmethod
+    async def show_toast(page, message: str, duration: int = 3000):
+        toast_script = f"""
+            (() => {{
+                let toast = document.createElement('div');
+                toast.innerText = "{message}";
+                toast.style.position = 'fixed';
+                toast.style.top = '40px';  // 👈 top instead of bottom
+                toast.style.left = '50%';
+                toast.style.transform = 'translateX(-50%)';
+                toast.style.background = 'rgba(0, 0, 0, 0.85)';
+                toast.style.color = '#fff';
+                toast.style.padding = '24px 48px';
+                toast.style.borderRadius = '12px';
+                toast.style.fontSize = '28px';
+                toast.style.fontWeight = 'bold';
+                toast.style.textAlign = 'center';
+                toast.style.zIndex = 9999;
+                toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
+                toast.style.transition = 'opacity 0.3s ease';
+                toast.style.opacity = '1';
+                document.body.appendChild(toast);
+
+                setTimeout(() => {{
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }}, {duration});
+            }})();
+            """
+        await page.evaluate(toast_script)
+
     async def start(self,
                     input_prompt: str,
                     pre_result: str | None = None,
@@ -208,20 +241,41 @@ Interactive elements from top layer of the current page inside the viewport:
             {"role": "user", "content": "Example output"},
             {"role": "assistant", "content": ""}
         ]
+        if pre_result:
+            input_prompt = f'{input_prompt}\n\n{pre_result}'
+
+        input_prompt = f"{input_prompt}\nConversation Id: {conversation_id}"
+        funcs = self.handler.tools or dir(self.handler)
+        _tools = await self.__funcs_props(funcs=funcs)
+        logger.debug(f"Handler Funcs : {funcs}")
+        logger.debug(f"Handler Tools List : {_tools}")
+
+        tools = await self._construct_tools()
+        self.msgs.append({
+            "role": "user",
+            "content": f"Actions:\n\n{tools}\nSelect to correct action based on the inputs"
+        })
+        input_prompt = f"{input_prompt}\nConversation Id: {conversation_id}"
+        prompt_messages = await self.prompt_template.get_messages(
+            input_prompt=input_prompt,
+            old_memory=old_memory,
+            **kwargs
+        )
+        prompt_messages = await rm_trailing_spaces(prompt_messages)
+        self.msgs = self.msgs + prompt_messages
+        logger.debug(f"Prompt Message : {self.msgs}")
         result = None
+        page = await self.browser_context.get_current_page()
+        await self.show_toast(page, "Welcome To SuperAgentX Browser Automation")
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
             state = await self.browser_context.get_state()
             page = await self.browser_context.get_current_page()
+            # await self.show_toast(page, "Welcome To SuperAgentX Browser Automation")
             step_info = AgentStepInfo(step_number=step, max_steps=self.max_steps)
             state_msg = await self._get_user_message(state=state, step_info=step_info, action_result=result)
             self.msgs.append(state_msg)
-            funcs = self.handler.tools or dir(self.handler)
-            _tools = await self.__funcs_props(funcs=funcs)
-            logger.debug(f"Handler Funcs : {funcs}")
-            logger.debug(f"Handler Tools List : {_tools}")
-
-            tools = await self._construct_tools()
+            logger.info(f"Message:")
 
             chat_completion_params = ChatCompletionParams(
                 messages=self.msgs,
@@ -238,9 +292,10 @@ Interactive elements from top layer of the current page inside the viewport:
             await self._remove_last_state_message(self.msgs)
             self.msgs.append({
                 "role": "assistant",
-                "content": f"{yaml.dump(res)}"
+                "content": f"{res}"
             })
             actions = res.get("action")
+            current_state = res.get("current_state")
             async for tool in iter_to_aiter(actions):
                 async for key, value in iter_to_aiter(tool.items()):
                     tool_name = key
@@ -256,14 +311,8 @@ Interactive elements from top layer of the current page inside the viewport:
                             try:
                                 _engine_res = None
                                 if inspect.iscoroutinefunction(func):
-                                    logger.info("Yes")
+                                    await self.show_toast(page, current_state.get("next_goal"))
                                     _engine_res = await func(**_kwargs)
-                                    await self.browser_context.get_current_page()
-
-                                # self.msgs.append({
-                                #     "role": "user",
-                                #     "content": str(_kwargs)
-                                # })
                                 _value = list(_kwargs.values())
                                 if _engine_res.extracted_content:
                                     result = [ActionResult(
@@ -284,117 +333,3 @@ Interactive elements from top layer of the current page inside the viewport:
                         await self.browser_context.close()
                         await self.browser.close()
                         return results
-            # logger.info(f"Func Chat Completion : {messages}")
-
-        # funcs = self.handler.tools or dir(self.handler)
-        # _tools = await self.__funcs_props(funcs=funcs)
-        # logger.info(f"Handler Funcs : {funcs}")
-        # logger.info(f"Handler Tools List : {_tools}")
-        #
-        # # page = await self.browser_context.get_current_page()
-        # # await page.goto('https://en.wikipedia.org/wiki/Banana')
-        # # state = await self.browser_context.get_state()
-        # # print(f"State.... {state}")
-        # # print(state.element_tree.clickable_elements_to_string())
-        #
-        # msgs = [
-        #     {"role": "system", "content": f"{BROWSER_SYSTEM_MESSAGE}\n\nNote:\nEnsure to first build the step by step "
-        #                                   f"process, once you build the steps then execute the steps use click event "
-        #                                   f"for every step to need. Don't give the duplicate json."},
-        #     {"role": "user",
-        #      "content": f"Your ultimate task is: {input_prompt} about that post\". If you"
-        #                 "achieved your ultimate task, stop everything and use the done action in the next step to "
-        #                 "complete the task. If not, continue as usual."},
-        #     {"role": "user", "content": "Example output"},
-        #     {"assistant": ""}
-        # ]
-        # tools = await self._construct_tools()
-        #
-        # chat_completion_params = ChatCompletionParams(
-        #     messages=msgs,
-        #     tools=tools
-        # )
-        # chat_completion_params.temperature = 0
-        # chat_completion_params.response_format = {"type": "json_object"}
-        # messages = await self.llm.afunc_chat_completion(
-        #     chat_completion_params=chat_completion_params
-        # )
-        # if not messages:
-        #     raise ToolError("Tool not found for the inputs!")
-        # logger.info(f"Func Chat Completion : {messages[0].content}")
-        #
-        # results = []
-        #
-        # async def automation(_messages):
-        #     async for _message in iter_to_aiter(_messages):
-        #         _dict_data = json.loads(_message.content)
-        #         _actions = _dict_data.get("action")
-        #         async for _tool in iter_to_aiter(_actions):
-        #             _funcs = list(_tool.keys())
-        #             if _funcs:
-        #                 _tool_name = _funcs[0]
-        #                 if _tool_name == "done":
-        #                     return _tool.get(_tool_name)
-        #                 _func = getattr(self.handler, _tool_name)
-        #                 if _func and (inspect.ismethod(_func) or inspect.isfunction(_func)):
-        #                     logger.debug(f'Checking tool function : {self.handler.__class__}.{_tool_name}')
-        #                     _kwargs = _tool.get(_tool_name) or {}
-        #                     logger.debug(
-        #                         f'Executing tool function : {self.handler.__class__}.{_tool_name}, '
-        #                         f'With arguments : {_kwargs}'
-        #                     )
-        #                     if inspect.iscoroutinefunction(_func):
-        #                         await _func(**_kwargs)
-        #                         await asyncio.sleep(1)
-        #                         await self.browser_context.get_current_page()
-        #
-        # async for message in iter_to_aiter(messages):
-        #     dict_data = json.loads(message.content)
-        #     actions = dict_data.get("action")
-        #     async for tool in iter_to_aiter(actions):
-        #         async for key, value in iter_to_aiter(tool.items()):
-        #             tool_name = key
-        #             func = getattr(self.handler, tool_name)
-        #             if func and (inspect.ismethod(func) or inspect.isfunction(func)):
-        #                 logger.debug(f'Checking tool function : {self.handler.__class__}.{tool_name}')
-        #                 _kwargs = tool.get(tool_name) or {}
-        #                 logger.debug(
-        #                     f'Executing tool function : {self.handler.__class__}.{tool_name}, '
-        #                     f'With arguments : {_kwargs}'
-        #                 )
-        #                 if inspect.iscoroutinefunction(func):
-        #                     await func(**_kwargs)
-        #                     await asyncio.sleep(1)
-        #                     await self.browser_context.get_current_page()
-        #                     status = True
-        #                     while status:
-        #                         state = await self.browser_context.get_state()
-        #                         dom = await self._web(self.browser_context, state)
-        #                         msgs.append({
-        #                             "role": "system",
-        #                             "content": messages[0].content
-        #                         })
-        #                         msgs.append({
-        #                             "role": "user",
-        #                             "content": f"Dom Element:\n\n{dom}"
-        #                         })
-        #                         logger.info(msgs)
-        #                         chat_completion_params.messages = msgs
-        #                         chat_completion_params.tools = tools
-        #                         chat_completion_params.response_format = {"type": "json_object"}
-        #                         messages = await self.llm.afunc_chat_completion(
-        #                             chat_completion_params=chat_completion_params
-        #                         )
-        #                         logger.info(f"Func Chat Completion : {messages}")
-        #                         if not messages[0].content and messages[0].tool_calls:
-        #                             _tools = messages[0].tool_calls
-        #                             messages[0].content = [tool_call async for tool_call in iter_to_aiter(_tools)]
-        #
-        #                         result = await automation(messages)
-        #                         if result:
-        #                             results.append(result)
-        #                             await self.browser_context.close()
-        #                             await self.browser.close()
-        #                             status = False
-
-        # return []
