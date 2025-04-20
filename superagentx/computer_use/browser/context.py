@@ -863,7 +863,6 @@ class BrowserContext:
 
         return screenshot_b64
 
-
     @time_execution_async('--remove_highlights')
     async def remove_highlights(self):
         """
@@ -895,7 +894,6 @@ class BrowserContext:
             logger.debug(f'Failed to remove highlights (this is usually ok): {str(e)}')
             # Don't raise the error since this is not critical functionality
             pass
-
 
     # endregion
 
@@ -948,7 +946,6 @@ class BrowserContext:
 
         base_selector = ' > '.join(css_parts)
         return base_selector
-
 
     @classmethod
     @time_execution_sync('--enhanced_css_selector_for_element')
@@ -1058,7 +1055,6 @@ class BrowserContext:
             tag_name = element.tag_name or '*'
             return f"{tag_name}[highlight_index='{element.highlight_index}']"
 
-
     @time_execution_async('--get_locate_element')
     async def get_locate_element(self, element: DOMElementNode) -> Optional[ElementHandle]:
         current_frame = await self.get_current_page()
@@ -1101,7 +1097,6 @@ class BrowserContext:
         except Exception as e:
             logger.error(f'Failed to locate element: {str(e)}')
             return None
-
 
     @time_execution_async('--input_text_element_node')
     async def _input_text_element_node(self, element_node: DOMElementNode, text: str):
@@ -1147,7 +1142,6 @@ class BrowserContext:
         except Exception as e:
             logger.info(f'Failed to input text into element: {repr(element_node)}. Error: {str(e)}')
             raise BrowserError(f'Failed to input text into index {element_node.highlight_index}')
-
 
     @time_execution_async('--click_element_node')
     async def _click_element_node(self, element_node: DOMElementNode) -> Optional[str]:
@@ -1211,7 +1205,6 @@ class BrowserContext:
         except Exception as e:
             raise Exception(f'Failed to click element: {repr(element_node)}. Error: {str(e)}')
 
-
     @time_execution_async('--get_tabs_info')
     async def get_tabs_info(self) -> list[TabInfo]:
         """Get information about all tabs"""
@@ -1223,7 +1216,6 @@ class BrowserContext:
             tabs_info.append(tab_info)
 
         return tabs_info
-
 
     @time_execution_async('--switch_to_tab')
     async def switch_to_tab(self, page_id: int) -> None:
@@ -1251,7 +1243,6 @@ class BrowserContext:
         await page.bring_to_front()
         await page.wait_for_load_state()
 
-
     @time_execution_async('--create_new_tab')
     async def create_new_tab(self, url: str | None = None) -> None:
         """Create a new tab and optionally navigate to a URL"""
@@ -1274,7 +1265,6 @@ class BrowserContext:
                     self.state.target_id = target['targetId']
                     break
 
-
     # endregion
 
     # region - Helper methods for easier access to the DOM
@@ -1293,24 +1283,20 @@ class BrowserContext:
         # Fallback to last page
         return pages[-1] if pages else await session.context.new_page()
 
-
     async def get_selector_map(self) -> SelectorMap:
         session = await self.get_session()
         if session.cached_state is None:
             return {}
         return session.cached_state.selector_map
 
-
     async def get_element_by_index(self, index: int) -> ElementHandle | None:
         selector_map = await self.get_selector_map()
         element_handle = await self.get_locate_element(selector_map[index])
         return element_handle
 
-
     async def get_dom_element_by_index(self, index: int) -> DOMElementNode:
         selector_map = await self.get_selector_map()
         return selector_map[index]
-
 
     async def save_cookies(self):
         """Save current cookies to file"""
@@ -1328,7 +1314,6 @@ class BrowserContext:
                     json.dump(cookies, f)
             except Exception as e:
                 logger.warning(f'Failed to save cookies: {str(e)}')
-
 
     async def is_file_uploader(self, element_node: DOMElementNode, max_depth: int = 3, current_depth: int = 0) -> bool:
         """Check if element or its children are file uploaders"""
@@ -1358,7 +1343,6 @@ class BrowserContext:
 
         return False
 
-
     async def get_scroll_info(self, page: Page) -> tuple[int, int]:
         """Get scroll position information for the current page."""
         scroll_y = await page.evaluate('window.scrollY')
@@ -1367,7 +1351,6 @@ class BrowserContext:
         pixels_above = scroll_y
         pixels_below = total_height - (scroll_y + viewport_height)
         return pixels_above, pixels_below
-
 
     async def reset_context(self):
         """Reset the browser session
@@ -1383,7 +1366,6 @@ class BrowserContext:
         session.cached_state = None
         self.state.target_id = None
 
-
     async def _get_unique_filename(self, directory, filename):
         """Generate a unique filename by appending (1), (2), etc., if a file already exists."""
         base, ext = os.path.splitext(filename)
@@ -1393,7 +1375,6 @@ class BrowserContext:
             new_filename = f'{base} ({counter}){ext}'
             counter += 1
         return new_filename
-
 
     async def _get_cdp_targets(self) -> list[dict]:
         """Get all CDP targets directly using CDP protocol"""
@@ -1412,7 +1393,6 @@ class BrowserContext:
         except Exception as e:
             logger.debug(f'Failed to get CDP targets: {e}')
             return []
-
 
     async def wait_for_element(self, selector: str, timeout: float) -> None:
         """

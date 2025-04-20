@@ -334,7 +334,7 @@ class BrowserHandler(BaseHandler):
             node_element = state.selector_map[int(index)]
             # await self.wait(seconds=3)
             await self.browser_context._input_text_element_node(node_element, text)
-            msg = f'⌨️  Input data into index {index}'
+            msg = f'⌨️  Input data into index {index} {text}'
             logger.info(msg)
             logger.debug(f'Element xpath: {node_element.xpath}')
             return ActionResult(extracted_content=msg, include_in_memory=True)
