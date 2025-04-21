@@ -21,7 +21,7 @@ async def main():
     browser_engine = BrowserEngine(
         llm=llm_client,
         prompt_template=prompt_template,
-        browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        # browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     )
     query_instruction = input("\n Enter your task: ")
     logger.info(f"Query Input : {query_instruction}")
@@ -30,7 +30,7 @@ async def main():
             2. Goto https://x.com/compose/post and click and set focus.
             3. Write the a detail result using input_text.
             3. Review the tweet before post it for submit.
-            4. Submit the button to tweet the result!
+            4. Find 'Post' and Click the 'Post' the button to tweet the result!
             
             Important:
             1. DO NOT write the post as reply
