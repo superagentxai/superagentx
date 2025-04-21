@@ -1,17 +1,34 @@
 import random
+import logging
 from datetime import datetime
-
-import base64
 
 from superagentx.constants import BROWSER_SYSTEM_MESSAGE
 from superagentx.computer_use.browser.state import BrowserState
-from superagentx.computer_use.browser.models import AgentStepInfo, ActionResult
+from superagentx.computer_use.browser.models import StepInfo, ToolResult
+
+logger = logging.getLogger(__name__)
+
+
+async def log_response(result: dict):
+    """Utility function to log the model's response."""
+
+    if 'Success' in result.get('current_state').get('evaluation_previous_goal'):
+        emoji = '👍'
+    elif 'Failed' in result.get('current_state').get('evaluation_previous_goal'):
+        emoji = '⚠'
+    else:
+        emoji = '🤷'
+
+    logger.info(f'{emoji} Eval: {result.get('current_state').get('evaluation_previous_goal')}')
+    logger.info(f'🧠 Memory: {result.get('current_state').get('memory')}')
+    logger.info(f'🎯 Next goal: {result.get('current_state').get('next_goal')}')
+    logger.info(f'🛠️  Action {result.get('action')}')
 
 
 async def get_user_message(
         state: BrowserState,
-        step_info: AgentStepInfo,
-        action_result: list[ActionResult],
+        step_info: StepInfo,
+        action_result: list[ToolResult],
         use_vision: bool = False
 ):
     include_attributes = ['title', 'type', 'name', 'role', 'aria-label', 'placeholder', 'value', 'alt',

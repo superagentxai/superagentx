@@ -32,7 +32,10 @@ class HistoryTreeProcessor:
 		)
 
 	@staticmethod
-	def find_history_element_in_tree(dom_history_element: DOMHistoryElement, tree: DOMElementNode) -> Optional[DOMElementNode]:
+	def find_history_element_in_tree(
+			dom_history_element: DOMHistoryElement,
+			tree: DOMElementNode
+	) -> Optional[DOMElementNode]:
 		hashed_dom_history_element = HistoryTreeProcessor._hash_dom_history_element(dom_history_element)
 
 		def process_node(node: DOMElementNode):
@@ -50,7 +53,10 @@ class HistoryTreeProcessor:
 		return process_node(tree)
 
 	@staticmethod
-	def compare_history_element_and_dom_element(dom_history_element: DOMHistoryElement, dom_element: DOMElementNode) -> bool:
+	def compare_history_element_and_dom_element(
+			dom_history_element: DOMHistoryElement,
+			dom_element: DOMElementNode
+	) -> bool:
 		hashed_dom_history_element = HistoryTreeProcessor._hash_dom_history_element(dom_history_element)
 		hashed_dom_element = HistoryTreeProcessor._hash_dom_element(dom_element)
 

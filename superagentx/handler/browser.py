@@ -3,9 +3,8 @@ import json
 import logging
 
 from superagentx.computer_use.browser.context import BrowserContext
-from superagentx.computer_use.browser.models import ActionResult
+from superagentx.computer_use.browser.models import ToolResult
 from superagentx.computer_use.browser.state import TabInfo
-from superagentx.computer_use.browser.utils import time_execution_sync
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
 from superagentx.llm import LLMClient, ChatCompletionParams
@@ -57,12 +56,15 @@ class BrowserHandler(BaseHandler):
             *,
             query: str,
 
-    ) -> ActionResult:
+    ) -> ToolResult:
         """
-        Executes a Google search in the current tab with a precise and well-structured query, mimicking human search behavior. Ensures clarity and relevance by avoiding vague, overly broad, or excessively long queries, prioritizing the most essential keywords for optimal results.
+        Executes a Google search in the current tab with a precise and well-structured query, mimicking human search
+        behavior. Ensures clarity and relevance by avoiding vague, overly broad, or excessively long queries,
+        prioritizing the most essential keywords for optimal results.
 
         Args:
-        @param query: A concise and specific search query that prioritizes the most relevant keywords to yield accurate search results. Avoid overly broad or ambiguous terms.
+        @param query: A concise and specific search query that prioritizes the most relevant keywords to yield accurate
+        search results. Avoid overly broad or ambiguous terms.
 
         """
         page = await self.browser_context.get_current_page()
@@ -70,36 +72,13 @@ class BrowserHandler(BaseHandler):
         await page.wait_for_load_state()
         msg = f'🔍  Searched for "{query}" in Google'
         logger.info(msg)
-        return ActionResult(extracted_content=msg, include_in_memory=True)
-
-    @staticmethod
-    async def _is_login_page(page):
-
-        # Quick checks
-        url = page.url.lower()
-        if any(keyword in url for keyword in ["login", "signin", "auth", "authenticate"]):
-            return True
-
-        # Look for input fields with common login field names
-        has_login_fields = await page.query_selector('input[type="password"]') is not None
-        logger.info(f"Has Login Fields: {has_login_fields}")
-        if has_login_fields:
-            return True
-
-        # Look for forms that might be login forms
-        forms = await page.query_selector_all("form")
-        for form in forms:
-            html = await form.inner_html()
-            if any(word in html.lower() for word in ["username", "email", "password", "sign in", "login"]):
-                return True
-
-        return False
+        return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
     async def go_to_url(
             self,
             url: str
-    ):
+    ) -> ToolResult:
         """
         Navigates to the specified URL in the current tab.
 
@@ -150,22 +129,22 @@ class BrowserHandler(BaseHandler):
         #             error=msg
         #         )
 
-        return ActionResult(
+        return ToolResult(
             extracted_content=msg
         )
 
     @tool
-    async def go_back(self):
+    async def go_back(self) -> ToolResult:
         """
         Navigates back to the previous page in the browser history.
         """
         await self.browser_context.go_back()
         msg = '🔙  Navigated back'
         logger.info(msg)
-        return ActionResult(extracted_content=msg, include_in_memory=True)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def wait(self, seconds: int = 60):
+    async def wait(self, seconds: int = 60) -> ToolResult:
         """
         Pauses execution for a specified duration.
 
@@ -194,10 +173,16 @@ class BrowserHandler(BaseHandler):
         msg = f'🕒  Waiting for {seconds} seconds'
         logger.info(msg)
         await asyncio.sleep(seconds)
-        return ActionResult(extracted_content=msg, include_in_memory=True)
+        msg = f"🕒 Wait successfully Completed"
+        logger.info(msg)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def wait_for_element(self, selector: str, timeout: float = 10000):
+    async def wait_for_element(
+            self,
+            selector: str,
+            timeout: float = 10000
+    ) -> ToolResult:
         """
         Waits for an element matching the given CSS selector to become visible.
 
@@ -212,14 +197,18 @@ class BrowserHandler(BaseHandler):
             await self.browser_context.wait_for_element(selector, timeout)
             msg = f'👀  Element with selector "{selector}" became visible within {timeout}ms.'
             logger.info(msg)
-            return ActionResult(extracted_content=msg, include_in_memory=True)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as e:
             err_msg = f'❌  Failed to wait for element "{selector}" within {timeout}ms: {str(e)}'
             logger.error(err_msg)
             raise Exception(err_msg)
 
     @tool
-    async def click_element_by_index(self, index: int, xpath: str = None):
+    async def click_element_by_index(
+            self,
+            index: int,
+            xpath: str = None
+    ) -> ToolResult:
         """
         Clicks an element specified by an index within a given XPath.
 
@@ -239,7 +228,7 @@ class BrowserHandler(BaseHandler):
         if await self.browser_context.is_file_uploader(element_node):
             msg = f'Index {index} - has an element which opens file upload dialog. To upload files please use a specific function to upload files '
             logger.info(msg)
-            return ActionResult(extracted_content=msg, include_in_memory=True)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
         msg = None
 
         try:
@@ -257,15 +246,16 @@ class BrowserHandler(BaseHandler):
                 msg += f' - {new_tab_msg}'
                 logger.info(new_tab_msg)
                 await self.browser_context.switch_to_tab()
-            return ActionResult(extracted_content=msg, include_in_memory=True)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as e:
             logger.warning(f'Element not clickable with index {index} - most likely the page changed')
-            return ActionResult(error=str(e))
+            return ToolResult(error=str(e))
 
     @tool
-    async def click_element(self,
-                            index: int
-                            ):
+    async def click_element(
+            self,
+            index: int
+    ) -> ToolResult:
         """
         Clicks an element at the specified index in the DOM.
 
@@ -275,7 +265,7 @@ class BrowserHandler(BaseHandler):
         """
         try:
             state = await self.browser_context.get_state()
-            await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
+            # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
 
             node_element = state.selector_map[int(index)]
 
@@ -291,19 +281,18 @@ class BrowserHandler(BaseHandler):
             # logger.info(f"Tabs: {tabs}")
             # await self.browser_context.switch_to_tab(last_tab.page_id)
             msg = f"Clicked Element Successfully"
-            return ActionResult(extracted_content=msg, include_in_memory=True)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as ex:
             msg = f"Click Element failed {index}: {ex}"
             logger.info(msg)
-            return ActionResult(error=msg)
+            return ToolResult(error=msg)
 
     @tool
     async def open_new_tab(
             self,
             *,
             url: str,
-
-    ):
+    ) -> ToolResult:
         """
         Opens a given URL in a new browser tab.
 
@@ -313,14 +302,14 @@ class BrowserHandler(BaseHandler):
         await self.browser_context.create_new_tab(url)
         msg = f'🔗  Opened new tab with {url}'
         logger.info(msg)
-        return ActionResult(extracted_content=msg, include_in_memory=True)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
     async def input_text(
             self,
             index: int,
             text: str
-    ):
+    ) -> ToolResult:
         """
         Input text into an input interactive element
         Args:
@@ -337,17 +326,17 @@ class BrowserHandler(BaseHandler):
             msg = f'⌨️  Input data into index {index} {text}'
             logger.info(msg)
             logger.debug(f'Element xpath: {node_element.xpath}')
-            return ActionResult(extracted_content=msg, include_in_memory=True)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as ex:
             msg = f'⌨️  Content was Failed input into the text box.{ex}'
             logger.info(msg)
-            return ActionResult(error=msg)
+            return ToolResult(error=msg)
 
     @tool
     async def extract_content(
             self,
             goal: str,
-    ):
+    ) -> ToolResult:
         """
         Extract page content to retrieve specific information from the page, e.g. all company names, a specific
         description, all information about, links with companies in structured format or simply links
@@ -390,15 +379,18 @@ class BrowserHandler(BaseHandler):
             output = await self.llm.achat_completion(chat_completion_params=chat_completion_params)
             msg = f'📄  Extracted from page\n: {output.choices[0].message.content}\n'
             logger.debug(msg)
-            return ActionResult(extracted_content=msg, include_in_memory=True)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as e:
             logger.info(f'Error extracting content: {e}')
             msg = f'📄  Extracted from page\n: {content}\n'
             logger.info(msg)
-            return ActionResult(extracted_content=msg)
+            return ToolResult(extracted_content=msg)
 
     @tool
-    async def scroll_down(self, amount: int = None):
+    async def scroll_down(
+            self,
+            amount: int = None
+    ) -> ToolResult:
         """
         Scroll down the page by pixel amount - if no amount is specified, scroll down one page
 
@@ -414,13 +406,13 @@ class BrowserHandler(BaseHandler):
         amount = f'{amount} pixels' if amount is not None else 'one page'
         msg = f'🔍  Scrolled down the page by {amount}'
         logger.info(msg)
-        return ActionResult(
+        return ToolResult(
             extracted_content=msg,
             include_in_memory=True,
         )
 
     @tool
-    async def scroll_up(self, amount: int):
+    async def scroll_up(self, amount: int) -> ToolResult:
         """
         Scroll up the page by pixel amount - if no amount is specified, scroll up one page
         """
@@ -433,13 +425,13 @@ class BrowserHandler(BaseHandler):
         amount = f'{amount} pixels' if amount is not None else 'one page'
         msg = f'🔍  Scrolled up the page by {amount}'
         logger.info(msg)
-        return ActionResult(
+        return ToolResult(
             extracted_content=msg,
             include_in_memory=True,
         )
 
     @tool
-    async def send_keys(self, keys: str):
+    async def send_keys(self, keys: str) -> ToolResult:
         """
         Send strings of special keys like Escape,Backspace, Insert, PageDown, Delete, Enter, Shortcuts such as
         `Control+o`, `Control+Shift+T` are supported as well. This gets used in keyboard.press.
@@ -461,10 +453,10 @@ class BrowserHandler(BaseHandler):
                 raise e
         msg = f'⌨️  Sent keys: {keys}'
         logger.info(msg)
-        return ActionResult(extracted_content=msg, include_in_memory=True)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def scroll_to_text(self, text: str):  # type: ignore
+    async def scroll_to_text(self, text: str) -> ToolResult:  # type: ignore
         """
         If you don't find something which you want to interact with, scroll to it
         """
@@ -485,93 +477,193 @@ class BrowserHandler(BaseHandler):
                         await asyncio.sleep(0.5)  # Wait for scroll to complete
                         msg = f'🔍  Scrolled to text: {text}'
                         logger.info(msg)
-                        return ActionResult(extracted_content=msg, include_in_memory=True)
+                        return ToolResult(extracted_content=msg, include_in_memory=True)
                 except Exception as e:
                     logger.debug(f'Locator attempt failed: {str(e)}')
                     continue
 
             msg = f"Text '{text}' not found or not visible on page"
             logger.info(msg)
-            return ActionResult(extracted_content=msg, include_in_memory=True)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
 
         except Exception as e:
             msg = f"Failed to scroll to text '{text}': {str(e)}"
             logger.error(msg)
-            return ActionResult(error=msg, include_in_memory=True)
+            return ToolResult(error=msg, include_in_memory=True)
 
-    # @tool
-    # async def login(self, login_url: str, success_indicator: str):
-    #     """
-    #     Opens the login page and waits until the user manually logs in.
-    #
-    #     Args:
-    #         login_url (str): The login page URL.
-    #         success_indicator (str): A CSS selector or URL pattern that indicates successful login.
-    #     """
-    #     page = await self.browser_context.get_current_page()
-    #
-    #     await page.goto(login_url)
-    #     logger.info("Please complete login manually in the browser...")
-    #
-    #     # Wait indefinitely until login is successful
-    #     try:
-    #         if success_indicator.startswith("http"):
-    #             # Wait for a URL pattern
-    #             await page.wait_for_url(success_indicator, timeout=0)
-    #         else:
-    #             # Wait for a specific selector to appear
-    #             await page.wait_for_selector(success_indicator, timeout=0)
-    #
-    #         logger.info("Login complete! Continuing with the next steps...")
-    #
-    #     except Exception as e:
-    #         logger.error(f"Error waiting for login to complete: {e}")
+    @tool
+    async def get_dropdown_options(
+            self,
+            index: int
+    ) -> ToolResult:
+        """
+        Retrieve all selectable options from a native dropdown element on a web page.
 
-    # @tool
-    # async def get_dropdown_options(index: int) -> ActionResult:
-    #     """Get all options from a native dropdown"""
-    #     page = await self.browser_context.get_current_page()
-    #     selector_map = await self.browser_context.get_selector_map()
-    #     dom_element = selector_map[index]
-    #
-    #     try:
-    #         # Frame-aware approach since we know it works
-    #         all_options = []
-    #         frame_index = 0
-    #
-    #         for frame in page.frames:
-    #             try:
-    #                 options = await frame.evaluate(element,dom_element.xpath)
-    #
-    #                 if options:
-    #                     logger.debug(f'Found dropdown in frame {frame_index}')
-    #                     logger.debug(f'Dropdown ID: {options["id"]}, Name: {options["name"]}')
-    #
-    #                     formatted_options = []
-    #                     for opt in options['options']:
-    #                         # encoding ensures AI uses the exact string in select_dropdown_option
-    #                         encoded_text = json.dumps(opt['text'])
-    #                         formatted_options.append(f'{opt["index"]}: text={encoded_text}')
-    #
-    #                     all_options.extend(formatted_options)
-    #
-    #             except Exception as frame_e:
-    #                 logger.debug(f'Frame {frame_index} evaluation failed: {str(frame_e)}')
-    #
-    #             frame_index += 1
-    #
-    #         if all_options:
-    #             msg = '\n'.join(all_options)
-    #             msg += '\nUse the exact text string in select_dropdown_option'
-    #             logger.info(msg)
-    #             return ActionResult(extracted_content=msg, include_in_memory=True)
-    #         else:
-    #             msg = 'No options found in any frame for dropdown'
-    #             logger.info(msg)
-    #             return ActionResult(extracted_content=msg, include_in_memory=True)
-    #
-    #     except Exception as e:
-    #         logger.error(f'Failed to get dropdown options: {str(e)}')
-    #         msg = f'Error getting options: {str(e)}'
-    #         logger.info(msg)
-    #         return ActionResult(extracted_content=msg, include_in_memory=True)
+        This method locates a dropdown element based on its index (order of appearance)
+        and extracts all available option values. It is typically used in browser automation
+        or scraping contexts where interaction with HTML `<select>` elements is required.
+
+        Args:
+            index (int): The zero-based index of the dropdown element on the page.
+        """
+        page = await self.browser_context.get_current_page()
+        selector_map = await self.browser_context.get_selector_map()
+        dom_element = selector_map[index]
+
+        try:
+            # Frame-aware approach since we know it works
+            all_options = []
+            frame_index = 0
+
+            for frame in page.frames:
+                try:
+                    options = await frame.evaluate(
+                        """
+                        (xpath) => {
+                            const select = document.evaluate(xpath, document, null,
+                                XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                            if (!select) return null;
+
+                            return {
+                                options: Array.from(select.options).map(opt => ({
+                                    text: opt.text, //do not trim, because we are doing exact match in select_dropdown_option
+                                    value: opt.value,
+                                    index: opt.index
+                                })),
+                                id: select.id,
+                                name: select.name
+                            };
+                        }
+                    """,
+                        dom_element.xpath,
+                    )
+
+                    if options:
+                        logger.debug(f'Found dropdown in frame {frame_index}')
+                        logger.debug(f'Dropdown ID: {options["id"]}, Name: {options["name"]}')
+
+                        formatted_options = []
+                        for opt in options['options']:
+                            # encoding ensures AI uses the exact string in select_dropdown_option
+                            encoded_text = json.dumps(opt['text'])
+                            formatted_options.append(f'{opt["index"]}: text={encoded_text}')
+
+                        all_options.extend(formatted_options)
+
+                except Exception as frame_e:
+                    logger.debug(f'Frame {frame_index} evaluation failed: {str(frame_e)}')
+
+                frame_index += 1
+
+            if all_options:
+                msg = '\n'.join(all_options)
+                msg += '\nUse the exact text string in select_dropdown_option'
+                logger.info(msg)
+                return ToolResult(extracted_content=msg, include_in_memory=True)
+            else:
+                msg = 'No options found in any frame for dropdown'
+                logger.info(msg)
+                return ToolResult(extracted_content=msg, include_in_memory=True)
+
+        except Exception as e:
+            logger.error(f'Failed to get dropdown options: {str(e)}')
+            msg = f'Error getting options: {str(e)}'
+            logger.info(msg)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
+
+    @tool
+    async def select_dropdown_option(
+            self,
+            index: int,
+            text: str
+    ) -> ToolResult:
+        """Select dropdown option by the text of the option you want to select"""
+        page = await self.browser_context.get_current_page()
+        selector_map = await self.browser_context.get_selector_map()
+        dom_element = selector_map[index]
+
+        # Validate that we're working with a select element
+        if dom_element.tag_name != 'select':
+            logger.error(
+                f'Element is not a select! Tag: {dom_element.tag_name}, Attributes: {dom_element.attributes}')
+            msg = f'Cannot select option: Element with index {index} is a {dom_element.tag_name}, not a select'
+            return ToolResult(extracted_content=msg, include_in_memory=True)
+
+        logger.debug(f"Attempting to select '{text}' using xpath: {dom_element.xpath}")
+        logger.debug(f'Element attributes: {dom_element.attributes}')
+        logger.debug(f'Element tag: {dom_element.tag_name}')
+
+        xpath = '//' + dom_element.xpath
+
+        try:
+            frame_index = 0
+            for frame in page.frames:
+                try:
+                    logger.debug(f'Trying frame {frame_index} URL: {frame.url}')
+
+                    # First verify we can find the dropdown in this frame
+                    find_dropdown_js = """
+                                (xpath) => {
+                                    try {
+                                        const select = document.evaluate(xpath, document, null,
+                                            XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                                        if (!select) return null;
+                                        if (select.tagName.toLowerCase() !== 'select') {
+                                            return {
+                                                error: `Found element but it's a ${select.tagName}, not a SELECT`,
+                                                found: false
+                                            };
+                                        }
+                                        return {
+                                            id: select.id,
+                                            name: select.name,
+                                            found: true,
+                                            tagName: select.tagName,
+                                            optionCount: select.options.length,
+                                            currentValue: select.value,
+                                            availableOptions: Array.from(select.options).map(o => o.text.trim())
+                                        };
+                                    } catch (e) {
+                                        return {error: e.toString(), found: false};
+                                    }
+                                }
+                            """
+
+                    dropdown_info = await frame.evaluate(find_dropdown_js, dom_element.xpath)
+
+                    if dropdown_info:
+                        if not dropdown_info.get('found'):
+                            logger.error(f'Frame {frame_index} error: {dropdown_info.get("error")}')
+                            continue
+
+                        logger.debug(f'Found dropdown in frame {frame_index}: {dropdown_info}')
+
+                        # "label" because we are selecting by text
+                        # nth(0) to disable error thrown by strict mode
+                        # timeout=1000 because we are already waiting for all network events, therefore ideally we
+                        # don't need to wait a lot here (default 30s)
+                        selected_option_values = (
+                            await frame.locator('//' + dom_element.xpath).nth(0).select_option(label=text,
+                                                                                               timeout=1000)
+                        )
+
+                        msg = f'selected option {text} with value {selected_option_values}'
+                        logger.info(msg + f' in frame {frame_index}')
+
+                        return ToolResult(extracted_content=msg, include_in_memory=True)
+
+                except Exception as frame_e:
+                    logger.error(f'Frame {frame_index} attempt failed: {str(frame_e)}')
+                    logger.error(f'Frame type: {type(frame)}')
+                    logger.error(f'Frame URL: {frame.url}')
+
+                frame_index += 1
+
+            msg = f"Could not select option '{text}' in any frame"
+            logger.info(msg)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
+
+        except Exception as e:
+            msg = f'Selection failed: {str(e)}'
+            logger.error(msg)
+            return ToolResult(error=msg, include_in_memory=True)

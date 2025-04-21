@@ -85,7 +85,10 @@ class Browser:
                 '--disable-features=IsolateOrigins,site-per-process',
             ]
 
-    async def new_context(self, config: BrowserContextConfig = BrowserContextConfig()) -> BrowserContext:
+    async def new_context(
+            self,
+            config: BrowserContextConfig = BrowserContextConfig()
+    ) -> BrowserContext:
         """Create a browser context"""
         return BrowserContext(config=config, browser=self)
 

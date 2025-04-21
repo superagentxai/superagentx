@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class AgentStepInfo:
+class StepInfo:
     step_number: int
     max_steps: int
 
@@ -16,7 +16,7 @@ class AgentStepInfo:
         return self.step_number >= self.max_steps - 1
 
 
-class ActionResult(BaseModel):
+class ToolResult(BaseModel):
     """Result of executing an action"""
 
     is_done: Optional[bool] = False

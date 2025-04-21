@@ -9,8 +9,6 @@ import logging
 import pytest
 from superagentx.agent import Agent
 from superagentx.browser_engine import BrowserEngine
-from superagentx.engine import Engine
-from superagentx.handler import AIHandler
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
 
@@ -25,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4o-mini', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
     # llm_config = {
     #     "model": 'anthropic.claude-3-5-haiku-20241022-v1:0',
     #     "llm_type": 'bedrock'

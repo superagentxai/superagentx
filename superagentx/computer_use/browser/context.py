@@ -25,14 +25,14 @@ from playwright.async_api import (
     Page,
 )
 
+from superagentx.computer_use.browser.dom.service import DomService
+from superagentx.computer_use.browser.dom.views import DOMElementNode, SelectorMap
 from superagentx.computer_use.browser.state import (
     BrowserError,
     BrowserState,
     TabInfo,
     URLNotAllowedError,
 )
-from superagentx.computer_use.browser.dom.service import DomService
-from superagentx.computer_use.browser.dom.views import DOMElementNode, SelectorMap
 
 if TYPE_CHECKING:
     from browser import Browser
@@ -89,23 +89,29 @@ class BrowserContextConfig:
             Path to save trace files. It will auto name the file with the TRACE_PATH/{context_id}.zip
 
         locale: None
-            Specify user locale, for example en-GB, de-DE, etc. Locale will affect navigator.language value, Accept-Language request header value as well as number and date formatting rules. If not provided, defaults to the system default locale.
+            Specify user locale, for example en-GB, de-DE, etc. Locale will affect navigator.language value,
+            Accept-Language request header value as well as number and date formatting rules. If not provided, defaults
+            to the system default locale.
 
-        user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
+        user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
+        Chrome/85.0.4183.102 Safari/537.36'
             custom user agent to use.
 
         highlight_elements: True
             Highlight elements in the DOM on the screen
 
         viewport_expansion: 500
-            Viewport expansion in pixels. This amount will increase the number of elements which are included in the state what the LLM will see. If set to -1, all elements will be included (this leads to high token usage). If set to 0, only the elements which are visible in the viewport will be included.
+            Viewport expansion in pixels. This amount will increase the number of elements which are included in the
+            state what the LLM will see. If set to -1, all elements will be included (this leads to high token usage).
+            If set to 0, only the elements which are visible in the viewport will be included.
 
         allowed_domains: None
             List of allowed domains that can be accessed. If None, all domains are allowed.
             Example: ['example.com', 'api.example.com']
 
         include_dynamic_attributes: bool = True
-            Include dynamic attributes in the CSS selector. If you want to reuse the css_selectors, it might be better to set this to False.
+            Include dynamic attributes in the CSS selector. If you want to reuse the css_selectors, it might be better
+            to set this to False.
     """
 
     cookies_file: str | None = None
@@ -124,7 +130,8 @@ class BrowserContextConfig:
     trace_path: str | None = None
     locale: str | None = None
     user_agent: str = (
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36  (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36  (KHTML, like Gecko) Chrome/85.0.4183.102 '
+        'Safari/537.36'
     )
 
     highlight_elements: bool = False

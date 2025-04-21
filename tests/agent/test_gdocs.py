@@ -6,8 +6,6 @@ import logging
 import pytest
 from superagentx.agent import Agent
 from superagentx.browser_engine import BrowserEngine
-from superagentx.engine import Engine
-from superagentx.handler import AIHandler
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
 
@@ -16,7 +14,7 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
 
-   1. pytest --log-cli-level=INFO tests/agent/test_ai_content_agent.py::TestContentCreatorAgent::test_generation_agent
+   1. pytest -s --log-cli-level=INFO tests/agent/test_gdocs.py::TestDocWriterAgent::test_generation_agent
 '''
 
 
@@ -29,7 +27,7 @@ def agent_client_init() -> dict:
     return response
 
 
-class TestContentCreatorAgent:
+class TestDocWriterAgent:
 
     @pytest.mark.filterwarnings("ignore::UserWarning")
     async def test_generation_agent(self, agent_client_init: dict):
@@ -40,7 +38,7 @@ class TestContentCreatorAgent:
         browser_engine = BrowserEngine(
             llm=llm_client,
             prompt_template=prompt_template,
-            browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+            # browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
         )
 
         goal = """Complete the user's input."""

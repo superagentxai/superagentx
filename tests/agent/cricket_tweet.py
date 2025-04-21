@@ -20,7 +20,7 @@ async def main():
     browser_engine = BrowserEngine(
         llm=llm_client,
         prompt_template=prompt_template,
-        browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        # browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     )
     query_instruction = input("\n Enter your task: ")
 

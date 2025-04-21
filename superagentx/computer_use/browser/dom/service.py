@@ -15,7 +15,6 @@ from superagentx.computer_use.browser.dom.views import (
 	DOMTextNode,
 	SelectorMap,
 )
-from superagentx.computer_use.browser.utils import time_execution_async
 
 logger = logging.getLogger(__name__)
 
@@ -31,20 +30,28 @@ class DomService:
 		self.page = page
 		self.xpath_cache = {}
 
-		self.js_code = resources.read_text('superagentx.computer_use.browser.dom', 'buildDomTree.js')
+		self.js_code = resources.read_text(
+			'superagentx.computer_use.browser.dom',
+			'buildDomTree.js'
+		)
 
 	# region - Clickable elements
-	@time_execution_async('--get_clickable_elements')
 	async def get_clickable_elements(
 		self,
 		highlight_elements: bool = True,
 		focus_element: int = -1,
 		viewport_expansion: int = 0,
 	) -> DOMState:
-		element_tree, selector_map = await self._build_dom_tree(highlight_elements, focus_element, viewport_expansion)
-		return DOMState(element_tree=element_tree, selector_map=selector_map)
+		element_tree, selector_map = await self._build_dom_tree(
+			highlight_elements=highlight_elements,
+			focus_element=focus_element,
+			viewport_expansion=viewport_expansion
+		)
+		return DOMState(
+			element_tree=element_tree,
+			selector_map=selector_map
+		)
 
-	@time_execution_async('--build_dom_tree')
 	async def _build_dom_tree(
 		self,
 		highlight_elements: bool,
@@ -73,11 +80,13 @@ class DomService:
 
 		# Only log performance metrics in debug mode
 		if debug_mode and 'perfMetrics' in eval_page:
-			logger.debug('DOM Tree Building Performance Metrics:\n%s', json.dumps(eval_page['perfMetrics'], indent=2))
+			logger.debug(
+				'DOM Tree Building Performance Metrics:\n%s',
+				json.dumps(eval_page['perfMetrics'], indent=2)
+			)
 
 		return await self._construct_dom_tree(eval_page)
 
-	@time_execution_async('--construct_dom_tree')
 	async def _construct_dom_tree(
 		self,
 		eval_page: dict,

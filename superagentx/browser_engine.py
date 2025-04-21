@@ -8,8 +8,8 @@ from playwright.async_api import Page
 
 from superagentx.base_engine import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
-from superagentx.computer_use.browser.models import AgentStepInfo, ActionResult
-from superagentx.computer_use.utils import get_user_message, show_toast, SYSTEM_MESSAGE
+from superagentx.computer_use.browser.models import StepInfo, ToolResult
+from superagentx.computer_use.utils import get_user_message, show_toast, SYSTEM_MESSAGE, log_response
 from superagentx.handler.browser import BrowserHandler
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
@@ -103,7 +103,7 @@ class BrowserEngine(BaseEngine):
             actions: dict,
             page: Page,
             current_state: dict
-    ) -> list[ActionResult]:
+    ) -> list[ToolResult]:
         async for tool in iter_to_aiter(actions):
             async for key, value in iter_to_aiter(tool.items()):
                 tool_name = key
@@ -123,23 +123,23 @@ class BrowserEngine(BaseEngine):
                                 _engine_res = await func(**_kwargs)
                             _value = list(_kwargs.values())
                             if _engine_res.extracted_content:
-                                result = [ActionResult(
+                                result = [ToolResult(
                                     extracted_content=_engine_res.extracted_content
                                 )]
                             else:
-                                result = [ActionResult(
+                                result = [ToolResult(
                                     error=_engine_res.error
                                 )]
                             self.n_steps += 1
                             return result
                         except Exception as ex:
-                            result = [ActionResult(
+                            result = [ToolResult(
                                 error=f"{ex}"
                             )]
                             self.n_steps += 1
                             return result
                 else:
-                    result = [ActionResult(
+                    result = [ToolResult(
                         is_done=True
                     )]
                     return result
@@ -151,10 +151,9 @@ class BrowserEngine(BaseEngine):
             logger.info(f'Step {self.n_steps}')
             state = await self.browser_context.get_state()
             page = await self.browser_context.get_current_page()
-            step_info = AgentStepInfo(step_number=step, max_steps=self.max_steps)
+            step_info = StepInfo(step_number=step, max_steps=self.max_steps)
             state_msg = await get_user_message(state=state, step_info=step_info, action_result=result)
             self.msgs.append(state_msg)
-            logger.info(f"Message:")
 
             chat_completion_params = ChatCompletionParams(
                 messages=self.msgs
@@ -164,9 +163,11 @@ class BrowserEngine(BaseEngine):
             messages = await self.llm.afunc_chat_completion(
                 chat_completion_params=chat_completion_params
             )
-            logger.info(messages)
+            if not messages:
+                return results
             res = messages[0].content
             res = json.loads(res)
+            await log_response(res)
             await self._remove_last_state_message(self.msgs)
             self.msgs.append({
                 "role": "assistant",
