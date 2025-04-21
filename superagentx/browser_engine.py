@@ -163,6 +163,7 @@ class BrowserEngine(BaseEngine):
             messages = await self.llm.afunc_chat_completion(
                 chat_completion_params=chat_completion_params
             )
+            print(f"Messages from Browser Agent {messages}")
             if not messages:
                 return results
             res = messages[0].content

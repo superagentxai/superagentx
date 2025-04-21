@@ -52,5 +52,7 @@ OPENAI_PRICE1K = {
 
 DEFAULT_OPENAI_EMBED = "text-embedding-ada-002"
 DEFAULT_BEDROCK_EMBED = "amazon.titan-embed-g1-text-02"
-DEFAULT_ANTHROPIC_EMBED = 'sentence-transformers/all-MiniLM-L6-v2'
+DEFAULT_EMBED = 'sentence-transformers/all-MiniLM-L6-v2'
 DEFAULT_OLLAMA_EMBED = "mxbai-embed-large"
+
+DEFAULT_GEMINI_EMBED = "gemini-embedding-exp-03-07"

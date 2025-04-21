@@ -13,7 +13,6 @@ warnings.filterwarnings('ignore')
 async def main():
     llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
     llm_config = {'llm_type': 'gemini', 'model': 'gemini-2.0-flash'}
-
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
     prompt_template = PromptTemplate()

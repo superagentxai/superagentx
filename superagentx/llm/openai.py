@@ -11,7 +11,7 @@ from pydantic import typing
 
 from superagentx.llm import ChatCompletionParams
 from superagentx.llm.client import Client
-from superagentx.llm.constants import OPENAI_PRICE1K
+from superagentx.llm.constants import OPENAI_PRICE1K, DEFAULT_EMBED
 from superagentx.utils.llm_config import LLMType
 from superagentx.utils.helper import sync_to_async, iter_to_aiter, ptype_to_json_scheme
 
@@ -40,7 +40,7 @@ class OpenAIClient(Client):
         self.client = client
         self.llm_params: dict = kwargs
         self.llm_type = kwargs.get("llm_type")
-        self._embed_model_cli = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        self._embed_model_cli = TextEmbedding(model_name=DEFAULT_EMBED)
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)

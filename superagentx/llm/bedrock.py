@@ -291,7 +291,7 @@ class BedrockClient(Client):
     @staticmethod
     def convert_tool_response_to_openai_format(content) -> list:
 
-        """Converts Converse API response tool calls to AutoGen format"""
+        """Converts Converse API response tool calls to generic format"""
         tool_calls = []
         for tool_request in content:
             if "toolUse" in tool_request:
