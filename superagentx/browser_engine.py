@@ -8,7 +8,6 @@ from playwright.async_api import Page
 
 from superagentx.base_engine import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
-from superagentx.computer_use.browser.state import BrowserState
 from superagentx.computer_use.browser.models import AgentStepInfo, ActionResult
 from superagentx.computer_use.utils import get_user_message, show_toast, SYSTEM_MESSAGE
 from superagentx.handler.browser import BrowserHandler
@@ -232,7 +231,5 @@ class BrowserEngine(BaseEngine):
         prompt_messages = await rm_trailing_spaces(prompt_messages)
         self.msgs = self.msgs + prompt_messages
         logger.debug(f"Prompt Message : {self.msgs}")
-        page = await self.browser_context.get_current_page()
-        # await show_toast(page, "Welcome To SuperAgentX Browser Automation")
         result = await self._execute()
         return result

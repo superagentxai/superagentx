@@ -15,36 +15,35 @@ from playwright.async_api import (
 )
 
 from superagentx.computer_use.browser.context import BrowserContext, BrowserContextConfig
-from superagentx.computer_use.browser.utils import time_execution_async
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class BrowserConfig:
-    r"""
-	Configuration for the Browser.
+    """
+    Configuration for the Browser.
 
-	Default values:
-		headless: True
-			Whether to run browser in headless mode
+    Default values:
+        headless: True
+            Whether to run browser in headless mode
 
-		disable_security: True
-			Disable browser security features
+        disable_security: True
+            Disable browser security features
 
-		extra_chromium_args: []
-			Extra arguments to pass to the browser
+        extra_chromium_args: []
+            Extra arguments to pass to the browser
 
-		wss_url: None
-			Connect to a browser instance via WebSocket
+        wss_url: None
+            Connect to a browser instance via WebSocket
 
-		cdp_url: None
-			Connect to a browser instance via CDP
+        cdp_url: None
+            Connect to a browser instance via CDP
 
-		chrome_instance_path: None
-			Path to a Chrome instance to use to connect to your normal browser
-			e.g. '/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
-	"""
+        chrome_instance_path: None
+            Path to a Chrome instance to use to connect to your normal browser
+            e.g. '/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
+    """
 
     headless: bool = False
     disable_security: bool = True
@@ -63,11 +62,11 @@ class BrowserConfig:
 # @dev By default this is a singleton, but you can create multiple instances if you need to.
 class Browser:
     """
-	Playwright browser on steroids.
+    Playwright browser on steroids.
 
-	This is persistant browser factory that can spawn multiple browser contexts.
-	It is recommended to use only one instance of Browser per your application (RAM usage will grow otherwise).
-	"""
+    This is persistant browser factory that can spawn multiple browser contexts.
+    It is recommended to use only one instance of Browser per your application (RAM usage will grow otherwise).
+    """
 
     def __init__(
             self,
@@ -97,7 +96,6 @@ class Browser:
 
         return self.playwright_browser
 
-    @time_execution_async('--init (browser)')
     async def _init(self):
         """Initialize the browser session"""
         playwright = await async_playwright().start()
@@ -176,7 +174,8 @@ class Browser:
         except Exception as e:
             logger.error(f'Failed to start a new Chrome instance.: {str(e)}')
             raise RuntimeError(
-                ' To start chrome in Debug mode, you need to close all existing Chrome instances and try again otherwise we can not connect to the instance.'
+                ' To start chrome in Debug mode, you need to close all existing Chrome instances and try again '
+                'otherwise we can not connect to the instance.'
             )
 
     async def _setup_standard_browser(self, playwright: Playwright) -> PlaywrightBrowser:
