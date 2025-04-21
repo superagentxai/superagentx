@@ -7,11 +7,6 @@ from superagentx.constants import BROWSER_SYSTEM_MESSAGE
 from superagentx.computer_use.browser.state import BrowserState
 from superagentx.computer_use.browser.models import AgentStepInfo, ActionResult
 
-with open("/home/bala/Pictures/Screenshots/Screenshot from 2025-04-18 18-24-01.png", "rb") as image_file:
-    encoded = base64.b64encode(image_file.read()).decode("utf-8")
-
-logo_data_url = f"data:image/png;base64,{encoded}"
-
 
 async def get_user_message(
         state: BrowserState,
@@ -93,7 +88,7 @@ Interactive elements from top layer of the current page inside the viewport:
 async def show_toast(page, message: str, duration: int = 3000):
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
-    final_message = f" {random_icon} {message}"
+    final_message = f" SuperAgentX Goal:  {random_icon} {message}"
 
     toast_script = f"""
                 (() => {{

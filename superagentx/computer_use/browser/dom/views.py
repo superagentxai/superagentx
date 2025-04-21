@@ -118,8 +118,10 @@ class DOMElementNode(DOMBaseNode):
 		return '\n'.join(text_parts).strip()
 
 	@time_execution_sync('--clickable_elements_to_string')
-	def clickable_elements_to_string(self, include_attributes: list[str] = []) -> str:
+	def clickable_elements_to_string(self, include_attributes=None) -> str:
 		"""Convert the processed DOM content to HTML."""
+		if include_attributes is None:
+			include_attributes = []
 		formatted_text = []
 
 		def process_node(node: DOMBaseNode, depth: int) -> None:
