@@ -12,6 +12,7 @@ warnings.filterwarnings('ignore')
 
 async def main():
     llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+    llm_config = {'llm_type': 'gemini', 'model': 'gemini-2.0-flash'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
@@ -20,7 +21,7 @@ async def main():
     browser_engine = BrowserEngine(
         llm=llm_client,
         prompt_template=prompt_template,
-        # browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     )
     query_instruction = input("\n Enter your task: ")
 
