@@ -8,8 +8,10 @@ import gc
 import json
 import logging
 import os
+import pathlib
 import re
 import time
+import typing
 import uuid
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional, TypedDict
@@ -845,7 +847,11 @@ class BrowserContext:
             raise
 
     # region - Browser Actions
-    async def take_screenshot(self, full_page: bool = False) -> str:
+    async def take_screenshot(
+            self,
+            full_page: bool = False,
+            path: typing.Optional[typing.Union[str, pathlib.Path]] = None
+    ) -> str:
         """
         Returns a base64 encoded screenshot of the current page.
         """
@@ -857,6 +863,7 @@ class BrowserContext:
         screenshot = await page.screenshot(
             full_page=full_page,
             animations='disabled',
+            path=path
         )
 
         screenshot_b64 = base64.b64encode(screenshot).decode('utf-8')

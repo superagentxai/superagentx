@@ -1,5 +1,6 @@
 import random
 import logging
+import re
 from datetime import datetime
 
 from superagentx.constants import BROWSER_SYSTEM_MESSAGE
@@ -135,6 +136,18 @@ async def show_toast(page, message: str, duration: int = 3000):
                 """
 
     await page.evaluate(toast_script)
+
+
+def manipulate_string(string: str):
+    start = '```json\n'
+    end = '```'
+    if start in string:
+        r = re.findall(re.escape(start) + "(.+?)" + re.escape(end), string, re.DOTALL)
+        if r:
+            return r[0]
+        else:
+            return string
+    return string
 
 
 SYSTEM_MESSAGE = [
