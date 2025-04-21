@@ -6,12 +6,13 @@ from superagentx.browser_engine import BrowserEngine
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
 import warnings
+import logging
 
 warnings.filterwarnings('ignore')
-
+logger = logging.getLogger(__name__)
 
 async def main():
-    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+    # llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
     llm_config = {'llm_type': 'gemini', 'model': 'gemini-2.0-flash'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
@@ -23,11 +24,11 @@ async def main():
         browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     )
     query_instruction = input("\n Enter your task: ")
-
+    logger.info(f"Query Input : {query_instruction}")
     task = f""" 
             1. Analyse and find the result for the given {query_instruction}.
             2. Goto https://x.com/compose/post and click and set focus.
-            3. Write the a detail result.
+            3. Write the a detail result using input_text.
             3. Review the tweet before post it for submit.
             4. Submit the button to tweet the result!
             

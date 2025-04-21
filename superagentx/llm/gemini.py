@@ -116,7 +116,7 @@ class GeminiClient(Client):
             role = conversation.role
             if role == 'user':
                 formatted_user_messages.append(conversation.content)
-            elif role == 'system':
+            elif role == 'assistant' or 'system':
                 if not formatted_system_message:
                     if conversation.content:
                         formatted_system_message = conversation.content

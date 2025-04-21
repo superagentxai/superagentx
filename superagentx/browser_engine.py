@@ -80,7 +80,6 @@ class BrowserEngine(BaseEngine):
                     "sagentx_screenshot_path"
                 )
 
-
     async def __funcs_props(
             self,
             funcs: list[str]
