@@ -2,6 +2,10 @@ import asyncio
 import inspect
 import json
 import logging
+import os
+import pathlib
+import typing
+import uuid
 from typing import TypeVar
 
 from playwright.async_api import Page
@@ -9,12 +13,12 @@ from playwright.async_api import Page
 from superagentx.base_engine import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
-from superagentx.computer_use.utils import get_user_message, show_toast, SYSTEM_MESSAGE, log_response
+from superagentx.computer_use.utils import get_user_message, show_toast, SYSTEM_MESSAGE, log_response, manipulate_string
 from superagentx.handler.browser import BrowserHandler
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
-from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces
+from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +37,8 @@ class BrowserEngine(BaseEngine):
             browser_context: BrowserContext | None = None,
             tools: list[dict] | list[str] | None = None,
             max_steps: int = 100,
+            take_screenshot: bool = False,
+            screenshot_path: typing.Optional[typing.Union[str, pathlib.Path]] = None,
             **kwargs
     ):
 
@@ -42,6 +48,7 @@ class BrowserEngine(BaseEngine):
         self.prompt_template = prompt_template
         self.n_steps = 1
         self.max_steps = max_steps
+        self.take_screenshot = take_screenshot
         if browser is not None:
             self.browser = browser
         elif browser_instance_path:
@@ -65,6 +72,14 @@ class BrowserEngine(BaseEngine):
 
         self.handler = BrowserHandler(self.llm, self.browser_context)
         self.msgs: list = SYSTEM_MESSAGE
+        self.screenshot_path = screenshot_path
+        if self.take_screenshot:
+            if not self.screenshot_path:
+                self.screenshot_path = os.path.join(
+                    os.path.dirname(os.path.dirname(__file__)),
+                    "sagentx_screenshot_path"
+                )
+
 
     async def __funcs_props(
             self,
@@ -167,6 +182,7 @@ class BrowserEngine(BaseEngine):
             if not messages:
                 return results
             res = messages[0].content
+            res = await sync_to_async(manipulate_string, res)
             res = json.loads(res)
             await log_response(res)
             await self._remove_last_state_message(self.msgs)
@@ -188,11 +204,37 @@ class BrowserEngine(BaseEngine):
                         res.get("action", [])[0].get("done", {}).get("text", ""),
                         4000
                     )
-                    await asyncio.sleep(4)
+                    await self.perform_task()
                     await self.browser_context.close()
                     await self.browser.close()
                     results.append(res)
                     return results
+
+    async def _take_screenshot_task(self):
+        # Taking the screenshot (asynchronous)
+        await self.browser_context.take_screenshot(path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg")
+        await show_toast(
+            page=await self.browser_context.get_current_page(),
+            message=f"Screenshot Saved in {self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
+        )
+
+    @staticmethod
+    async def _sleep_task():
+        # Sleep asynchronously
+        await asyncio.sleep(4)
+
+    async def perform_task(self):
+        tasks = []
+
+        # If taking a screenshot, add that task to the list
+        if self.take_screenshot:
+            tasks.append(self._take_screenshot_task())  # Add coroutine without awaiting it
+
+        # Add the sleep task
+        tasks.append(asyncio.create_task(self._sleep_task()))  # Create a separate task for sleep
+
+        # Run all tasks concurrently
+        await asyncio.gather(*tasks)
 
     async def start(self,
                     input_prompt: str,
