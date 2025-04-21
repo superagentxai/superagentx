@@ -21,9 +21,9 @@ async def log_response(result: dict):
         emoji = '🤷'
 
     logger.info(f'{emoji} Eval: {result.get('current_state').get('evaluation_previous_goal')}')
-    logger.info(f'🧠 Memory: {result.get('current_state').get('memory')}')
-    logger.info(f'🎯 Next goal: {result.get('current_state').get('next_goal')}')
-    logger.info(f'🛠️  Action {result.get('action')}')
+    logger.info(f'Memory: {result.get('current_state').get('memory')}')
+    logger.info(f'Next goal: {result.get('current_state').get('next_goal')}')
+    logger.info(f'Action {result.get('action')}')
 
 
 async def get_user_message(
