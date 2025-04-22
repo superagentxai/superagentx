@@ -205,7 +205,8 @@ class BrowserEngine(BaseEngine):
                     )
                     await asyncio.sleep(4)
                     await self.browser_context.take_screenshot(
-                        path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg")
+                        path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
+                    )
                     await show_toast(
                         page=await self.browser_context.get_current_page(),
                         message=f"Screenshot Saved in {self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
