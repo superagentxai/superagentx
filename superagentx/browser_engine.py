@@ -203,37 +203,17 @@ class BrowserEngine(BaseEngine):
                         res.get("action", [])[0].get("done", {}).get("text", ""),
                         4000
                     )
-                    await self.perform_task()
+                    await asyncio.sleep(4)
+                    await self.browser_context.take_screenshot(
+                        path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg")
+                    await show_toast(
+                        page=await self.browser_context.get_current_page(),
+                        message=f"Screenshot Saved in {self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
+                    )
                     await self.browser_context.close()
                     await self.browser.close()
                     results.append(res)
                     return results
-
-    async def _take_screenshot_task(self):
-        # Taking the screenshot (asynchronous)
-        await self.browser_context.take_screenshot(path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg")
-        await show_toast(
-            page=await self.browser_context.get_current_page(),
-            message=f"Screenshot Saved in {self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
-        )
-
-    @staticmethod
-    async def _sleep_task():
-        # Sleep asynchronously
-        await asyncio.sleep(4)
-
-    async def perform_task(self):
-        tasks = []
-
-        # If taking a screenshot, add that task to the list
-        if self.take_screenshot:
-            tasks.append(self._take_screenshot_task())  # Add coroutine without awaiting it
-
-        # Add the sleep task
-        tasks.append(asyncio.create_task(self._sleep_task()))  # Create a separate task for sleep
-
-        # Run all tasks concurrently
-        await asyncio.gather(*tasks)
 
     async def start(self,
                     input_prompt: str,
