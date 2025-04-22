@@ -186,6 +186,8 @@ class BrowserHandler(BaseHandler):
         """
         Waits for an element matching the given CSS selector to become visible.
 
+        Wait for element (e.g.'#search') to be visible with a timeout of 30 seconds.
+
         Args:
             selector (str): The CSS selector of the element.
             timeout (float): The maximum time to wait for the element to be visible (in milliseconds).
@@ -245,47 +247,48 @@ class BrowserHandler(BaseHandler):
                 new_tab_msg = 'New tab opened - switching to it'
                 msg += f' - {new_tab_msg}'
                 logger.info(new_tab_msg)
-                await self.browser_context.switch_to_tab()
+                await self.browser_context.switch_to_tab(-1)
             return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as e:
             logger.warning(f'Element not clickable with index {index} - most likely the page changed')
             return ToolResult(error=str(e))
 
-    @tool
-    async def click_element(
-            self,
-            index: int
-    ) -> ToolResult:
-        """
-        Clicks an element at the specified index in the DOM.
-
-        Args:
-            @param index: The index of the element to be clicked.
-
-        """
-        try:
-            state = await self.browser_context.get_state()
-            # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
-
-            node_element = state.selector_map[int(index)]
-
-            page = await self.browser_context.get_current_page()
-
-            # check if index of selector map are the same as index of items in dom_items
-            await self.browser_context._click_element_node(node_element)
-
-            await page.wait_for_load_state()
-
-            # tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
-            # last_tab = tabs[-1]
-            # logger.info(f"Tabs: {tabs}")
-            # await self.browser_context.switch_to_tab(last_tab.page_id)
-            msg = f"Clicked Element Successfully"
-            return ToolResult(extracted_content=msg, include_in_memory=True)
-        except Exception as ex:
-            msg = f"Click Element failed {index}: {ex}"
-            logger.info(msg)
-            return ToolResult(error=msg)
+    # @tool
+    # async def click_element(
+    #         self,
+    #         index: int
+    # ) -> ToolResult:
+    #     """
+    #     Clicks an element at the specified index in the DOM.
+    #
+    #     Args:
+    #         @param index: The index of the element to be clicked.
+    #
+    #     """
+    #     try:
+    #         state = await self.browser_context.get_state()
+    #         # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
+    #
+    #         node_element = state.selector_map[int(index)]
+    #
+    #         page = await self.browser_context.get_current_page()
+    #
+    #         # check if index of selector map are the same as index of items in dom_items
+    #         await self.browser_context._click_element_node(node_element)
+    #
+    #         # await page.wait_for_load_state()
+    #
+    #         # tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
+    #         # last_tab = tabs[-1]
+    #         # logger.info(f"Tabs: {tabs}")
+    #         # await self.browser_context.switch_to_tab(last_tab.page_id)
+    #         msg = f"Clicked Element Successfully"
+    #         logger.info(msg)
+    #         return ToolResult(extracted_content=msg, include_in_memory=True)
+    #     except Exception as ex:
+    #         msg = f"Click Element failed {index}: {ex}"
+    #         logger.error(msg)
+    #         return ToolResult(error=msg)
 
     @tool
     async def open_new_tab(
@@ -305,6 +308,34 @@ class BrowserHandler(BaseHandler):
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
+    async def switch_tab(self, page_id: int):
+        """
+        Switches the browser context to a different tab based on the provided page ID.
+
+        This is useful when multiple tabs are open and you want to interact with a specific one.
+
+        Args:
+            page_id (int): The ID of the tab (page) you want to switch to.
+        """
+        await self.browser_context.switch_to_tab(page_id)
+        # Wait for tab to be ready
+        page = await self.browser_context.get_current_page()
+        await page.wait_for_load_state()
+        msg = f'🔄  Switched to tab {page_id}'
+        logger.info(msg)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
+
+    @tool
+    async def close_tab(self, page_id: int):
+        await self.browser_context.switch_to_tab(page_id)
+        page = await self.browser_context.get_current_page()
+        url = page.url
+        await page.close()
+        msg = f'❌  Closed tab #{page_id} with url {url}'
+        logger.info(msg)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
+
+    @tool
     async def input_text(
             self,
             index: int,
@@ -316,6 +347,8 @@ class BrowserHandler(BaseHandler):
             @param index: The index of the input element to interact with.
             @param text: The text to input into the selected element.
         """
+        if index not in await self.browser_context.get_selector_map():
+            return ToolResult(error=f'Element index {index} does not exist - retry or use alternative actions')
         try:
             state = await self.browser_context.get_state()
             # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
