@@ -1,4 +1,8 @@
+import os
 import warnings
+
+from superagentx.handler.base import BaseHandler
+from superagentx.handler.decorators import tool
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", category=UserWarning)
@@ -26,6 +30,46 @@ def agent_client_init() -> dict:
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
+
+
+class ExcelHandler(BaseHandler):
+
+    def __init__(
+            self
+    ):
+        super().__init__()
+
+    @tool
+    async def excel_writer(
+            self,
+            result: list[dict]
+    ):
+        """
+        Writes the given result data to an Excel file asynchronously.
+
+        This method accepts a list of dictionaries, where each dictionary represents a row,
+        and the keys of the dictionaries represent the column headers.
+
+        Example:
+            result = [
+                {"Name": "Alice", "Age": 30},
+                {"Name": "Bob", "Age": 25}
+            ]
+
+        Args:
+            result (list[dict]): A list of dictionaries containing tabular data to be written
+                                 into an Excel spreadsheet. Each dictionary should have consistent keys.
+
+        """
+
+        import pandas as pd
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "sagentx_excel_path"
+        )
+        df = pd.DataFrame(result)
+        df.to_excel(f"{path}/sagentx.xlsx", index=False)
+        return "Saved in " + f"{path}/sagentx.xlsx"
 
 
 class TestEverestMasalaExtractAgent:
