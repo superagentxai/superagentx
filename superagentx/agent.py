@@ -102,6 +102,7 @@ class Agent:
         self.output_format = output_format
         self.max_retry = max_retry
         self.async_mode = self.llm.llm_config_model.async_mode
+        self.max_retry = max_retry if max_retry >= 1 else 1
         logger.debug(
             f'Initiating Agent...\n'
             f'Id : {self.agent_id}\n'

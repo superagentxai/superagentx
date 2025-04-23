@@ -87,4 +87,6 @@ class LLMModelConfig(BaseModel):
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
+        if self.async_mode is None:
+            self.async_mode = True
         return self
