@@ -1,7 +1,7 @@
 import logging
 
 from pydantic import BaseModel
-from typing import List, Sequence, Dict, Any
+from typing import List, Sequence, Dict
 
 import chromadb
 from chromadb.api.models import Collection
