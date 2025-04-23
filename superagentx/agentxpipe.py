@@ -23,7 +23,7 @@ class AgentXPipe:
     def __init__(
             self,
             *,
-            pipe_id: str | None = uuid.uuid4().hex,
+            pipe_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
@@ -57,7 +57,7 @@ class AgentXPipe:
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
         """
-        self.pipe_id = pipe_id
+        self.pipe_id = pipe_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
         self.description = description
         self.agents: list[Agent | list[Agent]] = agents or []
