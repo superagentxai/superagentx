@@ -232,10 +232,10 @@ class AppCreation:
                     f"engines={_engines}, {', '.join(_kwargs)}"
                 f")"
             )
-            if self.agents:
-                self.imports.append(
-                    'from superagentx.agent import Agent'
-                )
+        if self.agents:
+            self.imports.append(
+                'from superagentx.agent import Agent'
+            )
 
     def _construct_pipes(self):
         pipe = self.app_config.pipe_config[0]
