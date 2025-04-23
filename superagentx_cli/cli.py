@@ -183,9 +183,11 @@ class AppCreation:
             self.handlers[handler.title] = (f"{title_2_var} = {handler.handler_name}("
                 f"{', '.join(_kwargs)}"
             f")")
-            self.imports.append(
-                f'from {handler.src_path} import {handler.handler_name}'
-            )
+            _h_import = f'from {handler.src_path} import {handler.handler_name}'
+            if not _h_import in self.imports:
+                self.imports.append(
+                    _h_import
+                )
 
     def _construct_prompt_templates(self):
         for prompt_template in self.app_config.prompt_template_config:

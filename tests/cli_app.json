@@ -74,7 +74,22 @@
             "name": null,
             "description": "string",
             "engines": [
-                "Engine 1", "Engine 2"
+                "Engine 1"
+            ],
+            "outputFormat": null,
+            "maxRetry": 2
+        },
+        {
+            "title": "Agent 2",
+            "goal": "string",
+            "role": "string",
+            "llm": "LLM-1",
+            "promptTemplate": "prompt 1",
+            "agentId": null,
+            "name": null,
+            "description": "string",
+            "engines": [
+                "Engine 2"
             ],
             "outputFormat": null,
             "maxRetry": 2
