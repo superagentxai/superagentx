@@ -255,7 +255,8 @@ class AgentXPipe:
                 logger.warning(ex)
                 _res = ex.goal_result
 
-            results.append(_res)
+            if _res:
+                results.append(_res)
             if trigger_break:
                 break
         return results
