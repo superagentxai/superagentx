@@ -184,7 +184,9 @@ class LLMClient:
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        return self.client.chat_completion(chat_completion_params=chat_completion_params)
+        return self.client.chat_completion(
+            chat_completion_params=chat_completion_params
+        )
 
     async def achat_completion(
             self,
@@ -192,9 +194,14 @@ class LLMClient:
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         if self.async_mode:
-            return await self.client.achat_completion(chat_completion_params=chat_completion_params)
+            return await self.client.achat_completion(
+                chat_completion_params=chat_completion_params
+            )
         else:
-            return await sync_to_async(self.client.chat_completion,chat_completion_params=chat_completion_params)
+            return await sync_to_async(
+                self.client.chat_completion,
+                chat_completion_params=chat_completion_params
+            )
 
     async def get_tool_json(
             self,
@@ -248,7 +255,9 @@ class LLMClient:
             chat_completion_params.stream = False
 
         if self.async_mode:
-            response: ChatCompletion = await self.client.achat_completion(chat_completion_params=chat_completion_params)
+            response: ChatCompletion = await self.client.achat_completion(
+                chat_completion_params=chat_completion_params
+            )
         else:
             response: ChatCompletion = await sync_to_async(
                 self.client.chat_completion,
