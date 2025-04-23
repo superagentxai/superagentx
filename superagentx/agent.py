@@ -100,7 +100,7 @@ class Agent:
         self.description = description
         self.engines: list[Engine | list[Engine]] = engines or []
         self.output_format = output_format
-        self.max_retry = max_retry
+        self.max_retry = max_retry if max_retry >= 1 else 1
         logger.debug(
             f'Initiating Agent...\n'
             f'Id : {self.agent_id}\n'
