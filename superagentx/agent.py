@@ -11,7 +11,7 @@ from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +101,7 @@ class Agent:
         self.engines: list[Engine | list[Engine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry
+        self.async_mode = self.llm.llm_config_model.async_mode
         logger.debug(
             f'Initiating Agent...\n'
             f'Id : {self.agent_id}\n'
@@ -178,14 +179,20 @@ class Agent:
             messages=prompt_message
         )
         logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
-        messages = await self.llm.achat_completion(
-            chat_completion_params=chat_completion_params
-        )
+        if not self.async_mode:
+            messages = await sync_to_async(
+                self.llm.func_chat_completion,
+                chat_completion_params=chat_completion_params
+            )
+        else:
+            messages = await self.llm.afunc_chat_completion(
+                chat_completion_params=chat_completion_params
+            )
         logger.debug(f"Goal Result : {messages}")
-        if messages and messages.choices:
-            for choice in messages.choices:
-                if choice and choice.message:
-                    _res = choice.message.content or ''
+        if messages:
+            for choice in messages:
+                if choice and choice.content:
+                    _res = choice.content or ''
                     _res = _res.replace('```json', '').replace('```', '')
                     try:
                         __res = json.loads(_res)

@@ -267,7 +267,62 @@ class LLMClient:
                         completion_tokens=usage_data.completion_tokens,
                         prompt_tokens=usage_data.prompt_tokens,
                         total_tokens=usage_data.total_tokens,
-                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens if usage_data.completion_tokens_details else 0,
+                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens
+                        if usage_data.completion_tokens_details else 0,
+                        created=response.created
+                    )
+                )
+
+        return message_instances
+
+    def func_chat_completion(
+            self,
+            *,
+            chat_completion_params: ChatCompletionParams
+    ) -> List[Message]:
+
+        stream = bool(chat_completion_params.stream)
+
+        # Most models don't support streaming with tool use
+        if stream:
+            logger.warning(
+                "Streaming is not currently supported, streaming will be disabled.",
+            )
+            chat_completion_params.stream = False
+
+        response: ChatCompletion = self.client.chat_completion(chat_completion_params=chat_completion_params)
+
+        # List to store multiple Message instances
+        message_instances = []
+
+        if response:
+            # Iterate over each choice and create a Message instance
+            for choice in response.choices:
+                tool_calls_data = []
+                if choice.message.tool_calls:
+                    tool_calls_data = [
+                        Tool(
+                            tool_type=tool_call.type,
+                            name=tool_call.function.name,
+                            arguments=json.loads(tool_call.function.arguments)  # Use json.loads for safer parsing
+                        ) for tool_call in choice.message.tool_calls
+                    ]
+
+                # Extract token details from usage
+                usage_data = response.usage
+
+                # Add the created Message instance to the list
+                message_instances.append(
+                    Message(
+                        role=choice.message.role,
+                        model=response.model,
+                        content=choice.message.content,
+                        tool_calls=tool_calls_data if tool_calls_data else None,
+                        completion_tokens=usage_data.completion_tokens,
+                        prompt_tokens=usage_data.prompt_tokens,
+                        total_tokens=usage_data.total_tokens,
+                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens
+                        if usage_data.completion_tokens_details else 0,
                         created=response.created
                     )
                 )
