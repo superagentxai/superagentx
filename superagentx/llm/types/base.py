@@ -39,7 +39,7 @@ class LLMModelConfig(BaseModel):
         default=True
     )
 
-    embed_model: str = Field(
+    embed_model: str | None = Field(
         description='Embedding model name, supported models openai, azure-openai, mistral, llama 3.1',
         default=None
     )
