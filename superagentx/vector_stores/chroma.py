@@ -112,7 +112,6 @@ class ChromaDB(BaseVectorStore):
             payloads (Optional[List[Dict]], optional): List of payloads corresponding to vectors. Defaults to None.
             ids (Optional[List[str]], optional): List of IDs corresponding to vectors. Defaults to None.
         """
-
         vectors = [await self.embed_cli.aembed(text=text) async for text in iter_to_aiter(texts)]
         logger.info(f"Inserting {len(vectors)} vectors into collection {self.collection_name}")
         collection = await self._get_or_create_collection(name=self.collection_name)
