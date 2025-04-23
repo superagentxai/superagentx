@@ -253,42 +253,42 @@ class BrowserHandler(BaseHandler):
             logger.warning(f'Element not clickable with index {index} - most likely the page changed')
             return ToolResult(error=str(e))
 
-    # @tool
-    # async def click_element(
-    #         self,
-    #         index: int
-    # ) -> ToolResult:
-    #     """
-    #     Clicks an element at the specified index in the DOM.
-    #
-    #     Args:
-    #         @param index: The index of the element to be clicked.
-    #
-    #     """
-    #     try:
-    #         state = await self.browser_context.get_state()
-    #         # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
-    #
-    #         node_element = state.selector_map[int(index)]
-    #
-    #         page = await self.browser_context.get_current_page()
-    #
-    #         # check if index of selector map are the same as index of items in dom_items
-    #         await self.browser_context._click_element_node(node_element)
-    #
-    #         # await page.wait_for_load_state()
-    #
-    #         # tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
-    #         # last_tab = tabs[-1]
-    #         # logger.info(f"Tabs: {tabs}")
-    #         # await self.browser_context.switch_to_tab(last_tab.page_id)
-    #         msg = f"Clicked Element Successfully"
-    #         logger.info(msg)
-    #         return ToolResult(extracted_content=msg, include_in_memory=True)
-    #     except Exception as ex:
-    #         msg = f"Click Element failed {index}: {ex}"
-    #         logger.error(msg)
-    #         return ToolResult(error=msg)
+    @tool
+    async def click_element(
+            self,
+            index: int
+    ) -> ToolResult:
+        """
+        Clicks an element at the specified index in the DOM.
+
+        Args:
+            @param index: The index of the element to be clicked.
+
+        """
+        try:
+            state = await self.browser_context.get_state()
+            # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
+
+            node_element = state.selector_map[int(index)]
+
+            page = await self.browser_context.get_current_page()
+
+            # check if index of selector map are the same as index of items in dom_items
+            await self.browser_context._click_element_node(node_element)
+
+            # await page.wait_for_load_state()
+
+            # tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
+            # last_tab = tabs[-1]
+            # logger.info(f"Tabs: {tabs}")
+            # await self.browser_context.switch_to_tab(last_tab.page_id)
+            msg = f"Clicked Element Successfully"
+            logger.info(msg)
+            return ToolResult(extracted_content=msg, include_in_memory=True)
+        except Exception as ex:
+            msg = f"Click Element failed {index}: {ex}"
+            logger.error(msg)
+            return ToolResult(error=msg)
 
     @tool
     async def open_new_tab(

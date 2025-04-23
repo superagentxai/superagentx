@@ -82,7 +82,7 @@ You must ALWAYS respond with valid JSON in this exact structure:
 
   {"input_text": {"index": 2, "text": "password"}},
 
-  {"click_element_by_index": {"index": 3}}
+  {"click_element": {"index": 3}}
 
 ]
 

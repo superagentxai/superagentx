@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 from rich import print as rprint
 from superagentx.agent import Agent
 from superagentx.browser_engine import BrowserEngine
@@ -9,9 +11,17 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
+sh = logging.StreamHandler()
+logging.basicConfig(
+        level="INFO",
+        format='%(asctime)s -%(levelname)s - %(name)s - %(funcName)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        handlers=[sh]
+    )
+
 
 async def main():
-    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai', 'async_mode': True}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
@@ -26,7 +36,7 @@ async def main():
 
     task = f""" 
             1. Analyse and find the result for the given {query_instruction}.
-            2. Goto https://x.com/compose/post and click and set focus.
+            2. Goto https://x.com/compose/post and click and set focus. Wait until user manual login.
             3. Write the a detail result.
             3. Review the tweet before post it for submit.
             4. Submit the button to tweet the result!

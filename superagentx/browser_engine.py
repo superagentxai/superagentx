@@ -55,6 +55,7 @@ class BrowserEngine(BaseEngine):
         self.n_steps = 1
         self.max_steps = max_steps
         self.take_screenshot = take_screenshot
+        self.async_mode = self.llm.llm_config_model.async_mode
         if browser is not None:
             self.browser = browser
         elif browser_instance_path:
@@ -180,9 +181,15 @@ class BrowserEngine(BaseEngine):
             )
             chat_completion_params.temperature = 0
             chat_completion_params.response_format = {"type": "json_object"}
-            messages = await self.llm.afunc_chat_completion(
-                chat_completion_params=chat_completion_params
-            )
+            if not self.async_mode:
+                messages = await sync_to_async(
+                    self.llm.func_chat_completion,
+                    chat_completion_params=chat_completion_params
+                )
+            else:
+                messages = await self.llm.afunc_chat_completion(
+                    chat_completion_params=chat_completion_params
+                )
             if not messages:
                 return results
             res = messages[0].content
