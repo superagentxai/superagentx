@@ -7,6 +7,7 @@ from superagentx.engine import Engine
 from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
 from superagentx.agentxpipe import AgentXPipe
+from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
 
 logger = logging.getLogger(__name__)
@@ -68,9 +69,9 @@ discussion = """From: jane@edu.tech.net (Jane Mitchell)
 
 @pytest.fixture
 def ai_client_init() -> dict:
-    # llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai', 'async_mode': False}
 
-    llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
+    # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     content_handler = AIHandler(llm=llm_client)
@@ -84,7 +85,8 @@ def ai_client_init() -> dict:
             handler=content_handler,
             prompt_template=prompt_template,
             llm=llm_client
-        )
+        ),
+        'memory': Memory(memory_config={"llm_client": llm_client})
     }
     return response
 
@@ -95,6 +97,7 @@ class TestIOConsolePipe:
         llm_client: LLMClient = ai_client_init.get('llm')
         prompt_template = ai_client_init.get('prompt_template')
         ai_agent_engine = ai_client_init.get('ai_agent_engine')
+        memory = ai_client_init.get('memory')
 
         spamfilter = Agent(
             name='Spamfilter Agent',
@@ -107,7 +110,8 @@ class TestIOConsolePipe:
         )
 
         pipe = AgentXPipe(
-            agents=[spamfilter]
+            agents=[spamfilter],
+            memory=memory
         )
         _discussion = """
         From: sam@techchange.net (Sam Winters)
