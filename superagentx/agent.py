@@ -185,7 +185,7 @@ class Agent:
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
-                    _res = choice.content or ''
+                    _res = choice.message.content or ''
                     _res = _res.replace('```json', '').replace('```', '')
                     try:
                         __res = json.loads(_res)
