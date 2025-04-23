@@ -114,6 +114,7 @@ class BedrockClient(Client):
                     return chat_completion
             except RuntimeError as error:
                 logger.error(f'Unable to process the result from Bedrock response {error} ')
+        return None
 
     async def achat_completion(
             self,
@@ -186,6 +187,7 @@ class BedrockClient(Client):
                 is_async=True
             )
             return chat_completion
+        return None
 
     @staticmethod
     async def __prepare_bedrock_formatted_output_(
@@ -394,6 +396,7 @@ class BedrockClient(Client):
             model_response = json.loads(response["body"].read())
             embedding = model_response["embedding"]
             return embedding
+        return None
 
     async def aembed(self, text: str, **kwargs):
         return await sync_to_async(

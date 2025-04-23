@@ -7,8 +7,8 @@ class Client(metaclass=ABCMeta):
 
     def __init__(
             self,
-            model: str | None,
-            embed_model: str | None,
+            model: str | None = None,
+            embed_model: str | None = None,
             **kwargs
     ):
         self._model = model

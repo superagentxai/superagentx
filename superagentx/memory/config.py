@@ -16,17 +16,17 @@ def _db_path():
 
 
 class MemoryConfig(BaseModel):
-    vector_store: BaseVectorStore = Field(
+    vector_store: BaseVectorStore | None = Field(
         description="Configuration for the vector store",
         default=None,
     )
 
-    db_path: str = Field(
+    db_path: str | None = Field(
         description="Path to the history database",
         default=_db_path(),
     )
 
-    llm_client: LLMClient = Field(
+    llm_client: LLMClient | None = Field(
         description="Configuration for the LLM",
         default=None,
     )
