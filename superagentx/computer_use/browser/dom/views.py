@@ -96,7 +96,7 @@ class DOMElementNode(DOMBaseNode):
 
     @cached_property
     def hash(self) -> HashedDomElement:
-        from superagentx.computer_use.browser.dom.history_tree_processor.service import (
+        from superagentx.computer_use.browser.dom.history_tree_processor.tree_processor_service import (
             HistoryTreeProcessor,
         )
 

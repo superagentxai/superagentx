@@ -27,7 +27,7 @@ from playwright.async_api import (
     Page,
 )
 
-from superagentx.computer_use.browser.dom.service import DomService
+from superagentx.computer_use.browser.dom.dom_service import DomService
 from superagentx.computer_use.browser.dom.views import DOMElementNode, SelectorMap
 from superagentx.computer_use.browser.state import (
     BrowserError,

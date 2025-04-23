@@ -13,7 +13,13 @@ from playwright.async_api import Page
 from superagentx.base_engine import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
-from superagentx.computer_use.utils import get_user_message, show_toast, SYSTEM_MESSAGE, log_response, manipulate_string
+from superagentx.computer_use.utils import (
+    get_user_message,
+    show_toast,
+    SYSTEM_MESSAGE,
+    log_response,
+    manipulate_string
+)
 from superagentx.handler.browser import BrowserHandler
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
@@ -79,7 +85,6 @@ class BrowserEngine(BaseEngine):
                     os.path.dirname(os.path.dirname(__file__)),
                     "sagentx_screenshot_path"
                 )
-
 
     async def __funcs_props(
             self,
