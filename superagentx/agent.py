@@ -101,7 +101,6 @@ class Agent:
         self.engines: list[Engine | list[Engine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry
-        self.async_mode = self.llm.llm_config_model.async_mode
         self.max_retry = max_retry if max_retry >= 1 else 1
         logger.debug(
             f'Initiating Agent...\n'
@@ -180,15 +179,9 @@ class Agent:
             messages=prompt_message
         )
         logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
-        if not self.async_mode:
-            messages = await sync_to_async(
-                self.llm.func_chat_completion,
-                chat_completion_params=chat_completion_params
-            )
-        else:
-            messages = await self.llm.afunc_chat_completion(
-                chat_completion_params=chat_completion_params
-            )
+        messages = await self.llm.afunc_chat_completion(
+            chat_completion_params=chat_completion_params
+        )
         logger.debug(f"Goal Result : {messages}")
         if messages:
             for choice in messages:

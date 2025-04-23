@@ -50,8 +50,6 @@ class ChromaDB(BaseVectorStore):
             }
             self.embed_cli = LLMClient(llm_config=embed_config)
 
-        self.async_mode = self.embed_cli.llm_config_model.async_mode
-
         self.settings = Settings(anonymized_telemetry=False)
 
         if host and port:
@@ -100,23 +98,6 @@ class ChromaDB(BaseVectorStore):
             **kwargs
         )
 
-    async def _vectors(self, texts: Any):
-        if self.async_mode:
-            if isinstance(texts, list):
-                vectors = [await self.embed_cli.aembed(text=text) async for text in iter_to_aiter(texts)]
-            elif isinstance(texts, str):
-                vectors = await self.embed_cli.aembed(text=texts)
-            else:
-                return []
-        else:
-            if isinstance(texts, list):
-                vectors = [await sync_to_async(self.embed_cli.embed,text=text) for text in texts]
-            elif isinstance(texts, str):
-                vectors = await sync_to_async(self.embed_cli.embed, text=texts)
-            else:
-                return []
-        return vectors
-
     async def insert(
             self,
             texts: list[str],
@@ -131,7 +112,7 @@ class ChromaDB(BaseVectorStore):
             payloads (Optional[List[Dict]], optional): List of payloads corresponding to vectors. Defaults to None.
             ids (Optional[List[str]], optional): List of IDs corresponding to vectors. Defaults to None.
         """
-        vectors = await self._vectors(texts=texts)
+        vectors = [await self.embed_cli.aembed(text=text) async for text in iter_to_aiter(texts)]
         logger.info(f"Inserting {len(vectors)} vectors into collection {self.collection_name}")
         collection = await self._get_or_create_collection(name=self.collection_name)
         await sync_to_async(
@@ -159,7 +140,7 @@ class ChromaDB(BaseVectorStore):
         Returns:
             List[OutputData]: Search results.
         """
-        query_vector = await self._vectors(query)
+        query_vector = await self.embed_cli.aembed(text=query)
         collection = await self._get_or_create_collection(name=self.collection_name)
         results = await sync_to_async(
             collection.query,

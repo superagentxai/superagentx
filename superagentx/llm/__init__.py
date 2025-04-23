@@ -21,7 +21,7 @@ from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, sync_to_async
 from superagentx.utils.llm_config import LLMType
 
 logger = logging.getLogger(__name__)
@@ -58,6 +58,7 @@ class LLMClient:
     ):
         self.llm_config = llm_config
         self.llm_config_model = LLMModelConfig(**self.llm_config)
+        self.async_mode = self.llm_config_model.async_mode
 
         match self.llm_config_model.llm_type:
             case LLMType.OPENAI_CLIENT | LLMType.ANTHROPIC_CLIENT | LLMType.DEEPSEEK:
@@ -216,10 +217,17 @@ class LLMClient:
             text: str,
             **kwargs
     ):
-        return await self.client.aembed(
-            text,
-            **kwargs
-        )
+        if self.async_mode:
+            return await self.client.aembed(
+                text,
+                **kwargs
+            )
+        else:
+            return await sync_to_async(
+                self.client.embed,
+                text,
+                **kwargs
+            )
 
     async def afunc_chat_completion(
             self,
@@ -236,8 +244,13 @@ class LLMClient:
             )
             chat_completion_params.stream = False
 
-        response: ChatCompletion = await self.client.achat_completion(chat_completion_params=chat_completion_params)
-
+        if self.async_mode:
+            response: ChatCompletion = await self.client.achat_completion(chat_completion_params=chat_completion_params)
+        else:
+            response: ChatCompletion = await sync_to_async(
+                self.client.chat_completion,
+                chat_completion_params=chat_completion_params
+            )
         # List to store multiple Message instances
         message_instances = []
 
@@ -252,60 +265,6 @@ class LLMClient:
                             name=tool_call.function.name,
                             arguments=json.loads(tool_call.function.arguments)  # Use json.loads for safer parsing
                         ) async for tool_call in iter_to_aiter(choice.message.tool_calls)
-                    ]
-
-                # Extract token details from usage
-                usage_data = response.usage
-
-                # Add the created Message instance to the list
-                message_instances.append(
-                    Message(
-                        role=choice.message.role,
-                        model=response.model,
-                        content=choice.message.content,
-                        tool_calls=tool_calls_data if tool_calls_data else None,
-                        completion_tokens=usage_data.completion_tokens,
-                        prompt_tokens=usage_data.prompt_tokens,
-                        total_tokens=usage_data.total_tokens,
-                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens
-                        if usage_data.completion_tokens_details else 0,
-                        created=response.created
-                    )
-                )
-
-        return message_instances
-
-    def func_chat_completion(
-            self,
-            *,
-            chat_completion_params: ChatCompletionParams
-    ) -> List[Message]:
-
-        stream = bool(chat_completion_params.stream)
-
-        # Most models don't support streaming with tool use
-        if stream:
-            logger.warning(
-                "Streaming is not currently supported, streaming will be disabled.",
-            )
-            chat_completion_params.stream = False
-
-        response: ChatCompletion = self.client.chat_completion(chat_completion_params=chat_completion_params)
-
-        # List to store multiple Message instances
-        message_instances = []
-
-        if response:
-            # Iterate over each choice and create a Message instance
-            for choice in response.choices:
-                tool_calls_data = []
-                if choice.message.tool_calls:
-                    tool_calls_data = [
-                        Tool(
-                            tool_type=tool_call.type,
-                            name=tool_call.function.name,
-                            arguments=json.loads(tool_call.function.arguments)  # Use json.loads for safer parsing
-                        ) for tool_call in choice.message.tool_calls
                     ]
 
                 # Extract token details from usage

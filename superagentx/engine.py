@@ -43,7 +43,6 @@ class Engine:
         self.prompt_template = prompt_template
         self.tools = tools
         self.output_parser = output_parser
-        self.async_mode = self.llm.llm_config_model.async_mode
 
     def __str__(self):
         return f'Engine {self.handler.__class__}'
@@ -121,15 +120,9 @@ class Engine:
             tools=tools
         )
         logger.debug(f"Chat Completion Params : {chat_completion_params.model_dump_json(exclude_none=True)}")
-        if not self.async_mode:
-            messages = await sync_to_async(
-                self.llm.func_chat_completion,
-                chat_completion_params=chat_completion_params
-            )
-        else:
-            messages = await self.llm.afunc_chat_completion(
-                chat_completion_params=chat_completion_params
-            )
+        messages = await self.llm.afunc_chat_completion(
+            chat_completion_params=chat_completion_params
+        )
         logger.debug(f"Func Chat Completion : {messages}")
         if not messages:
             raise ToolError("Tool not found for the inputs!")
