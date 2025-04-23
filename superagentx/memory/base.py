@@ -16,8 +16,8 @@ class MemoryItem(BaseModel):
         ..., description="The memory of role"
     )
     # The metadata value can be anything and not just string. Fix it
-    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata for the text data")
-    score: Optional[float] = Field(None, description="The score associated with the text data")
+    metadata: Dict[str, Any] | None = Field(None, description="Additional metadata for the text data")
+    score: float | None = Field(None, description="The score associated with the text data")
     created_at: Any | None = Field(None, description="The timestamp when the memory was created")
     updated_at: Any | None = Field(None, description="The timestamp when the memory was updated")
 

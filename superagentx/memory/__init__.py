@@ -153,7 +153,6 @@ class Memory(MemoryBase):
             }
             async for mem in iter_to_aiter(memories)
         ]
-
         return original_memories
 
     async def _add_to_vector_store(

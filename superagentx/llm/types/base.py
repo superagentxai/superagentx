@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class LLMModelConfig(BaseModel):
-    model: str = Field(
+    model: str | None = Field(
         description='LLM model name, supported models openai, azure-openai, mistral, llama 3.1',
         default=None
     )
