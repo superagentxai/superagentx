@@ -30,7 +30,7 @@ async def get_user_message(
         state: BrowserState,
         step_info: StepInfo,
         action_result: list[ToolResult],
-        use_vision: bool = False
+        use_vision: bool = True
 ):
     include_attributes = ['title', 'type', 'name', 'role', 'aria-label', 'placeholder', 'value', 'alt',
                           'aria-expanded', 'data-date-format']

@@ -181,15 +181,9 @@ class BrowserEngine(BaseEngine):
             )
             chat_completion_params.temperature = 0
             chat_completion_params.response_format = {"type": "json_object"}
-            if not self.async_mode:
-                messages = await sync_to_async(
-                    self.llm.func_chat_completion,
-                    chat_completion_params=chat_completion_params
-                )
-            else:
-                messages = await self.llm.afunc_chat_completion(
-                    chat_completion_params=chat_completion_params
-                )
+            messages = await self.llm.afunc_chat_completion(
+                chat_completion_params=chat_completion_params
+            )
             if not messages:
                 return results
             res = messages[0].content

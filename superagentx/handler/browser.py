@@ -350,15 +350,12 @@ class BrowserHandler(BaseHandler):
         if index not in await self.browser_context.get_selector_map():
             return ToolResult(error=f'Element index {index} does not exist - retry or use alternative actions')
         try:
-            state = await self.browser_context.get_state()
-            # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
-
-            node_element = state.selector_map[int(index)]
-            # await self.wait(seconds=3)
-            await self.browser_context._input_text_element_node(node_element, text)
+            element_node = await self.browser_context.get_dom_element_by_index(index)
+            await self.wait(seconds=3)
+            await self.browser_context._input_text_element_node(element_node, text)
             msg = f'⌨️  Input data into index {index} {text}'
             logger.info(msg)
-            logger.debug(f'Element xpath: {node_element.xpath}')
+            logger.debug(f'Element xpath: {element_node.xpath}')
             return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as ex:
             msg = f'⌨️  Content was Failed input into the text box.{ex}'
