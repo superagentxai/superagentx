@@ -22,6 +22,7 @@ logging.basicConfig(
 
 async def main():
     llm_config = {'model': 'gpt-4o', 'llm_type': 'openai', 'async_mode': True}
+    # llm_config = {"model": 'anthropic.claude-3-5-haiku-20241022-v1:0', "llm_type": 'bedrock'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
@@ -32,7 +33,7 @@ async def main():
         prompt_template=prompt_template,
         # browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     )
-    query_instruction = input("\n Enter your task: ")
+    query_instruction = "Which team have 5 trophies in IPL"
 
     task = f""" 
             1. Analyse and find the result for the given {query_instruction}.
@@ -44,6 +45,7 @@ async def main():
             Important:
             1. DO NOT write the post as reply
             2. DO NOT post more than one.
+            3. Strictly Follow the instructions
 
         """
 
