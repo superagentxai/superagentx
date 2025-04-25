@@ -1,0 +1,145 @@
+---
+title: 'Conversation'
+icon: 'head-side-brain'
+---
+
+# 🧠 Conversation with Memory
+
+A **conversation with memory** is more than just talk—it's connection.
+
+This guide demonstrates how to create an AI conversation pipeline using the `superagentx` framework, with built-in support for **memory** and **conversation context** through a unique `conversation_id`.
+
+The core idea is to enable an AI agent to **remember the flow of a conversation** using a memory component tied to a specific session.
+
+## 1. Define the AI Handler Pipeline
+
+The function `get_test_ai_handler_pipe` initializes the AI pipeline with:
+
+- An LLM client (using OpenAI)
+- A memory module to retain context
+- A custom handler to manage LLM interactions
+- An agent defined with a goal and role
+- A pipeline (`AgentXPipe`) for integration into CLI/WebSocket/API interfaces
+
+```python
+import uuid
+from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.engine import Engine
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.prompt import PromptTemplate
+
+from df_agentic_app.handlers.ai import AIHandler
+
+async def get_test_ai_handler_pipe() -> AgentXPipe:
+    # LLM Configuration
+    llm_config = {
+        'llm_type': 'openai'
+    }
+    llm_client = LLMClient(llm_config=llm_config)
+
+    # Enable Memory
+    memory = Memory(memory_config={"llm_client": llm_client})
+
+    ai_handler = AIHandler(
+        llm=llm_client,
+        memory=memory
+    )
+
+    # Prompt Template
+    prompt_template = PromptTemplate()
+
+    # Create Engine
+    ai_engine = Engine(
+        handler=ai_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
+
+    # Create Agents
+    ai_agent = Agent(
+        name='AI agent',
+        goal="Get me the best results",
+        role="You are the best at answering",
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[ai_engine]
+    )
+
+    # Expose via pipe for interaction
+    pipe = AgentXPipe(
+        agents=[ai_agent],
+        memory=memory
+    )
+
+    return pipe
+```
+
+---
+
+## 2. Run a Conversation with Context
+
+This example initializes a pipeline and runs a single-turn conversation with memory:
+
+```python
+import asyncio
+import uuid
+
+async def main():
+    conversation_id = uuid.uuid4().hex  # Unique ID for tracking this conversation
+
+    conversation_pipe = await get_test_ai_handler_pipe()
+
+    await conversation_pipe.flow(
+        query_instruction="What is Agentic AI?",
+        conversation_id=conversation_id  # Context maintained here
+    )
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+---
+
+✅ **Supports contextual memory** per `conversation_id`
+✅ **Ideal for multi-turn chat experiences** across CLI, WebSocket, or RESTful APIs
+
+---
+
+## 💪 Sample Output
+
+```shell
+Generate 'the response based on the user input. When you response the answer,
+remember the previous context if previous context is not empty otherwise response it'.
+
+User Input: What is Agentic AI?
+Previous Context: []
+
+GoalResult(
+    name='AI agent',
+    agent_id='d03230eff9084e0097141d24289bbd2c',
+    reason='The provided Output_Context explains what Agentic AI is, describing its agency,
+    autonomy, decision-making capabilities, and ability to learn and adapt. This aligns with
+    the goal of getting the best results by supplying a comprehensive understanding of Agentic AI.',
+    result='Agentic AI refers to artificial intelligence systems that possess a form of agency,
+    which means they are designed to act autonomously on behalf of users or stakeholders in an
+    environment. This kind of AI is capable of decision-making, planning, and executing tasks
+    without direct human intervention, often using advanced algorithms to optimize for specific
+    outcomes. Unlike purely reactive or rule-based systems, agentic AI can adapt to new situations,
+    learn from interactions, and make complex decisions by considering various factors and potential
+    consequences.',
+    content=None,
+    error=None,
+    is_goal_satisfied=True
+)
+```
+
+---
+
+## 🧠 Why Memory Matters
+
+Memory enables **multi-turn conversations** where the AI doesn't forget previous questions, responses, or the conversation's purpose.
+
+This is essential for building helpful and coherent AI assistants that feel **more natural** and **less robotic**.
+
