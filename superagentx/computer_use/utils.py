@@ -109,31 +109,35 @@ async def show_toast(page, message: str, duration: int = 3000):
     final_message = f" SuperAgentX Goal:  {random_icon} {message}"
 
     toast_script = f"""
-                (() => {{
-                    let toast = document.createElement('div');
-                    toast.innerText = "{final_message}";
-                    toast.style.position = 'fixed';
-                    toast.style.top = '40px';  // 👈 top instead of bottom
-                    toast.style.left = '50%';
-                    toast.style.transform = 'translateX(-50%)';
-                    toast.style.background = 'linear-gradient(45deg, #ff6ec4, #7873f5)';
-                    toast.style.color = 'white';
-                    toast.style.padding = '16px 24px';
-                    toast.style.borderRadius = '16px';
-                    toast.style.fontSize = '14px';
+    (() => {{
+        let toast = document.createElement('div');
+        toast.innerText = "{final_message}";
+        toast.style.position = 'fixed';
+        toast.style.top = '40px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = 'linear-gradient(45deg, #ff6ec4, #7873f5)';
+        toast.style.color = 'white';
+        toast.style.padding = '16px 24px';
+        toast.style.borderRadius = '16px';
+        toast.style.fontSize = '16px';
+        toast.style.zIndex = 9999;
+        toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
+        toast.style.transition = 'opacity 0.3s ease';
+        toast.style.opacity = '1';
 
-                    toast.style.zIndex = 9999;
-                    toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
-                    toast.style.transition = 'opacity 0.3s ease';
-                    toast.style.opacity = '1';
-                    document.body.appendChild(toast);
+        toast.style.width = '400px';  // 👈 fixed width
+        toast.style.maxHeight = '150px';  // 👈 optional max height
+        toast.style.overflow = 'auto';  // 👈 enable scroll if content exceeds height
 
-                    setTimeout(() => {{
-                        toast.style.opacity = '0';
-                        setTimeout(() => toast.remove(), 300);
-                    }}, {duration});
-                }})();
-                """
+        document.body.appendChild(toast);
+
+        setTimeout(() => {{
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }}, {duration});
+    }})();
+    """
 
     await page.evaluate(toast_script)
 
@@ -155,6 +159,7 @@ SYSTEM_MESSAGE = [
         "role": "system",
         "content": f"{BROWSER_SYSTEM_MESSAGE}\n\nNote:\nEnsure to first build the step by step "
                    f"process, once you build the steps then execute the steps use click event "
-                   f"for every step to need. Don't give the duplicate json."
+                   f"for every step to need. Don't give the duplicate json. Ensure to generate the json format. DON'T "
+                   f"include any suggestions or explanation.Ensure to DON'T LOGIN BY YOU OWN. ONLY USER SHOULD BE LOGIN"
     }
 ]

@@ -95,40 +95,6 @@ class BrowserHandler(BaseHandler):
         await page.wait_for_load_state()
         msg = f'🔗  Navigated to {url}'
         logger.info(msg)
-        # if not flag:
-        #     flag = await self._is_login_page(page)
-        # if flag and not success_url:
-        #     error_msg = "❗ 'success_url' must be provided when 'flag' is set to True."
-        #     logger.error(error_msg)
-        #     return ActionResult(
-        #         is_done=True,
-        #         extracted_content=error_msg,
-        #         include_memory=True
-        #     )
-        #
-        # if flag and success_url:
-        #     timeout = 300000  # 5 minutes
-        #     logger.info("Please complete login manually in the browser...")
-        #
-        #     # Wait indefinitely until login is successful
-        #     try:
-        #         # Wait for a specific selector to appear
-        #         await page.wait_for_url(success_url, timeout=timeout)
-        #         msg = "✅ Login complete!"
-        #         logger.info(msg)
-        #         return ActionResult(
-        #             extracted_content=msg,
-        #             include_memory=True
-        #         )
-        #     except Exception as e:
-        #         msg = f"❌ Login timeout after {timeout} seconds: {e}"
-        #         logger.error(msg)
-        #         await self.browser_context.close()
-        #         return ActionResult(
-        #             is_done=True,
-        #             error=msg
-        #         )
-
         return ToolResult(
             extracted_content=msg
         )
@@ -269,12 +235,12 @@ class BrowserHandler(BaseHandler):
             state = await self.browser_context.get_state()
             # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
 
-            node_element = state.selector_map[int(index)]
+            element_node = await self.browser_context.get_dom_element_by_index(index)
 
-            page = await self.browser_context.get_current_page()
+            # page = await self.browser_context.get_current_page()
 
             # check if index of selector map are the same as index of items in dom_items
-            await self.browser_context._click_element_node(node_element)
+            await self.browser_context._click_element_node(element_node)
 
             # await page.wait_for_load_state()
 
@@ -408,12 +374,12 @@ class BrowserHandler(BaseHandler):
         try:
             output = await self.llm.achat_completion(chat_completion_params=chat_completion_params)
             msg = f'📄  Extracted from page\n: {output.choices[0].message.content}\n'
-            logger.debug(msg)
+            logger.info(msg)
             return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as e:
-            logger.info(f'Error extracting content: {e}')
-            msg = f'📄  Extracted from page\n: {content}\n'
-            logger.info(msg)
+            logger.error(f'Error extracting content: {e}')
+            msg = f'📄  Failed to extract \n: {content}\n'
+            logger.error(msg)
             return ToolResult(extracted_content=msg)
 
     @tool
