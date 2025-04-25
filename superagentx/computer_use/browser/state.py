@@ -15,19 +15,19 @@ class TabInfo(BaseModel):
 class BrowserState(DOMState):
     url: str
     title: str
-    tabs: List[TabInfo]
-    screenshot: Optional[str] = None
+    tabs: list[TabInfo]
+    screenshot: str | None = None
     pixels_above: int = 0
     pixels_below: int = 0
-    browser_errors: List[str] = Field(default_factory=list)
+    browser_errors: list[str] = Field(default_factory=list)
 
 
 class BrowserStateHistory(BaseModel):
     url: str
     title: str
-    tabs: List[TabInfo]
-    interacted_element: List[Union[DOMHistoryElement, None]]
-    screenshot: Optional[str] = None
+    tabs: list[TabInfo]
+    interacted_element: list[DOMHistoryElement | None]
+    screenshot: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {

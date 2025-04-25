@@ -1,8 +1,6 @@
 import asyncio
 import gc
 import logging
-import subprocess
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 from playwright._impl._api_structures import ProxySettings
@@ -21,11 +19,11 @@ logger = logging.getLogger(__name__)
 class BrowserConfig(BaseModel):
     headless: bool = False
     disable_security: bool = True
-    extra_chromium_args: List[str] = Field(default_factory=list)
-    chrome_instance_path: Optional[str] = None
-    wss_url: Optional[str] = None
-    cdp_url: Optional[str] = None
-    proxy: Optional[ProxySettings] = None
+    extra_chromium_args: list[str] = Field(default_factory=list)
+    chrome_instance_path: str | None = None
+    wss_url: str | None = None
+    cdp_url: str | None = None
+    proxy: ProxySettings | None = None
     new_context_config: BrowserContextConfig = Field(default_factory=BrowserContextConfig)
     _force_keep_browser_alive: bool = False
 
@@ -34,8 +32,8 @@ class Browser:
 
     def __init__(self, config: BrowserConfig = BrowserConfig()):
         self.config = config
-        self.playwright: Optional[Playwright] = None
-        self.playwright_browser: Optional[PlaywrightBrowser] = None
+        self.playwright: Playwright | None = None
+        self.playwright_browser: Playwright | None = None
 
         self.disable_security_args = []
         if self.config.disable_security:
@@ -73,34 +71,33 @@ class Browser:
         if not self.config.chrome_instance_path:
             raise ValueError('Chrome instance path is required')
 
-        import requests
+        import aiohttp
 
         try:
-            response = requests.get('http://localhost:9222/json/version', timeout=2)
+            response = aiohttp.get('http://localhost:9222/json/version', timeout=2)
             if response.status_code == 200:
                 logger.info('Reusing existing Chrome instance')
                 return await playwright.chromium.connect_over_cdp(
                     endpoint_url='http://localhost:9222',
                     timeout=20000,
                 )
-        except requests.ConnectionError:
+        except aiohttp.ConnectionError:
             logger.debug('No existing Chrome instance found, starting a new one')
 
-        subprocess.Popen(
-            [
-                self.config.chrome_instance_path,
-                '--remote-debugging-port=9222',
-            ] + self.config.extra_chromium_args,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+        process = await asyncio.create_subprocess_exec(
+            self.config.chrome_instance_path,
+            '--remote-debugging-port=9222',
+            *self.config.extra_chromium_args,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
         )
 
         for _ in range(10):
             try:
-                response = requests.get('http://localhost:9222/json/version', timeout=2)
+                response = aiohttp.get('http://localhost:9222/json/version', timeout=2)
                 if response.status_code == 200:
                     break
-            except requests.ConnectionError:
+            except aiohttp.ConnectionError:
                 pass
             await asyncio.sleep(1)
 

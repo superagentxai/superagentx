@@ -28,7 +28,7 @@ class DOMTextNode(BaseModel):
 
     def has_parent_with_highlight_index(self) -> bool:
         current = self.parent
-        while current is not None:
+        while current:
             # stop if the element has a highlight index (will be handled separately)
             if current.highlight_index is not None:
                 return True
@@ -57,16 +57,16 @@ class DOMElementNode(DOMBaseNode):
 
     tag_name: str
     xpath: str
-    attributes: Dict[str, str]
-    children: List[DOMBaseNode]
+    attributes: dict[str, str]
+    children: list[DOMBaseNode]
     is_interactive: bool = False
     is_top_element: bool = False
     is_in_viewport: bool = False
     shadow_root: bool = False
-    highlight_index: Optional[int] = None
-    viewport_coordinates: Optional[CoordinateSet] = None
-    page_coordinates: Optional[CoordinateSet] = None
-    viewport_info: Optional[ViewportInfo] = None
+    highlight_index: int | None = None
+    viewport_coordinates: CoordinateSet | None = None
+    page_coordinates: CoordinateSet | None = None
+    viewport_info: ViewportInfo | None = None
     model_config = ConfigDict(frozen=False)
 
     def __repr__(self) -> str:
@@ -123,16 +123,16 @@ class DOMElementNode(DOMBaseNode):
         collect_text(self, 0)
         return '\n'.join(text_parts).strip()
 
-    def clickable_elements_to_string(self, include_attributes=None) -> str:
+    def clickable_elements_to_string(self, include_attributes: list | None = None) -> str:
         """Convert the processed DOM content to HTML."""
-        if include_attributes is None:
+        if not include_attributes:
             include_attributes = []
         formatted_text = []
 
         def process_node(node: DOMBaseNode, depth: int) -> None:
             if isinstance(node, DOMElementNode):
                 # Add element with highlight_index
-                if node.highlight_index is not None:
+                if node.highlight_index:
                     attributes_str = ''
                     text = node.get_all_text_till_next_clickable_element()
                     if include_attributes:

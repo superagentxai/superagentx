@@ -34,14 +34,14 @@ class HistoryTreeProcessor:
         hashed_dom_history_element = HistoryTreeProcessor._hash_dom_history_element(dom_history_element)
 
         def process_node(node: DOMElementNode):
-            if node.highlight_index is not None:
+            if node.highlight_index:
                 hashed_node = HistoryTreeProcessor._hash_dom_element(node)
                 if hashed_node == hashed_dom_history_element:
                     return node
             for child in node.children:
                 if isinstance(child, DOMElementNode):
                     result = process_node(child)
-                    if result is not None:
+                    if result:
                         return result
             return None
 
@@ -79,7 +79,7 @@ class HistoryTreeProcessor:
     def _get_parent_branch_path(dom_element: DOMElementNode) -> list[str]:
         parents: list[DOMElementNode] = []
         current_element: DOMElementNode = dom_element
-        while current_element.parent is not None:
+        while current_element.parent:
             parents.append(current_element)
             current_element = current_element.parent
 

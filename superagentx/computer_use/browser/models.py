@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -17,8 +15,8 @@ class StepInfo(BaseModel):
 class ToolResult(BaseModel):
     """Result of executing an action"""
 
-    is_done: Optional[bool] = False
-    success: Optional[bool] = None
-    extracted_content: Optional[str] = None
-    error: Optional[str] = None
+    is_done: bool = False
+    success: bool | None = None
+    extracted_content: str | None = None
+    error: str | None = None
     include_in_memory: bool = False  # whether to include in past messages as context or not

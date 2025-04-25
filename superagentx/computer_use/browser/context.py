@@ -14,7 +14,7 @@ import time
 import typing
 import uuid
 from typing import TYPE_CHECKING, Optional, TypedDict
-from pydantic import BaseModel, Field
+from urllib.parse import urlparse
 
 from playwright._impl._errors import TimeoutError
 from playwright.async_api import Browser as PlaywrightBrowser
@@ -26,7 +26,8 @@ from playwright.async_api import (
     FrameLocator,
     Page,
 )
-from superagentx.computer_use.utils import RELEVANT_RESOURCE_TYPES, IGNORED_URL_PATTERNS, RELEVANT_CONTENT_TYPES
+from pydantic import BaseModel, Field
+
 from superagentx.computer_use.browser.dom.dom_service import DomService
 from superagentx.computer_use.browser.dom.views import DOMElementNode, SelectorMap
 from superagentx.computer_use.browser.state import (
@@ -35,6 +36,7 @@ from superagentx.computer_use.browser.state import (
     TabInfo,
     URLNotAllowedError,
 )
+from superagentx.computer_use.utils import RELEVANT_RESOURCE_TYPES, IGNORED_URL_PATTERNS, RELEVANT_CONTENT_TYPES, SAFE_ATTRIBUTES, dynamic_attributes
 
 if TYPE_CHECKING:
     from browser import Browser
@@ -124,7 +126,7 @@ class BrowserContextConfig(BaseModel):
     disable_security: bool = True
 
     browser_window_size: BrowserContextWindowSize = Field(default_factory=lambda: {'width': 1280, 'height': 1100})
-    no_viewport: Optional[bool] = None
+    no_viewport: bool | None = None
 
     save_recording_path: str | None = None
     save_downloads_path: str | None = None
@@ -145,7 +147,7 @@ class BrowserContextConfig(BaseModel):
 
 class BrowserSession(BaseModel):
     context: PlaywrightBrowserContext
-    cached_state: BrowserState | None
+    cached_state: BrowserState | None = None
 
 
 class BrowserContextState(BaseModel):
@@ -161,11 +163,9 @@ class BrowserContext:
             self,
             browser: 'Browser',
             config: BrowserContextConfig = BrowserContextConfig(),
-            state: Optional[BrowserContextState] = None,
+            state: BrowserContextState | None = None,
     ):
-        self.context_id = str(uuid.uuid4())
-        logger.debug(f'Initializing new browser context with id: {self.context_id}')
-
+        self.context_id = uuid.uuid4().hex
         self.config = config
         self.browser = browser
 
@@ -205,7 +205,7 @@ class BrowserContext:
             if self.config.trace_path:
                 try:
                     await self.session.context.tracing.stop(
-                        path=os.path.join(self.config.trace_path, f'{self.context_id}.zip'))
+                        path=os.path.join(self.config.trace_path.strip('/'), f'{self.context_id}.zip'))
                 except Exception as e:
                     logger.debug(f'Failed to stop tracing: {e}')
 
@@ -257,10 +257,10 @@ class BrowserContext:
             if self.state.target_id:
                 targets = await self._get_cdp_targets()
                 for target in targets:
-                    if target['targetId'] == self.state.target_id:
+                    if target.get('targetId') == self.state.target_id:
                         # Find matching page by URL
                         for page in pages:
-                            if page.url == target['url']:
+                            if page.url == target.get('url'):
                                 active_page = page
                                 break
                         break
@@ -278,8 +278,8 @@ class BrowserContext:
             if self.browser.config.cdp_url:
                 targets = await self._get_cdp_targets()
                 for target in targets:
-                    if target['url'] == active_page.url:
-                        self.state.target_id = target['targetId']
+                    if target.get('url') == active_page.url:
+                        self.state.target_id = target.get('targetId')
                         break
 
         # Bring page to front
@@ -294,7 +294,7 @@ class BrowserContext:
                 await page.reload()  # Reload the page to avoid timeout errors
             await page.wait_for_load_state()
             logger.debug(f'New page opened: {page.url}')
-            if self.session is not None:
+            if self.session:
                 self.state.target_id = None
 
         self._page_event_handler = on_page
@@ -302,7 +302,7 @@ class BrowserContext:
 
     async def get_session(self) -> BrowserSession:
         """Lazy initialization of the browser and related components"""
-        if self.session is None:
+        if self.session:
             return await self._initialize_session()
         return self.session
 
@@ -313,9 +313,9 @@ class BrowserContext:
 
     async def _create_context(self, browser: PlaywrightBrowser):
         """Creates a new browser context with anti-detection measures and loads cookies if available."""
-        if self.browser.config.cdp_url and len(browser.contexts) > 0:
+        if self.browser.config.cdp_url and browser.contexts:
             context = browser.contexts[0]
-        elif self.browser.config.chrome_instance_path and len(browser.contexts) > 0:
+        elif self.browser.config.chrome_instance_path and browser.contexts:
             # Connect to existing Chrome instance instead of creating new one
             context = browser.contexts[0]
         else:
@@ -443,7 +443,7 @@ class BrowserContext:
             while True:
                 await asyncio.sleep(0.1)
                 now = asyncio.get_event_loop().time()
-                if len(pending_requests) == 0 and (
+                if not pending_requests and (
                         now - last_activity) >= self.config.wait_for_network_idle_page_load_time:
                     break
                 if now - start_time > self.config.maximum_wait_page_load_time:
@@ -498,7 +498,6 @@ class BrowserContext:
             return True
 
         try:
-            from urllib.parse import urlparse
 
             parsed_url = urlparse(url)
             domain = parsed_url.netloc.lower()
@@ -754,7 +753,7 @@ class BrowserContext:
     async def take_screenshot(
             self,
             full_page: bool = False,
-            path: typing.Optional[typing.Union[str, pathlib.Path]] = None
+            path: str | pathlib.Path | None = None
     ) -> str:
         """
         Returns a base64 encoded screenshot of the current page.
@@ -895,40 +894,8 @@ class BrowserContext:
                         # Skip invalid class names
                         continue
 
-            # Expanded set of safe attributes that are stable and useful for selection
-            SAFE_ATTRIBUTES = {
-                # Data attributes (if they're stable in your application)
-                'id',
-                # Standard HTML attributes
-                'name',
-                'type',
-                'placeholder',
-                # Accessibility attributes
-                'aria-label',
-                'aria-labelledby',
-                'aria-describedby',
-                'role',
-                # Common form attributes
-                'for',
-                'autocomplete',
-                'required',
-                'readonly',
-                # Media attributes
-                'alt',
-                'title',
-                'src',
-                # Custom stable attributes (add any application-specific ones)
-                'href',
-                'target',
-            }
-
             if include_dynamic_attributes:
-                dynamic_attributes = {
-                    'data-id',
-                    'data-qa',
-                    'data-cy',
-                    'data-testid',
-                }
+
                 SAFE_ATTRIBUTES.update(dynamic_attributes)
 
             # Handle other attributes
@@ -969,7 +936,7 @@ class BrowserContext:
             tag_name = element.tag_name or '*'
             return f"{tag_name}[highlight_index='{element.highlight_index}']"
 
-    async def get_locate_element(self, element: DOMElementNode) -> Optional[ElementHandle]:
+    async def get_locate_element(self, element: DOMElementNode) -> ElementHandle | None:
         current_frame = await self.get_current_page()
 
         # Start with the target element and collect all parents
@@ -1023,7 +990,7 @@ class BrowserContext:
 
             element_handle = await self.get_locate_element(element_node)
 
-            if element_handle is None:
+            if not element_handle:
                 raise BrowserError(f'Element: {repr(element_node)} not found')
 
             # Ensure element is ready for input
@@ -1055,7 +1022,7 @@ class BrowserContext:
             logger.info(f'Failed to input text into element: {repr(element_node)}. Error: {str(e)}')
             raise BrowserError(f'Failed to input text into index {element_node.highlight_index}')
 
-    async def _click_element_node(self, element_node: DOMElementNode) -> Optional[str]:
+    async def _click_element_node(self, element_node: DOMElementNode) -> str | None:
         """
         Optimized method to click an element using xpath.
         """
@@ -1084,6 +1051,7 @@ class BrowserContext:
                         suggested_filename = download.suggested_filename
                         unique_filename = await self._get_unique_filename(self.config.save_downloads_path,
                                                                           suggested_filename)
+
                         download_path = os.path.join(self.config.save_downloads_path, unique_filename)
                         await download.save_as(download_path)
                         logger.debug(f'Download triggered. Saved file to: {download_path}')
@@ -1145,8 +1113,9 @@ class BrowserContext:
         if self.browser.config.cdp_url:
             targets = await self._get_cdp_targets()
             for target in targets:
-                if target['url'] == page.url:
-                    self.state.target_id = target['targetId']
+                if target.get('url') == page.url:
+                    self.state.target_id = target.get('targetId')
+
                     break
 
         await page.bring_to_front()
@@ -1169,8 +1138,8 @@ class BrowserContext:
         if self.browser.config.cdp_url:
             targets = await self._get_cdp_targets()
             for target in targets:
-                if target['url'] == new_page.url:
-                    self.state.target_id = target['targetId']
+                if target.get('targetId') == new_page.url:
+                    self.state.target_id = target.get('targetId')
                     break
 
     # endregion
@@ -1183,9 +1152,9 @@ class BrowserContext:
         if self.browser.config.cdp_url and self.state.target_id:
             targets = await self._get_cdp_targets()
             for target in targets:
-                if target['targetId'] == self.state.target_id:
+                if target.get('targetId') == self.state.target_id:
                     for page in pages:
-                        if page.url == target['url']:
+                        if page.url == target.get('targetId'):
                             return page
 
         # Fallback to last page
@@ -1274,7 +1243,8 @@ class BrowserContext:
         session.cached_state = None
         self.state.target_id = None
 
-    async def _get_unique_filename(self, directory, filename):
+    @staticmethod
+    async def _get_unique_filename(directory: str, filename:str):
         """Generate a unique filename by appending (1), (2), etc., if a file already exists."""
         base, ext = os.path.splitext(filename)
         counter = 1
