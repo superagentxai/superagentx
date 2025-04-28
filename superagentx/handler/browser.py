@@ -341,6 +341,7 @@ class BrowserHandler(BaseHandler):
             @param goal: The extraction goal specifying what information should be retrieved.
         """
         page = await self.browser_context.get_current_page()
+        await page.wait_for_load_state('domcontentloaded')
         import markdownify
 
         strip = ['a', 'img']
@@ -350,8 +351,14 @@ class BrowserHandler(BaseHandler):
         # manually append iframe text into the content so it's readable by the LLM (includes cross-origin iframes)
         for iframe in page.frames:
             if iframe.url != page.url and not iframe.url.startswith('data:'):
-                content += f'\n\nIFRAME {iframe.url}:\n'
-                content += markdownify.markdownify(await iframe.content())
+                try:
+                    # Try waiting for the iframe content to load as well
+                    await iframe.wait_for_load_state('domcontentloaded', timeout=10000)
+                    iframe_content = await iframe.content()
+                    content += f'\n\nIFRAME {iframe.url}:\n'
+                    content += markdownify.markdownify(iframe_content)
+                except Exception as e:
+                    logger.warning(f"Could not load content for iframe {iframe.url}: {e}")
 
         prompt = ('Your task is to extract the content of the page. You will be given a page and a goal and you should '
                   'extract all relevant information around this goal from the page. If the goal is vague, summarize '
