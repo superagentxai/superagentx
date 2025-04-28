@@ -372,6 +372,7 @@ class BrowserHandler(BaseHandler):
             messages=messages
         )
         try:
+            logger.info(_prompt)
             output = await self.llm.achat_completion(chat_completion_params=chat_completion_params)
             msg = f'📄  Extracted from page\n: {output.choices[0].message.content}\n'
             logger.info(msg)

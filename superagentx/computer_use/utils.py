@@ -160,6 +160,7 @@ SYSTEM_MESSAGE = [
         "content": f"{BROWSER_SYSTEM_MESSAGE}\n\nNote:\nEnsure to first build the step by step "
                    f"process, once you build the steps then execute the steps use click event "
                    f"for every step to need. Don't give the duplicate json. Ensure to generate the json format. DON'T "
-                   f"include any suggestions or explanation.Ensure to DON'T LOGIN BY YOU OWN. ONLY USER SHOULD BE LOGIN"
+                   f"include any suggestions or explanation.Ensure to DON'T LOGIN BY YOU OWN. ONLY USER SHOULD BE LOGIN."
+                   f"If you not find the answer or not verify the goal, done the actions and don't try to find."
     }
 ]
