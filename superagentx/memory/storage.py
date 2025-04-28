@@ -81,7 +81,7 @@ class SQLiteManager:
             *,
             memory_id: str,
             conversation_id: str
-    ):
+    ) -> list | None:
         """
         Asynchronously retrieves the chat history for a specific user and chat session.
 
@@ -101,22 +101,23 @@ class SQLiteManager:
             (memory_id, conversation_id),
         )
         rows = await cursor.fetchall()
-        if rows:
-            return [
-                {
-                    "id": row[0],
-                    "memory_id": row[1],
-                    "conversation_id": row[2],
-                    "message_id": row[3],
-                    "role": row[4],
-                    "data": row[5],
-                    "reason": row[6],
-                    "created_at": row[7],
-                    "updated_at": row[8],
-                    "is_deleted": row[9]
-                }
-                async for row in iter_to_aiter(rows)
-            ]
+        if not rows:
+            return None
+        return [
+            {
+                "id": row[0],
+                "memory_id": row[1],
+                "conversation_id": row[2],
+                "message_id": row[3],
+                "role": row[4],
+                "data": row[5],
+                "reason": row[6],
+                "created_at": row[7],
+                "updated_at": row[8],
+                "is_deleted": row[9]
+            }
+            async for row in iter_to_aiter(rows)
+        ]
 
     async def _get_user_by_id(
             self,

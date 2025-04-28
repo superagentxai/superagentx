@@ -95,40 +95,6 @@ class BrowserHandler(BaseHandler):
         await page.wait_for_load_state()
         msg = f'🔗  Navigated to {url}'
         logger.info(msg)
-        # if not flag:
-        #     flag = await self._is_login_page(page)
-        # if flag and not success_url:
-        #     error_msg = "❗ 'success_url' must be provided when 'flag' is set to True."
-        #     logger.error(error_msg)
-        #     return ActionResult(
-        #         is_done=True,
-        #         extracted_content=error_msg,
-        #         include_memory=True
-        #     )
-        #
-        # if flag and success_url:
-        #     timeout = 300000  # 5 minutes
-        #     logger.info("Please complete login manually in the browser...")
-        #
-        #     # Wait indefinitely until login is successful
-        #     try:
-        #         # Wait for a specific selector to appear
-        #         await page.wait_for_url(success_url, timeout=timeout)
-        #         msg = "✅ Login complete!"
-        #         logger.info(msg)
-        #         return ActionResult(
-        #             extracted_content=msg,
-        #             include_memory=True
-        #         )
-        #     except Exception as e:
-        #         msg = f"❌ Login timeout after {timeout} seconds: {e}"
-        #         logger.error(msg)
-        #         await self.browser_context.close()
-        #         return ActionResult(
-        #             is_done=True,
-        #             error=msg
-        #         )
-
         return ToolResult(
             extracted_content=msg
         )
@@ -185,6 +151,8 @@ class BrowserHandler(BaseHandler):
     ) -> ToolResult:
         """
         Waits for an element matching the given CSS selector to become visible.
+
+        Wait for element (e.g.'#search') to be visible with a timeout of 30 seconds.
 
         Args:
             selector (str): The CSS selector of the element.
@@ -245,7 +213,7 @@ class BrowserHandler(BaseHandler):
                 new_tab_msg = 'New tab opened - switching to it'
                 msg += f' - {new_tab_msg}'
                 logger.info(new_tab_msg)
-                await self.browser_context.switch_to_tab()
+                await self.browser_context.switch_to_tab(-1)
             return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as e:
             logger.warning(f'Element not clickable with index {index} - most likely the page changed')
@@ -267,24 +235,25 @@ class BrowserHandler(BaseHandler):
             state = await self.browser_context.get_state()
             # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
 
-            node_element = state.selector_map[int(index)]
+            element_node = await self.browser_context.get_dom_element_by_index(index)
 
-            page = await self.browser_context.get_current_page()
+            # page = await self.browser_context.get_current_page()
 
             # check if index of selector map are the same as index of items in dom_items
-            await self.browser_context._click_element_node(node_element)
+            await self.browser_context._click_element_node(element_node)
 
-            await page.wait_for_load_state()
+            # await page.wait_for_load_state()
 
             # tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
             # last_tab = tabs[-1]
             # logger.info(f"Tabs: {tabs}")
             # await self.browser_context.switch_to_tab(last_tab.page_id)
             msg = f"Clicked Element Successfully"
+            logger.info(msg)
             return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as ex:
             msg = f"Click Element failed {index}: {ex}"
-            logger.info(msg)
+            logger.error(msg)
             return ToolResult(error=msg)
 
     @tool
@@ -305,6 +274,34 @@ class BrowserHandler(BaseHandler):
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
+    async def switch_tab(self, page_id: int):
+        """
+        Switches the browser context to a different tab based on the provided page ID.
+
+        This is useful when multiple tabs are open and you want to interact with a specific one.
+
+        Args:
+            page_id (int): The ID of the tab (page) you want to switch to.
+        """
+        await self.browser_context.switch_to_tab(page_id)
+        # Wait for tab to be ready
+        page = await self.browser_context.get_current_page()
+        await page.wait_for_load_state()
+        msg = f'🔄  Switched to tab {page_id}'
+        logger.info(msg)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
+
+    @tool
+    async def close_tab(self, page_id: int):
+        await self.browser_context.switch_to_tab(page_id)
+        page = await self.browser_context.get_current_page()
+        url = page.url
+        await page.close()
+        msg = f'❌  Closed tab #{page_id} with url {url}'
+        logger.info(msg)
+        return ToolResult(extracted_content=msg, include_in_memory=True)
+
+    @tool
     async def input_text(
             self,
             index: int,
@@ -316,16 +313,15 @@ class BrowserHandler(BaseHandler):
             @param index: The index of the input element to interact with.
             @param text: The text to input into the selected element.
         """
+        if index not in await self.browser_context.get_selector_map():
+            return ToolResult(error=f'Element index {index} does not exist - retry or use alternative actions')
         try:
-            state = await self.browser_context.get_state()
-            # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
-
-            node_element = state.selector_map[int(index)]
-            # await self.wait(seconds=3)
-            await self.browser_context._input_text_element_node(node_element, text)
+            element_node = await self.browser_context.get_dom_element_by_index(index)
+            await self.wait(seconds=3)
+            await self.browser_context._input_text_element_node(element_node, text)
             msg = f'⌨️  Input data into index {index} {text}'
             logger.info(msg)
-            logger.debug(f'Element xpath: {node_element.xpath}')
+            logger.debug(f'Element xpath: {element_node.xpath}')
             return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as ex:
             msg = f'⌨️  Content was Failed input into the text box.{ex}'
@@ -378,12 +374,12 @@ class BrowserHandler(BaseHandler):
         try:
             output = await self.llm.achat_completion(chat_completion_params=chat_completion_params)
             msg = f'📄  Extracted from page\n: {output.choices[0].message.content}\n'
-            logger.debug(msg)
+            logger.info(msg)
             return ToolResult(extracted_content=msg, include_in_memory=True)
         except Exception as e:
-            logger.info(f'Error extracting content: {e}')
-            msg = f'📄  Extracted from page\n: {content}\n'
-            logger.info(msg)
+            logger.error(f'Error extracting content: {e}')
+            msg = f'📄  Failed to extract \n: {content}\n'
+            logger.error(msg)
             return ToolResult(extracted_content=msg)
 
     @tool

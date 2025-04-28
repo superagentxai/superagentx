@@ -22,7 +22,7 @@ from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, sync_to_async
 from superagentx.utils.llm_config import LLMType
 
 logger = logging.getLogger(__name__)
@@ -59,6 +59,7 @@ class LLMClient:
     ):
         self.llm_config = llm_config
         self.llm_config_model = LLMModelConfig(**self.llm_config)
+        self.async_mode = self.llm_config_model.async_mode
 
         match self.llm_config_model.llm_type:
             case LLMType.OPENAI_CLIENT | LLMType.ANTHROPIC_CLIENT | LLMType.DEEPSEEK:
@@ -203,14 +204,24 @@ class LLMClient:
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        return self.client.chat_completion(chat_completion_params=chat_completion_params)
+        return self.client.chat_completion(
+            chat_completion_params=chat_completion_params
+        )
 
     async def achat_completion(
             self,
             *,
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
-        return await self.client.achat_completion(chat_completion_params=chat_completion_params)
+        if self.async_mode:
+            return await self.client.achat_completion(
+                chat_completion_params=chat_completion_params
+            )
+        else:
+            return await sync_to_async(
+                self.client.chat_completion,
+                chat_completion_params=chat_completion_params
+            )
 
     async def get_tool_json(
             self,
@@ -236,10 +247,17 @@ class LLMClient:
             text: str,
             **kwargs
     ):
-        return await self.client.aembed(
-            text,
-            **kwargs
-        )
+        if self.async_mode:
+            return await self.client.aembed(
+                text,
+                **kwargs
+            )
+        else:
+            return await sync_to_async(
+                self.client.embed,
+                text,
+                **kwargs
+            )
 
     async def afunc_chat_completion(
             self,
@@ -256,8 +274,15 @@ class LLMClient:
             )
             chat_completion_params.stream = False
 
-        response: ChatCompletion = await self.client.achat_completion(chat_completion_params=chat_completion_params)
-
+        if self.async_mode:
+            response: ChatCompletion = await self.client.achat_completion(
+                chat_completion_params=chat_completion_params
+            )
+        else:
+            response: ChatCompletion = await sync_to_async(
+                self.client.chat_completion,
+                chat_completion_params=chat_completion_params
+            )
         # List to store multiple Message instances
         message_instances = []
 
@@ -287,7 +312,8 @@ class LLMClient:
                         completion_tokens=usage_data.completion_tokens,
                         prompt_tokens=usage_data.prompt_tokens,
                         total_tokens=usage_data.total_tokens,
-                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens if usage_data.completion_tokens_details else 0,
+                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens
+                        if usage_data.completion_tokens_details else 0,
                         created=response.created
                     )
                 )

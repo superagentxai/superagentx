@@ -73,6 +73,7 @@ class OpenAIClient(Client):
     def _get_embeddings(response: CreateEmbeddingResponse):
         if response and response.data:
             return response.data[0].embedding
+        return None
 
     def embed(
             self,

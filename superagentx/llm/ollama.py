@@ -78,12 +78,13 @@ class OllamaClient(Client):
                 model=self._model
             )
             return chat_completion
+        return None
 
     async def achat_completion(
             self,
             *,
             chat_completion_params: ChatCompletionParams
-    ) -> ChatCompletion:
+    ) -> ChatCompletion | None:
         """
         Chat Completion using Ollama-runtime in asynchronous mode
         @param chat_completion_params:
@@ -126,10 +127,10 @@ class OllamaClient(Client):
                 model=self._model
             )
             return chat_completion
+        return None
 
     @staticmethod
     def convert_tool_response_to_openai_format(content) -> list:
-
         """Converts Converse API response tool calls to AutoGen format"""
         tool_calls = []
         for tool_request in content:
@@ -273,6 +274,7 @@ class OllamaClient(Client):
         response = self.client.embeddings(model=self._embed_model, prompt=text)
         if response and response["embedding"]:
             return response["embedding"]
+        return None
 
     async def aembed(
             self,
@@ -290,6 +292,7 @@ class OllamaClient(Client):
         response = await self.client.embeddings(model=self._embed_model, prompt=text)
         if response and response["embedding"]:
             return response["embedding"]
+        return None
 
     def __replace_instance_values(self, source_instance: ChatCompletionParams) -> ChatCompletionParams:
         params = self.kwargs.keys()

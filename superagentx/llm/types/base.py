@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class LLMModelConfig(BaseModel):
-    model: str = Field(
+    model: str | None = Field(
         description='LLM model name, supported models openai, azure-openai, mistral, llama 3.1',
         default=None
     )
@@ -39,7 +39,7 @@ class LLMModelConfig(BaseModel):
         default=True
     )
 
-    embed_model: str = Field(
+    embed_model: str | None = Field(
         description='Embedding model name, supported models openai, azure-openai, mistral, llama 3.1',
         default=None
     )
@@ -87,4 +87,6 @@ class LLMModelConfig(BaseModel):
                 )
                 logger.error(_msg)
                 raise ValueError(_msg)
+        if self.async_mode is None:
+            self.async_mode = True
         return self

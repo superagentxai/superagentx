@@ -133,6 +133,8 @@ system detects that human action is required:
 
 - After 5 minutes, if login has not been completed, mark `evaluation_previous_goal` as `Failed` and record this in `memory`.
 
+- DON'T TRY TO LOGIN BY YOUR OWN.
+
 6. TASK COMPLETION:
 
 - Use the `done` action only when the ultimate task is complete or the maximum allowed steps are reached.

@@ -58,7 +58,7 @@ class Agent:
             role: str,
             llm: LLMClient,
             prompt_template: PromptTemplate,
-            agent_id: str | None = uuid.uuid4().hex,
+            agent_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
             engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] | None = None,
@@ -97,12 +97,12 @@ class Agent:
         self.goal = goal
         self.llm = llm
         self.prompt_template = prompt_template
-        self.agent_id = agent_id
+        self.agent_id = agent_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
         self.engines: list[BaseEngine | list[BaseEngine]] = engines or []
         self.output_format = output_format
-        self.max_retry = max_retry
+        self.max_retry = max_retry if max_retry >= 1 else 1
         logger.debug(
             f'Initiating Agent...\n'
             f'Id : {self.agent_id}\n'

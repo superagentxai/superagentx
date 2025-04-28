@@ -8,12 +8,19 @@ import typing
 import uuid
 from typing import TypeVar
 
+import yaml
 from playwright.async_api import Page
 
 from superagentx.base_engine import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
-from superagentx.computer_use.utils import get_user_message, show_toast, SYSTEM_MESSAGE, log_response, manipulate_string
+from superagentx.computer_use.utils import (
+    get_user_message,
+    show_toast,
+    SYSTEM_MESSAGE,
+    log_response,
+    manipulate_string
+)
 from superagentx.handler.browser import BrowserHandler
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
@@ -49,6 +56,7 @@ class BrowserEngine(BaseEngine):
         self.n_steps = 1
         self.max_steps = max_steps
         self.take_screenshot = take_screenshot
+        self.async_mode = self.llm.llm_config_model.async_mode
         if browser is not None:
             self.browser = browser
         elif browser_instance_path:
@@ -189,6 +197,7 @@ class BrowserEngine(BaseEngine):
                 "role": "assistant",
                 "content": f"{res}"
             })
+            logger.info(f"Response: {res}")
             actions = res.get("action")
             current_state = res.get("current_state")
             result = await self._action_execute(
@@ -198,14 +207,18 @@ class BrowserEngine(BaseEngine):
             )
             if result:
                 if result[0].is_done:
+                    response = res.get("action", [])[0].get("done", {}).get("text")
+                    if isinstance(response, (list, dict)):
+                        response = await sync_to_async(yaml.dump, response)
                     await show_toast(
                         page,
-                        res.get("action", [])[0].get("done", {}).get("text", ""),
+                        response,
                         4000
                     )
                     await asyncio.sleep(4)
                     await self.browser_context.take_screenshot(
-                        path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg")
+                        path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
+                    )
                     await show_toast(
                         page=await self.browser_context.get_current_page(),
                         message=f"Screenshot Saved in {self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"

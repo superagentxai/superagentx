@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 from rich import print as rprint
 from superagentx.agent import Agent
 from superagentx.browser_engine import BrowserEngine
@@ -11,9 +13,20 @@ import logging
 warnings.filterwarnings('ignore')
 logger = logging.getLogger(__name__)
 
+
+sh = logging.StreamHandler()
+logging.basicConfig(
+        level="INFO",
+        format='%(asctime)s -%(levelname)s - %(name)s - %(funcName)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        handlers=[sh]
+    )
+
+
 async def main():
-    # llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
-    llm_config = {'llm_type': 'gemini', 'model': 'gemini-2.0-flash'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai', 'async_mode': True}
+    # llm_config = {"model": 'anthropic.claude-3-5-haiku-20241022-v1:0', "llm_type": 'bedrock'}
+
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 
     prompt_template = PromptTemplate()
@@ -25,16 +38,19 @@ async def main():
     )
     query_instruction = input("\n Enter your task: ")
     logger.info(f"Query Input : {query_instruction}")
+    query_instruction = "Which team have 5 trophies in IPL"
+
     task = f""" 
             1. Analyse and find the result for the given {query_instruction}.
-            2. Goto https://x.com/compose/post and click and set focus.
-            3. Write the a detail result using input_text.
-            3. Review the tweet before post it for submit.
-            4. Find 'Post' and Click the 'Post' the button to tweet the result!
+            2. Goto https://x.com/compose/post and click and set focus. Wait until user manual login.
+            3. Write the a detail result.
+            4. Review the tweet before post it for submit.
+            5. Find 'Post' and Click the 'Post' the button to tweet the result!
             
             Important:
             1. DO NOT write the post as reply
             2. DO NOT post more than one.
+            3. Strictly Follow the instructions
 
         """
 

@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 
-from superagentx.computer_use.browser.dom.history_tree_processor.service import DOMHistoryElement
+from superagentx.computer_use.browser.dom.history_tree_processor.tree_processor_service import DOMHistoryElement
 from superagentx.computer_use.browser.dom.views import DOMState
 
 
