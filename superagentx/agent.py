@@ -6,6 +6,8 @@ from json import JSONDecodeError
 from typing import Literal, Any
 
 from superagentx.engine import Engine
+from superagentx.base import BaseEngine
+from superagentx.browser_engine import BrowserEngine
 from superagentx.result import GoalResult
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
@@ -59,7 +61,7 @@ class Agent:
             agent_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
-            engines: list[Engine | list[Engine]] | None = None,
+            engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] | None = None,
             output_format: str | None = None,
             max_retry: int = 5
     ):
@@ -98,7 +100,7 @@ class Agent:
         self.agent_id = agent_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
-        self.engines: list[Engine | list[Engine]] = engines or []
+        self.engines: list[BaseEngine | list[BaseEngine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
         logger.debug(
@@ -122,7 +124,7 @@ class Agent:
 
     async def add(
             self,
-            *engines: Engine,
+            *engines: BaseEngine,
             execute_type: Literal['SEQUENCE', 'PARALLEL'] = 'SEQUENCE'
     ) -> None:
         """
@@ -220,30 +222,26 @@ class Agent:
             conversation_id: str | None = None
     ) -> GoalResult:
         results = []
-        instruction = query_instruction
+        params = {
+            "input_prompt": query_instruction,
+            "pre_result": pre_result,
+            "old_memory": old_memory
+        }
+        if conversation_id is not None:
+            params["conversation_id"] = conversation_id
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 logger.debug(f'Engine(s) are executing : {",".join([str(_engine) for _engine in _engines])}')
                 _res = await asyncio.gather(
                     *[
-                        _engine.start(
-                            input_prompt=instruction,
-                            pre_result=pre_result,
-                            old_memory=old_memory,
-                            conversation_id=conversation_id
-                        )
+                        _engine.start(**params)
                         async for _engine in iter_to_aiter(_engines)
                     ]
                 )
                 logger.debug(f'Engine(s) results : {_res}')
             else:
                 logger.debug(f'Engine is executing : {_engines}')
-                _res = await _engines.start(
-                    input_prompt=instruction,
-                    pre_result=pre_result,
-                    old_memory=old_memory,
-                    conversation_id=conversation_id
-                )
+                _res = await _engines.start(**params)
                 logger.debug(f'Engine result : {_res}')
             results.append(_res)
 
