@@ -106,7 +106,7 @@ class GeminiClient(Client):
         return kwargs
 
     @staticmethod
-    def _construct_message(contents: [Message]) -> tuple[str, Any | None]:
+    def _construct_message(contents: [Message]) -> tuple[list, Any | None]:
         """"
             Converts a list of messages into the necessary prompt format for the model.
         """
@@ -121,7 +121,7 @@ class GeminiClient(Client):
                     if conversation.content:
                         formatted_system_message = conversation.content
 
-        return "\n".join(formatted_user_messages), formatted_system_message
+        return formatted_user_messages, formatted_system_message
 
     @staticmethod
     def convert_gemini_response_to_openai_chat_completion(response: types.GenerateContentResponse,
