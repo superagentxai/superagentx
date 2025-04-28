@@ -30,7 +30,7 @@ async def get_user_message(
         state: BrowserState,
         step_info: StepInfo,
         action_result: list[ToolResult],
-        use_vision: bool = True
+        use_vision: bool = False
 ):
     include_attributes = ['title', 'type', 'name', 'role', 'aria-label', 'placeholder', 'value', 'alt',
                           'aria-expanded', 'data-date-format']
@@ -85,18 +85,18 @@ Interactive elements from top layer of the current page inside the viewport:
                 error = result.error.split('\n')[-1]
                 state_description += f'\nAction error {i + 1}/{len(action_result)}: ...{error}'
 
-    if state.screenshot and use_vision:
-        return {
-            "role": "user",
-            "content": [{
-                "type": "text",
-                "text": state_description
-            }, {
-                'type': 'image_url',
-                'image_url': {'url': f'data:image/png;base64,{state.screenshot}'},  # , 'detail': 'low'
-            }
-            ]
-        }
+    # if state.screenshot and use_vision:
+    #     return {
+    #         "role": "user",
+    #         "content": [{
+    #             "type": "text",
+    #             "text": state_description
+    #         }, {
+    #             'type': 'image_url',
+    #             'image_url': {'url': f'data:image/png;base64,{state.screenshot}'},  # , 'detail': 'low'
+    #         }
+    #         ]
+    #     }
     return {
         "role": "user",
         "content": state_description
