@@ -1,0 +1,202 @@
+---
+title: 'Conversation'
+icon: 'head-side-brain'
+---
+
+# 🧠 Conversation with Memory
+
+A **conversation with memory** is more than just talk—it's connection.
+
+This guide demonstrates how to create an AI conversation pipeline using the `superagentx` framework, with built-in support for **memory** and **conversation context** through a unique `conversation_id`.
+
+The core idea is to enable an AI agent to **remember the flow of a conversation** using a memory component tied to a specific session.
+
+## 1. Define the AI Handler Pipeline
+
+The function `get_test_ai_handler_pipe` initializes the AI pipeline with:
+
+- An LLM client (using OpenAI)
+- A memory module to retain context
+- A custom handler to manage LLM interactions
+- An agent defined with a goal and role
+- A pipeline (`AgentXPipe`) for integration into CLI/WebSocket/API interfaces
+
+```python
+import uuid
+from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
+from superagentx.engine import Engine
+from superagentx.llm import LLMClient
+from superagentx.memory import Memory
+from superagentx.prompt import PromptTemplate
+
+from df_agentic_app.handlers.ai import AIHandler
+
+async def get_test_ai_handler_pipe() -> AgentXPipe:
+    # LLM Configuration
+    llm_config = {
+        'llm_type': 'openai'
+    }
+    llm_client = LLMClient(llm_config=llm_config)
+
+    # Enable Memory
+    memory = Memory(memory_config={"llm_client": llm_client})
+
+    ai_handler = AIHandler(
+        llm=llm_client,
+        memory=memory
+    )
+
+    # Prompt Template
+    prompt_template = PromptTemplate()
+
+    # Create Engine
+    ai_engine = Engine(
+        handler=ai_handler,
+        llm=llm_client,
+        prompt_template=prompt_template
+    )
+
+    # Create Agents
+    ai_agent = Agent(
+        name='AI agent',
+        goal="Get me the best results",
+        role="You are the best at answering",
+        llm=llm_client,
+        prompt_template=prompt_template,
+        engines=[ai_engine]
+    )
+
+    # Expose via pipe for interaction
+    pipe = AgentXPipe(
+        agents=[ai_agent],
+        memory=memory
+    )
+
+    return pipe
+```
+
+---
+
+## 2. Run a Conversation with Context
+
+This example initializes a pipeline and runs a conversation with memory:
+
+```python
+import asyncio
+import uuid
+
+conversation_id = uuid.uuid4().hex  # Unique ID for tracking this conversation
+
+async def main():
+
+    conversation_pipe = await get_test_ai_handler_pipe()
+
+    await conversation_pipe.flow(
+        query_instruction="What is Agentic AI?",
+        conversation_id=conversation_id  # Context maintained here
+    )
+
+    await conversation_pipe.flow(
+        query_instruction="Give me real-world examples of Agentic AI applications?",
+        conversation_id=conversation_id
+    )
+
+    await conversation_pipe.flow(
+        query_instruction="How does memory improve AI conversations?",
+        conversation_id=conversation_id
+    )
+
+```
+if __name__ == "__main__":
+    asyncio.run(main_conversations())
+```
+---
+
+✅ **Supports contextual memory** per `conversation_id`
+✅ **Ideal for multi-turn chat experiences** across CLI, WebSocket, or RESTful APIs
+
+---
+
+## 💪 Sample Output
+
+```shell
+Generate 'the response based on the user input. When you response the answer,
+remember the previous context if previous context is not empty otherwise response it'.
+
+User Input: What is Agentic AI?
+Previous Context: []
+
+    name='AI agent',
+    agent_id='d03230eff9084e0097141d24289bbd2c',
+reason='The provided Output_Context explains what Agentic AI is, describing its agency,
+autonomy, decision-making capabilities, and ability to learn and adapt. This aligns with
+the goal of getting the best results by supplying a comprehensive understanding of Agentic AI.',
+result='Agentic AI refers to artificial intelligence systems that possess a form of agency,
+which means they are designed to act autonomously on behalf of users or stakeholders in an
+environment. This kind of AI is capable of decision-making, planning, and executing tasks
+without direct human intervention, often using advanced algorithms to optimize for specific
+outcomes. Unlike purely reactive or rule-based systems, agentic AI can adapt to new situations,
+learn from interactions, and make complex decisions by considering various factors and potential
+consequences.',
+content=None,
+error=None,
+is_goal_satisfied=True
+
+User Input: Give me real-world examples of Agentic AI applications?
+Previous Context: []
+
+        name='AI agent',
+        agent_id='177fdd1a9704457b981bed5db33858fc',
+reason='The provided Output_Context contains a clear explanation of Agentic AI, listing specific real-world applications that demonstrate AI systems
+possessing agency. These examples comprehensively illustrate the autonomy and decision-making capabilities inherent in Agentic AI.',
+result=[
+     1.Autonomous Vehicles: Such as self-driving cars that navigate and make driving decisions without human intervention.
+     2.Robotic Process Automation (RPA): Advanced systems that make autonomous decisions within business processes.
+     3.Drones and Unmanned Aerial Vehicles (UAVs): Used for delivery, surveillance, or search and rescue operations.
+     4.Smart Personal Assistants: Like Google Assistant, Siri, or Alexa, which make proactive suggestions or actions.
+     5.Intelligent Customer Support Bots: Bots that manage complex inquiries and escalate issues autonomously.
+     6.Industrial Robots: Robots in manufacturing that adapt and optimize tasks autonomously.
+     7.AI in Financial Trading Systems: Systems making autonomous stock trading decisions.
+],
+content=None,
+error=None,
+verify_goal=True,
+is_goal_satisfied=True
+
+User Input: How does memory improve AI conversations?
+Previous Context: []
+
+    name='AI agent',
+    agent_id='177fdd1a9704457b981bed5db33858fc',
+reason='The Output_Context does not address the query about how memory improves AI conversations. Instead, it discusses Agentic AI and its applications,
+which are not relevant to the query. The additional provided response outside the context clearly addresses how memory can enhance AI conversations by explaining
+various aspects like context retention, personalization, learning from interactions, reducing repetition, and improved decision-making.
+result="Memory can enhance AI conversations in several ways:\n\n1. **Context Retention**: Memory allows an AI to retain the context of an ongoing
+conversation, enabling more coherent and contextually relevant responses. By remembering earlier interactions, an AI can more effectively follow a thread of
+conversation and reference past exchanges to enhance the dialogue.\n\n2. **Personalization**: With memory, an AI can remember users' preferences, personal
+details, previous questions, and feedback. This leads to personalized interactions, as the AI can tailor its responses based on individual user profiles or
+specific user history.\n\n3. **Learning from Interactions**: Memory enables an AI to learn from past interactions and improve over time. As it stores information
+about what worked well in previous conversations or where misunderstandings occurred, it can adapt its approach to become more effective in future
+interactions.\n\n4. **Reducing Repetition**: By recalling earlier interactions, an AI can avoid repetitive questioning or information exchange, which improves
+user experience. Users do not have to repeat themselves if the AI remembers what has already been discussed.\n\n5. **Improved Decision Making**: Memory allows an
+AI to remember previous successes or failures, which can inform its decision-making processes. By leveraging past experiences, the AI can choose strategies that
+are more likely to be effective in achieving desired outcomes.\n\nOverall, memory enhances the quality and effectiveness of AI conversations by adding continuity,
+depth, and adaptability to interactions.",
+content=None,
+error=None,
+verify_goal=True,
+is_goal_satisfied=True
+
+
+
+```
+
+---
+
+## 🧠 Why Memory Matters
+
+Memory enables **multi-turn conversations** where the AI doesn't forget previous questions, responses, or the conversation's purpose.
+
+This is essential for building helpful and coherent AI assistants that feel **more natural** and **less robotic**.
+
