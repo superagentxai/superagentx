@@ -9,6 +9,7 @@ from playwright.async_api import (
     BrowserContext as PlaywrightBrowserContext,
 )
 
+from superagentx.computer_use.browser.context import Page
 logger = logging.getLogger(__name__)
 
 
@@ -114,7 +115,7 @@ async def log_response(result: dict):
     logger.info(f'Action {result.get('action')}')
 
 
-async def show_toast(page: PlaywrightBrowserContext, message: str, duration: int = 3000):
+async def show_toast(page: Page, message: str, duration: int = 3000):
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
     final_message = f" SuperAgentX Goal:  {random_icon} {message}"
