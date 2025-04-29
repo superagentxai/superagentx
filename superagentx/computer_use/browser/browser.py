@@ -74,14 +74,15 @@ class Browser:
         import aiohttp
 
         try:
-            response = aiohttp.get('http://localhost:9222/json/version', timeout=2)
-            if response.status_code == 200:
-                logger.info('Reusing existing Chrome instance')
-                return await playwright.chromium.connect_over_cdp(
-                    endpoint_url='http://localhost:9222',
-                    timeout=20000,
-                )
-        except aiohttp.ConnectionError:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as session:
+                async with session.get('http://localhost:9222/json/version') as response:
+                    if response.status == 200:
+                        logger.info('Reusing existing Chrome instance')
+                        return await playwright.chromium.connect_over_cdp(
+                            endpoint_url='http://localhost:9222',
+                            timeout=20000,
+                        )
+        except aiohttp.ClientConnectorError:
             logger.debug('No existing Chrome instance found, starting a new one')
 
         process = await asyncio.create_subprocess_exec(
@@ -94,9 +95,10 @@ class Browser:
 
         for _ in range(10):
             try:
-                response = aiohttp.get('http://localhost:9222/json/version', timeout=2)
-                if response.status_code == 200:
-                    break
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as session:
+                    async with session.get('http://localhost:9222/json/version') as response:
+                        if response.status == 200:
+                            break
             except aiohttp.ConnectionError:
                 pass
             await asyncio.sleep(1)
