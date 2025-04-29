@@ -1,7 +1,7 @@
 import asyncio
+import aiohttp
 import gc
 import logging
-
 from pydantic import BaseModel, Field
 from playwright._impl._api_structures import ProxySettings
 from playwright.async_api import Browser as PlaywrightBrowser
@@ -70,8 +70,6 @@ class Browser:
     async def _setup_browser_with_instance(self, playwright: Playwright) -> PlaywrightBrowser:
         if not self.config.chrome_instance_path:
             raise ValueError('Chrome instance path is required')
-
-        import aiohttp
 
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as session:
