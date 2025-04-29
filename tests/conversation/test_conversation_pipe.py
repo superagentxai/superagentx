@@ -64,7 +64,7 @@ async def main():
             query_instruction=user_input,
             conversation_id=conversation_id  # Context maintained here
         )
-        rprint(result)
+        print(result)
 
 
 if __name__ == "__main__":
