@@ -1,6 +1,7 @@
-from typing import Any, Optional, List, Union
+from dataclasses import dataclass, field
+from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from superagentx.computer_use.browser.dom.history_tree_processor.tree_processor_service import DOMHistoryElement
 from superagentx.computer_use.browser.dom.views import DOMState
@@ -12,6 +13,7 @@ class TabInfo(BaseModel):
     title: str
 
 
+@dataclass
 class BrowserState(DOMState):
     url: str
     title: str
@@ -19,10 +21,11 @@ class BrowserState(DOMState):
     screenshot: str | None = None
     pixels_above: int = 0
     pixels_below: int = 0
-    browser_errors: list[str] = Field(default_factory=list)
+    browser_errors: list[str] = field(default_factory=list)
 
 
-class BrowserStateHistory(BaseModel):
+@dataclass
+class BrowserStateHistory:
     url: str
     title: str
     tabs: list[TabInfo]

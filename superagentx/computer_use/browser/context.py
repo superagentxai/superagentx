@@ -1,6 +1,3 @@
-"""
-Playwright browser on steroids.
-"""
 
 import asyncio
 import base64
@@ -8,13 +5,11 @@ import gc
 import json
 import logging
 import os
-import pathlib
 import re
 import time
-import typing
 import uuid
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional, TypedDict
-from urllib.parse import urlparse
 
 from playwright._impl._errors import TimeoutError
 from playwright.async_api import Browser as PlaywrightBrowser
@@ -26,7 +21,6 @@ from playwright.async_api import (
     FrameLocator,
     Page,
 )
-from pydantic import BaseModel, Field
 
 from superagentx.computer_use.browser.dom.dom_service import DomService
 from superagentx.computer_use.browser.dom.views import DOMElementNode, SelectorMap
@@ -36,10 +30,12 @@ from superagentx.computer_use.browser.state import (
     TabInfo,
     URLNotAllowedError,
 )
-from superagentx.computer_use.utils import RELEVANT_RESOURCE_TYPES, IGNORED_URL_PATTERNS, RELEVANT_CONTENT_TYPES, SAFE_ATTRIBUTES, dynamic_attributes
+from superagentx.computer_use.constants import RELEVANT_RESOURCE_TYPES, IGNORED_URL_PATTERNS, RELEVANT_CONTENT_TYPES, SAFE_ATTRIBUTES, dynamic_attributes
+
+from superagentx.computer_use.utils import time_execution_async, time_execution_sync
 
 if TYPE_CHECKING:
-    from browser import Browser
+    from superagentx.computer_use.browser.browser import Browser
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +45,8 @@ class BrowserContextWindowSize(TypedDict):
     height: int
 
 
-class BrowserContextConfig(BaseModel):
+@dataclass
+class BrowserContextConfig:
     """
     Configuration for the BrowserContext.
 
@@ -92,29 +89,23 @@ class BrowserContextConfig(BaseModel):
             Path to save trace files. It will auto name the file with the TRACE_PATH/{context_id}.zip
 
         locale: None
-            Specify user locale, for example en-GB, de-DE, etc. Locale will affect navigator.language value,
-            Accept-Language request header value as well as number and date formatting rules. If not provided, defaults
-            to the system default locale.
+            Specify user locale, for example en-GB, de-DE, etc. Locale will affect navigator.language value, Accept-Language request header value as well as number and date formatting rules. If not provided, defaults to the system default locale.
 
-        user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
-        Chrome/85.0.4183.102 Safari/537.36'
+        user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
             custom user agent to use.
 
         highlight_elements: True
             Highlight elements in the DOM on the screen
 
         viewport_expansion: 500
-            Viewport expansion in pixels. This amount will increase the number of elements which are included in the
-            state what the LLM will see. If set to -1, all elements will be included (this leads to high token usage).
-            If set to 0, only the elements which are visible in the viewport will be included.
+            Viewport expansion in pixels. This amount will increase the number of elements which are included in the state what the LLM will see. If set to -1, all elements will be included (this leads to high token usage). If set to 0, only the elements which are visible in the viewport will be included.
 
         allowed_domains: None
             List of allowed domains that can be accessed. If None, all domains are allowed.
             Example: ['example.com', 'api.example.com']
 
         include_dynamic_attributes: bool = True
-            Include dynamic attributes in the CSS selector. If you want to reuse the css_selectors, it might be better
-            to set this to False.
+            Include dynamic attributes in the CSS selector. If you want to reuse the css_selectors, it might be better to set this to False.
     """
 
     cookies_file: str | None = None
@@ -125,16 +116,15 @@ class BrowserContextConfig(BaseModel):
 
     disable_security: bool = True
 
-    browser_window_size: BrowserContextWindowSize = Field(default_factory=lambda: {'width': 1280, 'height': 1100})
-    no_viewport: bool | None = None
+    browser_window_size: BrowserContextWindowSize = field(default_factory=lambda: {'width': 1280, 'height': 1100})
+    no_viewport: Optional[bool] = None
 
     save_recording_path: str | None = None
     save_downloads_path: str | None = None
     trace_path: str | None = None
     locale: str | None = None
     user_agent: str = (
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36  (KHTML, like Gecko) Chrome/85.0.4183.102 '
-        'Safari/537.36'
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36  (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
     )
 
     highlight_elements: bool = False
@@ -145,12 +135,14 @@ class BrowserContextConfig(BaseModel):
     _force_keep_context_alive: bool = False
 
 
-class BrowserSession(BaseModel):
+@dataclass
+class BrowserSession:
     context: PlaywrightBrowserContext
-    cached_state: BrowserState | None = None
+    cached_state: BrowserState | None
 
 
-class BrowserContextState(BaseModel):
+@dataclass
+class BrowserContextState:
     """
     State of the browser context
     """
@@ -163,9 +155,11 @@ class BrowserContext:
             self,
             browser: 'Browser',
             config: BrowserContextConfig = BrowserContextConfig(),
-            state: BrowserContextState | None = None,
+            state: Optional[BrowserContextState] = None,
     ):
-        self.context_id = uuid.uuid4().hex
+        self.context_id = str(uuid.uuid4())
+        logger.debug(f'Initializing new browser context with id: {self.context_id}')
+
         self.config = config
         self.browser = browser
 
@@ -183,6 +177,7 @@ class BrowserContext:
         """Async context manager exit"""
         await self.close()
 
+    @time_execution_async('--close')
     async def close(self):
         """Close the browser instance"""
         logger.debug('Closing browser context')
@@ -205,7 +200,7 @@ class BrowserContext:
             if self.config.trace_path:
                 try:
                     await self.session.context.tracing.stop(
-                        path=os.path.join(self.config.trace_path.strip('/'), f'{self.context_id}.zip'))
+                        path=os.path.join(self.config.trace_path, f'{self.context_id}.zip'))
                 except Exception as e:
                     logger.debug(f'Failed to stop tracing: {e}')
 
@@ -235,6 +230,7 @@ class BrowserContext:
             except Exception as e:
                 logger.warning(f'Failed to force close browser context: {e}')
 
+    @time_execution_async('--initialize_session')
     async def _initialize_session(self):
         """Initialize the browser session"""
         logger.debug('Initializing browser context')
@@ -257,10 +253,10 @@ class BrowserContext:
             if self.state.target_id:
                 targets = await self._get_cdp_targets()
                 for target in targets:
-                    if target.get('targetId') == self.state.target_id:
+                    if target['targetId'] == self.state.target_id:
                         # Find matching page by URL
                         for page in pages:
-                            if page.url == target.get('url'):
+                            if page.url == target['url']:
                                 active_page = page
                                 break
                         break
@@ -278,8 +274,8 @@ class BrowserContext:
             if self.browser.config.cdp_url:
                 targets = await self._get_cdp_targets()
                 for target in targets:
-                    if target.get('url') == active_page.url:
-                        self.state.target_id = target.get('targetId')
+                    if target['url'] == active_page.url:
+                        self.state.target_id = target['targetId']
                         break
 
         # Bring page to front
@@ -294,7 +290,7 @@ class BrowserContext:
                 await page.reload()  # Reload the page to avoid timeout errors
             await page.wait_for_load_state()
             logger.debug(f'New page opened: {page.url}')
-            if self.session:
+            if self.session is not None:
                 self.state.target_id = None
 
         self._page_event_handler = on_page
@@ -302,7 +298,7 @@ class BrowserContext:
 
     async def get_session(self) -> BrowserSession:
         """Lazy initialization of the browser and related components"""
-        if self.session:
+        if self.session is None:
             return await self._initialize_session()
         return self.session
 
@@ -313,9 +309,9 @@ class BrowserContext:
 
     async def _create_context(self, browser: PlaywrightBrowser):
         """Creates a new browser context with anti-detection measures and loads cookies if available."""
-        if self.browser.config.cdp_url and browser.contexts:
+        if self.browser.config.cdp_url and len(browser.contexts) > 0:
             context = browser.contexts[0]
-        elif self.browser.config.chrome_instance_path and browser.contexts:
+        elif self.browser.config.chrome_instance_path and len(browser.contexts) > 0:
             # Connect to existing Chrome instance instead of creating new one
             context = browser.contexts[0]
         else:
@@ -343,7 +339,41 @@ class BrowserContext:
                 await context.add_cookies(cookies)
 
         # Expose anti-detection scripts
-        await context.add_init_script()
+        await context.add_init_script(
+            """
+            // Webdriver property
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+
+            // Languages
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US']
+            });
+
+            // Plugins
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5]
+            });
+
+            // Chrome runtime
+            window.chrome = { runtime: {} };
+
+            // Permissions
+            const originalQuery = window.navigator.permissions.query;
+            window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                    Promise.resolve({ state: Notification.permission }) :
+                    originalQuery(parameters)
+            );
+            (function () {
+                const originalAttachShadow = Element.prototype.attachShadow;
+                Element.prototype.attachShadow = function attachShadow(options) {
+                    return originalAttachShadow.call(this, { ...options, mode: "open" });
+                };
+            })();
+            """
+        )
 
         return context
 
@@ -443,7 +473,7 @@ class BrowserContext:
             while True:
                 await asyncio.sleep(0.1)
                 now = asyncio.get_event_loop().time()
-                if not pending_requests and (
+                if len(pending_requests) == 0 and (
                         now - last_activity) >= self.config.wait_for_network_idle_page_load_time:
                     break
                 if now - start_time > self.config.maximum_wait_page_load_time:
@@ -479,7 +509,7 @@ class BrowserContext:
         except URLNotAllowedError as e:
             raise e
         except Exception:
-            logger.warning('⚠️  Page load failed, continuing...')
+            logger.warning('Page load failed, continuing...')
             pass
 
         # Calculate remaining time to meet minimum WAIT_TIME
@@ -498,13 +528,10 @@ class BrowserContext:
             return True
 
         try:
+            from urllib.parse import urlparse
 
             parsed_url = urlparse(url)
             domain = parsed_url.netloc.lower()
-
-            # Special case: Allow 'about:blank' explicitly
-            if url == 'about:blank':
-                return True
 
             # Remove port number if present
             if ':' in domain:
@@ -516,17 +543,17 @@ class BrowserContext:
                 for allowed_domain in self.config.allowed_domains
             )
         except Exception as e:
-            logger.error(f'⛔️  Error checking URL allowlist: {str(e)}')
+            logger.error(f'Error checking URL allowlist: {str(e)}')
             return False
 
     async def _check_and_handle_navigation(self, page: Page) -> None:
         """Check if current page URL is allowed and handle if not."""
         if not self._is_url_allowed(page.url):
-            logger.warning(f'⛔️  Navigation to non-allowed URL detected: {page.url}')
+            logger.warning(f'Navigation to non-allowed URL detected: {page.url}')
             try:
                 await self.go_back()
             except Exception as e:
-                logger.error(f'⛔️  Failed to go back after detecting non-allowed URL: {str(e)}')
+                logger.error(f'Failed to go back after detecting non-allowed URL: {str(e)}')
             raise URLNotAllowedError(f'Navigation to non-allowed URL: {page.url}')
 
     async def navigate_to(self, url: str):
@@ -569,11 +596,10 @@ class BrowserContext:
         session = await self.get_session()
         page = await self._get_current_page(session)
         await page.close()
-        self.active_tab = None
+
         # Switch to the first available tab if any exist
         if session.context.pages:
             await self.switch_to_tab(0)
-            self.active_tab = session.context.pages[0]
 
     # otherwise the browser will be closed
 
@@ -590,85 +616,80 @@ class BrowserContext:
     async def get_page_structure(self) -> str:
         """Get a debug view of the page structure including iframes"""
         debug_script = """(() => {
-        function getPageStructure(element = document, depth = 0, maxDepth = 10) {
-            if (depth >= maxDepth) return '';
+			function getPageStructure(element = document, depth = 0, maxDepth = 10) {
+				if (depth >= maxDepth) return '';
 
-            const indent = '  '.repeat(depth);
-            let structure = '';
+				const indent = '  '.repeat(depth);
+				let structure = '';
 
-            // Skip certain elements that clutter the output
-            const skipTags = new Set(['script', 'style', 'link', 'meta', 'noscript']);
+				// Skip certain elements that clutter the output
+				const skipTags = new Set(['script', 'style', 'link', 'meta', 'noscript']);
 
-            // Add current element info if it's not the document
-            if (element !== document) {
-                const tagName = element.tagName.toLowerCase();
+				// Add current element info if it's not the document
+				if (element !== document) {
+					const tagName = element.tagName.toLowerCase();
 
-                // Skip uninteresting elements
-                if (skipTags.has(tagName)) return '';
+					// Skip uninteresting elements
+					if (skipTags.has(tagName)) return '';
 
-                const id = element.id ? `#${element.id}` : '';
-                const classes = element.className && typeof element.className === 'string' ?
-                    `.${element.className.split(' ').filter(c => c).join('.')}` : '';
+					const id = element.id ? `#${element.id}` : '';
+					const classes = element.className && typeof element.className === 'string' ? 
+						`.${element.className.split(' ').filter(c => c).join('.')}` : '';
 
-                // Get additional useful attributes
-                const attrs = [];
-                if (element.getAttribute('role')) attrs.push(`role="${element.getAttribute('role')}"`);
-                if (element.getAttribute('aria-label')) attrs.push(`aria-label="${element.getAttribute('aria-label')}"`);
-                if (element.getAttribute('type')) attrs.push(`type="${element.getAttribute('type')}"`);
-                if (element.getAttribute('name')) attrs.push(`name="${element.getAttribute('name')}"`);
-                if (element.getAttribute('src')) {
-                    const src = element.getAttribute('src');
-                    attrs.push(`src="${src.substring(0, 50)}${src.length > 50 ? '...' : ''}"`);
-                }
+					// Get additional useful attributes
+					const attrs = [];
+					if (element.getAttribute('role')) attrs.push(`role="${element.getAttribute('role')}"`);
+					if (element.getAttribute('aria-label')) attrs.push(`aria-label="${element.getAttribute('aria-label')}"`);
+					if (element.getAttribute('type')) attrs.push(`type="${element.getAttribute('type')}"`);
+					if (element.getAttribute('name')) attrs.push(`name="${element.getAttribute('name')}"`);
+					if (element.getAttribute('src')) {
+						const src = element.getAttribute('src');
+						attrs.push(`src="${src.substring(0, 50)}${src.length > 50 ? '...' : ''}"`);
+					}
 
-                // Add element info
-                structure += `${indent}${tagName}${id}${classes}${attrs.length ? ' [' + attrs.join(', ') + ']' : ''}\\n`;
+					// Add element info
+					structure += `${indent}${tagName}${id}${classes}${attrs.length ? ' [' + attrs.join(', ') + ']' : ''}\\n`;
 
-                // Handle iframes specially
-                if (tagName === 'iframe') {
-                    try {
-                        const iframeDoc = element.contentDocument || element.contentWindow?.document;
-                        if (iframeDoc) {
-                            structure += `${indent}  [IFRAME CONTENT]:\\n`;
-                            structure += getPageStructure(iframeDoc, depth + 2, maxDepth);
-                        } else {
-                            structure += `${indent}  [IFRAME: No access - likely cross-origin]\\n`;
-                        }
-                    } catch (e) {
-                        structure += `${indent}  [IFRAME: Access denied - ${e.message}]\\n`;
-                    }
-                }
-            }
+					// Handle iframes specially
+					if (tagName === 'iframe') {
+						try {
+							const iframeDoc = element.contentDocument || element.contentWindow?.document;
+							if (iframeDoc) {
+								structure += `${indent}  [IFRAME CONTENT]:\\n`;
+								structure += getPageStructure(iframeDoc, depth + 2, maxDepth);
+							} else {
+								structure += `${indent}  [IFRAME: No access - likely cross-origin]\\n`;
+							}
+						} catch (e) {
+							structure += `${indent}  [IFRAME: Access denied - ${e.message}]\\n`;
+						}
+					}
+				}
 
-            // Get all child elements
-            const children = element.children || element.childNodes;
-            for (const child of children) {
-                if (child.nodeType === 1) { // Element nodes only
-                    structure += getPageStructure(child, depth + 1, maxDepth);
-                }
-            }
+				// Get all child elements
+				const children = element.children || element.childNodes;
+				for (const child of children) {
+					if (child.nodeType === 1) { // Element nodes only
+						structure += getPageStructure(child, depth + 1, maxDepth);
+					}
+				}
 
-            return structure;
-        }
+				return structure;
+			}
 
-        return getPageStructure();
-    })()"""
+			return getPageStructure();
+		})()"""
 
         page = await self.get_current_page()
         structure = await page.evaluate(debug_script)
         return structure
 
+    @time_execution_sync('--get_state')  # This decorator might need to be updated to handle async
     async def get_state(self) -> BrowserState:
-        """Get the current state of the browser cache_clickable_elements_hashes: bool
-        If True, cache the clickable elements hashes for the current state. This is used to calculate which elements
-        are new to the llm (from last message) -> reduces token usage.
-        """
-
+        """Get the current state of the browser"""
         await self._wait_for_page_and_frames_load()
         session = await self.get_session()
-        updated_state = await self._update_state()
-
-        session.cached_state = updated_state
+        session.cached_state = await self._update_state()
 
         # Save cookies if a file is specified
         if self.config.cookies_file:
@@ -686,13 +707,13 @@ class BrowserContext:
             # Test if page is still accessible
             await page.evaluate('1')
         except Exception as e:
-            logger.debug(f'👋  Current page is no longer accessible: {str(e)}')
+            logger.debug(f'Current page is no longer accessible: {str(e)}')
             # Get all available pages
             pages = session.context.pages
             if pages:
                 self.state.target_id = None
                 page = await self._get_current_page(session)
-                logger.debug(f'🔄  Switched to page: {await page.title()}')
+                logger.debug(f'Switched to page: {await page.title()}')
             else:
                 raise BrowserError('Browser closed: no valid pages available')
 
@@ -705,28 +726,6 @@ class BrowserContext:
                 highlight_elements=self.config.highlight_elements,
             )
 
-            tabs_info = await self.get_tabs_info()
-
-            # Get all cross-origin iframes within the page and open them in new tabs
-            # mark the titles of the new tabs so the LLM knows to check them for additional content
-            # unfortunately too buggy for now, too many sites use invisible cross-origin iframes for ads, tracking, youtube videos, social media, etc.
-            # and it distracts the bot by opening a lot of new tabs
-            # iframe_urls = await dom_service.get_cross_origin_iframes()
-            # for url in iframe_urls:
-            # 	if url in [tab.url for tab in tabs_info]:
-            # 		continue  # skip if the iframe if we already have it open in a tab
-            # 	new_page_id = tabs_info[-1].page_id + 1
-            # 	logger.debug(f'Opening cross-origin iframe in new tab #{new_page_id}: {url}')
-            # 	await self.create_new_tab(url)
-            # 	tabs_info.append(
-            # 		TabInfo(
-            # 			page_id=new_page_id,
-            # 			url=url,
-            # 			title=f'iFrame opened as new tab, treat as if embedded inside page #{self.state.target_id}: {page.url}',
-            # 			parent_page_id=self.state.target_id,
-            # 		)
-            # 	)
-
             screenshot_b64 = await self.take_screenshot()
             pixels_above, pixels_below = await self.get_scroll_info(page)
 
@@ -735,7 +734,7 @@ class BrowserContext:
                 selector_map=content.selector_map,
                 url=page.url,
                 title=await page.title(),
-                tabs=tabs_info,
+                tabs=await self.get_tabs_info(),
                 screenshot=screenshot_b64,
                 pixels_above=pixels_above,
                 pixels_below=pixels_below,
@@ -743,18 +742,15 @@ class BrowserContext:
 
             return self.current_state
         except Exception as e:
-            logger.error(f'❌  Failed to update state: {str(e)}')
+            logger.error(f'Failed to update state: {str(e)}')
             # Return last known good state if available
             if hasattr(self, 'current_state'):
                 return self.current_state
             raise
 
     # region - Browser Actions
-    async def take_screenshot(
-            self,
-            full_page: bool = False,
-            path: str | pathlib.Path | None = None
-    ) -> str:
+    @time_execution_async('--take_screenshot')
+    async def take_screenshot(self, full_page: bool = False) -> str:
         """
         Returns a base64 encoded screenshot of the current page.
         """
@@ -766,7 +762,6 @@ class BrowserContext:
         screenshot = await page.screenshot(
             full_page=full_page,
             animations='disabled',
-            path=path
         )
 
         screenshot_b64 = base64.b64encode(screenshot).decode('utf-8')
@@ -775,6 +770,7 @@ class BrowserContext:
 
         return screenshot_b64
 
+    @time_execution_async('--remove_highlights')
     async def remove_highlights(self):
         """
         Removes all highlight overlays and labels created by the highlightElement function.
@@ -790,7 +786,7 @@ class BrowserContext:
                     if (container) {
                         container.remove();
                     }
-    
+
                     // Remove highlight attributes from elements
                     const highlightedElements = document.querySelectorAll('[browser-user-highlight-id^="playwright-highlight-"]');
                     highlightedElements.forEach(el => {
@@ -859,6 +855,7 @@ class BrowserContext:
         return base_selector
 
     @classmethod
+    @time_execution_sync('--enhanced_css_selector_for_element')
     def _enhanced_css_selector_for_element(cls, element: DOMElementNode,
                                            include_dynamic_attributes: bool = True) -> str:
         """
@@ -894,8 +891,40 @@ class BrowserContext:
                         # Skip invalid class names
                         continue
 
-            if include_dynamic_attributes:
+            # Expanded set of safe attributes that are stable and useful for selection
+            SAFE_ATTRIBUTES = {
+                # Data attributes (if they're stable in your application)
+                'id',
+                # Standard HTML attributes
+                'name',
+                'type',
+                'placeholder',
+                # Accessibility attributes
+                'aria-label',
+                'aria-labelledby',
+                'aria-describedby',
+                'role',
+                # Common form attributes
+                'for',
+                'autocomplete',
+                'required',
+                'readonly',
+                # Media attributes
+                'alt',
+                'title',
+                'src',
+                # Custom stable attributes (add any application-specific ones)
+                'href',
+                'target',
+            }
 
+            if include_dynamic_attributes:
+                dynamic_attributes = {
+                    'data-id',
+                    'data-qa',
+                    'data-cy',
+                    'data-testid',
+                }
                 SAFE_ATTRIBUTES.update(dynamic_attributes)
 
             # Handle other attributes
@@ -918,9 +947,6 @@ class BrowserContext:
                     css_selector += f'[{safe_attribute}]'
                 elif any(char in value for char in '"\'<>`\n\r\t'):
                     # Use contains for values with special characters
-                    # For newline-containing text, only use the part before the newline
-                    if '\n' in value:
-                        value = value.split('\n')[0]
                     # Regex-substitute *any* whitespace with a single space, then strip.
                     collapsed_value = re.sub(r'\s+', ' ', value).strip()
                     # Escape embedded double-quotes.
@@ -936,7 +962,8 @@ class BrowserContext:
             tag_name = element.tag_name or '*'
             return f"{tag_name}[highlight_index='{element.highlight_index}']"
 
-    async def get_locate_element(self, element: DOMElementNode) -> ElementHandle | None:
+    @time_execution_async('--get_locate_element')
+    async def get_locate_element(self, element: DOMElementNode) -> Optional[ElementHandle]:
         current_frame = await self.get_current_page()
 
         # Start with the target element and collect all parents
@@ -978,6 +1005,7 @@ class BrowserContext:
             logger.error(f'Failed to locate element: {str(e)}')
             return None
 
+    @time_execution_async('--input_text_element_node')
     async def _input_text_element_node(self, element_node: DOMElementNode, text: str):
         """
         Input text into an element with proper error handling and state management.
@@ -990,39 +1018,32 @@ class BrowserContext:
 
             element_handle = await self.get_locate_element(element_node)
 
-            if not element_handle:
+            if element_handle is None:
                 raise BrowserError(f'Element: {repr(element_node)} not found')
 
             # Ensure element is ready for input
             try:
                 await element_handle.wait_for_element_state('stable', timeout=1000)
-                is_hidden = await element_handle.is_hidden()
-                if not is_hidden:
-                    await element_handle.scroll_into_view_if_needed(timeout=1000)
+                await element_handle.scroll_into_view_if_needed(timeout=1000)
             except Exception:
                 pass
 
             # Get element properties to determine input method
-            tag_handle = await element_handle.get_property('tagName')
-            tag_name = (await tag_handle.json_value()).lower()
             is_contenteditable = await element_handle.get_property('isContentEditable')
-            readonly_handle = await element_handle.get_property('readOnly')
-            disabled_handle = await element_handle.get_property('disabled')
 
-            readonly = await readonly_handle.json_value() if readonly_handle else False
-            disabled = await disabled_handle.json_value() if disabled_handle else False
-
-            if (await is_contenteditable.json_value() or tag_name == 'input') and not (readonly or disabled):
-                await element_handle.evaluate('el => {el.textContent = ""; el.value = "";}')
+            # Different handling for contenteditable vs input fields
+            if await is_contenteditable.json_value():
+                await element_handle.evaluate('el => el.textContent = ""')
                 await element_handle.type(text, delay=5)
             else:
                 await element_handle.fill(text)
 
         except Exception as e:
-            logger.info(f'Failed to input text into element: {repr(element_node)}. Error: {str(e)}')
+            logger.debug(f'Failed to input text into element: {repr(element_node)}. Error: {str(e)}')
             raise BrowserError(f'Failed to input text into index {element_node.highlight_index}')
 
-    async def _click_element_node(self, element_node: DOMElementNode) -> str | None:
+    @time_execution_async('--click_element_node')
+    async def _click_element_node(self, element_node: DOMElementNode) -> Optional[str]:
         """
         Optimized method to click an element using xpath.
         """
@@ -1051,7 +1072,6 @@ class BrowserContext:
                         suggested_filename = download.suggested_filename
                         unique_filename = await self._get_unique_filename(self.config.save_downloads_path,
                                                                           suggested_filename)
-
                         download_path = os.path.join(self.config.save_downloads_path, unique_filename)
                         await download.save_as(download_path)
                         logger.debug(f'Download triggered. Saved file to: {download_path}')
@@ -1084,6 +1104,7 @@ class BrowserContext:
         except Exception as e:
             raise Exception(f'Failed to click element: {repr(element_node)}. Error: {str(e)}')
 
+    @time_execution_async('--get_tabs_info')
     async def get_tabs_info(self) -> list[TabInfo]:
         """Get information about all tabs"""
         session = await self.get_session()
@@ -1095,6 +1116,7 @@ class BrowserContext:
 
         return tabs_info
 
+    @time_execution_async('--switch_to_tab')
     async def switch_to_tab(self, page_id: int) -> None:
         """Switch to a specific tab by its page_id"""
         session = await self.get_session()
@@ -1113,14 +1135,14 @@ class BrowserContext:
         if self.browser.config.cdp_url:
             targets = await self._get_cdp_targets()
             for target in targets:
-                if target.get('url') == page.url:
-                    self.state.target_id = target.get('targetId')
-
+                if target['url'] == page.url:
+                    self.state.target_id = target['targetId']
                     break
 
         await page.bring_to_front()
         await page.wait_for_load_state()
 
+    @time_execution_async('--create_new_tab')
     async def create_new_tab(self, url: str | None = None) -> None:
         """Create a new tab and optionally navigate to a URL"""
         if url and not self._is_url_allowed(url):
@@ -1138,8 +1160,8 @@ class BrowserContext:
         if self.browser.config.cdp_url:
             targets = await self._get_cdp_targets()
             for target in targets:
-                if target.get('targetId') == new_page.url:
-                    self.state.target_id = target.get('targetId')
+                if target['url'] == new_page.url:
+                    self.state.target_id = target['targetId']
                     break
 
     # endregion
@@ -1152,9 +1174,9 @@ class BrowserContext:
         if self.browser.config.cdp_url and self.state.target_id:
             targets = await self._get_cdp_targets()
             for target in targets:
-                if target.get('targetId') == self.state.target_id:
+                if target['targetId'] == self.state.target_id:
                     for page in pages:
-                        if page.url == target.get('targetId'):
+                        if page.url == target['url']:
                             return page
 
         # Fallback to last page
@@ -1243,8 +1265,7 @@ class BrowserContext:
         session.cached_state = None
         self.state.target_id = None
 
-    @staticmethod
-    async def _get_unique_filename(directory: str, filename:str):
+    async def _get_unique_filename(self, directory, filename):
         """Generate a unique filename by appending (1), (2), etc., if a file already exists."""
         base, ext = os.path.splitext(filename)
         counter = 1
@@ -1271,17 +1292,3 @@ class BrowserContext:
         except Exception as e:
             logger.debug(f'Failed to get CDP targets: {e}')
             return []
-
-    async def wait_for_element(self, selector: str, timeout: float) -> None:
-        """
-        Waits for an element matching the given CSS selector to become visible.
-
-        Args:
-            selector (str): The CSS selector of the element.
-            timeout (float): The maximum time to wait for the element to be visible (in milliseconds).
-
-        Raises:
-            TimeoutError: If the element does not become visible within the specified timeout.
-        """
-        page = await self.get_current_page()
-        await page.wait_for_selector(selector, state='visible', timeout=timeout)
