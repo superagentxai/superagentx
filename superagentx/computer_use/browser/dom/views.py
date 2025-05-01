@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -14,17 +15,16 @@ if TYPE_CHECKING:
     from .views import DOMElementNode
 
 
-class DOMBaseNode(BaseModel):
+@dataclass(frozen=False)
+class DOMBaseNode:
     is_visible: bool
-    parent: Optional['DOMElementNode'] = None
-
-    model_config = ConfigDict(frozen=False)
+    parent: Optional['DOMElementNode']
 
 
-class DOMTextNode(BaseModel):
+@dataclass(frozen=False)
+class DOMTextNode(DOMBaseNode):
     text: str
     type: str = 'TEXT_NODE'
-    model_config = ConfigDict(frozen=False)
 
     def has_parent_with_highlight_index(self) -> bool:
         current = self.parent
@@ -47,6 +47,7 @@ class DOMTextNode(BaseModel):
         return self.parent.is_top_element
 
 
+@dataclass(frozen=False)
 class DOMElementNode(DOMBaseNode):
     """
     xpath: the xpath of the element from the last root node (shadow root or iframe OR document if no shadow root or
@@ -67,7 +68,6 @@ class DOMElementNode(DOMBaseNode):
     viewport_coordinates: CoordinateSet | None = None
     page_coordinates: CoordinateSet | None = None
     viewport_info: ViewportInfo | None = None
-    model_config = ConfigDict(frozen=False)
 
     def __repr__(self) -> str:
         tag_str = f'<{self.tag_name}'
@@ -197,6 +197,7 @@ class DOMElementNode(DOMBaseNode):
 SelectorMap = dict[int, DOMElementNode]
 
 
-class DOMState(BaseModel):
+@dataclass
+class DOMState:
     element_tree: DOMElementNode
     selector_map: SelectorMap

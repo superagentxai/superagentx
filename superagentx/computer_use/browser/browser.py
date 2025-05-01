@@ -2,30 +2,32 @@ import asyncio
 import aiohttp
 import gc
 import logging
-from pydantic import BaseModel, Field
 from playwright._impl._api_structures import ProxySettings
 from playwright.async_api import Browser as PlaywrightBrowser
 from playwright.async_api import (
     Playwright,
     async_playwright,
 )
-from superagentx.computer_use.utils import BROWSER_SECURITY_ARGS, HEADLESS_ARGS
+from dataclasses import dataclass, field
+from superagentx.computer_use.constants import BROWSER_SECURITY_ARGS, HEADLESS_ARGS
 
 from superagentx.computer_use.browser.context import BrowserContext, BrowserContextConfig
 
 logger = logging.getLogger(__name__)
 
 
-class BrowserConfig(BaseModel):
+@dataclass
+class BrowserConfig:
     headless: bool = False
     disable_security: bool = True
-    extra_chromium_args: list[str] = Field(default_factory=list)
+    extra_chromium_args: list[str] = field(default_factory=list)
     chrome_instance_path: str | None = None
     wss_url: str | None = None
     cdp_url: str | None = None
     proxy: ProxySettings | None = None
-    new_context_config: BrowserContextConfig = Field(default_factory=BrowserContextConfig)
+    new_context_config: BrowserContextConfig = field(default_factory=BrowserContextConfig)
     _force_keep_browser_alive: bool = False
+    browser_type: str = "chromium"  # Options: "chromium", "firefox", "webkit"
 
 
 class Browser:
@@ -97,7 +99,7 @@ class Browser:
                     async with session.get('http://localhost:9222/json/version') as response:
                         if response.status == 200:
                             break
-            except aiohttp.ConnectionError:
+            except aiohttp.ClientConnectorError:
                 pass
             await asyncio.sleep(1)
 
@@ -113,14 +115,25 @@ class Browser:
             )
 
     async def _setup_standard_browser(self, playwright: Playwright) -> PlaywrightBrowser:
-        return await playwright.chromium.launch(
+        browser_launcher = getattr(playwright, self.config.browser_type, None)
+        if not browser_launcher:
+            raise ValueError(f"Unsupported browser type: {self.config.browser_type}")
+
+        args = HEADLESS_ARGS + self.disable_security_args + self.config.extra_chromium_args \
+            if self.config.browser_type == "chromium" else []
+
+        return await browser_launcher.launch(
             headless=self.config.headless,
-            args=HEADLESS_ARGS + self.disable_security_args + self.config.extra_chromium_args,
+            args=args,
             proxy=self.config.proxy,
         )
 
     async def _setup_browser(self, playwright: Playwright) -> PlaywrightBrowser:
         try:
+            if self.config.browser_type != "chromium" and (
+                    self.config.cdp_url or self.config.wss_url or self.config.chrome_instance_path):
+                raise ValueError("CDP/WSS/Instance path options are only supported for Chromium.")
+
             if self.config.cdp_url:
                 return await self._setup_cdp(playwright)
             if self.config.wss_url:

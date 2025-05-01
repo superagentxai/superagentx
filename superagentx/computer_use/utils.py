@@ -1,15 +1,19 @@
 import logging
 import random
 import re
+import time
 from datetime import datetime
+from functools import wraps
+from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
 
+# from superagentx.computer_use.browser.context import Page
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
 from superagentx.computer_use.browser.state import BrowserState
-from playwright.async_api import (
-    BrowserContext as PlaywrightBrowserContext,
-)
 
-from superagentx.computer_use.browser.context import Page
+# Define generic type variables for return type and parameters
+R = TypeVar('R')
+P = ParamSpec('P')
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,13 +113,13 @@ async def log_response(result: dict):
     else:
         emoji = '🤷'
 
-    logger.info(f'{emoji} Eval: {result.get('current_state').get('evaluation_previous_goal')}')
-    logger.info(f'Memory: {result.get('current_state').get('memory')}')
-    logger.info(f'Next goal: {result.get('current_state').get('next_goal')}')
-    logger.info(f'Action {result.get('action')}')
+    logger.info(f"{emoji} Eval: {result.get('current_state').get('evaluation_previous_goal')}")
+    logger.info(f"Memory: {result.get('current_state').get('memory')}")
+    logger.info(f"Next goal: {result.get('current_state').get('next_goal')}")
+    logger.info(f"Action {result.get('action')}")
 
 
-async def show_toast(page: Page, message: str, duration: int = 3000):
+async def show_toast(page, message: str, duration: int = 3000):
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
     final_message = f" SuperAgentX Goal:  {random_icon} {message}"
@@ -160,6 +164,38 @@ def manipulate_string(string: str):
         else:
             return string
     return string
+
+
+def time_execution_sync(additional_text: str = '') -> Callable[[Callable[P, R]], Callable[P, R]]:
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
+        @wraps(func)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            execution_time = time.time() - start_time
+            logger.debug(f'{additional_text} Execution time: {execution_time:.2f} seconds')
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+def time_execution_async(
+        additional_text: str = '',
+) -> Callable[[Callable[P, Coroutine[Any, Any, R]]], Callable[P, Coroutine[Any, Any, R]]]:
+    def decorator(func: Callable[P, Coroutine[Any, Any, R]]) -> Callable[P, Coroutine[Any, Any, R]]:
+        @wraps(func)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            start_time = time.time()
+            result = await func(*args, **kwargs)
+            execution_time = time.time() - start_time
+            logger.debug(f'{additional_text} Execution time: {execution_time:.2f} seconds')
+            return result
+
+        return wrapper
+
+    return decorator
 
 
 BROWSER_SYSTEM_MESSAGE = """
@@ -383,116 +419,4 @@ SYSTEM_MESSAGE = [
                    f"process, once you build the steps then execute the steps use click event "
                    f"for every step to need. Don't give the duplicate json."
     }
-]
-
-# Define relevant resource types and content types
-RELEVANT_RESOURCE_TYPES = {
-    'document',
-    'stylesheet',
-    'image',
-    'font',
-    'script',
-    'iframe',
-}
-
-RELEVANT_CONTENT_TYPES = {
-    'text/html',
-    'text/css',
-    'application/javascript',
-    'image/',
-    'font/',
-    'application/json',
-}
-
-SAFE_ATTRIBUTES = {
-    'id',
-    # Standard HTML attributes
-    'name',
-    'type',
-    'placeholder',
-    # Accessibility attributes
-    'aria-label',
-    'aria-labelledby',
-    'aria-describedby',
-    'role',
-    # Common form attributes
-    'for',
-    'autocomplete',
-    'required',
-    'readonly',
-    # Media attributes
-    'alt',
-    'title',
-    'src',
-    # Custom stable attributes (add any application-specific ones)
-    'href',
-    'target',
-}
-
-dynamic_attributes = {
-    'data-id',
-    'data-qa',
-    'data-cy',
-    'data-testid',
-}
-
-# Additional patterns to filter out
-IGNORED_URL_PATTERNS = {
-    # Analytics and tracking
-    'analytics',
-    'tracking',
-    'telemetry',
-    'beacon',
-    'metrics',
-    # Ad-related
-    'doubleclick',
-    'adsystem',
-    'adserver',
-    'advertising',
-    # Social media widgets
-    'facebook.com/plugins',
-    'platform.twitter',
-    'linkedin.com/embed',
-    # Live chat and support
-    'livechat',
-    'zendesk',
-    'intercom',
-    'crisp.chat',
-    'hotjar',
-    # Push notifications
-    'push-notifications',
-    'onesignal',
-    'pushwoosh',
-    # Background sync/heartbeat
-    'heartbeat',
-    'ping',
-    'alive',
-    # WebRTC and streaming
-    'webrtc',
-    'rtmp://',
-    'wss://',
-    # Common CDNs for dynamic content
-    'cloudfront.net',
-    'fastly.net',
-}
-
-BROWSER_SECURITY_ARGS = [
-    '--disable-web-security',
-    '--disable-site-isolation-trials',
-    '--disable-features=IsolateOrigins,site-per-process',
-]
-HEADLESS_ARGS = [
-    '--no-sandbox',
-    '--disable-blink-features=AutomationControlled',
-    '--disable-infobars',
-    '--disable-background-timer-throttling',
-    '--disable-popup-blocking',
-    '--disable-backgrounding-occluded-windows',
-    '--disable-renderer-backgrounding',
-    '--disable-window-activation',
-    '--disable-focus-on-load',
-    '--no-first-run',
-    '--no-default-browser-check',
-    '--no-startup-window',
-    '--window-position=0,0',
 ]
