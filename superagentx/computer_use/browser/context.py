@@ -5,12 +5,15 @@ import gc
 import json
 import logging
 import os
+import pathlib
 import re
 import time
+import typing
 import uuid
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional, TypedDict
 
+import aiopath
 from playwright._impl._errors import TimeoutError
 from playwright.async_api import Browser as PlaywrightBrowser
 from playwright.async_api import (
@@ -750,7 +753,11 @@ class BrowserContext:
 
     # region - Browser Actions
     @time_execution_async('--take_screenshot')
-    async def take_screenshot(self, full_page: bool = False) -> str:
+    async def take_screenshot(
+            self,
+            path: typing.Optional[typing.Union[str, aiopath.Path | pathlib.Path]] = None,
+            full_page: bool = False
+    ) -> str:
         """
         Returns a base64 encoded screenshot of the current page.
         """
@@ -760,6 +767,7 @@ class BrowserContext:
         await page.wait_for_load_state()
 
         screenshot = await page.screenshot(
+            path=path,
             full_page=full_page,
             animations='disabled',
         )

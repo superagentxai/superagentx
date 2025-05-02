@@ -8,6 +8,7 @@ import typing
 import uuid
 from typing import TypeVar
 
+import aiopath
 import yaml
 from playwright.async_api import Page
 
@@ -81,6 +82,12 @@ class BrowserEngine(BaseEngine):
         self.handler = BrowserHandler(self.llm, self.browser_context)
         self.msgs: list = SYSTEM_MESSAGE
         self.screenshot_path = screenshot_path
+        if self.screenshot_path:
+            path = pathlib.Path(self.screenshot_path)
+            if path.is_file():
+                self.screenshot_path = path
+            if path.is_dir():
+                self.screenshot_path = path
         if self.take_screenshot:
             if not self.screenshot_path:
                 self.screenshot_path = os.path.join(
@@ -208,20 +215,25 @@ class BrowserEngine(BaseEngine):
                 if result[0].is_done:
                     response = res.get("action", [])[0].get("done", {}).get("text")
                     if isinstance(response, (list, dict)):
-                        response = await sync_to_async(yaml.dump, response)
+                        response = f"Process Success Executed"
                     await show_toast(
                         page,
                         response,
                         4000
                     )
                     await asyncio.sleep(4)
-                    await self.browser_context.take_screenshot(
-                        path=f"{self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
-                    )
-                    await show_toast(
-                        page=await self.browser_context.get_current_page(),
-                        message=f"Screenshot Saved in {self.screenshot_path}/img_{uuid.uuid4().hex}.jpg"
-                    )
+                    if self.screenshot_path:
+                        file_path = aiopath.Path(self.screenshot_path)
+                        if await file_path.is_dir():
+                            file_path = f"{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.jpg"
+                        await self.browser_context.take_screenshot(
+                            path=file_path
+                        )
+                        await show_toast(
+                            page=await self.browser_context.get_current_page(),
+                            message=file_path
+                        )
+                        await asyncio.sleep(2)
                     await self.browser_context.close()
                     await self.browser.close()
                     results.append(res)

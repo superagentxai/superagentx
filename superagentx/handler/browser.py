@@ -109,7 +109,10 @@ class BrowserHandler(BaseHandler):
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def wait(self, seconds: int = 60) -> ToolResult:
+    async def wait(
+            self,
+            seconds: int = 60
+    ) -> ToolResult:
         """
         Pauses execution for a specified duration.
 
@@ -142,33 +145,33 @@ class BrowserHandler(BaseHandler):
         logger.info(msg)
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
-    @tool
-    async def wait_for_element(
-            self,
-            selector: str,
-            timeout: float = 10000
-    ) -> ToolResult:
-        """
-        Waits for an element matching the given CSS selector to become visible.
-
-        Wait for element (e.g.'#search') to be visible with a timeout of 30 seconds.
-
-        Args:
-            selector (str): The CSS selector of the element.
-            timeout (float): The maximum time to wait for the element to be visible (in milliseconds).
-
-        Raises:
-            TimeoutError: If the element does not become visible within the specified timeout.
-        """
-        try:
-            await self.browser_context.wait_for_element(selector, timeout)
-            msg = f'👀  Element with selector "{selector}" became visible within {timeout}ms.'
-            logger.info(msg)
-            return ToolResult(extracted_content=msg, include_in_memory=True)
-        except Exception as e:
-            err_msg = f'❌  Failed to wait for element "{selector}" within {timeout}ms: {str(e)}'
-            logger.error(err_msg)
-            raise Exception(err_msg)
+    # @tool
+    # async def wait_for_element(
+    #         self,
+    #         selector: str,
+    #         timeout: float = 10000
+    # ) -> ToolResult:
+    #     """
+    #     Waits for an element matching the given CSS selector to become visible.
+    #
+    #     Wait for element (e.g.'#search') to be visible with a timeout of 30 seconds.
+    #
+    #     Args:
+    #         selector (str): The CSS selector of the element.
+    #         timeout (float): The maximum time to wait for the element to be visible (in milliseconds).
+    #
+    #     Raises:
+    #         TimeoutError: If the element does not become visible within the specified timeout.
+    #     """
+    #     try:
+    #         await self.browser_context.wait_for_element(selector, timeout)
+    #         msg = f'👀  Element with selector "{selector}" became visible within {timeout}ms.'
+    #         logger.info(msg)
+    #         return ToolResult(extracted_content=msg, include_in_memory=True)
+    #     except Exception as e:
+    #         err_msg = f'❌  Failed to wait for element "{selector}" within {timeout}ms: {str(e)}'
+    #         logger.error(err_msg)
+    #         raise Exception(err_msg)
 
     @tool
     async def click_element_by_index(
@@ -273,7 +276,10 @@ class BrowserHandler(BaseHandler):
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def switch_tab(self, page_id: int):
+    async def switch_tab(
+            self,
+            page_id: int
+    ) -> ToolResult:
         """
         Switches the browser context to a different tab based on the provided page ID.
 
@@ -291,7 +297,10 @@ class BrowserHandler(BaseHandler):
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def close_tab(self, page_id: int):
+    async def close_tab(
+            self,
+            page_id: int
+    ) -> ToolResult:
         await self.browser_context.switch_to_tab(page_id)
         page = await self.browser_context.get_current_page()
         url = page.url
@@ -354,7 +363,7 @@ class BrowserHandler(BaseHandler):
 
         prompt = ('Your task is to extract the content of the page. You will be given a page and a goal and you should '
                   'extract all relevant information around this goal from the page. If the goal is vague, summarize '
-                  'the page. Respond in json format. Extraction goal: {goal}, Page: {page}')
+                  'the page. Respond in json format. Extraction goal: {goal}')
         # template = PromptTemplate(input_variables=['goal', 'page'], template=prompt)
         _prompt = prompt.format(goal=goal, page=content)
         messages = [
@@ -364,7 +373,14 @@ class BrowserHandler(BaseHandler):
             },
             {
                 "role": "user",
-                "content": _prompt
+                "content": [{
+                    "type": "text",
+                    "text": _prompt
+                }, {
+                    'type': 'image_url',
+                    'image_url': {'url': f'data:image/png;base64,{await self.browser_context.take_screenshot()}'},  # , 'detail': 'low'
+                }
+                ]
             }
         ]
         chat_completion_params = ChatCompletionParams(
@@ -407,7 +423,10 @@ class BrowserHandler(BaseHandler):
         )
 
     @tool
-    async def scroll_up(self, amount: int) -> ToolResult:
+    async def scroll_up(
+            self,
+            amount: int
+    ) -> ToolResult:
         """
         Scroll up the page by pixel amount - if no amount is specified, scroll up one page
         """
@@ -426,7 +445,10 @@ class BrowserHandler(BaseHandler):
         )
 
     @tool
-    async def send_keys(self, keys: str) -> ToolResult:
+    async def send_keys(
+            self,
+            keys: str
+    ) -> ToolResult:
         """
         Send strings of special keys like Escape,Backspace, Insert, PageDown, Delete, Enter, Shortcuts such as
         `Control+o`, `Control+Shift+T` are supported as well. This gets used in keyboard.press.
@@ -451,7 +473,10 @@ class BrowserHandler(BaseHandler):
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
-    async def scroll_to_text(self, text: str) -> ToolResult:  # type: ignore
+    async def scroll_to_text(
+            self,
+            text: str
+    ) -> ToolResult:  # type: ignore
         """
         If you don't find something which you want to interact with, scroll to it
         """
