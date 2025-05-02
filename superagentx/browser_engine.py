@@ -9,7 +9,6 @@ import uuid
 from typing import TypeVar
 
 import aiopath
-import yaml
 from playwright.async_api import Page
 
 from superagentx.base import BaseEngine
@@ -82,12 +81,6 @@ class BrowserEngine(BaseEngine):
         self.handler = BrowserHandler(self.llm, self.browser_context)
         self.msgs: list = SYSTEM_MESSAGE
         self.screenshot_path = screenshot_path
-        if self.screenshot_path:
-            path = pathlib.Path(self.screenshot_path)
-            if path.is_file():
-                self.screenshot_path = path
-            if path.is_dir():
-                self.screenshot_path = path
         if self.take_screenshot:
             if not self.screenshot_path:
                 self.screenshot_path = os.path.join(
@@ -122,7 +115,7 @@ class BrowserEngine(BaseEngine):
             _tools = await self.__funcs_props(funcs=funcs)
         return _tools
 
-    async def _remove_last_state_message(self, messages) -> None:
+    async def _remove_last_state_message(self, messages: list) -> None:
         """Remove last state message from history"""
         if len(messages) > 2 and isinstance(messages[-1], dict):
             del self.msgs[-1]
@@ -239,12 +232,13 @@ class BrowserEngine(BaseEngine):
                     results.append(res)
                     return results
 
-    async def start(self,
-                    input_prompt: str,
-                    pre_result: str | None = None,
-                    old_memory: list[dict] | None = None,
-                    conversation_id: str | None = None,
-                    **kwargs):
+    async def start(
+            self,
+            input_prompt: str,
+            pre_result: str | None = None,
+            old_memory: list[dict] | None = None,
+            conversation_id: str | None = None,
+            **kwargs) -> list:
 
         msgs = [
             {"role": "user",

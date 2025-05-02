@@ -597,7 +597,18 @@ class BrowserHandler(BaseHandler):
             index: int,
             text: str
     ) -> ToolResult:
-        """Select dropdown option by the text of the option you want to select"""
+        """
+        Selects an option from a dropdown menu on a web page.
+
+        Description:
+            This tool simulates a user selecting a specific option from a dropdown menu on a webpage.
+            It locates the dropdown by its index and selects the option that matches the provided visible text.
+        Example:
+            select_dropdown_option(index=0, text="India")
+        Args:
+            index (int): The index of the dropdown element on the page (e.g., 0 for the first dropdown).
+            text (str): The visible text of the option to select within the dropdown.
+        """
         page = await self.browser_context.get_current_page()
         selector_map = await self.browser_context.get_selector_map()
         dom_element = selector_map[index]
