@@ -56,7 +56,7 @@ class ChatCompletionParams(BaseModel):
         description='Penalizes new tokens based on their presence in the text.',
         default=0
     )
-    response_format: str | None = Field(
+    response_format: Any | None = Field(
         description='Specifies the output format, e.g., JSON mode.',
         default=None
     )
