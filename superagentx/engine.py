@@ -157,7 +157,6 @@ class Engine:
                     async with stdio_client(server_params) as (read, write):
                         async with ClientSession(read, write) as session:
                             await session.initialize()  # Perform handshake/init
-
                             async for tool in iter_to_aiter(message.tool_calls):
                                 if tool.tool_type == 'function':
                                     name = tool.name
@@ -176,7 +175,7 @@ class Engine:
                             if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                                 _kwargs = tool.arguments or {}
                                 logger.debug(
-                                    f'Executing mcp_tool function : {self.handler.__class__}.{tool.name}, '
+                                    f'Executing tool function : {self.handler.__class__}.{tool.name}, '
                                     f'With arguments : {_kwargs}'
                                 )
                                 if inspect.iscoroutinefunction(func):
