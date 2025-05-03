@@ -2,14 +2,17 @@ import inspect
 import logging
 import typing
 
+from mcp import StdioServerParameters, ClientSession
+from mcp.client.stdio import stdio_client
+
 from superagentx.exceptions import ToolError
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, sync_to_async
-from superagentx.utils.parsers.base import BaseParser
 from superagentx.utils.helper import rm_trailing_spaces
+from superagentx.utils.parsers.base import BaseParser
 
 logger = logging.getLogger(__name__)
 
@@ -57,15 +60,20 @@ class Engine:
         if getattr(self.handler, "__type__", None) == "MCP":
             _func = getattr(self.handler, "get_mcp_tools", None)
             if inspect.ismethod(_func) or inspect.isfunction(_func):
-                funcs = _func()
+                funcs = await _func()
 
-        async for _func_name in iter_to_aiter(funcs):
-            _func_name = _func_name.split('.')[-1]
-            _func = getattr(self.handler, _func_name)
-            logger.debug(f"Func Name : {_func_name}, Func : {_func}")
-            if inspect.ismethod(_func) or inspect.isfunction(_func):
-                logger.debug(f"{_func_name} is function!")
-                _funcs_props.append(await self.llm.get_tool_json(func=_func))
+                async for _func in iter_to_aiter(funcs):
+                    logger.debug(f"{_func} is function!")
+                    _funcs_props.append(await self.llm.get_tool_json(func=_func))
+        else:
+            async for _func_name in iter_to_aiter(funcs):
+                logger.info(f"Function Debug {_func_name}")
+                _func_name = _func_name.split('.')[-1]
+                _func = getattr(self.handler, _func_name)
+                logger.debug(f"Func Name : {_func_name}, Func : {_func}")
+                if inspect.ismethod(_func) or inspect.isfunction(_func):
+                    logger.debug(f"{_func_name} is function!")
+                    _funcs_props.append(await self.llm.get_tool_json(func=_func))
         return _funcs_props
 
     async def _construct_tools(self) -> list[dict]:
@@ -137,30 +145,50 @@ class Engine:
         results = []
         async for message in iter_to_aiter(messages):
             if message.tool_calls:
-                async for tool in iter_to_aiter(message.tool_calls):
-                    if tool.tool_type == 'function':
-                        logger.debug(f'Checking mcp_tool function : {self.handler.__class__}.{tool.name}')
-                        func = getattr(self.handler, tool.name)
-                        if func and (inspect.ismethod(func) or inspect.isfunction(func)):
-                            _kwargs = tool.arguments or {}
-                            logger.debug(
-                                f'Executing mcp_tool function : {self.handler.__class__}.{tool.name}, '
-                                f'With arguments : {_kwargs}'
-                            )
-                            if inspect.iscoroutinefunction(func):
-                                res = await func(**_kwargs)
-                            else:
-                                res = await sync_to_async(func, **_kwargs)
+                if getattr(self.handler, "__type__", None) == "MCP":
+                    logger.debug(f'MCP Command : {self.handler.command}')
+                    logger.debug(f"MCP Arguments : {self.handler.mcp_args}")
 
-                            logger.debug(f'Tool function result : {res}')
+                    server_params = StdioServerParameters(
+                        command=self.handler.command,
+                        args=self.handler.mcp_args,
+                    )
+                    # Open communication with the MCP server
+                    async with stdio_client(server_params) as (read, write):
+                        async with ClientSession(read, write) as session:
+                            await session.initialize()  # Perform handshake/init
 
-                            if res:
-                                if not self.output_parser:
-                                    results.append(res)
+                            async for tool in iter_to_aiter(message.tool_calls):
+                                if tool.tool_type == 'function':
+                                    name = tool.name
+                                    _kwargs = tool.arguments or {}
+                                    result = await session.call_tool(name, arguments=_kwargs)
+                                    results.append(result)
+                else:
+                    async for tool in iter_to_aiter(message.tool_calls):
+                        if tool.tool_type == 'function':
+                            logger.debug(f'Checking tool function : {self.handler.__class__}.{tool.name}')
+                            func = getattr(self.handler, tool.name)
+                            if func and (inspect.ismethod(func) or inspect.isfunction(func)):
+                                _kwargs = tool.arguments or {}
+                                logger.debug(
+                                    f'Executing mcp_tool function : {self.handler.__class__}.{tool.name}, '
+                                    f'With arguments : {_kwargs}'
+                                )
+                                if inspect.iscoroutinefunction(func):
+                                    res = await func(**_kwargs)
                                 else:
-                                    results.append(await self.output_parser.parse(res))
-                        else:
-                            logger.warning(f'Not valid handler final func {func}!')
+                                    res = await sync_to_async(func, **_kwargs)
+
+                                logger.debug(f'Tool function result : {res}')
+
+                                if res:
+                                    if not self.output_parser:
+                                        results.append(res)
+                                    else:
+                                        results.append(await self.output_parser.parse(res))
+                            else:
+                                logger.warning(f'Not valid handler final func {func}!')
             else:
                 results.append(message.content)
         return results
