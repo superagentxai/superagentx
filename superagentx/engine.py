@@ -162,8 +162,12 @@ class Engine:
                                 if tool.tool_type == 'function':
                                     name = tool.name
                                     _kwargs = tool.arguments or {}
-                                    result = await session.call_tool(name, arguments=_kwargs)
-                                    results.append(result)
+                                    res = await session.call_tool(name, arguments=_kwargs)
+                                    if res:
+                                        if not self.output_parser:
+                                            results.append(res)
+                                        else:
+                                            results.append(await self.output_parser.parse(res))
                 else:
                     async for tool in iter_to_aiter(message.tool_calls):
                         if tool.tool_type == 'function':
