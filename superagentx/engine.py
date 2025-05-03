@@ -52,6 +52,13 @@ class Engine:
             funcs: list[str]
     ) -> list[dict]:
         _funcs_props: list[dict] = []
+
+        # Get MCP tools as functions from MCP Handler, if this handler received.
+        if getattr(self.handler, "__type__", None) == "MCP":
+            _func = getattr(self.handler, "get_mcp_tools", None)
+            if inspect.ismethod(_func) or inspect.isfunction(_func):
+                funcs = _func()
+
         async for _func_name in iter_to_aiter(funcs):
             _func_name = _func_name.split('.')[-1]
             _func = getattr(self.handler, _func_name)
@@ -132,12 +139,12 @@ class Engine:
             if message.tool_calls:
                 async for tool in iter_to_aiter(message.tool_calls):
                     if tool.tool_type == 'function':
-                        logger.debug(f'Checking tool function : {self.handler.__class__}.{tool.name}')
+                        logger.debug(f'Checking mcp_tool function : {self.handler.__class__}.{tool.name}')
                         func = getattr(self.handler, tool.name)
                         if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                             _kwargs = tool.arguments or {}
                             logger.debug(
-                                f'Executing tool function : {self.handler.__class__}.{tool.name}, '
+                                f'Executing mcp_tool function : {self.handler.__class__}.{tool.name}, '
                                 f'With arguments : {_kwargs}'
                             )
                             if inspect.iscoroutinefunction(func):

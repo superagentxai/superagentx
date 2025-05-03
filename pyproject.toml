@@ -39,7 +39,8 @@ dependencies = [
     "anthropic (>=0.47.2,<0.48.0)",
     "fastembed (>=0.6.0,<0.7.0)",
     "httpx (>=0.28.1,<0.29.0)",
-    "opentelemetry-exporter-otlp-proto-grpc (==1.25.0)"  # Temprorly added for Chromadb issue https://github.com/chroma-core/chroma/issues/2571
+    "opentelemetry-exporter-otlp-proto-grpc (==1.25.0)",  # Temprorly added for Chromadb issue https://github.com/chroma-core/chroma/issues/2571
+    "mcp (>=1.7.0,<2.0.0)"
 ]
 
 [project.urls]
