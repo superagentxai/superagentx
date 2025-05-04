@@ -51,6 +51,6 @@ class TestMCPRedditAgent:
 
         # Ask Question and get results
         result = await reddit_search_agent.execute(query_instruction="What are the current hot posts on Reddit's "
-                                                                     "frontpage?")
+                                                                     "frontpage and summarize the list like a news reader?")
         logger.info(f'Result ==> {result}')
         assert result

@@ -1,6 +1,6 @@
 import inspect
-import typing
-from typing import Any, Dict, List
+from contextlib import AsyncExitStack
+from typing import Any, Dict, List, Optional, Callable
 
 from mcp import StdioServerParameters, ClientSession
 from mcp.client.stdio import stdio_client
@@ -9,43 +9,54 @@ from mcp.types import ListToolsResult, Tool
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
 
+# Utility: JSON schema to Python type map
+JSON_TYPE_MAP = {
+    "string": str,
+    "integer": int,
+    "number": float,
+    "boolean": bool,
+    "array": list,
+    "object": dict,
+}
 
-# Utility function to convert a Tool schema into a Python function dynamically
-async def create_function_from_tool(mcp_tool: Tool) -> typing.Callable:
-    props = mcp_tool.inputSchema["properties"]  # Extract properties from schema
-    required = set(mcp_tool.inputSchema.get("required", []))  # Required fields
+
+# Infers Python type from a given JSON schema field
+async def infer_type(schema: Dict) -> type:
+    json_type = schema.get("type", "string")
+    if json_type == "array":
+        return List[Any]  # Default for array types
+    return JSON_TYPE_MAP.get(json_type, Any)
+
+
+# Dynamically constructs a Python function based on Tool schema
+async def create_function_from_tool(mcp_tool: Tool) -> Callable:
+    """
+    Creates a dynamic Python function signature from a tool schema.
+    Used to turn tool metadata into real callable functions.
+    """
+    props = mcp_tool.inputSchema["properties"]
+    required = set(mcp_tool.inputSchema.get("required", []))
 
     parameters = []
     annotations = {}
 
-    # Iterate over each property to construct function parameters
     for name, schema in props.items():
         param_type = await infer_type(schema)
         annotations[name] = param_type
 
-        if name in required:
-            # Required parameter
-            param = inspect.Parameter(
-                name=name,
-                kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=param_type
-            )
-        else:
-            # Optional parameter with default
-            default = schema.get("default", None)
-            param = inspect.Parameter(
-                name=name,
-                kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                default=default,
-                annotation=typing.Optional[param_type]
-            )
+        # Build parameter with or without default
+        param = inspect.Parameter(
+            name=name,
+            kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            annotation=param_type if name in required else Optional[param_type],
+            default=inspect.Parameter.empty if name in required else schema.get("default", None)
+        )
         parameters.append(param)
 
-    # Assume function returns Any
     annotations['return'] = Any
     signature = inspect.Signature(parameters)
 
-    # Define a placeholder function and attach metadata
+    # Define a placeholder function and assign metadata
     def template_func(*args, **kwargs):
         pass
 
@@ -57,26 +68,7 @@ async def create_function_from_tool(mcp_tool: Tool) -> typing.Callable:
     return template_func
 
 
-# Mapping from JSON schema types to Python types
-JSON_TYPE_MAP = {
-    "string": str,
-    "integer": int,
-    "number": float,
-    "boolean": bool,
-    "array": list,
-    "object": dict,
-}
-
-
-# Infers Python type from JSON schema
-async def infer_type(schema: Dict) -> type:
-    json_type = schema.get("type", "string")
-    if json_type == "array":
-        return List[Any]  # Default to List[Any] for arrays
-    return JSON_TYPE_MAP.get(json_type, Any)
-
-
-# MCPHandler dynamically loads tools from an MCP-compliant stdio server
+# MCPHandler: Handles dynamic tool registration
 class MCPHandler(BaseHandler):
     __type__ = "MCP"
 
@@ -84,40 +76,49 @@ class MCPHandler(BaseHandler):
         """
         Initialize the MCPHandler with the given command and arguments.
 
-        :param command: The command to launch the MCP server process.
-        :param mcp_args: Optional list of arguments for the MCP process.
+        :param command: Command to launch the MCP-compatible server.
+        :param mcp_args: Optional list of CLI arguments for the server.
         """
         super().__init__()
         self.command = command
-        self.mcp_args = mcp_args if mcp_args is not None else []
+        self.mcp_args = mcp_args or []
+
+        self.write = None
+        self.stdio = None
+        self.session: Optional[ClientSession] = None
+        self.exit_stack = AsyncExitStack()
+
+    async def connect_to_mcp_server(self):
+        """
+        Establish connection to the MCP server via stdio transport.
+        Initializes session and performs handshake.
+        """
+        server_params = StdioServerParameters(command=self.command, args=self.mcp_args)
+        stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
+        self.stdio, self.write = stdio_transport
+
+        self.session = await self.exit_stack.enter_async_context(ClientSession(self.stdio, self.write))
+        await self.session.initialize()
+        return self.session
 
     @tool
-    async def get_mcp_tools(self) -> list[typing.Callable]:
+    async def get_mcp_tools(self) -> List[Callable]:
         """
-        Launches an MCP process via stdio and retrieves the available tools.
+        Fetch and convert MCP server-exposed tools into Python functions.
 
-        :return: List of available tools from the MCP server, each as a callable function.
+        :return: List of dynamically created Python callables.
         """
-        # Prepare parameters to start the MCP process over stdio
-        server_params = StdioServerParameters(
-            command=self.command,
-            args=self.mcp_args,
-        )
+        await self.connect_to_mcp_server()
+        tools_response: ListToolsResult = await self.session.list_tools()
 
-        tools: list = []
+        # Convert each MCP tool definition into a callable functions
+        generated_funcs = [await create_function_from_tool(mcp_tool) for mcp_tool in tools_response.tools]
 
-        # Open communication with the MCP server
-        async with stdio_client(server_params) as (read, write):
-            async with ClientSession(read, write) as session:
-                await session.initialize()  # Perform handshake/init
-
-                # Request the list of tools supported by the server
-                tools_response: ListToolsResult = await session.list_tools()
-
-                # Append each tool to the tools list
-                for mcp_tool in tools_response.tools:
-                    tools.append(mcp_tool)
-
-        # Generate Python functions from each tool schema
-        generated_funcs = [await create_function_from_tool(mpc_tool) for mpc_tool in tools]
+        await self.cleanup()
         return generated_funcs
+
+    async def cleanup(self):
+        """
+        Clean up resources and close sessions.
+        """
+        await self.exit_stack.aclose()
