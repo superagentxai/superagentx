@@ -67,7 +67,7 @@ class Engine:
             if inspect.isfunction(get_tools_func) or inspect.ismethod(get_tools_func):
                 funcs = await get_tools_func()
                 async for func in iter_to_aiter(funcs):
-                    logger.debug(f"MCP Tool: {func}")
+                    logger.debug(f"MCP Tool Function Name: {func}")
                     _funcs_props.append(await self.llm.get_tool_json(func=func))
         else:
             # Regular handler: lookup functions by name
