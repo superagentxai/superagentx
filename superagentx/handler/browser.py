@@ -54,7 +54,6 @@ class BrowserHandler(BaseHandler):
             self,
             *,
             query: str,
-
     ) -> ToolResult:
         """
         Executes a Google search in the current tab with a precise and well-structured query, mimicking human search
@@ -145,33 +144,6 @@ class BrowserHandler(BaseHandler):
         logger.info(msg)
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
-    # @tool
-    # async def wait_for_element(
-    #         self,
-    #         selector: str,
-    #         timeout: float = 10000
-    # ) -> ToolResult:
-    #     """
-    #     Waits for an element matching the given CSS selector to become visible.
-    #
-    #     Wait for element (e.g.'#search') to be visible with a timeout of 30 seconds.
-    #
-    #     Args:
-    #         selector (str): The CSS selector of the element.
-    #         timeout (float): The maximum time to wait for the element to be visible (in milliseconds).
-    #
-    #     Raises:
-    #         TimeoutError: If the element does not become visible within the specified timeout.
-    #     """
-    #     try:
-    #         await self.browser_context.wait_for_element(selector, timeout)
-    #         msg = f'👀  Element with selector "{selector}" became visible within {timeout}ms.'
-    #         logger.info(msg)
-    #         return ToolResult(extracted_content=msg, include_in_memory=True)
-    #     except Exception as e:
-    #         err_msg = f'❌  Failed to wait for element "{selector}" within {timeout}ms: {str(e)}'
-    #         logger.error(err_msg)
-    #         raise Exception(err_msg)
 
     @tool
     async def click_element_by_index(
@@ -207,11 +179,11 @@ class BrowserHandler(BaseHandler):
                 msg = f'💾  Downloaded file to {download_path}'
             else:
                 msg = f'🖱️  Clicked button with index {index}: {element_node.get_all_text_till_next_clickable_element(max_depth=2)}'
-
+            no_of_pages = len(session.context.pages)
             logger.info(msg)
             logger.debug(f'Element xpath: {element_node.xpath}')
-            logger.info(f"Number of pages: {len(session.context.pages)}")
-            if len(session.context.pages) > initial_pages:
+            logger.info(f"Number of pages: {no_of_pages}")
+            if no_of_pages > initial_pages:
                 new_tab_msg = 'New tab opened - switching to it'
                 msg += f' - {new_tab_msg}'
                 logger.info(new_tab_msg)
@@ -235,21 +207,10 @@ class BrowserHandler(BaseHandler):
         """
         try:
             state = await self.browser_context.get_state()
-            # await time_execution_sync('remove_highlight_elements')(self.browser_context.remove_highlights)()
-
             element_node = await self.browser_context.get_dom_element_by_index(index)
-
-            # page = await self.browser_context.get_current_page()
 
             # check if index of selector map are the same as index of items in dom_items
             await self.browser_context._click_element_node(element_node)
-
-            # await page.wait_for_load_state()
-
-            # tabs: list[TabInfo] = await self.browser_context.get_tabs_info()
-            # last_tab = tabs[-1]
-            # logger.info(f"Tabs: {tabs}")
-            # await self.browser_context.switch_to_tab(last_tab.page_id)
             msg = f"Clicked Element Successfully"
             logger.info(msg)
             return ToolResult(extracted_content=msg, include_in_memory=True)

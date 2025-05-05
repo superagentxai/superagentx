@@ -100,7 +100,7 @@ class Agent:
         self.agent_id = agent_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
-        self.engines: list[BaseEngine | list[BaseEngine]] = engines or []
+        self.engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
         logger.debug(
@@ -124,7 +124,7 @@ class Agent:
 
     async def add(
             self,
-            *engines: BaseEngine,
+            *engines: Engine | BrowserEngine,
             execute_type: Literal['SEQUENCE', 'PARALLEL'] = 'SEQUENCE'
     ) -> None:
         """

@@ -45,7 +45,7 @@ class BrowserEngine(BaseEngine):
             tools: list[dict] | list[str] | None = None,
             max_steps: int = 100,
             take_screenshot: bool = False,
-            screenshot_path: typing.Optional[typing.Union[str, pathlib.Path]] = None,
+            screenshot_path: str | pathlib.Path | None = None,
             **kwargs
     ):
 
@@ -205,7 +205,8 @@ class BrowserEngine(BaseEngine):
                 current_state=current_state
             )
             if result:
-                if result[0].is_done:
+                _result = result[0]
+                if _result.is_done:
                     response = res.get("action", [])[0].get("done", {}).get("text")
                     if isinstance(response, (list, dict)):
                         response = f"Process Success Executed"
@@ -238,7 +239,8 @@ class BrowserEngine(BaseEngine):
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             conversation_id: str | None = None,
-            **kwargs) -> list:
+            **kwargs
+    ) -> list:
 
         msgs = [
             {"role": "user",

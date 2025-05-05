@@ -755,7 +755,7 @@ class BrowserContext:
     @time_execution_async('--take_screenshot')
     async def take_screenshot(
             self,
-            path: typing.Optional[typing.Union[str, aiopath.Path | pathlib.Path]] = None,
+            path: str | aiopath.Path | pathlib.Path | None = None,
             full_page: bool = False
     ) -> str:
         """
