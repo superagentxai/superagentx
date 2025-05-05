@@ -41,7 +41,7 @@ dependencies = [
     "httpx (>=0.28.1,<0.29.0)",
     "opentelemetry-exporter-otlp-proto-grpc (==1.25.0)",  # Temprorly added for Chromadb issue https://github.com/chroma-core/chroma/issues/2571
     "playwright (>=1.50.0,<2.0.0)",
-    "aiopath (==0.7.7)",
+    "aiopath (==0.6.11)",
     "markdownify (>=1.1.0)"
 ]
 
