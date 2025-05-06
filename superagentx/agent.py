@@ -227,7 +227,7 @@ class Agent:
             "pre_result": pre_result,
             "old_memory": old_memory
         }
-        if conversation_id is not None:
+        if conversation_id:
             params["conversation_id"] = conversation_id
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
