@@ -122,7 +122,7 @@ async def log_response(result: dict):
 async def show_toast(page, message: str, duration: int = 3000):
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
-    final_message = f" SuperAgentX Goal:  {random_icon} {message}"
+    final_message = f" SuperAgentX Goal:  {random_icon} {message.replace('\n', ' ')}"
 
     toast_script = f"""
                 (() => {{
