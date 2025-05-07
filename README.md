@@ -71,7 +71,7 @@ asyncio.run(main())
 $ export OPENAI_API_KEY=sk-******************
 ```
 
-![image description](assets/browser_example.gif)
+![image description](assets/superagentx_browser.gif)
 
 
 ## Key Features
