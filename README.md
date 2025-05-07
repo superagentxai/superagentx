@@ -69,8 +69,7 @@ asyncio.run(main())
 
 ```
 ## Run
-
-![image description](https://github.com/superagentxai/superagentx/blob/master/assets/superagentx_browser.gif)
+<img src="https://github.com/superagentxai/superagentx/blob/master/assets/superagentx_browser.gif?raw=True" title="Browser Engine"/>
 
 ```bash
 $ export OPENAI_API_KEY=sk-******************
