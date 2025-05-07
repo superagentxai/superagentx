@@ -114,6 +114,7 @@ class DataWriterHandler(BaseHandler):
 
 class TestEverestMasalaExtractAgent:
 
+    @pytest.mark.asyncio
     @pytest.mark.filterwarnings("ignore::UserWarning")
     async def test_generation_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')

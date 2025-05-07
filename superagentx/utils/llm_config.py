@@ -28,6 +28,7 @@ class LLMType(str, Enum):
 
 
 OPENAI_MODELS = [
+    "gpt-4.1",
     "gpt-4o",
     "gpt-4o-2024-05-13",
     "gpt-4o-2024-08-06",
