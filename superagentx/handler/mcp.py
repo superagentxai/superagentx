@@ -1,6 +1,6 @@
 import inspect
 from contextlib import AsyncExitStack
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, List, Optional, Callable
 
 from mcp import StdioServerParameters, ClientSession
 from mcp.client.stdio import stdio_client
@@ -21,7 +21,7 @@ JSON_TYPE_MAP = {
 
 
 # Infers Python type from a given JSON schema field
-async def infer_type(schema: Dict) -> type:
+async def infer_type(schema: dict) -> type:
     json_type = schema.get("type", "string")
     if json_type == "array":
         return List[Any]  # Default for array types
@@ -34,7 +34,7 @@ async def create_function_from_tool(mcp_tool: Tool) -> Callable:
     Creates a dynamic Python function signature from a tool schema.
     Used to turn tool metadata into real callable functions.
     """
-    props = mcp_tool.inputSchema["properties"]
+    props = mcp_tool.inputSchema.get("properties")
     required = set(mcp_tool.inputSchema.get("required", []))
 
     parameters = []
@@ -85,7 +85,7 @@ class MCPHandler(BaseHandler):
 
         self.write = None
         self.stdio = None
-        self.session: Optional[ClientSession] = None
+        self.session: ClientSession | None = None
         self.exit_stack = AsyncExitStack()
 
     async def connect_to_mcp_server(self):
@@ -102,7 +102,7 @@ class MCPHandler(BaseHandler):
         return self.session
 
     @tool
-    async def get_mcp_tools(self) -> List[Callable]:
+    async def get_mcp_tools(self) -> list[Callable]:
         """
         Fetch and convert MCP server-exposed tools into Python functions.
 
