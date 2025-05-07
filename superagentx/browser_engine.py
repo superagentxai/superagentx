@@ -10,6 +10,7 @@ from typing import TypeVar
 
 import aiopath
 from playwright.async_api import Page
+from pydantic import BaseModel
 
 from superagentx.base import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
@@ -32,6 +33,11 @@ logger = logging.getLogger(__name__)
 Context = TypeVar('Context')
 
 
+class InputTextParams(BaseModel):
+    index: int
+    text: str
+
+
 class BrowserEngine(BaseEngine):
 
     def __init__(
@@ -46,6 +52,7 @@ class BrowserEngine(BaseEngine):
             max_steps: int = 100,
             take_screenshot: bool = False,
             screenshot_path: str | pathlib.Path | None = None,
+            sensitive_data: dict | None = None,
             **kwargs
     ):
 
@@ -87,6 +94,7 @@ class BrowserEngine(BaseEngine):
                     os.path.dirname(os.path.dirname(__file__)),
                     "sagentx_screenshot_path"
                 )
+        self.sensitive_data = sensitive_data
 
     async def __funcs_props(
             self,
@@ -120,6 +128,48 @@ class BrowserEngine(BaseEngine):
         if len(messages) > 2 and isinstance(messages[-1], dict):
             del self.msgs[-1]
 
+    @staticmethod
+    def _replace_sensitive_data(params: BaseModel, sensitive_data: dict[str, str]) -> BaseModel:
+        """Replaces the sensitive data in the params"""
+        # if there are any str with <secret>placeholder</secret> in the params, replace them with the actual value from sensitive_data
+
+        import logging
+        import re
+
+        logger = logging.getLogger(__name__)
+        secret_pattern = re.compile(r'<secret>(.*?)</secret>')
+
+        # Set to track all missing placeholders across the full object
+        all_missing_placeholders = set()
+
+        def replace_secrets(value):
+            if isinstance(value, str):
+                matches = secret_pattern.findall(value)
+
+                for placeholder in matches:
+                    if placeholder in sensitive_data and sensitive_data[placeholder]:
+                        value = value.replace(f'<secret>{placeholder}</secret>', sensitive_data[placeholder])
+                    else:
+                        # Keep track of missing placeholders
+                        all_missing_placeholders.add(placeholder)
+                    # Don't replace the tag, keep it as is
+
+                return value
+            elif isinstance(value, dict):
+                return {k: replace_secrets(v) for k, v in value.items()}
+            elif isinstance(value, list):
+                return [replace_secrets(v) for v in value]
+            return value
+
+        params_dump = params.model_dump()
+        processed_params = replace_secrets(params_dump)
+
+        # Log a warning if any placeholders are missing
+        if all_missing_placeholders:
+            logger.warning(f'Missing or empty keys in sensitive_data dictionary: {", ".join(all_missing_placeholders)}')
+
+        return type(params).model_validate(processed_params)
+
     async def _action_execute(
             self,
             actions: dict,
@@ -134,6 +184,12 @@ class BrowserEngine(BaseEngine):
                     if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                         logger.debug(f'Checking tool function : {self.handler.__class__}.{tool_name}')
                         _kwargs = tool.get(tool_name) or {}
+                        if self.sensitive_data and tool_name == "input_text":
+                            validated_params = InputTextParams(**_kwargs)
+                            _kwargs = self._replace_sensitive_data(validated_params, self.sensitive_data)
+                            print(_kwargs)
+                            _kwargs = _kwargs.model_dump()
+                            print(_kwargs)
                         logger.debug(
                             f'Executing tool function : {self.handler.__class__}.{tool_name}, '
                             f'With arguments : {_kwargs}'
@@ -250,6 +306,13 @@ class BrowserEngine(BaseEngine):
             {"role": "user", "content": "Example output"},
             {"role": "assistant", "content": ""}
         ]
+        if self.sensitive_data:
+            info = f'Here are placeholders for sensitive data: {list(self.sensitive_data.keys())}'
+            info += '\nTo use them, write <secret>the placeholder name</secret>'
+            msgs.append({
+                "role": "user",
+                "content": info
+            })
         self.msgs = self.msgs + msgs
         if pre_result:
             input_prompt = f'{input_prompt}\n\n{pre_result}'
