@@ -21,8 +21,13 @@
 
 # Quick start
 
-```bash
+```shell
 pip install superagentx
+```
+#### Install Playwright for Browser AI Automation
+
+```bash
+playwright install
 ```
 
 ## Browser AI Agent
