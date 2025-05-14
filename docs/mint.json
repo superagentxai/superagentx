@@ -58,7 +58,7 @@
         "agent",
         "memory",
         "llm",
-        "engine",
+        "engines",
         "prompt",
         "handler",
         "conversation"
