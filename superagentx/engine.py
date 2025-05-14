@@ -151,7 +151,10 @@ class Engine:
                 if getattr(self.handler, "__type__", None) == "MCP":
 
                     # Special handling for MCP-based tools by SSE transport or Stdio transport
-                    _func = self.handler.connect_to_mcp_sse_server if self.handler.sse_transport else self.handler.connect_to_mcp_server
+                    _func = self.handler.connect_to_mcp_server
+                    if self.handler.sse_transport:
+                        _func = self.handler.connect_to_mcp_sse_server
+                        
                     session = await _func()
 
                     async for tool in iter_to_aiter(message.tool_calls):
