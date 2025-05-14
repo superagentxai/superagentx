@@ -79,11 +79,11 @@ class MCPHandler(BaseHandler):
 
     def __init__(
             self,
-            command: str = None,
-            mcp_args: list[str] = None,
-            sse_url: str = None,
-            headers: dict[str, str] = None,
-            env: dict[str, str] = None
+            command: str | None = None,
+            mcp_args: list[str] | None = None,
+            sse_url: str | None = None,
+            headers: dict[str, str] | None = None,
+            env: dict[str, str] | None = None
     ):
         """
         Initializes the MCPHandler instance with the specified command and configuration.
@@ -163,7 +163,7 @@ class MCPHandler(BaseHandler):
         logger.debug(f"Connecting to SSE MCP server at {self.sse_url}")
 
         # Establish the SSE stream context and register it with the async exit stack
-        self._streams_context = sse_client(url=self.sse_url, headers=self.headers)
+        self._streams_context = await sse_client(url=self.sse_url, headers=self.headers)  # noqa
 
         # Enter the async stream context to retrieve stream components
         streams = await self.exit_stack.enter_async_context(self._streams_context)
@@ -177,7 +177,7 @@ class MCPHandler(BaseHandler):
         return self.session
 
     @tool
-    async def get_mcp_tools(self) -> List[Callable]:
+    async def get_mcp_tools(self) -> list[Callable]:
         """
         Fetches available tools from MCP server and converts them into Python callables.
         Chooses between SSE and stdio transport based on configuration.
@@ -189,7 +189,7 @@ class MCPHandler(BaseHandler):
             # Validate SSE URL using a simple HTTP/HTTPS regex
             if not re.match(r"^https?://", self.sse_url):
                 raise ValueError(f"Invalid SSE URL: {self.sse_url}")
-            self.sse_transport = True # Set True for SSE Transport, if valid SSE URL
+            self.sse_transport = True  # Set True for SSE Transport, if valid SSE URL
             await self.connect_to_mcp_sse_server()
         elif self.command:
             await self.connect_to_mcp_server()
