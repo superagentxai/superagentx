@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4.1', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
     # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'anthropic'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
@@ -36,12 +36,13 @@ class TestMCPWeatherAgent:
         # MCP Tool - SSE
         mcp_handler = MCPHandler(sse_url="http://0.0.0.0:8080/sse")
 
-        weather_analyst = """You're a Weather Analyst. 
-        1. For Forecast, get appropriate latitude & longitude. 
+        weather_analyst_prompt = """You're a Weather Analyst. 
+        1. Identify Latitude & Longitude for the given State / City from the user's input query
+        2. For Forecast, you get accurate latitude & longitude for the given State or City. 
         2. For Weather alerts, convert city / state into TWO letter US code. Example CA, NY. Weather alerts, ONLY two letter 
         US code should be passed!.
         """
-        prompt_template = PromptTemplate(system_message=weather_analyst)
+        prompt_template = PromptTemplate(system_message=weather_analyst_prompt)
 
         # Enable Engine to execute MCP Tools
         mcp_engine = Engine(handler=mcp_handler, llm=llm_client,
