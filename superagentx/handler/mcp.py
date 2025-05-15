@@ -11,6 +11,7 @@ from mcp.types import ListToolsResult, Tool
 
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
+from superagentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +164,7 @@ class MCPHandler(BaseHandler):
         logger.debug(f"Connecting to SSE MCP server at {self.sse_url}")
 
         # Establish the SSE stream context and register it with the async exit stack
-        self._streams_context = await sse_client(url=self.sse_url, headers=self.headers)  # noqa
+        self._streams_context = await sync_to_async(sse_client, url=self.sse_url, headers=self.headers)
 
         # Enter the async stream context to retrieve stream components
         streams = await self.exit_stack.enter_async_context(self._streams_context)
