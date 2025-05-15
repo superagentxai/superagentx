@@ -149,8 +149,14 @@ class Engine:
         async for message in iter_to_aiter(messages):
             if message.tool_calls:
                 if getattr(self.handler, "__type__", None) == "MCP":
-                    # Special handling for MCP-based tools
-                    session: ClientSession = await self.handler.connect_to_mcp_server()
+
+                    # Special handling for MCP-based tools by SSE transport or Stdio transport
+                    _func = self.handler.connect_to_mcp_server
+                    if self.handler.sse_transport:
+                        _func = self.handler.connect_to_mcp_sse_server
+                        
+                    session = await _func()
+
                     async for tool in iter_to_aiter(message.tool_calls):
                         if tool.tool_type == 'function':
                             res = await session.call_tool(tool.name, arguments=tool.arguments or {})

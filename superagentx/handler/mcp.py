@@ -1,13 +1,19 @@
 import inspect
+import logging
+import re
 from contextlib import AsyncExitStack
 from typing import Any, List, Optional, Callable
 
 from mcp import StdioServerParameters, ClientSession
+from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
 from mcp.types import ListToolsResult, Tool
 
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
+from superagentx.utils.helper import sync_to_async
+
+logger = logging.getLogger(__name__)
 
 # Utility: JSON schema to Python type map
 JSON_TYPE_MAP = {
@@ -72,47 +78,129 @@ async def create_function_from_tool(mcp_tool: Tool) -> Callable:
 class MCPHandler(BaseHandler):
     __type__ = "MCP"
 
-    def __init__(self, command: str, mcp_args: list = None):
+    def __init__(
+            self,
+            command: str | None = None,
+            mcp_args: list[str] | None = None,
+            sse_url: str | None = None,
+            headers: dict[str, str] | None = None,
+            env: dict[str, str] | None = None
+    ):
         """
-        Initialize the MCPHandler with the given command and arguments.
+        Initializes the MCPHandler instance with the specified command and configuration.
 
-        :param command: Command to launch the MCP-compatible server.
-        :param mcp_args: Optional list of CLI arguments for the server.
+        :param command: The command used to launch the MCP-compatible server.
+        :param mcp_args: Optional list of additional CLI arguments to pass to the server.
+        :param sse_url: Optional Server-Sent Events (SSE) URL for streaming.
+        :param headers: Optional HTTP headers to include in the request.
+        :param env: Optional environment variables to set when running the server.
         """
         super().__init__()
-        self.command = command
-        self.mcp_args = mcp_args or []
 
+        # Command and arguments for starting the MCP server
+        self.command: str | None = command
+        self.mcp_args: list[str] = mcp_args if mcp_args is not None else []
+
+        # Optional runtime parameters
+        self.sse_url: str | None = sse_url
+        self.headers: dict[str, str] | None = headers
+        self.env: dict[str, str] | None = env
+
+        self.sse_transport = False
+
+        # Asynchronous session for HTTP communications
+        self.session: ClientSession | None = None
+
+        # Context manager for managing multiple async resources (e.g. subprocesses, sessions)
+        self.exit_stack: AsyncExitStack = AsyncExitStack()
+
+        # I/O stream placeholders (to be initialized during process startup)
         self.write = None
         self.stdio = None
-        self.session: ClientSession | None = None
-        self.exit_stack = AsyncExitStack()
 
-    async def connect_to_mcp_server(self):
+        # Internal context for managing streams (used later for tracking I/O)
+        self._streams_context = None
+
+    async def connect_to_mcp_server(self) -> ClientSession:
         """
-        Establish connection to the MCP server via stdio transport.
-        Initializes session and performs handshake.
+        Establishes a connection to the MCP server using stdio transport.
+        Sets up the communication channel, initializes the client session,
+        and performs the handshake.
+
+        :return: An initialized ClientSession object for interacting with the MCP server.
         """
-        server_params = StdioServerParameters(command=self.command, args=self.mcp_args)
-        stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
+        logger.debug(f"Connecting to Stdio MCP server with command {self.command} args: {self.mcp_args}")
+
+        # Prepare server launch parameters with command and arguments
+        server_params = StdioServerParameters(
+            command=self.command,
+            args=self.mcp_args,
+            env=self.env
+
+        )
+
+        # Establish stdio transport and register it with the exit stack
+        stdio_transport = await self.exit_stack.enter_async_context(
+            stdio_client(server_params)
+        )
+
+        # Unpack the stdio reader and writer
         self.stdio, self.write = stdio_transport
 
-        self.session = await self.exit_stack.enter_async_context(ClientSession(self.stdio, self.write))
+        # Create and initialize the client session over stdio
+        self.session = await self.exit_stack.enter_async_context(
+            ClientSession(self.stdio, self.write)
+        )
         await self.session.initialize()
+
+        return self.session
+
+    async def connect_to_mcp_sse_server(self) -> ClientSession:
+        """
+        Connects to the SSE-based MCP server and initializes the session.
+
+        :return: An initialized ClientSession object for interacting with the server.
+        """
+        logger.debug(f"Connecting to SSE MCP server at {self.sse_url}")
+
+        # Establish the SSE stream context and register it with the async exit stack
+        self._streams_context = await sync_to_async(sse_client, url=self.sse_url, headers=self.headers)
+
+        # Enter the async stream context to retrieve stream components
+        streams = await self.exit_stack.enter_async_context(self._streams_context)
+
+        # Use the returned streams to create the MCP client session
+        self.session = await self.exit_stack.enter_async_context(ClientSession(*streams))
+
+        # Initialize the session (e.g., handshake, setup)
+        await self.session.initialize()
+
         return self.session
 
     @tool
     async def get_mcp_tools(self) -> list[Callable]:
         """
-        Fetch and convert MCP server-exposed tools into Python functions.
+        Fetches available tools from MCP server and converts them into Python callables.
+        Chooses between SSE and stdio transport based on configuration.
 
-        :return: List of dynamically created Python callables.
+        :return: A list of callable functions based on MCP tool definitions.
         """
-        await self.connect_to_mcp_server()
-        tools_response: ListToolsResult = await self.session.list_tools()
+        logger.debug(f"SSE MCP server at {self.sse_url}")
+        if self.sse_url:
+            # Validate SSE URL using a simple HTTP/HTTPS regex
+            if not re.match(r"^https?://", self.sse_url):
+                raise ValueError(f"Invalid SSE URL: {self.sse_url}")
+            self.sse_transport = True  # Set True for SSE Transport, if valid SSE URL
+            await self.connect_to_mcp_sse_server()
+        elif self.command:
+            await self.connect_to_mcp_server()
+        else:
+            raise ValueError(f"Invalid MCP Command or SSE URL. Either of one should be used!!!")
 
-        # Convert each MCP tool definition into a callable functions
-        generated_funcs = [await create_function_from_tool(mcp_tool) for mcp_tool in tools_response.tools]
+        tools_response: ListToolsResult = await self.session.list_tools()
+        generated_funcs = [
+            await create_function_from_tool(mcp_tool) for mcp_tool in tools_response.tools
+        ]
 
         await self.cleanup()
         return generated_funcs
@@ -122,3 +210,4 @@ class MCPHandler(BaseHandler):
         Clean up resources and close sessions.
         """
         await self.exit_stack.aclose()
+        logger.debug(f"Session Cleanup Completed!!!")
