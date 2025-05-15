@@ -39,7 +39,7 @@ class TestMCPWeatherAgent:
         weather_analyst_prompt = """You're a Weather Analyst. 
         1. Identify Latitude & Longitude for the given State / City from the user's input query
         2. For Forecast, you get accurate latitude & longitude for the given State or City. 
-        2. For Weather alerts, convert city / state into TWO letter US code. Example CA, NY. Weather alerts, ONLY two letter 
+        3. For Weather alerts, convert city / state into TWO letter US code. Example CA, NY. Weather alerts, ONLY two letter 
         US code should be passed!.
         """
         prompt_template = PromptTemplate(system_message=weather_analyst_prompt)
