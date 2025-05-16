@@ -61,6 +61,7 @@
         "engines",
         "prompt",
         "handler",
+        "mcp",
         "conversation"
       ]
     },

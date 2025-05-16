@@ -84,12 +84,13 @@ llm_client: LLMClient = LLMClient(llm_config=llm_config)
 | **Open AI**                        | `openai`               | `llm_config = { 'llm_type':'openai'}`       |
 | **Azure OpenAI**                   | `azure-openai`         | `llm_config = { 'llm_type':'azure-openai'}` |
 | **AWS Bedrock**                    | `bedrock`              | `llm_config = { 'llm_type':'bedrock'}`      |
+| **Ollama**                         | `ollama`               | `llm_config = { 'llm_type':'ollama'}`
 | **LLama**                          | `llama`                | `llm_config = { 'llm_type':'llama'}`        |
 | **Gemini**                         | `gemini`               | `llm_config = { 'llm_type':'gemini'}`       |
 | **Anthropic**                      | `anthropic`            | `llm_config = { 'llm_type':'anthropic'}`    |
-| **Mistral**                        | `mistral`              | `llm_config = { 'llm_type':'mistral'}`      |
-| **Groq**                           | `groq`                 | `llm_config = { 'llm_type':'groq'}`         |
-| **Together**                       | `together`             | `llm_config = { 'llm_type':'together'}`     |
+| **Mistral**                        | `mistral`              | `Coming Soon`                               |
+| **Groq**                           | `groq`                 | `Coming Soon`                               |
+| **Together**                       | `together`             | `Coming Soon`                               |
 
 ### OpenAI Supported Models
 
@@ -122,3 +123,11 @@ llm_client: LLMClient = LLMClient(llm_config=llm_config)
 | **meta.llama3-1-405b-instruct-v1:0**           | ```llm_config = {"model":'meta.llama3-1-405b-instruct-v1:0',"llm_type":'bedrock'}```               |
 | **mistral.mistral-large-2402-v1:0**            | ```llm_config = {"model":'mistral.mistral-large-2402-v1:0',"llm_type":'bedrock'}```                |
 | **mistral.mistral-large-2407-v1:0**            | ```llm_config = {"model":'mistral.mistral-large-2407-v1:0',"llm_type":'bedrock'}```                |
+
+### Ollama Supported Models:
+
+| Type                               | Example                                                                              |
+| :--------------------              | :----------------------------------------------------------                          |
+| **mistral:latest**                 | ```llm_config = {"model":'mistral:latest',"llm_type":'ollama'}```                    |
+| **llama3.3:latest**                | ```llm_config = {"model":'llama3.3:latest',"llm_type":'ollama'}```                   |
+
