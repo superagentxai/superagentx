@@ -58,9 +58,10 @@
         "agent",
         "memory",
         "llm",
-        "engine",
+        "engines",
         "prompt",
         "handler",
+        "mcp",
         "conversation"
       ]
     },

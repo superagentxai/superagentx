@@ -4,9 +4,8 @@ icon: 'rectangle-terminal'
 ---
 
 A `PromptTemplate` class is used to create and organize the messages (prompts) that are sent to a language model.
-It allows you to define a basic structure for the prompt with placeholders (like {name} or {task}). These
-placeholders are then replaced with actual values before sending the prompt to the model, making it
-flexible and reusable for different situations.
+It allows you to define a basic structure for the prompt, making it easy to manage and reuse across different situations.
+This helps maintain consistency and simplifies prompt formatting when interacting with the model.
 
 ### Parameters
 | Attribute                          | Parameters        |Type          | Description                                                                          |
@@ -15,6 +14,8 @@ flexible and reusable for different situations.
 | **System Message**  _(optional)_   |`system_message`   | `str`        | An optional string that defines a system-level message for the prompt. Default `None`|
 
 
-```shell
- prompt_template = PromptTemplate()
+```python
+from superagentx.prompt import PromptTemplate
+
+prompt_template = PromptTemplate()
 ```

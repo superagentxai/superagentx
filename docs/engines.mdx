@@ -1,0 +1,148 @@
+---
+title: 'Engines'
+icon: 'engine'
+---
+
+An `Engine` is a system that sets up and runs specific processes to perform `handler`. It organizes different `handler`
+functions and uses a given prompt along with a language model to activate them. Essentially, the `engine` helps
+manage and trigger these processes to carry out actions based on the instructions it receives.
+
+
+### Parameters
+| Attribute                        | Parameters                  | Description                                                                                                                                                                                   |
+| :--------------------            | :----------------           | :-------------------------------------                                                                                                                                                        |
+| **Handler**                      | `handler`                   | Implementation of `BaseHandler`, its method(s) will be executed based on the given prompts.                                                                                                    |
+| **LLM Client**                   | `llm`                       | Interface for communicating with the large language model (LLM).                                                                                                                              |
+| **Prompt Template**              | `prompt_template`           | Defines the structure and format of prompts sent to the LLM using `PromptTemplate`.                                                                                                           |
+| **Tools** _(optional)_           | `tools`                     | List of handler method names (as dictionaries or strings) available for use during interactions. Defaults to `None`. If nothing provide `Engine` will get it dynamically using `dir(handler)`.|
+| **Output Parser** _(optional)_   | `output_parser`             | An optional parser to format and process the handler tools output. Defaults to `None`.                                                                                                        |
+
+
+```python
+from superagentx.engine import Engine
+
+walmart_engine = Engine(
+    handler=walmart_ecom_handler,
+    llm=llm_client,
+    prompt_template=prompt_template,
+    tools=None,
+    output_parser=None,
+)
+```
+## Browser Engine
+
+The `BrowserEngin`e is a specialized engine designed to execute browser-based automation tasks using a set of
+predefined browser handlers. It coordinates a language model, a prompt template, and a browser context to perform
+interactive web actions such as navigation, input, clicking, scrolling, and data extraction. By interpreting
+instructions and invoking the appropriate browser tools, the `BrowserEngine` enables intelligent and automated
+web browsing workflows, including optional screenshot capturing and step-based execution control.
+
+### Parameters
+| Attribute                                 | Parameters                  | Description                                |
+| :--------------------                     | :----------------           | :-------------------------------------     |
+| **LLM Client**                            | `llm`                       |  An instance of LLMClient, which likely represents a client or interface to interact with a Large Language Model (LLM) such as GPT. This is used for generating text, answering queries, etc.         |
+| **PromptTemplate**                        | `prompt_template`           |  An instance of `PromptTemplate`, which defines the format or structure of the prompts that will be sent to the LLM. It helps maintain consistency and clarity in how requests are made to the model.   |
+| **Browser Instance Path** _(optional)_    | `browser_instance_path`     |  If we want to reuse a browser session that was saved earlier, this tells the program where to find it. Defaults to `None`                                                                                               |
+| **Browser** _(optional)_                  | `browser`                   |  A web browser (like Chrome or Firefox) that the program can control automatically. We can use this if we need to interact with websites without doing it manually. Defaults to `None`                                   |
+| **Browser Context** _(optional)_          | `browser_context`           |  A separate "space" inside the browser that keeps things organized. It’s like using different tabs in the browser for different tasks or projects.  Defaults to `None`                                                   |
+| **Tools** _(optional)_                    | `tools`                     |  A list of special tools (like a calculator, search tool, or others) that the program can use during its tasks. Defaults to `None`                                                                                    |
+| **Max Steps**                             | `max_steps`                 |  The maximum number of steps the program can take before it stops. This helps prevent it from running forever or getting stuck in endless loops. Default Step is `100`                                |
+| **Screen Shot**  _(optional)_             | `take_screenshot`           |  A yes/no option that tells the program whether or not to take screenshots during its work. This is useful for keeping a visual record of what happens.Defaults to `None`                                                 |
+| **Screenshot Path** _(optional)_          | `screenshot_path`           |  If screenshots are taken, this tells the program where to save them on your computer. Defaults to `None`                                                                                                               |
+
+```python BrowserEngine:
+
+from superagentx.browser_engine import BrowserEngine
+
+browser_engine = BrowserEngine(
+    llm=llm_client,
+    prompt_template=prompt_template,
+)
+```
+
+### Browser Configuration:
+`BrowserConfig` controls the global launch behavior and core settings for the browser instance.
+It specifies parameters like headless mode, browser type, proxy settings, and remote connections.
+This configuration is applied when the browser starts and affects all created contexts and pages.
+
+```python Browser config
+from superagentx.computer_use.browser.browser import Browser, BrowserConfig
+
+config = BrowserConfig(
+    headless=False,
+    disable_security=True,
+    browser_type='firefox'
+)
+
+browser = Browser(config=config)
+
+```
+#### BrowserConfig Parameters:
+
+| Attribute                                 | Parameters                  | Description                                |
+| :--------------------                     | :----------------           | :-------------------------------------     |
+| **Headless**                              | `headless`                  | When True, launches the browser without a visible UI. Useful for automation or CI environments, but some sites may detect headless mode. Default to `False`. |
+| **Disables Security**                     | `disable_security`          | Disables standard browser security features (e.g., CORS, mixed content blocking). Use only when necessary and only with trusted content. Default to `True`.  |
+| **extra_chromium_args**  _(optional)_     | `extra_chromium_args`       | Additional command-line flags to pass to Chromium during launch (e.g., --no-sandbox, --disable-gpu).Default is [].                                                            |
+| **chrome_instance_path**  _(optional)_    | `chrome_instance_path`      | Path to a custom Chrome or Chromium executable. Useful when using a non-default installation. Default to `None`.
+| **wss_url** _(optional)_                  | `wss_url`                   | WebSocket endpoint for connecting to a remote browser instance via the DevTools Protocol (e.g., for cloud or containerized browsers). Default to `None`.
+| **cdp_url**  _(optional)_                 | `cdp_url`                   | Chrome DevTools Protocol (CDP) endpoint used for remote browser automation. Default to `None`.
+| **Proxy**  _(optional)_                   | `proxy`                     | Configuration for routing browser traffic through a proxy server. Follows Playwright-style proxy settings (e.g., server, username, password). Default to `None`.                                                                       |
+| **New Content Config**  _(optional)_      | `new_context_config`        | Default configuration for new browser contexts. Controls cookies, viewport, locale, user agent, and other context-level behaviors. Default is `BrowserContextConfig()`.                                                                |
+| **_force_keep_browser_alive**             | `_force_keep_browser_alive  | Internal flag to keep the browser instance running across multiple tasks or scripts. Default to `False`.
+| **Browse Type**                           | `browser_type`              | Specifies which browser engine to use: 'chromium', 'firefox', or 'webkit'. In this example, 'firefox' is selected. Default is `chromium`.                                                         |
+
+
+#### Browser Context Configuration:
+`BrowserContextConfig` defines the default environment and behavior for each new browser context.
+It includes settings like cookies, viewport size, user agent, locale, and download paths.
+This configuration ensures isolated, customizable sessions within a single browser instance.
+
+```python
+from superagentx.computer_use.browser.context import BrowserContextConfig
+
+config = BrowserContextConfig(
+    cookies_file="path/to/cookies.json",
+    wait_for_network_idle_page_load_time=3.0,
+    window_width=1280,
+    window_height=1100,
+    locale='en-US',
+    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
+    highlight_elements=True,
+    viewport_expansion=500,
+    allowed_domains=['google.com', 'wikipedia.org'],
+)
+
+browser = Browser()
+context = BrowserContext(browser=browser, config=config)
+
+browser_engine = BrowserEngine(
+    llm=llm_client,
+    prompt_template=prompt_template,
+    browser_context=context
+
+)
+```
+
+#### BrowserContextConfig Parameters:
+
+| Attribute                                 | Parameters                              | Description                                |
+| :--------------------                     | :----------------                       | :-------------------------------------     |
+| **Cookies File**  _(optional)_            | `cookies_file`                          | Path to a file containing cookies to be loaded into the browser session. Useful for persisting login states. Default to `None`.     |
+| **Minimum Wait Page Load Time**           | `minimum_wait_page_load_time`           | Minimum time (in seconds) to wait after page navigation begins before proceeding. Ensures smoother page loading. Default to `0.25`                                         |
+| **Wait For Network Idle Page Load Time**  | `wait_for_network_idle_page_load_time`  | Additional wait time after the network becomes idle, simulating user behavior more closely. Default to `0.5`                                           |
+| **Maximum Wait Page Load Time**           | `maximum_wait_page_load_time`           | Maximum duration to wait for a page to fully load. Acts as a timeout for slow-loading pages. Default to `5`.                                        |
+| **Wait Between Actions**                  | `wait_between_actions`                  | Wait time between sequential browser actions (e.g., clicks, navigation). Helps avoid detection by anti-bot systems. Default to `0.5`                                          |
+| **Disable Security** _(optional)_         | `disable_security`                      | Disables browser-level security features. Can solve cross-origin issues, but should not be used with untrusted websites. Default to `True`                                          |
+| **Browser Window Size** _(optional)_      | `browser_window_size`                   | Sets the browser window size. Useful for rendering consistency and testing responsive layouts. Default to `{'width': 1280, 'height': 1100}`                                          |
+| **No Viewport** _(optional)_              | `no_viewport`                           | When set to True, disables Playwright’s default viewport setting and uses the system window size instead. Default to `None`.                                           |
+| **Save Recording Path** _(optional)_      | `save_recording_path`                   | Path to save screen recordings of the browser session, if enabled. Default to `None`.                                          |
+| **Save Downloads Path** _(optional)_      | `save_downloads_path`                   | Directory path to store downloaded files from within the browser context. Default to `None`.                                           |
+| **Trace Path**  _(optional)_              | `trace_path`                            | Path to store browser traces (used for debugging and performance analysis). Default to `None`.                                         |
+| **Locale** _(optional)_                   | `locale`                                | Sets the locale of the browser context (e.g., "en-US"), which can affect how websites render language and date formats.Default to `None`.
+| **User Agent**                            | `user_agent`                            | The user agent string used for the browser session. Can be customized to mimic specific devices or browsers. Default to `realistic Chrome UA string`.                          |
+| **Highlight Elements**                    | `highlight_elements`                    | Highlights elements being interacted with in the browser. Useful for debugging and visual confirmation during automation. Default to `False`   |
+| **Viewport Expansion**                    | `viewport_expansion`                    | Expands the viewport vertically (in pixels) to ensure that off-screen elements are brought into view. Default is 500.                                                      |
+| **Allowed Domains** _(optional)_          | `allowed_domains`                       | List of domains that are permitted to load. Helps limit unwanted navigation or third-party content. Default to `None`.                                                       |
+| **Include Dynamic Attributes**            | `include_dynamic_attributes`            | Whether to include dynamically generated attributes (like data-*, aria-*) during automation tasks. Default to `True`.                                                       |
+| **Force Keep Context Alive**              | `_force_keep_context_alive`             | Internal setting to keep the browser context alive beyond the usual lifecycle. Useful for chained or long-lived tasks. Default to `False`.                                                       |
