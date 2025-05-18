@@ -22,7 +22,7 @@ need — like local files, databases, or web services.
 | **ENV**    _(optional)_            | `env`                       | Optional environment variables to set when running the server. Default to `None`       |
 
 ### MCP Handler - STDIO
-The STDIO handler communicates using the standard input and output streams of the operating system. This method is
+The STDIO handler communicates using the operating system's standard input and output streams. This method is
 typically used when integrating with command-line tools or subprocesses. The MCP (Modular Communication Protocol)
 engine sends input to the handler through standard input (stdin) and reads the response from standard output (stdout).
 
@@ -30,8 +30,8 @@ engine sends input to the handler through standard input (stdin) and reads the r
 from superagentx.handlers.mcp import MCPHandler
 
 mcp_handler = MCPHandler(
-    command="uvx",
-    mcp_args=["mcp-server-reddit"]
+    command="python",
+    mcp_args=["-m","mcp_server_reddit"]
 )
 ```
 
