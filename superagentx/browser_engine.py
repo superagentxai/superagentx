@@ -37,6 +37,7 @@ Context = TypeVar('Context')
 class InputTextParams(BaseModel):
     index: int
     text: str
+    has_sensitive: bool
 
 
 class BrowserEngine(BaseEngine):
@@ -195,11 +196,10 @@ class BrowserEngine(BaseEngine):
                         logger.debug(f'Checking tool function : {self.handler.__class__}.{tool_name}')
                         _kwargs = tool.get(tool_name) or {}
                         if self.sensitive_data and tool_name == "input_text":
+                            _kwargs["has_sensitive"] = True
                             validated_params = InputTextParams(**_kwargs)
                             _kwargs = self._replace_sensitive_data(validated_params, self.sensitive_data)
-                            print(_kwargs)
                             _kwargs = _kwargs.model_dump()
-                            print(_kwargs)
                         logger.debug(
                             f'Executing tool function : {self.handler.__class__}.{tool_name}, '
                             f'With arguments : {_kwargs}'
