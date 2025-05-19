@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from superagentx.base import BaseEngine
 from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
+from superagentx.computer_use.constants import EXAMPLE_DATA
 from superagentx.computer_use.utils import (
     get_user_message,
     show_toast,
@@ -129,9 +130,13 @@ class BrowserEngine(BaseEngine):
             del self.msgs[-1]
 
     @staticmethod
-    def _replace_sensitive_data(params: BaseModel, sensitive_data: dict[str, str]) -> BaseModel:
+    def _replace_sensitive_data(
+            params: BaseModel,
+            sensitive_data: dict[str, str]
+    ) -> BaseModel:
         """Replaces the sensitive data in the params"""
-        # if there are any str with <secret>placeholder</secret> in the params, replace them with the actual value from sensitive_data
+        # if there are any str with <secret>placeholder</secret> in the params, replace them with the actual value from
+        # sensitive_data
 
         import logging
         import re
@@ -148,7 +153,10 @@ class BrowserEngine(BaseEngine):
 
                 for placeholder in matches:
                     if placeholder in sensitive_data and sensitive_data[placeholder]:
-                        value = value.replace(f'<secret>{placeholder}</secret>', sensitive_data[placeholder])
+                        value = value.replace(
+                            f'<secret>{placeholder}</secret>',
+                            sensitive_data[placeholder]
+                        )
                     else:
                         # Keep track of missing placeholders
                         all_missing_placeholders.add(placeholder)
@@ -166,7 +174,9 @@ class BrowserEngine(BaseEngine):
 
         # Log a warning if any placeholders are missing
         if all_missing_placeholders:
-            logger.warning(f'Missing or empty keys in sensitive_data dictionary: {", ".join(all_missing_placeholders)}')
+            logger.warning(
+                f'Missing or empty keys in sensitive_data dictionary: {", ".join(all_missing_placeholders)}'
+            )
 
         return type(params).model_validate(processed_params)
 
@@ -281,7 +291,7 @@ class BrowserEngine(BaseEngine):
                         )
                         await show_toast(
                             page=await self.browser_context.get_current_page(),
-                            message=file_path
+                            message="Screen Captured"
                         )
                         await asyncio.sleep(2)
                     await self.browser_context.close()
@@ -304,7 +314,7 @@ class BrowserEngine(BaseEngine):
                         "achieved your ultimate task, stop everything and use the done action in the next step to "
                         "complete the task. If not, continue as usual."},
             {"role": "user", "content": "Example output"},
-            {"role": "assistant", "content": ""}
+            {"role": "assistant", "content": EXAMPLE_DATA}
         ]
         if self.sensitive_data:
             info = f'Here are placeholders for sensitive data: {list(self.sensitive_data.keys())}'

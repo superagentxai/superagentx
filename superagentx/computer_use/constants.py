@@ -109,3 +109,12 @@ HEADLESS_ARGS = [
     '--no-startup-window',
     '--window-position=0,0',
 ]
+
+EXAMPLE_DATA = """{
+            'current_state': {
+                'evaluation_previous_goal': "Success - I successfully clicked on the 'Apple' link from the Google Search results page, which directed me to the 'Apple' company homepage. This is a good start toward finding the best place to buy a new iPhone as the Apple website often list iPhones for sale.",
+                'memory': "I searched for 'iPhone retailers' on Google. From the Google Search results page, I used the 'click_element_by_index' tool to click on element at index [45] labeled 'Best Buy' but calling the tool did not direct me to a new page. I then used the 'click_element_by_index' tool to click on element at index [82] labeled 'Apple' which redirected me to the 'Apple' company homepage. Currently at step 3/15.",
+                'next_goal': "Looking at reported structure of the current page, I can see the item '[127]<h3 iPhone/>' in the content. I think this button will lead to more information and potentially prices for iPhones. I'll click on the link at index [127] using the 'click_element_by_index' tool and hope to see prices on the next page."
+            },
+            'action': [{'click_element_by_index': {'index': 127}}]
+        }"""
