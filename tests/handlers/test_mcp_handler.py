@@ -21,6 +21,8 @@ def mcp_handler_init() -> MCPHandler:
     mcp_handler = MCPHandler(command="npx",
                              mcp_args=["-y", "@modelcontextprotocol/server-memory"])
 
+    # mcp_handler = MCPHandler(sse_url="http://0.0.0.0:8080/sse")
+
     logger.info(mcp_handler)
     return mcp_handler
 

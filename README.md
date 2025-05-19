@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/fulllogo_transparent.png?raw=True" width="350">
+<img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/fulllogo_transparent.png" width="350">
 
 
 <br/>
@@ -21,8 +21,13 @@
 
 # Quick start
 
-```bash
+```shell
 pip install superagentx
+```
+#### Install Playwright for Browser AI Automation
+
+```bash
+playwright install
 ```
 
 ## Browser AI Agent
@@ -69,8 +74,7 @@ asyncio.run(main())
 
 ```
 ## Run
-
-![image description](assets/superagentx_browser.gif)
+<img src="https://github.com/superagentxai/superagentx/blob/master/assets/superagentx_browser.gif" title="Browser Engine"/>
 
 ```bash
 $ export OPENAI_API_KEY=sk-******************
@@ -92,7 +96,7 @@ $ export OPENAI_API_KEY=sk-******************
 
 🤝 **Extendable Handlers**: Allows integration with diverse APIs, databases, data warehouses, data lakes, IoT streams, and more, making them accessible for function-calling features.
 
-🤝 **Agentic RPA (Robotic Process Automation)** – SuperAgentX enables computer-use automation for both browser-based and desktop applications, making it an ideal solution for enterprises looking to streamline operations, reduce manual effort, and boost productivity.
+💎 **Agentic RPA (Robotic Process Automation)** – SuperAgentX enables computer-use automation for both browser-based and desktop applications, making it an ideal solution for enterprises looking to streamline operations, reduce manual effort, and boost productivity.
 
 
 ## Table of contents
@@ -130,21 +134,21 @@ This SuperAgentX example utilizes two handlers, Amazon and Walmart, to search fo
 4. Pre-requisites
 
 ## Architecture
-<img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/architecture.png?raw=True" title="SuperAgentX Architecture"/>
+<img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/architecture.png" title="SuperAgentX Architecture"/>
 
 ## Large Language Models
 
 | Icon                                                                                                                                                          | LLM Name          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Status                                                                                                                                           |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/openai.png?raw=True" title="OpenAI" height="20" width="20"/>              | **OpenAI**                                                                                     | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/azure-icon.png?raw=True" title="Azure OpenAI" height="20" width="20"/>    | **Azure OpenAI**                                                                               | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>   |  
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/awsbedrock.png?raw=True" title="AWS Bedrock" height="20" width="20"/>     | **AWS Bedrock**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/gemini.png?raw=True" title="Google Gemini" height="20" width="20"/>       | **Google Gemini**                                                                              | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/meta.png?raw=True" title="Google Gemini" height="20" width="20"/>         | **Meta Llama**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ollama.png?raw=True" title="Ollama" height="20" width="20"/>              | **Ollama**                                                                                     | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/claude-ai-logo.png?raw=True" title="Claude AI" height="20" width="20"/>   | **Claude AI**                                                                                  | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png?raw=True" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png?raw=True" title="Mistral AI" height="20" width="30"/> | **Mistral AI**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>          |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ibm.png?raw=True" title="IBM WatsonX AI" height="20" width="30"/>         | **IBM WatsonX**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png?raw=True" title="TODO" height="20" width="20"/>          |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/openai.png" title="OpenAI" height="20" width="20"/>              | **OpenAI**                                                                                     | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/azure-icon.png" title="Azure OpenAI" height="20" width="20"/>    | **Azure OpenAI**                                                                               | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |  
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/awsbedrock.png" title="AWS Bedrock" height="20" width="20"/>     | **AWS Bedrock**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/gemini.png" title="Google Gemini" height="20" width="20"/>       | **Google Gemini**                                                                              | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/meta.png" title="Google Gemini" height="20" width="20"/>         | **Meta Llama**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ollama.png" title="Ollama" height="20" width="20"/>              | **Ollama**                                                                                     | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/claude-ai-logo.png" title="Claude AI" height="20" width="20"/>   | **Claude AI**                                                                                  | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png" title="Mistral AI" height="20" width="30"/> | **Mistral AI**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png" title="TODO" height="20" width="20"/>          |
+| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ibm.png" title="IBM WatsonX AI" height="20" width="30"/>         | **IBM WatsonX**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png" title="TODO" height="20" width="20"/>          |
 
 ## Environment Setup
 ```shell

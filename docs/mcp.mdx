@@ -1,0 +1,49 @@
+---
+title: 'MCP'
+icon: 'microchip-ai'
+---
+
+## Introduction
+The Model Context Protocol (MCP) is a lightweight, open protocol designed to standardize how AI applications and
+large language models (LLMs) interface with external tools, data sources, and services. It allows developers to
+seamlessly integrate LLMs into broader software systems by defining a clear, extensible, and secure context interface.<br />
+
+Think of MCP as a universal adapter for AI systems, enabling smooth interaction between models and the tools they
+need — like local files, databases, or web services.
+
+### Parameters:
+
+| Attribute                          | Parameters                  | Description                                                                            |
+| :--------------------              | :----------------           | :-------------------------------------                                                 |
+| **Command** _(optional)_           | `command`                   | The command used to launch the MCP-compatible server. Default to `None`                |
+| **MCP Args** _(optional)_          | `mcp_args`                  | Optional list of additional CLI arguments to pass to the server. Default to `None`     |
+| **SSE Url**  _(optional)_          | `sse_url`                   | Optional Server-Sent Events (SSE) URL for streaming. Default to `None`                 |
+| **Headers** _(optional)_           | `headers`                   | Optional HTTP headers to include in the request. Default to `None`                     |
+| **ENV**    _(optional)_            | `env`                       | Optional environment variables to set when running the server. Default to `None`       |
+
+### MCP Handler - STDIO
+The STDIO handler communicates using the operating system's standard input and output streams. This method is
+typically used when integrating with command-line tools or subprocesses. The MCP (Modular Communication Protocol)
+engine sends input to the handler through standard input (stdin) and reads the response from standard output (stdout).
+
+```python
+from superagentx.handlers.mcp import MCPHandler
+
+mcp_handler = MCPHandler(
+    command="python",
+    mcp_args=["-m","mcp_server_reddit"]
+)
+```
+
+### MCP Handler - SSE
+The SSE handler uses Server-Sent Events, a web-based communication protocol that allows the server to push real-time
+updates to the client over a single HTTP connection. The handler remains connected and continuously sends events as
+they become available, without the client having to request them each time.
+
+```python
+from superagentx.handlers.mcp import MCPHandler
+
+mcp_handler = MCPHandler(
+    sse_url="http://0.0.0.0:8080/sse"
+)
+```
