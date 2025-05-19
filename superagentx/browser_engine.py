@@ -3,12 +3,12 @@ import inspect
 import json
 import logging
 import os
-import pathlib
-import typing
+import re
 import uuid
-from typing import TypeVar
+from typing import TypeVar, Any
 
 import aiopath
+import pathlib
 from playwright.async_api import Page
 from pydantic import BaseModel
 
@@ -133,16 +133,12 @@ class BrowserEngine(BaseEngine):
     @staticmethod
     def _replace_sensitive_data(
             params: BaseModel,
-            sensitive_data: dict[str, str]
+            sensitive_data: dict[str, Any]
     ) -> BaseModel:
         """Replaces the sensitive data in the params"""
         # if there are any str with <secret>placeholder</secret> in the params, replace them with the actual value from
         # sensitive_data
 
-        import logging
-        import re
-
-        logger = logging.getLogger(__name__)
         secret_pattern = re.compile(r'<secret>(.*?)</secret>')
 
         # Set to track all missing placeholders across the full object
