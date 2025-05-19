@@ -198,7 +198,11 @@ class BrowserEngine(BaseEngine):
                         if self.sensitive_data and tool_name == "input_text":
                             _kwargs["has_sensitive"] = True
                             validated_params = InputTextParams(**_kwargs)
-                            _kwargs = self._replace_sensitive_data(validated_params, self.sensitive_data)
+                            _kwargs = await sync_to_async(
+                                self._replace_sensitive_data,
+                                validated_params,
+                                self.sensitive_data
+                            )
                             _kwargs = _kwargs.model_dump()
                         logger.debug(
                             f'Executing tool function : {self.handler.__class__}.{tool_name}, '
