@@ -274,21 +274,26 @@ class BrowserHandler(BaseHandler):
     async def input_text(
             self,
             index: int,
-            text: str
+            text: str,
+            has_sensitive: bool = False
     ) -> ToolResult:
         """
         Input text into an input interactive element
         Args:
             @param index: The index of the input element to interact with.
             @param text: The text to input into the selected element.
+            @param has_sensitive: Has Sensitive data. Default False
         """
         if index not in await self.browser_context.get_selector_map():
             return ToolResult(error=f'Element index {index} does not exist - retry or use alternative actions')
         try:
             element_node = await self.browser_context.get_dom_element_by_index(index)
             await self.wait(seconds=3)
-            await self.browser_context._input_text_element_node(element_node, text)
-            msg = f'⌨️  Input data into index {index} {text}'
+            await self.browser_context._input_text_element_node(element_node, text=text)
+            if not has_sensitive:
+                msg = f'⌨️  Input data into index {index} {text}'
+            else:
+                msg = f'⌨️  Input data into index {index}'
             logger.info(msg)
             logger.debug(f'Element xpath: {element_node.xpath}')
             return ToolResult(extracted_content=msg, include_in_memory=True)
