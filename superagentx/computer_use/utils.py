@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 import re
@@ -5,6 +6,8 @@ import time
 from datetime import datetime
 from functools import wraps
 from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
+
+import playwright._impl._errors
 
 # from superagentx.computer_use.browser.context import Page
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
@@ -122,7 +125,9 @@ async def log_response(result: dict):
 async def show_toast(page, message: str, duration: int = 3000):
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
-    final_message = f" SuperAgentX Goal:  {random_icon} {message.replace('\n', ' ')}"
+    message = message.replace('\n', ' ')
+    message = re.sub(r"[^\w\s.,:+()₹/]", "", message)  # Remove unwanted special characters but keep ₹ and ratings
+    final_message = f"SuperAgentX Goal: {random_icon} {message}"
 
     toast_script = f"""
                 (() => {{
@@ -150,8 +155,11 @@ async def show_toast(page, message: str, duration: int = 3000):
                     }}, {duration});
                 }})();
                 """
-
-    await page.evaluate(toast_script)
+    try:
+        await page.evaluate(toast_script)
+    except playwright._impl._errors.Error as ex:
+        logger.error(f"Toast Error: {ex}")
+        await page.evaluate(toast_script.format(final_message="Doing Next step....", duration=duration))
 
 
 def manipulate_string(string: str):
