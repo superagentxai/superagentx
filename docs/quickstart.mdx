@@ -13,10 +13,6 @@ This simple walkthrough will help you get started with building powerful applica
 **4. Building a Use Case:** Customizing the pipe.py file to fit your application's needs.<br />
 **5. Run the Application:** Finally, how to execute your new project with a simple command.
 
-```shell
-$ python3 -m pip install superagentx
-```
-
 <Note>
 Note: <br />
 After installation, the `superagentx-cli` will be available in the path `~/.local/bin` on `linux`. You may need to add
@@ -24,8 +20,19 @@ this to your environment's path variable.
 </Note>
 
 ## Create an Application
+```shell
+$ mkdir <"folderName">
+$ python -m venv venv
+$ Source venv/bin/activate
+$ pip install superagentx
+```
+## How to Create an Application Using `Cli`
 To create a new `superagentx` project, run the following command in your terminal. This will prompt you to create
 project with the basic structure set up for your `superagentx`.
+
+```shell
+$ python3 -m pip install superagentx
+```
 
 ```shell
 $ superagentx-cli create
@@ -265,6 +272,18 @@ $ DEBUGGING=1 python3 Content Creator/iopipe.py
 This is applicable for `wspipe.py` and `restpipe.py`. Even with your custom implementation.
 Valid options are `1`, `True`, `true` and `TRUE`
 </Note>
+
+<iframe
+  width="100%"
+  height="400"
+  src="https://www.youtube.com/embed/BlbX0JewjCM"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+
 
 ### Result
 ```shell

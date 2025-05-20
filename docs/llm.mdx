@@ -12,16 +12,16 @@ provider they intend to use, making it easier to configure different types of LL
 
 | Icon                                                                                                                                                                                         | LLM Name          |
 |:-----------------------------------------------------------------------------------------------------------------------------------------:                                                   | :---------------  |
-| <img src="/images/llms/deepseek.png" title="deepseek" height="25" width="25" style={{ margin: 0}} />                   | **DeepSeek**      |
-| <img src="/images/llms/openai.png" title="OpenAI" height="25" width="25" style={{ margin: 0 }} />                      | **OpenAI**        |
-| <img src="/images/llms/azure-icon.png" title="Azure OpenAI" height="25" width="25" style={{ margin: 0 }} />            | **Azure OpenAI**  |
-| <img src="/images/llms/awsbedrock.png" title="AWS Bedrock" height="25" width="25" style={{ margin: 0 }} />             | **AWS Bedrock**   |
-| <img src="/images/llms/gemini.png" title="Google Gemini" height="25" width="25" style={{ margin: 0 }} />               | **Google Gemini** |
-| <img src="/images/llms/meta.png" title="Google Gemini" height="25" width="25" style={{ margin: 0 }} />                 | **Meta Llama**    |
-| <img src="/images/llms/ollama.png" title="Ollama" height="15" width="25" style={{ margin: 0 }} />                      | **Ollama**        |
-| <img src="/images/llms/claude-ai-logo.png" title="Claude AI" height="25" width="25" style={{ margin: 0 }} />           | **Claude AI**     |
-| <img src="/images/llms/mistral-ai-logo.png" title="Mistral AI" height="25" width="35" style={{ margin: 0 }} />         | **Mistral AI**    |
-| <img src="/images/llms/ibm.png" title="IBM WatsonX AI" height="25" width="35" style={{ margin: 0 }} />                 | **IBM WatsonX**   |
+| <a href="#deepseek"><img src="/images/llms/deepseek.png" title="deepseek" height="25" width="25" style={{ margin: 0}} /></a>                  | **DeepSeek**      |
+| <a href="#openai"><img src="/images/llms/openai.png" title="OpenAI" height="25" width="25" style={{ margin: 0 }} /></a>                      | **OpenAI**        |
+| <a href="#azure openai"><img src="/images/llms/azure-icon.png" title="Azure OpenAI" height="25" width="25" style={{ margin: 0 }} /></a>            | **Azure OpenAI**  |
+| <a href="#aws bedrock"><img src="/images/llms/awsbedrock.png" title="AWS Bedrock" height="25" width="25" style={{ margin: 0 }} /></a>            | **AWS Bedrock**   |
+| <a href="#google gemini"><img src="/images/llms/gemini.png" title="Google Gemini" height="25" width="25" style={{ margin: 0 }} /></a>               | **Google Gemini** |
+| <a href="#meta llama"><img src="/images/llms/meta.png" title="Meta LLama" height="25" width="25" style={{ margin: 0 }} /></a>                 | **Meta Llama**    |
+| <a href="#ollama"><img src="/images/llms/ollama.png" title="Ollama" height="15" width="25" style={{ margin: 0 }} /></a>                      | **Ollama**        |
+| <a href="#claude ai"><img src="/images/llms/claude-ai-logo.png" title="Claude AI" height="25" width="25" style={{ margin: 0 }} /></a>           | **Claude AI**     |
+| <a href="#mistral ai"><img src="/images/llms/mistral-ai-logo.png" title="Mistral AI" height="25" width="35" style={{ margin: 0 }} /></a>         | **Mistral AI**    |
+| <a href="#ibm watson ai"><img src="/images/llms/ibm.png" title="IBM WatsonX AI" height="25" width="35" style={{ margin: 0 }} /></a>                 | **IBM WatsonX**   |
 
 
 ### Parameters
@@ -35,6 +35,8 @@ provider they intend to use, making it easier to configure different types of LL
 | **Async Mode**  _(optional)_       | `async_mode`      | `bool`      | Asynchronous mode of OpenAI or Azure OpenAI client. Default `None`                                                                                                                                                         |
 | **Embedding Model** _(optional)_   | `embed_model`     | `str`       | Embedding model name, supported models openai, azure-openai, mistral, llama 3.1. Default `None`                                                                                                                            |
 
+
+<span id="deepseek"></span>
 ```python DeepSeek
 from superagentx.llm import LLMClient
 
@@ -45,7 +47,7 @@ llm_config = {
 }
 llm_client: LLMClient = LLMClient(llm_config=llm_config)
 ```
-
+<span id="openai"></span>
 ```python OpenAI
 from superagentx.llm import LLMClient
 
@@ -55,7 +57,7 @@ llm_config = {
 }
 llm_client = LLMClient(llm_config=llm_config)
 ```
-
+<span id="aws bedrock"></span>
 ```python AWSBedrock
 from superagentx.llm import LLMClient
 
@@ -66,12 +68,24 @@ llm_config = {
 llm_client = LLMClient(llm_config=llm_config)
 ```
 
+<span id="ollama"></span>
 ```python ollama
 from superagentx.llm import LLMClient
 
 llm_config = {
     'model': 'mistral',
     'llm_type': 'ollama',
+}
+llm_client: LLMClient = LLMClient(llm_config=llm_config)
+```
+
+<span id="claude ai"></span>
+```python Claude AI
+from superagentx.llm import LLMClient
+
+llm_config = {
+    'model': 'claude-3-7-sonnet-20250219',
+    'llm_type': 'anthropic'
 }
 llm_client: LLMClient = LLMClient(llm_config=llm_config)
 ```
@@ -97,6 +111,7 @@ llm_client: LLMClient = LLMClient(llm_config=llm_config)
 | Type                               | Example                                                                          |
 | :--------------------              | :----------------------------------------------------------                      |
 | **gpt-4o**                         | ```llm_config = { "model":'gpt-4o', "llm_type":'openai'}```                      |
+| **gpt-4.1**                        | ```llm_config = { "model":'gpt-4.1', "llm_type":'openai'}```                     |
 | **gpt-4**                          | ```llm_config = { "model":'gpt-4', "llm_type":'openai'}```                       |
 | **gpt-4o-2024-05-13**              | ```llm_config = { "model":'gpt-4o-2024-05-13', "llm_type":'openai'}```           |
 | **gpt-4o-2024-08-06**              | ```llm_config = { "model":'gpt-4o-2024-08-06', "llm_type":'openai'}```           |
