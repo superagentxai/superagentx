@@ -237,7 +237,7 @@ class BrowserEngine(BaseEngine):
         results = []
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
-            state = await self.browser_context.get_state()
+            state = await self.browser_context.get_state(cache_clickable_elements_hashes=True)
             page = await self.browser_context.get_current_page()
             step_info = StepInfo(step_number=step, max_steps=self.max_steps)
             state_msg = await get_user_message(state=state, step_info=step_info, action_result=result)
