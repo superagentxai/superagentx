@@ -1,7 +1,7 @@
-import json
 import logging
 import random
 import re
+import sys
 import time
 from datetime import datetime
 from functools import wraps
@@ -125,9 +125,12 @@ async def log_response(result: dict):
 async def show_toast(page, message: str, duration: int = 3000):
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
-    message = message.replace('\n', ' ')
-    message = re.sub(r"[^\w\s.,:+()₹/]", "", message)  # Remove unwanted special characters but keep ₹ and ratings
-    final_message = f"SuperAgentX Goal: {random_icon} {message}"
+    if message:
+        message = message.replace('\n', ' ')
+        message = re.sub(r"[^\w\s.,:+()₹/]", "", message)  # Remove unwanted special characters but keep ₹ and ratings
+        final_message = f"SuperAgentX Goal: {random_icon} {message}"
+    else:
+        final_message = ''
 
     toast_script = f"""
                 (() => {{
@@ -280,7 +283,7 @@ You must ALWAYS respond with valid JSON in this exact structure:
 
   {"input_text": {"index": 2, "text": "password"}},
 
-  {"click_element": {"index": 3}}
+  {"click_element_by_index": {"index": 3}}
 
 ]
 
@@ -428,3 +431,43 @@ SYSTEM_MESSAGE = [
                    f"for every step to need. Don't give the duplicate json."
     }
 ]
+
+
+def get_screen_resolution():
+    if sys.platform == 'darwin':  # macOS
+        try:
+            from AppKit import NSScreen
+
+            screen = NSScreen.mainScreen().frame()
+            return {'width': int(screen.size.width), 'height': int(screen.size.height)}
+        except ImportError:
+            print('AppKit is not available. Make sure you are running this on macOS with pyobjc installed.')
+        except Exception as e:
+            print(f'Error retrieving macOS screen resolution: {e}')
+        return {'width': 2560, 'height': 1664}
+
+    else:  # Windows & Linux
+        try:
+            from screeninfo import get_monitors
+
+            monitors = get_monitors()
+            if not monitors:
+                raise Exception('No monitors detected.')
+            monitor = monitors[0]
+            return {'width': monitor.width, 'height': monitor.height}
+        except ImportError:
+            print("screeninfo package not found. Install it using 'pip install screeninfo'.")
+        except Exception as e:
+            print(f'Error retrieving screen resolution: {e}')
+
+        return {'width': 1920, 'height': 1080}
+
+
+def get_window_adjustments():
+    """Returns recommended x, y offsets for window positioning"""
+    if sys.platform == 'darwin':  # macOS
+        return -4, 24  # macOS has a small title bar, no border
+    elif sys.platform == 'win32':  # Windows
+        return -8, 0  # Windows has a border on the left
+    else:  # Linux
+        return 0, 0

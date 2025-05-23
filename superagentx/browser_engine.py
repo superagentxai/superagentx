@@ -318,7 +318,7 @@ class BrowserEngine(BaseEngine):
         ]
         if self.sensitive_data:
             info = f'Here are placeholders for sensitive data: {list(self.sensitive_data.keys())}'
-            info += '\nTo use them, write <secret>the placeholder name</secret>'
+            info += '\nTo use them, write <secret>the placeholder name</secret>. If password is wrong done the process.'
             msgs.append({
                 "role": "user",
                 "content": info
