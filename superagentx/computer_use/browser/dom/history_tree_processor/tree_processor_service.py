@@ -1,15 +1,19 @@
 import hashlib
-from typing import Optional
 
 from superagentx.computer_use.browser.dom.history_tree_processor.view import DOMHistoryElement, HashedDomElement
 from superagentx.computer_use.browser.dom.views import DOMElementNode
 
 
 class HistoryTreeProcessor:
+    """ "
+    Operations on the DOM elements
+
+    @dev be careful - text nodes can change even if elements stay the same
+    """
 
     @staticmethod
     def convert_dom_element_to_history_element(dom_element: DOMElementNode) -> DOMHistoryElement:
-        from superagentx.computer_use.browser.context import BrowserContext
+        from browser_use.browser.context import BrowserContext
 
         parent_branch_path = HistoryTreeProcessor._get_parent_branch_path(dom_element)
         css_selector = BrowserContext._enhanced_css_selector_for_element(dom_element)
@@ -27,31 +31,27 @@ class HistoryTreeProcessor:
         )
 
     @staticmethod
-    def find_history_element_in_tree(
-            dom_history_element: DOMHistoryElement,
-            tree: DOMElementNode
-    ) -> Optional[DOMElementNode]:
+    def find_history_element_in_tree(dom_history_element: DOMHistoryElement,
+                                     tree: DOMElementNode) -> DOMElementNode | None:
         hashed_dom_history_element = HistoryTreeProcessor._hash_dom_history_element(dom_history_element)
 
         def process_node(node: DOMElementNode):
-            if node.highlight_index:
+            if node.highlight_index is not None:
                 hashed_node = HistoryTreeProcessor._hash_dom_element(node)
                 if hashed_node == hashed_dom_history_element:
                     return node
             for child in node.children:
                 if isinstance(child, DOMElementNode):
                     result = process_node(child)
-                    if result:
+                    if result is not None:
                         return result
             return None
 
         return process_node(tree)
 
     @staticmethod
-    def compare_history_element_and_dom_element(
-            dom_history_element: DOMHistoryElement,
-            dom_element: DOMElementNode
-    ) -> bool:
+    def compare_history_element_and_dom_element(dom_history_element: DOMHistoryElement,
+                                                dom_element: DOMElementNode) -> bool:
         hashed_dom_history_element = HistoryTreeProcessor._hash_dom_history_element(dom_history_element)
         hashed_dom_element = HistoryTreeProcessor._hash_dom_element(dom_element)
 
@@ -79,7 +79,7 @@ class HistoryTreeProcessor:
     def _get_parent_branch_path(dom_element: DOMElementNode) -> list[str]:
         parents: list[DOMElementNode] = []
         current_element: DOMElementNode = dom_element
-        while current_element.parent:
+        while current_element.parent is not None:
             parents.append(current_element)
             current_element = current_element.parent
 

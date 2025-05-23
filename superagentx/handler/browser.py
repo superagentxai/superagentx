@@ -144,19 +144,16 @@ class BrowserHandler(BaseHandler):
         logger.info(msg)
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
-
     @tool
     async def click_element_by_index(
             self,
-            index: int,
-            xpath: str = None
+            index: int
     ) -> ToolResult:
         """
         Clicks an element specified by an index within a given XPath.
 
         Args:
             @param index: The index of the element to be clicked.
-            @param xpath : The XPath used to locate the elements (default is `None`).
         """
         session = await self.browser_context.get_session()
 
@@ -192,32 +189,6 @@ class BrowserHandler(BaseHandler):
         except Exception as e:
             logger.warning(f'Element not clickable with index {index} - most likely the page changed')
             return ToolResult(error=str(e))
-
-    @tool
-    async def click_element(
-            self,
-            index: int
-    ) -> ToolResult:
-        """
-        Clicks an element at the specified index in the DOM.
-
-        Args:
-            @param index: The index of the element to be clicked.
-
-        """
-        try:
-            state = await self.browser_context.get_state()
-            element_node = await self.browser_context.get_dom_element_by_index(index)
-
-            # check if index of selector map are the same as index of items in dom_items
-            await self.browser_context._click_element_node(element_node)
-            msg = f"Clicked Element Successfully"
-            logger.info(msg)
-            return ToolResult(extracted_content=msg, include_in_memory=True)
-        except Exception as ex:
-            msg = f"Click Element failed {index}: {ex}"
-            logger.error(msg)
-            return ToolResult(error=msg)
 
     @tool
     async def open_new_tab(
@@ -344,7 +315,8 @@ class BrowserHandler(BaseHandler):
                     "text": _prompt
                 }, {
                     'type': 'image_url',
-                    'image_url': {'url': f'data:image/png;base64,{await self.browser_context.take_screenshot()}'},  # , 'detail': 'low'
+                    'image_url': {'url': f'data:image/png;base64,{await self.browser_context.take_screenshot()}'},
+                    # , 'detail': 'low'
                 }
                 ]
             }
