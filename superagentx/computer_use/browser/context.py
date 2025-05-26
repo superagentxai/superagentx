@@ -39,6 +39,8 @@ from superagentx.computer_use.browser.state import (
     URLNotAllowedError,
 )
 from superagentx.computer_use.utils import time_execution_async
+from superagentx.computer_use.constants import RELEVANT_CONTENT_TYPES, RELEVANT_RESOURCE_TYPES, IGNORED_URL_PATTERNS, \
+    dynamic_attributes, SAFE_ATTRIBUTES
 
 if TYPE_CHECKING:
     from superagentx.computer_use.browser.browser import Browser
@@ -746,65 +748,6 @@ class BrowserContext:
         pending_requests = set()
         last_activity = asyncio.get_event_loop().time()
 
-        # Define relevant resource types and content types
-        RELEVANT_RESOURCE_TYPES = {
-            'document',
-            'stylesheet',
-            'image',
-            'font',
-            'script',
-            'iframe',
-        }
-
-        RELEVANT_CONTENT_TYPES = {
-            'text/html',
-            'text/css',
-            'application/javascript',
-            'image/',
-            'font/',
-            'application/json',
-        }
-
-        # Additional patterns to filter out
-        IGNORED_URL_PATTERNS = {
-            # Analytics and tracking
-            'analytics',
-            'tracking',
-            'telemetry',
-            'beacon',
-            'metrics',
-            # Ad-related
-            'doubleclick',
-            'adsystem',
-            'adserver',
-            'advertising',
-            # Social media widgets
-            'facebook.com/plugins',
-            'platform.twitter',
-            'linkedin.com/embed',
-            # Live chat and support
-            'livechat',
-            'zendesk',
-            'intercom',
-            'crisp.chat',
-            'hotjar',
-            # Push notifications
-            'push-notifications',
-            'onesignal',
-            'pushwoosh',
-            # Background sync/heartbeat
-            'heartbeat',
-            'ping',
-            'alive',
-            # WebRTC and streaming
-            'webrtc',
-            'rtmp://',
-            'wss://',
-            # Common CDNs for dynamic content
-            'cloudfront.net',
-            'fastly.net',
-        }
-
         async def on_request(request):
             # Filter by resource type
             if request.resource_type not in RELEVANT_RESOURCE_TYPES:
@@ -1402,39 +1345,8 @@ class BrowserContext:
                         continue
 
             # Expanded set of safe attributes that are stable and useful for selection
-            SAFE_ATTRIBUTES = {
-                # Data attributes (if they're stable in your application)
-                'id',
-                # Standard HTML attributes
-                'name',
-                'type',
-                'placeholder',
-                # Accessibility attributes
-                'aria-label',
-                'aria-labelledby',
-                'aria-describedby',
-                'role',
-                # Common form attributes
-                'for',
-                'autocomplete',
-                'required',
-                'readonly',
-                # Media attributes
-                'alt',
-                'title',
-                'src',
-                # Custom stable attributes (add any application-specific ones)
-                'href',
-                'target',
-            }
 
             if include_dynamic_attributes:
-                dynamic_attributes = {
-                    'data-id',
-                    'data-qa',
-                    'data-cy',
-                    'data-testid',
-                }
                 SAFE_ATTRIBUTES.update(dynamic_attributes)
 
             # Handle other attributes
@@ -1646,7 +1558,8 @@ class BrowserContext:
             except Exception:
                 # last resort fallback, assume it's already focused after we clicked on it,
                 # just simulate keypresses on the entire page
-                await self.get_agent_current_page().keyboard.type(text)
+                page = await self.get_agent_current_page()
+                await page.keyboard.type(text=text)
 
         except Exception as e:
             logger.debug(f'❌  Failed to input text into element: {repr(element_node)}. Error: {str(e)}')
