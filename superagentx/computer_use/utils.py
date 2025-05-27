@@ -7,9 +7,6 @@ from datetime import datetime
 from functools import wraps
 from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
 
-import playwright._impl._errors
-
-# from superagentx.computer_use.browser.context import Page
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
 from superagentx.computer_use.browser.state import BrowserState
 
@@ -123,6 +120,8 @@ async def log_response(result: dict):
 
 
 async def show_toast(page, message: str, duration: int = 3000):
+    import playwright._impl._errors
+
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
     if message:

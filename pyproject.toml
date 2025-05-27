@@ -1,6 +1,6 @@
 [project]
 name = "superagentx"
-version = "0.1.18.2"
+version = "0.1.18.3c-2"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = { text = "MIT" }
 authors = [
@@ -17,29 +17,19 @@ requires-python = ">=3.12,<=3.13"
 dependencies = [
     "pydantic>=2.8.2",
     "boto3>=1.35.8",
-    "bokeh>=3.5.2",
     "openai>=1.47.1",
     "exa-py>=1.1.4",
-    "neo4j>=5.24.0",
-    "chromadb>=0.5.5",
-    "opensearch-py>=2.7.1",
-    "elasticsearch>=8.15.1",
     "aiohttp>=3.10.8",
     "rich>=13.9.2",
     "protobuf>=3.20.3",
     "aiosqlite>=0.20.0",
     "websockets>=13.1",
-    "amazon-transcribe>=0.6.2",
-    "scipy>=1.15.1",
-    "numpy>=2.2.1",
     "aiofiles>=24.1.0",
     "ollama>=0.4.7",
     "camel-converter>=4.0.1",
     "yapf (>=0.43.0,<0.44.0)",
-    "anthropic (>=0.47.2,<0.48.0)",
     "fastembed (>=0.6.0,<0.7.0)",
     "httpx (>=0.28.1,<0.29.0)",
-    "opentelemetry-exporter-otlp-proto-grpc (==1.25.0)",  # Temprorly added for Chromadb issue https://github.com/chroma-core/chroma/issues/2571
     "mcp (>=1.7.0,<2.0.0)",
     "aiopath (==0.7.7)",
     "markdownify (>=1.1.0)",
@@ -67,6 +57,18 @@ packages = [
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
 pytest-asyncio = "^0.24.0"
+
+
+
+[tool.poetry.group.all.dependencies]
+bokeh = "^3.7.3"
+neo4j = "^5.28.1"
+opensearch-py = "^2.8.0"
+scipy = "^1.15.3"
+elasticsearch = "^9.0.1"
+numpy = "^2.2.6"
+chromadb = "^1.0.10"
+opentelemetry-exporter-otlp-proto-grpc = "^1.33.1"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
