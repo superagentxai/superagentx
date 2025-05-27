@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import uuid
-from typing import Literal
+from typing import Literal, Any
 
 import yaml
 
@@ -9,7 +9,6 @@ from superagentx.agent import Agent
 from superagentx.config import is_verbose_enabled
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
-from superagentx.memory import Memory
 from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter
 
@@ -27,7 +26,7 @@ class AgentXPipe:
             name: str | None = None,
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
-            memory: Memory | None = None,
+            memory: Any | None = None,
             stop_if_goal_not_satisfied: bool = False
     ):
         """

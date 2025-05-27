@@ -7,13 +7,10 @@ import re
 import uuid
 from typing import TypeVar, Any
 
-import aiopath
 import pathlib
-from playwright.async_api import Page
 from pydantic import BaseModel
 
 from superagentx.base import BaseEngine
-from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
 from superagentx.computer_use.constants import EXAMPLE_DATA
 from superagentx.computer_use.utils import (
@@ -23,7 +20,6 @@ from superagentx.computer_use.utils import (
     log_response,
     manipulate_string
 )
-from superagentx.handler.browser import BrowserHandler
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
@@ -48,8 +44,8 @@ class BrowserEngine(BaseEngine):
             llm: LLMClient,
             prompt_template: PromptTemplate,
             browser_instance_path: str = None,
-            browser: Browser | None = None,
-            browser_context: BrowserContext | None = None,
+            browser: Any | None = None,
+            browser_context: Any | None = None,
             tools: list[dict] | list[str] | None = None,
             max_steps: int = 100,
             take_screenshot: bool = False,
@@ -59,6 +55,10 @@ class BrowserEngine(BaseEngine):
     ):
 
         super().__init__(*args, **kwargs)
+        from playwright.async_api import Page
+        import aiopath
+        from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
+        from superagentx.handler.browser import BrowserHandler
         self.llm = llm
         self.tools = tools
         self.prompt_template = prompt_template
@@ -180,7 +180,7 @@ class BrowserEngine(BaseEngine):
     async def _action_execute(
             self,
             actions: dict,
-            page: Page,
+            page: Any,
             current_state: dict
     ) -> list[ToolResult]:
         async for tool in iter_to_aiter(actions):
