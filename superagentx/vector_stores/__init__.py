@@ -1,7 +1,6 @@
 import logging
 from enum import Enum
 
-from superagentx.vector_stores.chroma import ChromaDB
 from superagentx.llm import LLMClient
 from superagentx.vector_stores.constants import DEFAULT_EMBED_TYPE, DEFAULT_EMBED_MODEL, EmbedTypeEnum
 
@@ -57,6 +56,7 @@ class VectorStore:
 
         match self.vector_type:
             case VectorDatabaseType.CHROMA:
+                from superagentx.vector_stores.chroma import ChromaDB
                 self.cli = ChromaDB(**_params)
             case VectorDatabaseType.OPENSEARCH:
                 from superagentx.vector_stores.opensearch import Opensearch
