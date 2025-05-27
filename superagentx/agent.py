@@ -5,14 +5,13 @@ import uuid
 from json import JSONDecodeError
 from typing import Literal, Any
 
-from superagentx.engine import Engine
-from superagentx.base import BaseEngine
 from superagentx.browser_engine import BrowserEngine
-from superagentx.result import GoalResult
 from superagentx.constants import SEQUENCE, PARALLEL
+from superagentx.engine import Engine
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
+from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter
 
 logger = logging.getLogger(__name__)
