@@ -15,7 +15,6 @@ from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED
 )
 from superagentx.llm.models import ChatCompletionParams
-from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
@@ -166,6 +165,8 @@ class LLMClient:
     def _init_ollama_cli(self, **kwargs):
         from ollama import AsyncClient
         from ollama import Client as OllamaCli
+        from superagentx.llm.ollama import OllamaClient
+
         host = kwargs.get("host", None) or os.getenv("OLLAMA_HOST")
 
         # Async & Sync Ollama Cli
