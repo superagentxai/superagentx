@@ -25,6 +25,9 @@
 pip install superagentx
 ```
 #### Install Playwright for Browser AI Automation
+```bash
+pip install playwright
+```
 
 ```bash
 playwright install
