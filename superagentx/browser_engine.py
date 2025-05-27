@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import uuid
+import aiopath
 from typing import TypeVar, Any
 
 import pathlib
@@ -24,16 +25,11 @@ from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
+from superagentx.utils.models import InputTextParams, GoToUrl
 
 logger = logging.getLogger(__name__)
 
 Context = TypeVar('Context')
-
-
-class InputTextParams(BaseModel):
-    index: int
-    text: str
-    has_sensitive: bool
 
 
 class BrowserEngine(BaseEngine):
@@ -55,8 +51,6 @@ class BrowserEngine(BaseEngine):
     ):
 
         super().__init__(*args, **kwargs)
-        from playwright.async_api import Page
-        import aiopath
         from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
         from superagentx.handler.browser import BrowserHandler
         self.llm = llm
@@ -191,6 +185,14 @@ class BrowserEngine(BaseEngine):
                     if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                         logger.debug(f'Checking tool function : {self.handler.__class__}.{tool_name}')
                         _kwargs = tool.get(tool_name) or {}
+                        if self.sensitive_data and tool_name == "go_to_url":
+                            validated_params = GoToUrl(**_kwargs)
+                            _kwargs = await sync_to_async(
+                                self._replace_sensitive_data,
+                                validated_params,
+                                self.sensitive_data
+                            )
+                            _kwargs = _kwargs.model_dump()
                         if self.sensitive_data and tool_name == "input_text":
                             _kwargs["has_sensitive"] = True
                             validated_params = InputTextParams(**_kwargs)
@@ -237,6 +239,7 @@ class BrowserEngine(BaseEngine):
         results = []
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
+            await asyncio.sleep(1)
             state = await self.browser_context.get_state()
             page = await self.browser_context.get_current_page()
             step_info = StepInfo(step_number=step, max_steps=self.max_steps)
