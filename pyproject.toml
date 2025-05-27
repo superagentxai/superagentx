@@ -67,7 +67,8 @@ elasticsearch = "^9.0.1"
 numpy = "^2.2.6"
 ollama = "^0.4.7"
 fastembed = "^0.6.0"
-
+chromadb = "^1.0.10"
+opentelemetry-exporter-otlp-proto-grpc = "^1.33.1"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
