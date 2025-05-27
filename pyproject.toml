@@ -67,6 +67,8 @@ opensearch-py = "^2.8.0"
 scipy = "^1.15.3"
 elasticsearch = "^9.0.1"
 numpy = "^2.2.6"
+chromadb = "^1.0.10"
+opentelemetry-exporter-otlp-proto-grpc = "^1.33.1"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
