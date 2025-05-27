@@ -36,10 +36,10 @@ class ViewportInfo(BaseModel):
 	height: int
 
 
-class DOMHistoryElement:
+class DOMHistoryElement(BaseModel):
 	tag_name: str
 	xpath: str
-	highlight_index: int | None
+	highlight_index: int | None = None
 	entire_parent_branch_path: list[str]
 	attributes: dict[str, str]
 	shadow_root: bool = False

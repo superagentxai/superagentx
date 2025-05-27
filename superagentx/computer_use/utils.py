@@ -127,37 +127,44 @@ async def show_toast(page, message: str, duration: int = 3000):
     random_icon = random.choice(icons)
     if message:
         message = message.replace('\n', ' ')
-        message = re.sub(r"[^\w\s.,:+()₹/]", "", message)  # Remove unwanted special characters but keep ₹ and ratings
+        message = re.sub(r"[^\w\s.,:+()₹/]", "", message)
         final_message = f"SuperAgentX Goal: {random_icon} {message}"
     else:
         final_message = ''
 
     toast_script = f"""
-                (() => {{
-                    let toast = document.createElement('div');
-                    toast.innerText = "{final_message}";
-                    toast.style.position = 'fixed';
-                    toast.style.top = '40px';  // 👈 top instead of bottom
-                    toast.style.left = '50%';
-                    toast.style.transform = 'translateX(-50%)';
-                    toast.style.background = 'linear-gradient(45deg, #ff6ec4, #7873f5)';
-                    toast.style.color = 'white';
-                    toast.style.padding = '16px 24px';
-                    toast.style.borderRadius = '16px';
-                    toast.style.fontSize = '14px';
+    (() => {{
+        const message = `{final_message}`;
+        let toast = document.createElement('div');
+        toast.innerText = message;
 
-                    toast.style.zIndex = 9999;
-                    toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
-                    toast.style.transition = 'opacity 0.3s ease';
-                    toast.style.opacity = '1';
-                    document.body.appendChild(toast);
+        const screenWidth = window.innerWidth;
+        const fontSize = screenWidth > 1920 ? '22px' : screenWidth > 1280 ? '20px' : '18px';
+        const padding = screenWidth > 1920 ? '20px 30px' : screenWidth > 1280 ? '18px 26px' : '16px 24px';
 
-                    setTimeout(() => {{
-                        toast.style.opacity = '0';
-                        setTimeout(() => toast.remove(), 300);
-                    }}, {duration});
-                }})();
-                """
+        toast.style.position = 'fixed';
+        toast.style.top = '40px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = 'linear-gradient(45deg, #ff6ec4, #7873f5)';
+        toast.style.color = 'white';
+        toast.style.padding = padding;
+        toast.style.borderRadius = '16px';
+        toast.style.fontSize = fontSize;
+        toast.style.zIndex = 9999;
+        toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
+        toast.style.transition = 'opacity 0.3s ease';
+        toast.style.opacity = '1';
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {{
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }}, {duration});
+    }})();
+    """
+
     try:
         await page.evaluate(toast_script)
     except playwright._impl._errors.Error as ex:
