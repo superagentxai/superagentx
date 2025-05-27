@@ -6,8 +6,6 @@ from typing import List
 
 import boto3
 from botocore.config import Config
-from ollama import AsyncClient
-from ollama import Client as OllamaCli
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
@@ -166,6 +164,8 @@ class LLMClient:
         )
 
     def _init_ollama_cli(self, **kwargs):
+        from ollama import AsyncClient
+        from ollama import Client as OllamaCli
         host = kwargs.get("host", None) or os.getenv("OLLAMA_HOST")
 
         # Async & Sync Ollama Cli
