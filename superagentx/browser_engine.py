@@ -215,7 +215,8 @@ class BrowserEngine(BaseEngine):
                                 await show_toast(
                                     page=page,
                                     message=current_state.get("next_goal"),
-                                    toast_config=self.toast_config
+                                    toast_config=self.toast_config,
+                                    duration=1000
                                 )
                                 _engine_res = await func(**_kwargs)
                             _value = list(_kwargs.values())
@@ -252,18 +253,20 @@ class BrowserEngine(BaseEngine):
             page = await self.browser_context.get_current_page()
             step_info = StepInfo(step_number=step, max_steps=self.max_steps)
             state_msg = await get_user_message(state=state, step_info=step_info, action_result=result)
-            self.msgs.append(state_msg)
-
-            if self.previous_state == state:
-                print(f"Yes============================")
+            self.msgs.append(state_msg.get('msg'))
+            if self.previous_state == state_msg.get('element_text'):
                 counter += 1
-                if counter <= 3:
+                logger.info(f"Retry Count: {counter}")
+                if counter >= 5:
                     _retry_fail = {
                         "role": "user",
-                        "content": f"Tried this step {counter} times. So done the proces and say the reason."
+                        "content": f"Tried this step {counter} times. So done fail proces and say the reason."
                     }
+                    self.msgs.append(_retry_fail)
+                    counter = 0
             else:
-                self.previous_state = state
+                self.previous_state = state_msg.get('element_text')
+                counter = 0
 
             chat_completion_params = ChatCompletionParams(
                 messages=self.msgs,

@@ -44,6 +44,8 @@ async def get_user_message(
     has_content_above = (state.pixels_above or 0) > 0
     has_content_below = (state.pixels_below or 0) > 0
 
+    elem_text = elements_text
+
     if elements_text:
         if has_content_above:
             elements_text = (
@@ -89,7 +91,7 @@ Interactive elements from top layer of the current page inside the viewport:
                 state_description += f'\nAction error {i + 1}/{len(action_result)}: ...{error}'
 
     if state.screenshot and use_vision:
-        return {
+        msg = {
             "role": "user",
             "content": [{
                 "type": "text",
@@ -100,9 +102,17 @@ Interactive elements from top layer of the current page inside the viewport:
             }
             ]
         }
-    return {
+        return {
+            "msg": msg,
+            "element_text": elem_text
+        }
+    msg = {
         "role": "user",
         "content": state_description
+    }
+    return {
+        "msg": msg,
+        "element_text": elem_text
     }
 
 
@@ -147,7 +157,7 @@ async def show_toast(
         toast.innerText = message;
 
         const screenWidth = window.innerWidth;
-        const fontSize = screenWidth > 1920 ? '{font_size}px' : screenWidth > 1280 ? '{font_size-2}px' : '{font_size-4}px';
+        const fontSize = screenWidth > 1920 ? '{font_size}px' : screenWidth > 1280 ? '{font_size - 2}px' : '{font_size - 4}px';
         const padding = screenWidth > 1920 ? '20px 30px' : screenWidth > 1280 ? '18px 26px' : '16px 24px';
 
         toast.style.position = 'fixed';
@@ -336,6 +346,8 @@ system detects that human action is required:
     - Use `wait` actions with a maximum total wait time of 5 minutes.
 
     - Always break the wait into intervals (e.g., 60 seconds) and check for page state changes between intervals.
+    
+    - If need Authenticator, wait 10 seconds
 
     - Example:
 

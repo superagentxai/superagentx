@@ -110,7 +110,7 @@ class BrowserHandler(BaseHandler):
     @tool
     async def wait(
             self,
-            seconds: int = 60
+            seconds: int = 10
     ) -> ToolResult:
         """
         Pauses execution for a specified duration.
@@ -120,11 +120,11 @@ class BrowserHandler(BaseHandler):
 
         **Login/Signin Handling**:
             - When waiting for manual user login, limit total wait time to a maximum of **5 minutes**.
-            - Break the wait into shorter intervals (e.g., 30 seconds), and **check for page state changes**
+            - Break the wait into shorter intervals (e.g., 10 seconds), and **check for page state changes**
               after each interval using actions like `check_page`.
             - Example usage pattern:
                 [
-                    {"wait": {"seconds": 60}}
+                    {"wait": {"seconds": 10}}
                 ]
                 Repeat this cycle until login is complete or timeout is reached.
             - If login is not completed after 5 minutes, mark `evaluation_previous_goal` as `Failed`
