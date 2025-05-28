@@ -38,6 +38,8 @@ from superagentx.computer_use.browser.state import (
     TabInfo,
     URLNotAllowedError,
 )
+from superagentx.computer_use.constants import RELEVANT_RESOURCE_TYPES, IGNORED_URL_PATTERNS, RELEVANT_CONTENT_TYPES, \
+    SAFE_ATTRIBUTES, dynamic_attributes
 from superagentx.computer_use.utils import time_execution_async
 
 if TYPE_CHECKING:
@@ -475,115 +477,25 @@ class BrowserContext:
                 raise e
         return self.session
 
+    async def _get_current_page(self, session: BrowserSession) -> Page:
+        pages = session.context.pages
+
+        # Try to find page by target ID if using CDP
+        if self.browser.config.cdp_url and self.state.target_id:
+            targets = await self._get_cdp_targets()
+            for target in targets:
+                if target['targetId'] == self.state.target_id:
+                    for page in pages:
+                        if page.url == target['url']:
+                            return page
+
+        # Fallback to last page
+        return pages[-1] if pages else await session.context.new_page()
+
     async def get_current_page(self) -> Page:
-        """Legacy method for backwards compatibility, prefer get_agent_current_page()"""
-        return await self.get_agent_current_page()
-
-    async def _reconcile_tab_state(self) -> None:
-        """Reconcile tab state when tabs might be out of sync.
-
-        This method ensures that:
-        1. Both tab references (agent_current_page and human_current_page) are valid
-        2. Recovers invalid tab references using valid ones
-        3. Handles the case where both references are invalid
-        """
+        """Get the current page"""
         session = await self.get_session()
-
-        agent_tab_valid = (
-                self.agent_current_page
-                and self.agent_current_page in session.context.pages
-                and not self.agent_current_page.is_closed()
-        )
-
-        human_current_page_valid = (
-                self.human_current_page
-                and self.human_current_page in session.context.pages
-                and not self.human_current_page.is_closed()
-        )
-
-        # Case 1: Both references are valid - nothing to do
-        if agent_tab_valid and human_current_page_valid:
-            return
-
-        # Case 2: Only agent_current_page is valid - update human_current_page
-        if agent_tab_valid and not human_current_page_valid:
-            self.human_current_page = self.agent_current_page
-            return
-
-        # Case 3: Only human_current_page is valid - update agent_current_page
-        if human_current_page_valid and not agent_tab_valid:
-            self.agent_current_page = self.human_current_page
-            return
-
-        # Case 4: Neither reference is valid - recover from available tabs
-        non_extension_pages = [
-            page
-            for page in session.context.pages
-            if not page.url.startswith('chrome-extension://') and not page.url.startswith('chrome://')
-        ]
-
-        if non_extension_pages:
-            # Update both tab references to the most recently opened non-extension page
-            recovered_page = non_extension_pages[-1]
-            self.agent_current_page = recovered_page
-            self.human_current_page = recovered_page
-            return
-
-        # Case 5: No valid pages at all - create a new page
-        try:
-            new_page = await session.context.new_page()
-            self.agent_current_page = new_page
-            self.human_current_page = new_page
-        except Exception:
-            # Last resort - recreate the session
-            logger.warning('⚠️  No browser window available, recreating session')
-            await self._initialize_session()
-            if session.context.pages:
-                page = session.context.pages[0]
-                self.agent_current_page = page
-                self.human_current_page = page
-
-    async def get_agent_current_page(self) -> Page:
-        """Get the page that the agent is currently working with.
-
-        This method prioritizes agent_current_page over human_current_page, ensuring
-        that agent operations happen on the intended tab regardless of user
-        interaction with the browser.
-
-        If agent_current_page is invalid or closed, it will attempt to recover
-        with a valid tab reference by reconciling the tab state.
-        """
-        session = await self.get_session()
-
-        # First check if agent_current_page is valid
-        if (
-                self.agent_current_page
-                and self.agent_current_page in session.context.pages
-                and not self.agent_current_page.is_closed()
-        ):
-            return self.agent_current_page
-
-        # If we're here, reconcile tab state and try again
-        await self._reconcile_tab_state()
-
-        # After reconciliation, agent_current_page should be valid
-        if (
-                self.agent_current_page
-                and self.agent_current_page in session.context.pages
-                and not self.agent_current_page.is_closed()
-        ):
-            return self.agent_current_page
-
-        # If still invalid, fall back to first page method as last resort
-        logger.warning('⚠️  Failed to get agent current page, falling back to first page')
-        if session.context.pages:
-            page = session.context.pages[0]
-            self.agent_current_page = page
-            self.human_current_page = page
-            return page
-
-        # If no pages, create one
-        return await session.context.new_page()
+        return await self._get_current_page(session)
 
     async def _create_context(self, browser: PlaywrightBrowser):
         """Creates a new browser context with anti-detection measures and loads cookies if available."""
@@ -741,69 +653,10 @@ class BrowserContext:
             logger.debug(f'Failed to set viewport size for page: {e}')
 
     async def _wait_for_stable_network(self):
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
 
         pending_requests = set()
         last_activity = asyncio.get_event_loop().time()
-
-        # Define relevant resource types and content types
-        RELEVANT_RESOURCE_TYPES = {
-            'document',
-            'stylesheet',
-            'image',
-            'font',
-            'script',
-            'iframe',
-        }
-
-        RELEVANT_CONTENT_TYPES = {
-            'text/html',
-            'text/css',
-            'application/javascript',
-            'image/',
-            'font/',
-            'application/json',
-        }
-
-        # Additional patterns to filter out
-        IGNORED_URL_PATTERNS = {
-            # Analytics and tracking
-            'analytics',
-            'tracking',
-            'telemetry',
-            'beacon',
-            'metrics',
-            # Ad-related
-            'doubleclick',
-            'adsystem',
-            'adserver',
-            'advertising',
-            # Social media widgets
-            'facebook.com/plugins',
-            'platform.twitter',
-            'linkedin.com/embed',
-            # Live chat and support
-            'livechat',
-            'zendesk',
-            'intercom',
-            'crisp.chat',
-            'hotjar',
-            # Push notifications
-            'push-notifications',
-            'onesignal',
-            'pushwoosh',
-            # Background sync/heartbeat
-            'heartbeat',
-            'ping',
-            'alive',
-            # WebRTC and streaming
-            'webrtc',
-            'rtmp://',
-            'wss://',
-            # Common CDNs for dynamic content
-            'cloudfront.net',
-            'fastly.net',
-        }
 
         async def on_request(request):
             # Filter by resource type
@@ -926,7 +779,7 @@ class BrowserContext:
             await self._wait_for_stable_network()
 
             # Check if the loaded URL is allowed
-            page = await self.get_agent_current_page()
+            page = await self.get_current_page()
             await self._check_and_handle_navigation(page)
         except URLNotAllowedError as e:
             raise e
@@ -986,19 +839,19 @@ class BrowserContext:
         if not self._is_url_allowed(url):
             raise BrowserError(f'Navigation to non-allowed URL: {url}')
 
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         await page.goto(url)
         await page.wait_for_load_state()
 
     async def refresh_page(self):
         """Refresh the agent's current page"""
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         await page.reload()
         await page.wait_for_load_state()
 
     async def go_back(self):
         """Navigate the agent's tab back in browser history"""
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         try:
             # 10 ms timeout
             await page.go_back(timeout=10, wait_until='domcontentloaded')
@@ -1009,7 +862,7 @@ class BrowserContext:
 
     async def go_forward(self):
         """Navigate the agent's tab forward in browser history"""
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         try:
             await page.go_forward(timeout=10, wait_until='domcontentloaded')
         except Exception as e:
@@ -1024,7 +877,7 @@ class BrowserContext:
         If they are the same tab, both references will be updated.
         """
         session = await self.get_session()
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
 
         # Check if this is the foreground tab as well
         is_foreground = page == self.human_current_page
@@ -1048,12 +901,12 @@ class BrowserContext:
 
     async def get_page_html(self) -> str:
         """Get the HTML content of the agent's current page"""
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         return await page.content()
 
     async def execute_javascript(self, script: str):
         """Execute JavaScript code on the agent's current page"""
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         return await page.evaluate(script)
 
     async def get_page_structure(self) -> str:
@@ -1123,7 +976,7 @@ class BrowserContext:
 			return getPageStructure();
 		})()"""
 
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         structure = await page.evaluate(debug_script)
         return structure
 
@@ -1176,7 +1029,7 @@ class BrowserContext:
 
         # Check if current page is still valid, if not switch to another available page
         try:
-            page = await self.get_agent_current_page()
+            page = await self.get_current_page()
             # Test if page is still accessible
             await page.evaluate('1')
         except Exception as e:
@@ -1278,7 +1131,7 @@ class BrowserContext:
         Handles cases where the page might be closed or inaccessible.
         """
         try:
-            page = await self.get_agent_current_page()
+            page = await self.get_current_page()
             await page.evaluate(
                 """
                 try {
@@ -1401,40 +1254,7 @@ class BrowserContext:
                         # Skip invalid class names
                         continue
 
-            # Expanded set of safe attributes that are stable and useful for selection
-            SAFE_ATTRIBUTES = {
-                # Data attributes (if they're stable in your application)
-                'id',
-                # Standard HTML attributes
-                'name',
-                'type',
-                'placeholder',
-                # Accessibility attributes
-                'aria-label',
-                'aria-labelledby',
-                'aria-describedby',
-                'role',
-                # Common form attributes
-                'for',
-                'autocomplete',
-                'required',
-                'readonly',
-                # Media attributes
-                'alt',
-                'title',
-                'src',
-                # Custom stable attributes (add any application-specific ones)
-                'href',
-                'target',
-            }
-
             if include_dynamic_attributes:
-                dynamic_attributes = {
-                    'data-id',
-                    'data-qa',
-                    'data-cy',
-                    'data-testid',
-                }
                 SAFE_ATTRIBUTES.update(dynamic_attributes)
 
             # Handle other attributes
@@ -1477,7 +1297,7 @@ class BrowserContext:
 
     @time_execution_async('--get_locate_element')
     async def get_locate_element(self, element: DOMElementNode) -> ElementHandle | None:
-        current_frame = await self.get_agent_current_page()
+        current_frame = await self.get_current_page()
 
         # Start with the target element and collect all parents
         parents: list[DOMElementNode] = []
@@ -1525,7 +1345,7 @@ class BrowserContext:
         """
         Locates an element on the page using the provided XPath.
         """
-        current_frame = await self.get_agent_current_page()
+        current_frame = await self.get_current_page()
 
         try:
             # Use XPath to locate the element
@@ -1545,7 +1365,7 @@ class BrowserContext:
         """
         Locates an element on the page using the provided CSS selector.
         """
-        current_frame = await self.get_agent_current_page()
+        current_frame = await self.get_current_page()
 
         try:
             # Use CSS selector to locate the element
@@ -1569,7 +1389,7 @@ class BrowserContext:
         If `nth` is provided, it returns the nth matching element (0-based).
         If `element_type` is provided, filters by tag name (e.g., 'button', 'span').
         """
-        current_frame = await self.get_agent_current_page()
+        current_frame = await self.get_current_page()
         try:
             # handle also specific element type or use any type.
             selector = f'{element_type or "*"}:text("{text}")'
@@ -1617,39 +1437,22 @@ class BrowserContext:
             # Ensure element is ready for input
             try:
                 await element_handle.wait_for_element_state('stable', timeout=1000)
-                is_hidden = await element_handle.is_hidden()
-                if not is_hidden:
-                    await element_handle.scroll_into_view_if_needed(timeout=1000)
+                await element_handle.scroll_into_view_if_needed(timeout=1000)
             except Exception:
                 pass
 
             # Get element properties to determine input method
-            tag_handle = await element_handle.get_property('tagName')
-            tag_name = (await tag_handle.json_value()).lower()
             is_contenteditable = await element_handle.get_property('isContentEditable')
-            readonly_handle = await element_handle.get_property('readOnly')
-            disabled_handle = await element_handle.get_property('disabled')
 
-            readonly = await readonly_handle.json_value() if readonly_handle else False
-            disabled = await disabled_handle.json_value() if disabled_handle else False
-
-            # always click the element first to make sure it's in the focus
-            await element_handle.click()
-            await asyncio.sleep(0.1)
-
-            try:
-                if (await is_contenteditable.json_value() or tag_name == 'input') and not (readonly or disabled):
-                    await element_handle.evaluate('el => {el.textContent = ""; el.value = "";}')
-                    await element_handle.type(text, delay=5)
-                else:
-                    await element_handle.fill(text)
-            except Exception:
-                # last resort fallback, assume it's already focused after we clicked on it,
-                # just simulate keypresses on the entire page
-                await self.get_agent_current_page().keyboard.type(text)
+            # Different handling for contenteditable vs input fields
+            if await is_contenteditable.json_value():
+                await element_handle.evaluate('el => el.textContent = ""')
+                await element_handle.type(text, delay=5)
+            else:
+                await element_handle.fill(text)
 
         except Exception as e:
-            logger.debug(f'❌  Failed to input text into element: {repr(element_node)}. Error: {str(e)}')
+            logger.debug(f'Failed to input text into element: {repr(element_node)}. Error: {str(e)}')
             raise BrowserError(f'Failed to input text into index {element_node.highlight_index}')
 
     @time_execution_async('--click_element_node')
@@ -1657,7 +1460,7 @@ class BrowserContext:
         """
         Optimized method to click an element using xpath.
         """
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
 
         try:
             # Highlight before clicking
@@ -1980,5 +1783,5 @@ class BrowserContext:
         Raises:
             TimeoutError: If the element does not become visible within the specified timeout.
         """
-        page = await self.get_agent_current_page()
+        page = await self.get_current_page()
         await page.wait_for_selector(selector, state='visible', timeout=timeout)

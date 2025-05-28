@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import uuid
+import aiopath
 from typing import TypeVar, Any
 
 import pathlib
@@ -24,16 +25,11 @@ from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
+from superagentx.computer_use.browser.models import InputTextParams, GoToUrl, ToastConfig
 
 logger = logging.getLogger(__name__)
 
 Context = TypeVar('Context')
-
-
-class InputTextParams(BaseModel):
-    index: int
-    text: str
-    has_sensitive: bool
 
 
 class BrowserEngine(BaseEngine):
@@ -51,12 +47,11 @@ class BrowserEngine(BaseEngine):
             take_screenshot: bool = False,
             screenshot_path: str | pathlib.Path | None = None,
             sensitive_data: dict | None = None,
+            toast_config: ToastConfig | None = None,
             **kwargs
     ):
 
         super().__init__(*args, **kwargs)
-        from playwright.async_api import Page
-        import aiopath
         from superagentx.computer_use.browser.browser import Browser, BrowserContext, BrowserConfig
         from superagentx.handler.browser import BrowserHandler
         self.llm = llm
@@ -97,6 +92,8 @@ class BrowserEngine(BaseEngine):
                     "sagentx_screenshot_path"
                 )
         self.sensitive_data = sensitive_data
+        self.toast_config = toast_config
+        self.previous_state = None
 
     async def __funcs_props(
             self,
@@ -191,6 +188,14 @@ class BrowserEngine(BaseEngine):
                     if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                         logger.debug(f'Checking tool function : {self.handler.__class__}.{tool_name}')
                         _kwargs = tool.get(tool_name) or {}
+                        if self.sensitive_data and tool_name == "go_to_url":
+                            validated_params = GoToUrl(**_kwargs)
+                            _kwargs = await sync_to_async(
+                                self._replace_sensitive_data,
+                                validated_params,
+                                self.sensitive_data
+                            )
+                            _kwargs = _kwargs.model_dump()
                         if self.sensitive_data and tool_name == "input_text":
                             _kwargs["has_sensitive"] = True
                             validated_params = InputTextParams(**_kwargs)
@@ -207,7 +212,12 @@ class BrowserEngine(BaseEngine):
                         try:
                             _engine_res = None
                             if inspect.iscoroutinefunction(func):
-                                await show_toast(page, current_state.get("next_goal"))
+                                await show_toast(
+                                    page=page,
+                                    message=current_state.get("next_goal"),
+                                    toast_config=self.toast_config,
+                                    duration=1000
+                                )
                                 _engine_res = await func(**_kwargs)
                             _value = list(_kwargs.values())
                             if _engine_res.extracted_content:
@@ -235,13 +245,28 @@ class BrowserEngine(BaseEngine):
     async def _execute(self) -> list:
         result = None
         results = []
+        counter = 0
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
-            state = await self.browser_context.get_state()
+            await asyncio.sleep(1)
+            state = await self.browser_context.get_state(cache_clickable_elements_hashes=True)
             page = await self.browser_context.get_current_page()
             step_info = StepInfo(step_number=step, max_steps=self.max_steps)
             state_msg = await get_user_message(state=state, step_info=step_info, action_result=result)
-            self.msgs.append(state_msg)
+            self.msgs.append(state_msg.get('msg'))
+            if self.previous_state == state_msg.get('element_text'):
+                counter += 1
+                logger.info(f"Retry Count: {counter}")
+                if counter >= 5:
+                    _retry_fail = {
+                        "role": "user",
+                        "content": f"Tried this step {counter} times. So done fail proces and say the reason."
+                    }
+                    self.msgs.append(_retry_fail)
+                    counter = 0
+            else:
+                self.previous_state = state_msg.get('element_text')
+                counter = 0
 
             chat_completion_params = ChatCompletionParams(
                 messages=self.msgs,
@@ -270,6 +295,7 @@ class BrowserEngine(BaseEngine):
                 page=page,
                 current_state=current_state
             )
+
             if result:
                 _result = result[0]
                 if _result.is_done:
@@ -277,9 +303,10 @@ class BrowserEngine(BaseEngine):
                     if isinstance(response, (list, dict)):
                         response = f"Process Success Executed"
                     await show_toast(
-                        page,
-                        response,
-                        4000
+                        page=page,
+                        message=response,
+                        duration=4000,
+                        toast_config=self.toast_config
                     )
                     await asyncio.sleep(4)
                     if self.screenshot_path:
@@ -291,7 +318,8 @@ class BrowserEngine(BaseEngine):
                         )
                         await show_toast(
                             page=await self.browser_context.get_current_page(),
-                            message="Screen Captured"
+                            message="Screen Captured",
+                            toast_config=self.toast_config
                         )
                         await asyncio.sleep(2)
                     await self.browser_context.close()

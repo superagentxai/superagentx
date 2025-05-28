@@ -9,6 +9,7 @@ from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
 
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
 from superagentx.computer_use.browser.state import BrowserState
+from superagentx.computer_use.browser.models import ToastConfig
 
 # Define generic type variables for return type and parameters
 R = TypeVar('R')
@@ -42,6 +43,8 @@ async def get_user_message(
 
     has_content_above = (state.pixels_above or 0) > 0
     has_content_below = (state.pixels_below or 0) > 0
+
+    elem_text = elements_text
 
     if elements_text:
         if has_content_above:
@@ -88,7 +91,7 @@ Interactive elements from top layer of the current page inside the viewport:
                 state_description += f'\nAction error {i + 1}/{len(action_result)}: ...{error}'
 
     if state.screenshot and use_vision:
-        return {
+        msg = {
             "role": "user",
             "content": [{
                 "type": "text",
@@ -99,9 +102,17 @@ Interactive elements from top layer of the current page inside the viewport:
             }
             ]
         }
-    return {
+        return {
+            "msg": msg,
+            "element_text": elem_text
+        }
+    msg = {
         "role": "user",
         "content": state_description
+    }
+    return {
+        "msg": msg,
+        "element_text": elem_text
     }
 
 
@@ -119,44 +130,59 @@ async def log_response(result: dict):
     logger.info(f"Action {result.get('action')}")
 
 
-async def show_toast(page, message: str, duration: int = 3000):
+async def show_toast(
+        page: Any,
+        message: str,
+        duration: int = 3000,
+        toast_config: ToastConfig | None = None
+):
+    if not toast_config:
+        toast_config = ToastConfig()
     import playwright._impl._errors
 
     icons = ['🚀', '🔥', '💡', '⭐']
     random_icon = random.choice(icons)
     if message:
         message = message.replace('\n', ' ')
-        message = re.sub(r"[^\w\s.,:+()₹/]", "", message)  # Remove unwanted special characters but keep ₹ and ratings
+        message = re.sub(r"[^\w\s.,:+()₹/]", "", message)
         final_message = f"SuperAgentX Goal: {random_icon} {message}"
     else:
         final_message = ''
 
+    font_size = toast_config.font_size
     toast_script = f"""
-                (() => {{
-                    let toast = document.createElement('div');
-                    toast.innerText = "{final_message}";
-                    toast.style.position = 'fixed';
-                    toast.style.top = '40px';  // 👈 top instead of bottom
-                    toast.style.left = '50%';
-                    toast.style.transform = 'translateX(-50%)';
-                    toast.style.background = 'linear-gradient(45deg, #ff6ec4, #7873f5)';
-                    toast.style.color = 'white';
-                    toast.style.padding = '16px 24px';
-                    toast.style.borderRadius = '16px';
-                    toast.style.fontSize = '14px';
+    (() => {{
+        const message = `{final_message}`;
+        let toast = document.createElement('div');
+        toast.innerText = message;
 
-                    toast.style.zIndex = 9999;
-                    toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
-                    toast.style.transition = 'opacity 0.3s ease';
-                    toast.style.opacity = '1';
-                    document.body.appendChild(toast);
+        const screenWidth = window.innerWidth;
+        const fontSize = screenWidth > 1920 ? '{font_size}px' : screenWidth > 1280 ? '{font_size - 2}px' : '{font_size - 4}px';
+        const padding = screenWidth > 1920 ? '20px 30px' : screenWidth > 1280 ? '18px 26px' : '16px 24px';
 
-                    setTimeout(() => {{
-                        toast.style.opacity = '0';
-                        setTimeout(() => toast.remove(), 300);
-                    }}, {duration});
-                }})();
-                """
+        toast.style.position = 'fixed';
+        toast.style.top = '40px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = '{toast_config.background}';
+        toast.style.color = '{toast_config.color}';
+        toast.style.padding = padding;
+        toast.style.borderRadius = '16px';
+        toast.style.fontSize = fontSize;
+        toast.style.zIndex = 9999;
+        toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
+        toast.style.transition = 'opacity 0.3s ease';
+        toast.style.opacity = '1';
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {{
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }}, {duration});
+    }})();
+    """
+
     try:
         await page.evaluate(toast_script)
     except playwright._impl._errors.Error as ex:
@@ -320,6 +346,8 @@ system detects that human action is required:
     - Use `wait` actions with a maximum total wait time of 5 minutes.
 
     - Always break the wait into intervals (e.g., 60 seconds) and check for page state changes between intervals.
+    
+    - If need Authenticator, wait 10 seconds
 
     - Example:
 

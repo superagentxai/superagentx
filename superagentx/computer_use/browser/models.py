@@ -20,3 +20,19 @@ class ToolResult(BaseModel):
     extracted_content: str | None = None
     error: str | None = None
     include_in_memory: bool = False  # whether to include in past messages as context or not
+
+
+class InputTextParams(BaseModel):
+    index: int
+    text: str
+    has_sensitive: bool
+
+
+class GoToUrl(BaseModel):
+    url: str
+
+
+class ToastConfig(BaseModel):
+    font_size: int = 22
+    background: str = 'linear-gradient(45deg, #ff6ec4, #7873f5)'
+    color: str = 'white'

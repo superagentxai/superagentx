@@ -19,15 +19,10 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 load_dotenv()
 
-from superagentx.computer_use.browser.chrome import (
-    CHROME_ARGS,
-    CHROME_DEBUG_PORT,
-    CHROME_DETERMINISTIC_RENDERING_ARGS,
-    CHROME_DISABLE_SECURITY_ARGS,
-    CHROME_DOCKER_ARGS,
-    CHROME_HEADLESS_ARGS,
-)
-from superagentx.computer_use.constants import BROWSER_SECURITY_ARGS, HEADLESS_ARGS
+from superagentx.computer_use.constants import (BROWSER_SECURITY_ARGS, HEADLESS_ARGS, CHROME_ARGS,
+                                                CHROME_DOCKER_ARGS, CHROME_HEADLESS_ARGS, CHROME_DISABLE_SECURITY_ARGS,
+                                                CHROME_DETERMINISTIC_RENDERING_ARGS, CHROME_DISABLED_COMPONENTS,
+                                                CHROME_DEBUG_PORT)
 from superagentx.computer_use.browser.context import BrowserContext, BrowserContextConfig
 from superagentx.computer_use.utils import get_screen_resolution, get_window_adjustments
 
@@ -138,6 +133,7 @@ class Browser:
         self.config = config or BrowserConfig()
         self.playwright: Playwright | None = None
         self.playwright_browser: PlaywrightBrowser | None = None
+        self.disable_security_args = []
         if self.config.disable_security:
             self.disable_security_args = BROWSER_SECURITY_ARGS
 
@@ -205,24 +201,12 @@ class Browser:
         except httpx.RequestError:
             logger.debug('🌎  No existing Chrome instance found, starting a new one')
 
-        # Start a new Chrome instance
-        chrome_launch_args = [
-            *{  # remove duplicates (usually preserves the order, but not guaranteed)
-                f'--remote-debugging-port={self.config.chrome_remote_debugging_port}',
-                *CHROME_ARGS,
-                *(CHROME_DOCKER_ARGS if IN_DOCKER else []),
-                *(CHROME_HEADLESS_ARGS if self.config.headless else []),
-                *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),
-                *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),
-                *self.config.extra_browser_args,
-            },
-        ]
         chrome_sub_process = await asyncio.create_subprocess_exec(
             self.config.browser_instance_path,
-            *chrome_launch_args,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            shell=False,
+            '--remote-debugging-port=9222',
+            *self.config.extra_chromium_args,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
         )
         self._chrome_subprocess = psutil.Process(chrome_sub_process.pid)
 
@@ -258,23 +242,23 @@ class Browser:
         assert self.config.browser_instance_path is None, 'browser_binary_path should be None if trying to use the builtin browsers'
 
         # Use the configured window size from new_context_config if available
-        if (
-                not self.config.headless
-                and hasattr(self.config, 'new_context_config')
-                and hasattr(self.config.new_context_config, 'window_width')
-                and hasattr(self.config.new_context_config, 'window_height')
-        ):
-            screen_size = {
-                'width': self.config.new_context_config.window_width,
-                'height': self.config.new_context_config.window_height,
-            }
-            offset_x, offset_y = get_window_adjustments()
-        elif self.config.headless:
-            screen_size = {'width': 1920, 'height': 1080}
-            offset_x, offset_y = 0, 0
-        else:
-            screen_size = get_screen_resolution()
-            offset_x, offset_y = get_window_adjustments()
+        # if (
+        #         not self.config.headless
+        #         and hasattr(self.config, 'new_context_config')
+        #         and hasattr(self.config.new_context_config, 'window_width')
+        #         and hasattr(self.config.new_context_config, 'window_height')
+        # ):
+        #     screen_size = {
+        #         'width': self.config.new_context_config.window_width,
+        #         'height': self.config.new_context_config.window_height,
+        #     }
+        #     offset_x, offset_y = get_window_adjustments()
+        # elif self.config.headless:
+        #     screen_size = {'width': 1920, 'height': 1080}
+        #     offset_x, offset_y = 0, 0
+        # else:
+        #     screen_size = get_screen_resolution()
+        #     offset_x, offset_y = get_window_adjustments()
 
         chrome_args = {
             f'--remote-debugging-port={self.config.chrome_remote_debugging_port}',
@@ -283,8 +267,8 @@ class Browser:
             *(CHROME_HEADLESS_ARGS if self.config.headless else []),
             *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),
             *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),
-            f'--window-position={offset_x},{offset_y}',
-            f'--window-size={screen_size["width"]},{screen_size["height"]}',
+            # f'--window-position={offset_x},{offset_y}',
+            # f'--window-size={screen_size["width"]},{screen_size["height"]}',
             *self.config.extra_browser_args,
         }
 
@@ -312,7 +296,7 @@ class Browser:
         }
 
         browser = await browser_class.launch(
-            # channel='chromium',  # https://github.com/microsoft/playwright/issues/33566
+            channel='chromium',  # https://github.com/microsoft/playwright/issues/33566
             headless=self.config.headless,
             args=args[self.config.browser_type],
             proxy=self.config.proxy.model_dump() if self.config.proxy else None,
@@ -367,7 +351,6 @@ class Browser:
                     logger.debug(f'Failed to terminate chrome subprocess: {e}')
 
             # Then cleanup httpx clients
-            await self.cleanup_httpx_clients()
         except Exception as e:
             if 'OpenAI error' not in str(e):
                 logger.debug(f'Failed to close browser properly: {e}')
@@ -389,23 +372,3 @@ class Browser:
                     asyncio.run(self.close())
         except Exception as e:
             logger.debug(f'Failed to cleanup browser in destructor: {e}')
-
-    async def cleanup_httpx_clients(self):
-        """Cleanup all httpx clients"""
-        import gc
-
-        import httpx
-
-        # Force garbage collection to make sure all clients are in memory
-        gc.collect()
-
-        # Get all httpx clients
-        clients = [obj for obj in gc.get_objects() if isinstance(obj, httpx.AsyncClient)]
-
-        # Close all clients
-        for client in clients:
-            if not client.is_closed:
-                try:
-                    await client.aclose()
-                except Exception as e:
-                    logger.debug(f'Error closing httpx client: {e}')
