@@ -4,8 +4,6 @@ import os
 import typing
 from typing import List
 
-import boto3
-from botocore.config import Config
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
@@ -128,6 +126,8 @@ class LLMClient:
         )
 
     def _init_bedrock_cli(self, **kwargs) -> BedrockClient:
+        import boto3
+        from botocore.config import Config
         aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
 
         if not aws_region:

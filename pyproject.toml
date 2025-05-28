@@ -16,12 +16,10 @@ requires-python = ">=3.12,<=3.13"
 
 dependencies = [
     "pydantic>=2.8.2",
-    "boto3>=1.35.8",
     "openai>=1.47.1",
     "exa-py>=1.1.4",
     "aiohttp>=3.10.8",
     "rich>=13.9.2",
-    "protobuf>=3.20.3",
     "aiosqlite>=0.20.0",
     "websockets>=13.1",
     "aiofiles>=24.1.0",
@@ -72,6 +70,7 @@ ollama = "^0.4.7"
 fastembed = "^0.6.0"
 chromadb = "^1.0.10"
 opentelemetry-exporter-otlp-proto-grpc = "^1.33.1"
+boto3 = "^1.35.8"
 
 
 [tool.pytest.ini_options]
