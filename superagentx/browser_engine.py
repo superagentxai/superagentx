@@ -25,7 +25,7 @@ from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
-from superagentx.utils.models import InputTextParams, GoToUrl
+from superagentx.utils.models import InputTextParams, GoToUrl, ToastConfig
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,7 @@ class BrowserEngine(BaseEngine):
             take_screenshot: bool = False,
             screenshot_path: str | pathlib.Path | None = None,
             sensitive_data: dict | None = None,
+            toast_config: ToastConfig | None = None,
             **kwargs
     ):
 
@@ -91,6 +92,7 @@ class BrowserEngine(BaseEngine):
                     "sagentx_screenshot_path"
                 )
         self.sensitive_data = sensitive_data
+        self.toast_config = toast_config
 
     async def __funcs_props(
             self,
@@ -209,7 +211,11 @@ class BrowserEngine(BaseEngine):
                         try:
                             _engine_res = None
                             if inspect.iscoroutinefunction(func):
-                                await show_toast(page, current_state.get("next_goal"))
+                                await show_toast(
+                                    page=page,
+                                    message=current_state.get("next_goal"),
+                                    toast_config=self.toast_config
+                                )
                                 _engine_res = await func(**_kwargs)
                             _value = list(_kwargs.values())
                             if _engine_res.extracted_content:
@@ -240,7 +246,7 @@ class BrowserEngine(BaseEngine):
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
             await asyncio.sleep(1)
-            state = await self.browser_context.get_state()
+            state = await self.browser_context.get_state(cache_clickable_elements_hashes=True)
             page = await self.browser_context.get_current_page()
             step_info = StepInfo(step_number=step, max_steps=self.max_steps)
             state_msg = await get_user_message(state=state, step_info=step_info, action_result=result)
@@ -280,9 +286,10 @@ class BrowserEngine(BaseEngine):
                     if isinstance(response, (list, dict)):
                         response = f"Process Success Executed"
                     await show_toast(
-                        page,
-                        response,
-                        4000
+                        page=page,
+                        message=response,
+                        duration=4000,
+                        toast_config=self.toast_config
                     )
                     await asyncio.sleep(4)
                     if self.screenshot_path:
@@ -294,7 +301,8 @@ class BrowserEngine(BaseEngine):
                         )
                         await show_toast(
                             page=await self.browser_context.get_current_page(),
-                            message="Screen Captured"
+                            message="Screen Captured",
+                            toast_config=self.toast_config
                         )
                         await asyncio.sleep(2)
                     await self.browser_context.close()

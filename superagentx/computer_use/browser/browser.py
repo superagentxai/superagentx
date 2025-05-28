@@ -1,60 +1,164 @@
+"""
+Playwright browser on steroids.
+"""
+
 import asyncio
-import aiohttp
 import gc
 import logging
-from playwright._impl._api_structures import ProxySettings
-from playwright.async_api import Browser as PlaywrightBrowser
-from playwright.async_api import (
-    Playwright,
-    async_playwright,
-)
-from dataclasses import dataclass, field
-from superagentx.computer_use.constants import BROWSER_SECURITY_ARGS, HEADLESS_ARGS
+import os
+import socket
+import subprocess
+from typing import Literal
 
+import httpx
+import psutil
+from dotenv import load_dotenv
+from playwright.async_api import Browser as PlaywrightBrowser
+from playwright.async_api import Playwright, async_playwright
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
+
+load_dotenv()
+
+from superagentx.computer_use.constants import (BROWSER_SECURITY_ARGS, HEADLESS_ARGS, CHROME_ARGS,
+                                                CHROME_DOCKER_ARGS, CHROME_HEADLESS_ARGS, CHROME_DISABLE_SECURITY_ARGS,
+                                                CHROME_DETERMINISTIC_RENDERING_ARGS, CHROME_DISABLED_COMPONENTS,
+                                                CHROME_DEBUG_PORT)
 from superagentx.computer_use.browser.context import BrowserContext, BrowserContextConfig
+from superagentx.computer_use.utils import get_screen_resolution, get_window_adjustments
 
 logger = logging.getLogger(__name__)
 
+IN_DOCKER = os.environ.get('IN_DOCKER', 'false').lower()[0] in 'ty1'
 
-@dataclass
-class BrowserConfig:
-    headless: bool = False
-    disable_security: bool = True
-    extra_chromium_args: list[str] = field(default_factory=list)
-    chrome_instance_path: str | None = None
+
+class ProxySettings(BaseModel):
+    """the same as playwright.sync_api.ProxySettings, but now as a Pydantic BaseModel so pydantic can validate it"""
+
+    server: str
+    bypass: str | None = None
+    username: str | None = None
+    password: str | None = None
+
+    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+
+    # Support dict-like behavior for compatibility with Playwright's ProxySettings
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+
+
+class BrowserConfig(BaseModel):
+    r"""
+    Configuration for the Browser.
+
+    Default values:
+        headless: False
+            Whether to run browser in headless mode (not recommended)
+
+        disable_security: False
+            Disable browser security features (required for cross-origin iframe support)
+
+        extra_browser_args: []
+            Extra arguments to pass to the browser
+
+        wss_url: None
+            Connect to a browser instance via WebSocket
+
+        cdp_url: None
+            Connect to a browser instance via CDP
+
+        browser_binary_path: None
+            Path to a Browser instance to use to connect to your normal browser
+            e.g. '/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
+
+        chrome_remote_debugging_port: 9222
+            Chrome remote debugging port to use to when browser_binary_path is supplied.
+            This allows running multiple chrome browsers with same browser_binary_path but running on different ports.
+            Also, makes it possible to launch new user provided chrome browser without closing already opened chrome instances,
+            by providing non-default chrome debugging port.
+
+        keep_alive: False
+            Keep the browser alive after the agent has finished running
+
+        deterministic_rendering: False
+            Enable deterministic rendering (makes GPU/font rendering consistent across different OS's and docker)
+    """
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra='ignore',
+        populate_by_name=True,
+        from_attributes=True,
+        validate_assignment=True,
+        revalidate_instances='subclass-instances',
+    )
+
     wss_url: str | None = None
     cdp_url: str | None = None
+
+    browser_type: Literal['chromium', 'firefox', 'webkit'] = 'chromium'
+    browser_instance_path: str | None = Field(
+        default=None
+    )
+    chrome_remote_debugging_port: int | None = CHROME_DEBUG_PORT
+    extra_browser_args: list[str] = Field(default_factory=list)
+
+    headless: bool = False
+    disable_security: bool = False  # disable_security=True is dangerous as any malicious URL visited could embed an iframe for the user's bank, and use their cookies to steal money
+    deterministic_rendering: bool = False
+    keep_alive: bool = Field(default=False,
+                             alias='_force_keep_browser_alive')  # used to be called _force_keep_browser_alive
+
     proxy: ProxySettings | None = None
-    new_context_config: BrowserContextConfig = field(default_factory=BrowserContextConfig)
-    _force_keep_browser_alive: bool = False
-    browser_type: str = "chromium"  # Options: "chromium", "firefox", "webkit"
+    new_context_config: BrowserContextConfig = Field(default_factory=BrowserContextConfig)
 
 
+# @singleton: TODO - think about id singleton makes sense here
+# @dev By default this is a singleton, but you can create multiple instances if you need to.
 class Browser:
+    """
+    Playwright browser on steroids.
 
-    def __init__(self, config: BrowserConfig = BrowserConfig()):
-        self.config = config
+    This is persistent browser factory that can spawn multiple browser contexts.
+    It is recommended to use only one instance of Browser per your application (RAM usage will grow otherwise).
+    """
+
+    def __init__(
+            self,
+            config: BrowserConfig | None = None,
+    ):
+        logger.debug('🌎  Initializing new browser')
+        self.config = config or BrowserConfig()
         self.playwright: Playwright | None = None
-        self.playwright_browser: Playwright | None = None
-
+        self.playwright_browser: PlaywrightBrowser | None = None
         self.disable_security_args = []
         if self.config.disable_security:
             self.disable_security_args = BROWSER_SECURITY_ARGS
 
-    async def _init(self):
-        """Initialize the browser session"""
-        self.playwright = await async_playwright().start()
-        self.playwright_browser = await self._setup_browser(self.playwright)
-        return self.playwright_browser
-
-    async def new_context(self, config: BrowserContextConfig = BrowserContextConfig()) -> BrowserContext:
+    async def new_context(self, config: BrowserContextConfig | None = None) -> BrowserContext:
         """Create a browser context"""
-        return BrowserContext(config=config, browser=self)
+        browser_config = self.config.model_dump() if self.config else {}
+        context_config = config.model_dump() if config else {}
+        merged_config = {**browser_config, **context_config}
+        return BrowserContext(config=BrowserContextConfig(**merged_config), browser=self)
 
     async def get_playwright_browser(self) -> PlaywrightBrowser:
-        """Get a browser instance"""
+        """Get a browser context"""
         if self.playwright_browser is None:
             return await self._init()
+
+        return self.playwright_browser
+
+    async def _init(self):
+        """Initialize the browser session"""
+        playwright = await async_playwright().start()
+        self.playwright = playwright
+
+        browser = await self._setup_browser(playwright)
+        self.playwright_browser = browser
+
         return self.playwright_browser
 
     async def _setup_cdp(self, playwright: Playwright) -> PlaywrightBrowser:
@@ -70,56 +174,76 @@ class Browser:
         return await playwright.chromium.connect(self.config.wss_url)
 
     async def _setup_browser_with_instance(self, playwright: Playwright) -> PlaywrightBrowser:
-        if not self.config.chrome_instance_path:
-            raise ValueError('Chrome instance path is required')
+        """Sets up and returns a Playwright Browser instance with anti-detection measures."""
+        if not self.config.browser_instance_path:
+            raise ValueError('A browser_binary_path is required')
+
+        assert self.config.browser_type == 'chromium', (
+            'browser_binary_path only supports chromium browsers (make sure browser_type=chromium)'
+        )
 
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as session:
-                async with session.get('http://localhost:9222/json/version') as response:
-                    if response.status == 200:
-                        logger.info('Reusing existing Chrome instance')
-                        return await playwright.chromium.connect_over_cdp(
-                            endpoint_url='http://localhost:9222',
-                            timeout=20000,
-                        )
-        except aiohttp.ClientConnectorError:
-            logger.debug('No existing Chrome instance found, starting a new one')
+            # Check if browser is already running
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f'http://localhost:{self.config.chrome_remote_debugging_port}/json/version', timeout=2
+                )
+                if response.status_code == 200:
+                    logger.info(
+                        f'🔌  Reusing existing browser found running on http://localhost:{self.config.chrome_remote_debugging_port}'
+                    )
+                    browser_class = getattr(playwright, self.config.browser_type)
+                    browser = await browser_class.connect_over_cdp(
+                        endpoint_url=f'http://localhost:{self.config.chrome_remote_debugging_port}',
+                        timeout=20000,  # 20 second timeout for connection
+                    )
+                    return browser
+        except httpx.RequestError:
+            logger.debug('🌎  No existing Chrome instance found, starting a new one')
 
-        process = await asyncio.create_subprocess_exec(
+        chrome_sub_process = await asyncio.create_subprocess_exec(
             self.config.chrome_instance_path,
             '--remote-debugging-port=9222',
             *self.config.extra_chromium_args,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL,
         )
+        self._chrome_subprocess = psutil.Process(chrome_sub_process.pid)
 
+        # Attempt to connect again after starting a new instance
         for _ in range(10):
             try:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as session:
-                    async with session.get('http://localhost:9222/json/version') as response:
-                        if response.status == 200:
-                            break
-            except aiohttp.ClientConnectorError:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        f'http://localhost:{self.config.chrome_remote_debugging_port}/json/version', timeout=2
+                    )
+                    if response.status_code == 200:
+                        break
+            except httpx.RequestError:
                 pass
             await asyncio.sleep(1)
 
+        # Attempt to connect again after starting a new instance
         try:
-            return await playwright.chromium.connect_over_cdp(
-                endpoint_url='http://localhost:9222',
-                timeout=20000,
+            browser_class = getattr(playwright, self.config.browser_type)
+            browser = await browser_class.connect_over_cdp(
+                endpoint_url=f'http://localhost:{self.config.chrome_remote_debugging_port}',
+                timeout=20000,  # 20 second timeout for connection
             )
+            return browser
         except Exception as e:
-            logger.error(f'Failed to start a new Chrome instance: {str(e)}')
+            logger.error(f'❌  Failed to start a new Chrome instance: {str(e)}')
             raise RuntimeError(
-                'To start Chrome in debug mode, close all existing Chrome instances and try again.'
+                'To start chrome in Debug mode, you need to close all existing Chrome instances and try again otherwise we can not connect to the instance.'
             )
 
-    async def _setup_standard_browser(self, playwright: Playwright) -> PlaywrightBrowser:
+    async def _setup_builtin_browser(self, playwright: Playwright) -> PlaywrightBrowser:
+        """Sets up and returns a Playwright Browser instance with anti-detection measures."""
         browser_launcher = getattr(playwright, self.config.browser_type, None)
         if not browser_launcher:
             raise ValueError(f"Unsupported browser type: {self.config.browser_type}")
 
-        args = HEADLESS_ARGS + self.disable_security_args + self.config.extra_chromium_args \
+        args = HEADLESS_ARGS + self.disable_security_args + self.config.extra_browser_args \
             if self.config.browser_type == "chromium" else []
 
         return await browser_launcher.launch(
@@ -129,40 +253,64 @@ class Browser:
         )
 
     async def _setup_browser(self, playwright: Playwright) -> PlaywrightBrowser:
+        """Sets up and returns a Playwright Browser instance with anti-detection measures."""
         try:
             if self.config.browser_type != "chromium" and (
-                    self.config.cdp_url or self.config.wss_url or self.config.chrome_instance_path):
-                raise ValueError("CDP/WSS/Instance path options are only supported for Chromium.")
 
+                    self.config.cdp_url or self.config.wss_url or self.config.browser_instance_path):
+                raise ValueError("CDP/WSS/Instance path options are only supported for Chromium.")
             if self.config.cdp_url:
                 return await self._setup_cdp(playwright)
             if self.config.wss_url:
                 return await self._setup_wss(playwright)
-            if self.config.chrome_instance_path:
+
+            if self.config.headless:
+                logger.warning(
+                    '⚠️ Headless mode is not recommended. Many sites will detect and block all headless browsers.')
+
+            if self.config.browser_instance_path:
                 return await self._setup_browser_with_instance(playwright)
-            return await self._setup_standard_browser(playwright)
+            else:
+                return await self._setup_builtin_browser(playwright)
         except Exception as e:
-            logger.error(f'Failed to initialize Playwright browser: {str(e)}')
+            logger.error(f'Failed to initialize Playwright browser: {e}')
             raise
 
     async def close(self):
         """Close the browser instance"""
+        if self.config.keep_alive:
+            return
+
         try:
-            if not self.config._force_keep_browser_alive:
-                if self.playwright_browser:
-                    await self.playwright_browser.close()
-                    del self.playwright_browser
-                if self.playwright:
-                    await self.playwright.stop()
-                    del self.playwright
+            if self.playwright_browser:
+                await self.playwright_browser.close()
+                del self.playwright_browser
+            if self.playwright:
+                await self.playwright.stop()
+                del self.playwright
+            if chrome_proc := getattr(self, '_chrome_subprocess', None):
+                try:
+                    # always kill all children processes, otherwise chrome leaves a bunch of zombie processes
+                    for proc in chrome_proc.children(recursive=True):
+                        proc.kill()
+                    chrome_proc.kill()
+                except Exception as e:
+                    logger.debug(f'Failed to terminate chrome subprocess: {e}')
+
+            # Then cleanup httpx clients
+            await self.cleanup_httpx_clients()
         except Exception as e:
-            logger.debug(f'Failed to close browser properly: {e}')
+            if 'OpenAI error' not in str(e):
+                logger.debug(f'Failed to close browser properly: {e}')
+
         finally:
             self.playwright_browser = None
             self.playwright = None
+            self._chrome_subprocess = None
             gc.collect()
 
     def __del__(self):
+        """Async cleanup when object is destroyed"""
         try:
             if self.playwright_browser or self.playwright:
                 loop = asyncio.get_running_loop()
@@ -172,3 +320,23 @@ class Browser:
                     asyncio.run(self.close())
         except Exception as e:
             logger.debug(f'Failed to cleanup browser in destructor: {e}')
+
+    async def cleanup_httpx_clients(self):
+        """Cleanup all httpx clients"""
+        import gc
+
+        import httpx
+
+        # Force garbage collection to make sure all clients are in memory
+        gc.collect()
+
+        # Get all httpx clients
+        clients = [obj for obj in gc.get_objects() if isinstance(obj, httpx.AsyncClient)]
+
+        # Close all clients
+        for client in clients:
+            if not client.is_closed:
+                try:
+                    await client.aclose()
+                except Exception as e:
+                    logger.debug(f'Error closing httpx client: {e}')

@@ -9,6 +9,7 @@ from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
 
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
 from superagentx.computer_use.browser.state import BrowserState
+from superagentx.utils.models import ToastConfig
 
 # Define generic type variables for return type and parameters
 R = TypeVar('R')
@@ -119,7 +120,14 @@ async def log_response(result: dict):
     logger.info(f"Action {result.get('action')}")
 
 
-async def show_toast(page, message: str, duration: int = 3000):
+async def show_toast(
+        page: Any,
+        message: str,
+        duration: int = 3000,
+        toast_config: ToastConfig | None = None
+):
+    if not toast_config:
+        toast_config = ToastConfig()
     import playwright._impl._errors
 
     icons = ['🚀', '🔥', '💡', '⭐']
@@ -131,6 +139,7 @@ async def show_toast(page, message: str, duration: int = 3000):
     else:
         final_message = ''
 
+    font_size = toast_config.font_size
     toast_script = f"""
     (() => {{
         const message = `{final_message}`;
@@ -138,15 +147,15 @@ async def show_toast(page, message: str, duration: int = 3000):
         toast.innerText = message;
 
         const screenWidth = window.innerWidth;
-        const fontSize = screenWidth > 1920 ? '22px' : screenWidth > 1280 ? '20px' : '18px';
+        const fontSize = screenWidth > 1920 ? '{font_size}px' : screenWidth > 1280 ? '{font_size-2}px' : '{font_size-4}px';
         const padding = screenWidth > 1920 ? '20px 30px' : screenWidth > 1280 ? '18px 26px' : '16px 24px';
 
         toast.style.position = 'fixed';
         toast.style.top = '40px';
         toast.style.left = '50%';
         toast.style.transform = 'translateX(-50%)';
-        toast.style.background = 'linear-gradient(45deg, #ff6ec4, #7873f5)';
-        toast.style.color = 'white';
+        toast.style.background = '{toast_config.background}';
+        toast.style.color = '{toast_config.color}';
         toast.style.padding = padding;
         toast.style.borderRadius = '16px';
         toast.style.fontSize = fontSize;

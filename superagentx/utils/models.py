@@ -9,3 +9,9 @@ class InputTextParams(BaseModel):
 
 class GoToUrl(BaseModel):
     url: str
+
+
+class ToastConfig(BaseModel):
+    font_size: int = 22
+    background: str = 'linear-gradient(45deg, #ff6ec4, #7873f5)'
+    color: str = 'white'
