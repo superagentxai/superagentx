@@ -9,7 +9,7 @@ from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
 
 from superagentx.computer_use.browser.models import StepInfo, ToolResult
 from superagentx.computer_use.browser.state import BrowserState
-from superagentx.utils.models import ToastConfig
+from superagentx.computer_use.browser.models import ToastConfig
 
 # Define generic type variables for return type and parameters
 R = TypeVar('R')

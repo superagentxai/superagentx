@@ -25,7 +25,7 @@ from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
-from superagentx.utils.models import InputTextParams, GoToUrl, ToastConfig
+from superagentx.computer_use.browser.models import InputTextParams, GoToUrl, ToastConfig
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +93,7 @@ class BrowserEngine(BaseEngine):
                 )
         self.sensitive_data = sensitive_data
         self.toast_config = toast_config
+        self.previous_state = None
 
     async def __funcs_props(
             self,
@@ -243,6 +244,7 @@ class BrowserEngine(BaseEngine):
     async def _execute(self) -> list:
         result = None
         results = []
+        counter = 0
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
             await asyncio.sleep(1)
@@ -251,6 +253,17 @@ class BrowserEngine(BaseEngine):
             step_info = StepInfo(step_number=step, max_steps=self.max_steps)
             state_msg = await get_user_message(state=state, step_info=step_info, action_result=result)
             self.msgs.append(state_msg)
+
+            if self.previous_state == state:
+                print(f"Yes============================")
+                counter += 1
+                if counter <= 3:
+                    _retry_fail = {
+                        "role": "user",
+                        "content": f"Tried this step {counter} times. So done the proces and say the reason."
+                    }
+            else:
+                self.previous_state = state
 
             chat_completion_params = ChatCompletionParams(
                 messages=self.msgs,
@@ -279,6 +292,7 @@ class BrowserEngine(BaseEngine):
                 page=page,
                 current_state=current_state
             )
+
             if result:
                 _result = result[0]
                 if _result.is_done:
