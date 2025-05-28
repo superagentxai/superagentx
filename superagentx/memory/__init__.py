@@ -11,7 +11,7 @@ from superagentx.memory.base import MemoryBase, MemoryItem
 from superagentx.memory.config import MemoryConfig
 from superagentx.memory.storage import SQLiteManager
 from superagentx.utils.helper import iter_to_aiter
-from superagentx.vector_stores import ChromaDB
+from superagentx.vector_stores.chroma import ChromaDB
 from superagentx.vector_stores.base import BaseVectorStore
 from superagentx.constants import DATE_TIME_FORMAT
 

@@ -4,20 +4,14 @@ import os
 import typing
 from typing import List
 
-import boto3
-from botocore.config import Config
-from ollama import AsyncClient
-from ollama import Client as OllamaCli
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
-from superagentx.llm.bedrock import BedrockClient
 from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED
 )
 from superagentx.llm.models import ChatCompletionParams
-from superagentx.llm.ollama import OllamaClient
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
 from superagentx.llm.types.response import Message, Tool
@@ -130,7 +124,11 @@ class LLMClient:
             embed_model=self.llm_config_model.embed_model
         )
 
-    def _init_bedrock_cli(self, **kwargs) -> BedrockClient:
+    def _init_bedrock_cli(self, **kwargs):
+        import boto3
+        from botocore.config import Config
+        from superagentx.llm.bedrock import BedrockClient
+
         aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
 
         if not aws_region:
@@ -166,6 +164,10 @@ class LLMClient:
         )
 
     def _init_ollama_cli(self, **kwargs):
+        from ollama import AsyncClient
+        from ollama import Client as OllamaCli
+        from superagentx.llm.ollama import OllamaClient
+
         host = kwargs.get("host", None) or os.getenv("OLLAMA_HOST")
 
         # Async & Sync Ollama Cli

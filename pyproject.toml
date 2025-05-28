@@ -1,6 +1,6 @@
 [project]
 name = "superagentx"
-version = "0.1.18.3c-2"
+version = "0.1.18.3b3"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = { text = "MIT" }
 authors = [
@@ -16,24 +16,23 @@ requires-python = ">=3.12,<=3.13"
 
 dependencies = [
     "pydantic>=2.8.2",
-    "boto3>=1.35.8",
     "openai>=1.47.1",
     "exa-py>=1.1.4",
     "aiohttp>=3.10.8",
     "rich>=13.9.2",
-    "protobuf>=3.20.3",
     "aiosqlite>=0.20.0",
     "websockets>=13.1",
     "aiofiles>=24.1.0",
-    "ollama>=0.4.7",
     "camel-converter>=4.0.1",
     "yapf (>=0.43.0,<0.44.0)",
-    "fastembed (>=0.6.0,<0.7.0)",
     "httpx (>=0.28.1,<0.29.0)",
     "mcp (>=1.7.0,<2.0.0)",
     "aiopath (==0.7.7)",
     "markdownify (>=1.1.0)",
-    "psutil (>=7.0.0 )"
+    "psutil (>=7.0.0 )",
+    "playwright (>=1.52.0)",
+    "pyyaml (>=6.0.2)",
+    "importlib-resources (>=6.5.2)"
 ]
 
 [project.urls]
@@ -67,8 +66,12 @@ opensearch-py = "^2.8.0"
 scipy = "^1.15.3"
 elasticsearch = "^9.0.1"
 numpy = "^2.2.6"
+ollama = "^0.4.7"
+fastembed = "^0.6.0"
 chromadb = "^1.0.10"
 opentelemetry-exporter-otlp-proto-grpc = "^1.33.1"
+boto3 = "^1.35.8"
+
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

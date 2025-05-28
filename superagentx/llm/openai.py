@@ -6,7 +6,6 @@ from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types import CreateEmbeddingResponse
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
-from fastembed import TextEmbedding
 from pydantic import typing
 
 from superagentx.llm import ChatCompletionParams
@@ -40,7 +39,9 @@ class OpenAIClient(Client):
         self.client = client
         self.llm_params: dict = kwargs
         self.llm_type = kwargs.get("llm_type")
-        self._embed_model_cli = TextEmbedding()
+        if self.llm_type == LLMType.DEEPSEEK or self.llm_type == LLMType.ANTHROPIC_CLIENT:
+            from fastembed import TextEmbedding
+            self._embed_model_cli = TextEmbedding()
         if (
                 not isinstance(self.client, OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI)
                 and not str(client.base_url).startswith(_OPEN_API_BASE_URL_PREFIX)
