@@ -347,7 +347,7 @@ system detects that human action is required:
 
     - Always break the wait into intervals (e.g., 60 seconds) and check for page state changes between intervals.
     
-    - If need Authenticator, wait 10 seconds
+    - If need Authenticator, wait 20 seconds
 
     - Example:
 

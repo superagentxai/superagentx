@@ -505,7 +505,7 @@ class BrowserContext:
             if context.pages and not self.browser.config.headless:
                 for page in context.pages:
                     await self.set_viewport_size(page)
-        elif self.browser.config.browser_instance_path and len(
+        elif self.browser.config.chrome_instance_path and len(
                 browser.contexts) > 0 and not self.config.force_new_context:
             # Connect to existing Chrome instance instead of creating new one
             context = browser.contexts[0]
