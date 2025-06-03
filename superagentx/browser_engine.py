@@ -94,6 +94,7 @@ class BrowserEngine(BaseEngine):
         self.sensitive_data = sensitive_data
         self.toast_config = toast_config
         self.previous_state = None
+        self.extract_result = []
 
     async def __funcs_props(
             self,
@@ -220,6 +221,8 @@ class BrowserEngine(BaseEngine):
                                 )
                                 _engine_res = await func(**_kwargs)
                             _value = list(_kwargs.values())
+                            if tool_name == "extract_content":
+                                self.extract_result.append(_engine_res)
                             if _engine_res.extracted_content:
                                 result = [ToolResult(
                                     extracted_content=_engine_res.extracted_content
@@ -246,12 +249,18 @@ class BrowserEngine(BaseEngine):
         result = None
         results = []
         counter = 0
+        self.extract_result = []
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
             await asyncio.sleep(1)
             state = await self.browser_context.get_state(cache_clickable_elements_hashes=True)
             page = await self.browser_context.get_current_page()
             step_info = StepInfo(step_number=step, max_steps=self.max_steps)
+            if self.extract_result:
+                self.msgs.append({
+                    "role": "user",
+                    "content": f"Step {step-1} Result: {self.extract_result}"
+                })
             state_msg = await get_user_message(state=state, step_info=step_info, action_result=result)
             self.msgs.append(state_msg.get('msg'))
             if self.previous_state == state_msg.get('element_text'):

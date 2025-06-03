@@ -99,7 +99,7 @@ class BrowserConfig(BaseModel):
     cdp_url: str | None = None
 
     browser_type: Literal['chromium', 'firefox', 'webkit'] = 'chromium'
-    browser_instance_path: str | None = Field(
+    chrome_instance_path: str | None = Field(
         default=None
     )
     chrome_remote_debugging_port: int | None = CHROME_DEBUG_PORT
@@ -175,7 +175,7 @@ class Browser:
 
     async def _setup_browser_with_instance(self, playwright: Playwright) -> PlaywrightBrowser:
         """Sets up and returns a Playwright Browser instance with anti-detection measures."""
-        if not self.config.browser_instance_path:
+        if not self.config.chrome_instance_path:
             raise ValueError('A browser_binary_path is required')
 
         assert self.config.browser_type == 'chromium', (
@@ -186,27 +186,38 @@ class Browser:
             # Check if browser is already running
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    f'http://localhost:{self.config.chrome_remote_debugging_port}/json/version', timeout=2
+                    f'http://127.0.0.1:{self.config.chrome_remote_debugging_port}/json/version', timeout=2
                 )
                 if response.status_code == 200:
                     logger.info(
-                        f'🔌  Reusing existing browser found running on http://localhost:{self.config.chrome_remote_debugging_port}'
+                        f'🔌  Reusing existing browser found running on http://127.0.0.1:{self.config.chrome_remote_debugging_port}'
                     )
                     browser_class = getattr(playwright, self.config.browser_type)
                     browser = await browser_class.connect_over_cdp(
-                        endpoint_url=f'http://localhost:{self.config.chrome_remote_debugging_port}',
+                        endpoint_url=f'http://127.0.0.1:{self.config.chrome_remote_debugging_port}',
                         timeout=20000,  # 20 second timeout for connection
                     )
                     return browser
         except httpx.RequestError:
             logger.debug('🌎  No existing Chrome instance found, starting a new one')
 
+        chrome_launch_args = [
+            *{  # remove duplicates (usually preserves the order, but not guaranteed)
+                f'--remote-debugging-port={self.config.chrome_remote_debugging_port}',
+                *CHROME_ARGS,
+                *(CHROME_DOCKER_ARGS if IN_DOCKER else []),
+                *(CHROME_HEADLESS_ARGS if self.config.headless else []),
+                *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),
+                *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),
+                *self.config.extra_browser_args,
+            },
+        ]
         chrome_sub_process = await asyncio.create_subprocess_exec(
-            self.config.browser_instance_path,
-            '--remote-debugging-port=9222',
-            *self.config.extra_chromium_args,
-            stdout=asyncio.subprocess.DEVNULL,
-            stderr=asyncio.subprocess.DEVNULL,
+            self.config.chrome_instance_path,
+            *chrome_launch_args,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            shell=False,
         )
         self._chrome_subprocess = psutil.Process(chrome_sub_process.pid)
 
@@ -239,7 +250,7 @@ class Browser:
 
     async def _setup_builtin_browser(self, playwright: Playwright) -> PlaywrightBrowser:
         """Sets up and returns a Playwright Browser instance with anti-detection measures."""
-        assert self.config.browser_instance_path is None, 'browser_binary_path should be None if trying to use the builtin browsers'
+        assert self.config.chrome_instance_path is None, 'browser_binary_path should be None if trying to use the builtin browsers'
 
         # Use the configured window size from new_context_config if available
         # if (
@@ -296,7 +307,6 @@ class Browser:
         }
 
         browser = await browser_class.launch(
-            channel='chromium',  # https://github.com/microsoft/playwright/issues/33566
             headless=self.config.headless,
             args=args[self.config.browser_type],
             proxy=self.config.proxy.model_dump() if self.config.proxy else None,
@@ -310,7 +320,7 @@ class Browser:
         try:
             if self.config.browser_type != "chromium" and (
 
-                    self.config.cdp_url or self.config.wss_url or self.config.browser_instance_path):
+                    self.config.cdp_url or self.config.wss_url or self.config.chrome_instance_path):
                 raise ValueError("CDP/WSS/Instance path options are only supported for Chromium.")
             if self.config.cdp_url:
                 return await self._setup_cdp(playwright)
@@ -321,7 +331,7 @@ class Browser:
                 logger.warning(
                     '⚠️ Headless mode is not recommended. Many sites will detect and block all headless browsers.')
 
-            if self.config.browser_instance_path:
+            if self.config.chrome_instance_path:
                 return await self._setup_browser_with_instance(playwright)
             else:
                 return await self._setup_builtin_browser(playwright)
