@@ -249,8 +249,7 @@ class BrowserEngine(BaseEngine):
         result = None
         results = []
         counter = 0
-        if self.extract_result:
-            self.extract_result = []
+        self.extract_result = []
         async for step in iter_to_aiter(range(self.max_steps)):
             logger.info(f'Step {self.n_steps}')
             await asyncio.sleep(1)
