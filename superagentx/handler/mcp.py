@@ -1,6 +1,7 @@
 import inspect
 import logging
 import re
+import tempfile
 from contextlib import AsyncExitStack
 from typing import Any, List, Optional, Callable
 
@@ -64,7 +65,7 @@ async def create_function_from_tool(mcp_tool: Tool) -> Callable:
         else:
             optional_params.append(param)
 
-    parameters = required_params + optional_params  # Required before optional
+    parameters = required_params + optional_params  # ✅ Required before optional
     annotations['return'] = Any
 
     signature = inspect.Signature(parameters)
@@ -127,6 +128,7 @@ class MCPHandler(BaseHandler):
 
         # Internal context for managing streams (used later for tracking I/O)
         self._streams_context = None
+        self.tmp = tempfile.NamedTemporaryFile()
 
     async def connect_to_mcp_server(self) -> ClientSession:
         """
@@ -145,10 +147,13 @@ class MCPHandler(BaseHandler):
             env=self.env
 
         )
-
+        logger.debug(f"Error log file path {self.tmp}")
         # Establish stdio transport and register it with the exit stack
         stdio_transport = await self.exit_stack.enter_async_context(
-            stdio_client(server_params, errlog=open("temp.txt", "wb+"))
+            stdio_client(
+                server_params,
+                errlog=open(f"{self.tmp.name.rstrip('/')}temp.txt", "wb+")
+            )
         )
 
         # Unpack the stdio reader and writer
