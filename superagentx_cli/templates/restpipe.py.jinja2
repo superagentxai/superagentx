@@ -42,8 +42,8 @@ async def search(query: str) -> list[GoalResult]:
 # To Run this, please install `pip install 'fastapi[standard]'`
 
 # Development Mode
-fastapi dev superagentx_examples/ecom/ecom_fastapi.py
+fastapi dev {{ app_name }}/{{ package_name }}/rest_pipe.py
 
 # Server Mode
-fastapi run superagentx_examples/ecom/ecom_fastapi.py
+fastapi run {{ app_name }}/{{ package_name }}/rest_pipe.py
 """{{'\n'}}
