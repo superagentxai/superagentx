@@ -52,6 +52,12 @@ cli = [
     "yapf>=0.43.0"
 ]
 all =[
+    # Cli
+    "jinja2>=3.1.4",
+    "typer>=0.13.0",
+    "rich>=13.9.2",
+    "yapf>=0.43.0",
+    # All
     "bokeh>=3.7.3",
     "neo4j>=5.28.1",
     "opensearch-py>=2.8.0",
