@@ -1,6 +1,6 @@
 [project]
 name = "superagentx"
-version = "0.1.18.4"
+version = "0.1.18.5"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = { text = "MIT" }
 authors = [
