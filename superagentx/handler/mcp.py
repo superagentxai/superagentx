@@ -6,7 +6,6 @@ from contextlib import AsyncExitStack
 from typing import Any, List, Optional, Callable
 
 from mcp import StdioServerParameters, ClientSession
-from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
 from mcp.types import ListToolsResult, Tool
 
@@ -128,7 +127,6 @@ class MCPHandler(BaseHandler):
 
         # Internal context for managing streams (used later for tracking I/O)
         self._streams_context = None
-        self.tmp = tempfile.NamedTemporaryFile()
 
     async def connect_to_mcp_server(self) -> ClientSession:
         """
@@ -147,14 +145,14 @@ class MCPHandler(BaseHandler):
             env=self.env
 
         )
-        logger.debug(f"Error log file path {self.tmp}")
         # Establish stdio transport and register it with the exit stack
-        stdio_transport = await self.exit_stack.enter_async_context(
-            stdio_client(
-                server_params,
-                errlog=open(f"{self.tmp.name.rstrip('/')}temp.txt", "wb+")
+        with tempfile.TemporaryFile(mode='+wb') as fp:
+            stdio_transport = await self.exit_stack.enter_async_context(
+                stdio_client(
+                    server_params,
+                    errlog=fp
+                )
             )
-        )
 
         # Unpack the stdio reader and writer
         self.stdio, self.write = stdio_transport
