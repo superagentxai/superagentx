@@ -987,7 +987,7 @@ class BrowserContext:
         cache_clickable_elements_hashes: bool
             If True, cache the clickable elements hashes for the current state. This is used to calculate which elements are new to the llm (from last message) -> reduces token usage.
         """
-        await self._wait_for_page_and_frames_load()
+        await self._wait_for_page_and_frames_load(timeout_overwrite=1)
         session = await self.get_session()
         updated_state = await self._get_updated_state()
 
@@ -1029,6 +1029,7 @@ class BrowserContext:
 
         # Check if current page is still valid, if not switch to another available page
         try:
+            await asyncio.sleep(2)
             page = await self.get_current_page()
             # Test if page is still accessible
             await page.evaluate('1')
