@@ -335,6 +335,21 @@ class BrowserEngine(BaseEngine):
                     await self.browser.close()
                     results.append(res)
                     return results
+        _text = (f"The maximum allowed steps ({self.max_steps}) have been reached. The browser was unable to "
+                 f"complete your task.")
+        await show_toast(
+            page=await self.browser_context.get_current_page(),
+            message=_text,
+            toast_config=self.toast_config
+        )
+        await self.browser_context.close()
+        await self.browser.close()
+        res = {
+            "done": "Fail",
+            "text": _text
+        }
+        results.append(res)
+        return results
 
     async def start(
             self,
