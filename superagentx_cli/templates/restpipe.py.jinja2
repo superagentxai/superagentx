@@ -22,8 +22,8 @@ async def lifespan(app: FastAPI):
 ecom_app = FastAPI(
     title='{{ app_name }} Search',
     lifespan=lifespan,
-    docs_url='/rest/docs',
-    openapi_url='/rest/openapi.json'
+    docs_url='/app/rest/docs',
+    openapi_url='/app/rest/openapi.json'
 )
 
 
@@ -34,7 +34,12 @@ async def verify_api_token(
         raise HTTPException(status_code=401, detail='Invalid API Token!')
 
 
-@ecom_app.get('/rest/search', dependencies=[Depends(verify_api_token)])
+@ecom_app.get('/app/rest/health')
+async def index():
+    return {"name": '{{ app_name }} Search SuperagentX App'}
+
+
+@ecom_app.get('/app/rest/search', dependencies=[Depends(verify_api_token)])
 async def search(query: str) -> list[GoalResult]:
     {{ pipe_name }}_pipe: AgentXPipe = pipes.get('{{ pipe_name }}_pipe')
     return await {{ pipe_name }}_pipe.flow(query_instruction=query)
