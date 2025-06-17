@@ -86,6 +86,10 @@ class ChatCompletionParams(BaseModel):
         description='Uses nucleus sampling; considers tokens with top_p probability mass.',
         default=None
     )
+    top_k: float | None = Field(
+        description='Changes how the model selects tokens for output. This applicable for Gemini models!',
+        default=None
+    )
     tools: list[dict] | None = Field(
         description='Lists functions the model may call.',
         default=None
