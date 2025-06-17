@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import time
@@ -110,18 +111,43 @@ class GeminiClient(Client):
         """"
             Converts a list of messages into the necessary prompt format for the model.
         """
-        formatted_user_messages = []
-        formatted_system_message = None
+        formatted_user_messages: list[str] = []
+        formatted_system_message: Any | None = None
+        image_data: list[str] = []
+
         for conversation in contents:
             role = conversation.role
-            if role == 'user' or role == 'assistant':
-                formatted_user_messages.append(conversation.content)
-            elif role == 'system':
-                if not formatted_system_message:
-                    if conversation.content:
-                        formatted_system_message = conversation.content
+            content = conversation.content
 
-        return formatted_user_messages, formatted_system_message
+            if role == 'user' or role == 'assistant':
+                if isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, dict):
+                            # Assuming the dictionary might contain 'type', 'text', or 'image_url' keys
+                            if 'image_url' in item:
+                                image_data.append(str(item['image_url']))
+                            elif 'text' in item:
+                                formatted_user_messages.append(str(item['text']))
+                            else:
+                                # Handle other potential dictionary structures within the list if needed
+                                for value in item.values():
+                                    formatted_user_messages.append(str(value))
+                        else:
+                            formatted_user_messages.append(str(item))
+                elif isinstance(content, dict):
+                    # Assuming simple key-value pairs where values are relevant
+                    for value in content.values():
+                        formatted_user_messages.append(str(value))
+                else:
+                    formatted_user_messages.append(str(content))
+            elif role == 'system':
+                if not formatted_system_message and content:
+                    formatted_system_message = content
+
+        if image_data:
+            return ["\n".join(formatted_user_messages), "\n\n".join(image_data)], formatted_system_message
+        else:
+            return formatted_user_messages, formatted_system_message
 
     @staticmethod
     def convert_gemini_response_to_openai_chat_completion(response: types.GenerateContentResponse,
