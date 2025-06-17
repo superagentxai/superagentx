@@ -1,11 +1,11 @@
 import inspect
 import logging
 import re
+import tempfile
 from contextlib import AsyncExitStack
 from typing import Any, List, Optional, Callable
 
 from mcp import StdioServerParameters, ClientSession
-from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
 from mcp.types import ListToolsResult, Tool
 
@@ -43,23 +43,30 @@ async def create_function_from_tool(mcp_tool: Tool) -> Callable:
     props = mcp_tool.inputSchema.get("properties")
     required = set(mcp_tool.inputSchema.get("required", []))
 
-    parameters = []
+    required_params = []
+    optional_params = []
     annotations = {}
 
     for name, schema in props.items():
         param_type = await infer_type(schema)
-        annotations[name] = param_type
+        is_required = name in required
+        annotations[name] = param_type if is_required else Optional[param_type]
 
-        # Build parameter with or without default
         param = inspect.Parameter(
             name=name,
             kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            annotation=param_type if name in required else Optional[param_type],
-            default=inspect.Parameter.empty if name in required else schema.get("default", None)
+            annotation=annotations[name],
+            default=inspect.Parameter.empty if is_required else schema.get("default", None)
         )
-        parameters.append(param)
 
+        if is_required:
+            required_params.append(param)
+        else:
+            optional_params.append(param)
+
+    parameters = required_params + optional_params  # ✅ Required before optional
     annotations['return'] = Any
+
     signature = inspect.Signature(parameters)
 
     # Define a placeholder function and assign metadata
@@ -138,11 +145,14 @@ class MCPHandler(BaseHandler):
             env=self.env
 
         )
-
         # Establish stdio transport and register it with the exit stack
-        stdio_transport = await self.exit_stack.enter_async_context(
-            stdio_client(server_params)
-        )
+        with tempfile.TemporaryFile(mode='+wb') as fp:
+            stdio_transport = await self.exit_stack.enter_async_context(
+                stdio_client(
+                    server_params,
+                    errlog=fp
+                )
+            )
 
         # Unpack the stdio reader and writer
         self.stdio, self.write = stdio_transport

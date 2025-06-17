@@ -1,6 +1,6 @@
 [project]
 name = "superagentx"
-version = "0.1.18.3b3"
+version = "0.1.18.5"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = { text = "MIT" }
 authors = [
@@ -45,7 +45,31 @@ superagentx-cli = "superagentx_cli.main:app"
 superagentx-app = "superagentx_cli.cli_app:app"
 
 [project.optional-dependencies]
-cli = [ "jinja2>=3.1.4", "typer>=0.13.0", "rich>=13.9.2", "yapf>=0.43.0" ]
+cli = [
+    "jinja2>=3.1.4",
+    "typer>=0.13.0",
+    "rich>=13.9.2",
+    "yapf>=0.43.0"
+]
+all =[
+    # Cli
+    "jinja2>=3.1.4",
+    "typer>=0.13.0",
+    "rich>=13.9.2",
+    "yapf>=0.43.0",
+    # All
+    "bokeh>=3.7.3",
+    "neo4j>=5.28.1",
+    "opensearch-py>=2.8.0",
+    "scipy>=1.15.3",
+    "elasticsearch>=9.0.1",
+    "numpy>=2.2.6",
+    "ollama>=0.4.7",
+    "fastembed>=0.6.0",
+    "chromadb>=1.0.10",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.33.1",
+    "boto3>=1.35.8"
+]
 
 [tool.poetry]
 packages = [
@@ -56,22 +80,6 @@ packages = [
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
 pytest-asyncio = "^0.24.0"
-
-
-
-[tool.poetry.group.all.dependencies]
-bokeh = "^3.7.3"
-neo4j = "^5.28.1"
-opensearch-py = "^2.8.0"
-scipy = "^1.15.3"
-elasticsearch = "^9.0.1"
-numpy = "^2.2.6"
-ollama = "^0.4.7"
-fastembed = "^0.6.0"
-chromadb = "^1.0.10"
-opentelemetry-exporter-otlp-proto-grpc = "^1.33.1"
-boto3 = "^1.35.8"
-
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
