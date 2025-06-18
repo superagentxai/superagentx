@@ -11,7 +11,6 @@ from superagentx.exceptions import InvalidType
 from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_EMBED, DEFAULT_GEMINI_EMBED
 )
-from superagentx.llm.gemini import GeminiClient
 
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.openai import OpenAIClient
@@ -104,7 +103,8 @@ class LLMClient:
             llm_type=self.llm_config_model.llm_type
         )
 
-    def __init_gemini_cli(self, **kwargs) -> GeminiClient:
+    def __init_gemini_cli(self, **kwargs):
+        from superagentx.llm.gemini import GeminiClient
 
         # Set the parameters from pydantic model class or from environment variables.
         api_key = self.llm_config_model.api_key or os.getenv("GEMINI_API_KEY")
