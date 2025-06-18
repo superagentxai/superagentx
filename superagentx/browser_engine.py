@@ -191,7 +191,7 @@ class BrowserEngine(BaseEngine):
                     if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                         logger.debug(f'Checking tool function : {self.handler.__class__}.{tool_name}')
                         _kwargs = tool.get(tool_name) or {}
-                        if self.sensitive_data and (tool_name == "go_to_url" or tool_name == "open_new_tab"):
+                        if self.sensitive_data and tool_name in ("go_to_url", "open_new_tab"):
                             validated_params = GoToUrl(**_kwargs)
                             _kwargs = await sync_to_async(
                                 self._replace_sensitive_data,
@@ -293,52 +293,60 @@ class BrowserEngine(BaseEngine):
                     return results
                 res = messages[0].content
                 res = await sync_to_async(manipulate_string, res)
-                res = json.loads(res)
-                await log_response(res)
-                await self._remove_last_state_message(self.msgs)
-                self.msgs.append({
-                    "role": "assistant",
-                    "content": f"{res}"
-                })
-                logger.info(f"Response: {res}")
-                actions = res.get("action")
-                current_state = res.get("current_state")
-                result = await self._action_execute(
-                    actions=actions,
-                    page=page,
-                    current_state=current_state
-                )
+                try:
+                    res = json.loads(res)
+                    await log_response(res)
+                    await self._remove_last_state_message(self.msgs)
+                    self.msgs.append({
+                        "role": "assistant",
+                        "content": f"{res}"
+                    })
+                    logger.info(f"Response: {res}")
+                    actions = res.get("action")
+                    current_state = res.get("current_state")
+                    result = await self._action_execute(
+                        actions=actions,
+                        page=page,
+                        current_state=current_state
+                    )
 
-                if result:
-                    _result = result[0]
-                    if _result.is_done:
-                        response = res.get("action", [])[0].get("done", {}).get("text")
-                        if isinstance(response, (list, dict)):
-                            response = f"Process Success Executed"
-                        await show_toast(
-                            page=page,
-                            message=response,
-                            duration=4000,
-                            toast_config=self.toast_config
-                        )
-                        await asyncio.sleep(4)
-                        if self.screenshot_path:
-                            file_path = aiopath.Path(self.screenshot_path)
-                            if await file_path.is_dir():
-                                file_path = f"{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.jpg"
-                            await self.browser_context.take_screenshot(
-                                path=file_path
-                            )
+                    if result:
+                        _result = result[0]
+                        if _result.is_done:
+                            response = res.get("action", [])[0].get("done", {}).get("text")
+                            if isinstance(response, (list, dict)):
+                                response = f"Process Success Executed"
                             await show_toast(
-                                page=await self.browser_context.get_current_page(),
-                                message="Screen Captured",
+                                page=page,
+                                message=response,
+                                duration=4000,
                                 toast_config=self.toast_config
                             )
-                            await asyncio.sleep(2)
-                        await self.browser_context.close()
-                        await self.browser.close()
-                        results.append(res)
-                        return results
+                            await asyncio.sleep(4)
+                            if self.screenshot_path:
+                                file_path = aiopath.Path(self.screenshot_path)
+                                if await file_path.is_dir():
+                                    file_path = f"{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.jpg"
+                                await self.browser_context.take_screenshot(
+                                    path=file_path
+                                )
+                                await show_toast(
+                                    page=await self.browser_context.get_current_page(),
+                                    message="Screen Captured",
+                                    toast_config=self.toast_config
+                                )
+                                await asyncio.sleep(2)
+                            await self.browser_context.close()
+                            await self.browser.close()
+                            results.append(res)
+                            return results
+                except json.JSONDecodeError as ex:
+                    _msg = f"Fix This error. {ex}\n\n{res}"
+                    self.msgs.append({
+                        "role": "user",
+                        "content": _msg
+                    })
+
             _text = (f"The maximum allowed steps ({self.max_steps}) have been reached. The browser was unable to "
                      f"complete your task.")
             await show_toast(
@@ -363,7 +371,6 @@ class BrowserEngine(BaseEngine):
             }
             results.append(res)
 
-
     async def start(
             self,
             input_prompt: str,
@@ -384,8 +391,9 @@ class BrowserEngine(BaseEngine):
         if self.sensitive_data:
             info = (f'\nAutologin Instruction:\n\nHere are placeholders for sensitive data: '
                     f'{list(self.sensitive_data.keys())} for the autologin.')
-            info += ('\nTo use them, write <secret>the placeholder name</secret> to do autologin and corresponding action'
-                     '. If password is wrong done the process.')
+            info += (
+                '\nTo use them, write <secret>the placeholder name</secret> to do autologin and corresponding action'
+                '. If password is wrong done the process.')
             msgs.append({
                 "role": "user",
                 "content": info
