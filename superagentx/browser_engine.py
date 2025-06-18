@@ -366,10 +366,13 @@ class BrowserEngine(BaseEngine):
             await self.browser_context.close()
             await self.browser.close()
             res = {
-                "done": "Fail",
-                "text": f"Browser Engine failed {ex}"
+                "done": {
+                    "status": "FAIL",
+                    "text": f"Browser Engine failed {ex}"
+                }
             }
             results.append(res)
+            return results
 
     async def start(
             self,
