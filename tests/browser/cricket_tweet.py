@@ -22,6 +22,7 @@ logging.basicConfig(
 
 async def main():
     llm_config = {'model': 'gpt-4o', 'llm_type': 'openai', 'async_mode': True}
+    llm_config = {'llm_type': 'gemini', 'model': 'gemini-2.0-flash'}
     # llm_config = {"model": 'anthropic.claude-3-5-haiku-20241022-v1:0', "llm_type": 'bedrock'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)

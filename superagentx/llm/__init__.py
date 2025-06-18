@@ -9,8 +9,10 @@ from openai.types.chat import ChatCompletion
 
 from superagentx.exceptions import InvalidType
 from superagentx.llm.constants import (
-    DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_ANTHROPIC_EMBED
+    DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_EMBED, DEFAULT_GEMINI_EMBED
 )
+from superagentx.llm.gemini import GeminiClient
+
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.openai import OpenAIClient
 from superagentx.llm.types.base import LLMModelConfig
@@ -61,6 +63,8 @@ class LLMClient:
                 self.client = self._init_azure_openai_cli()
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
+            case LLMType.GEMINI_CLIENT:
+                self.client = self.__init_gemini_cli(**kwargs)
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
@@ -98,6 +102,23 @@ class LLMClient:
             model=self.llm_config_model.model,
             embed_model=embed_model or DEFAULT_OPENAI_EMBED,
             llm_type=self.llm_config_model.llm_type
+        )
+
+    def __init_gemini_cli(self, **kwargs) -> GeminiClient:
+
+        # Set the parameters from pydantic model class or from environment variables.
+        api_key = self.llm_config_model.api_key or os.getenv("GEMINI_API_KEY")
+
+        from google import genai
+
+        cli = genai.Client(api_key=api_key)
+        # Set the embed model attribute
+        embed_model = self.llm_config_model.embed_model
+
+        return GeminiClient(
+            client=cli,
+            model=self.llm_config_model.model,
+            embed_model=embed_model or DEFAULT_GEMINI_EMBED,
         )
 
     def _init_azure_openai_cli(self) -> OpenAIClient:
