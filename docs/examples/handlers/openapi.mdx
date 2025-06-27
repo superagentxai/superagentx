@@ -16,7 +16,10 @@ import asyncio
 from superagentx.handler.openapi import OpenAPIHandler
 
 async def openapi_handler():
-    openapi_handler = OpenAPIHandler(base_url='https://petstore.swagger.io/v2/', spec_url_path='swagger.json')
+    openapi_handler = OpenAPIHandler(
+        base_url='https://petstore.swagger.io/v2/',
+        spec_url_path='swagger.json'
+    )
 
     return await openapi_handler.call_endpoint(
         endpoint="/pet/findByStatus",

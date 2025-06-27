@@ -1,0 +1,96 @@
+---
+title: 'EC2 Handler'
+icon: 'server'
+---
+
+The `AWSEC2Handler` class provides an easy and asynchronous way to interact with Amazon `EC2` services using the `boto3`
+library. It allows you to securely connect to your AWS account using either provided credentials or environment
+variables. Once connected, the handler can retrieve information about your EC2 instances, specifically those
+that are in a running or stopped state. By leveraging asynchronous execution, it ensures that fetching data
+from AWS does not block other operations in your application. This makes it a useful component for cloud-based
+tools or systems that need to monitor or manage EC2 instances efficiently and in real-time.
+
+
+```python ec2_handler.py
+from superagentx_handlers import AWSEC2Handler
+
+ec2_handler = AWSEC2Handler(
+        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        region_name="eu-central-1"
+)
+```
+
+### Get Instances:
+This module collects detailed information about EC2 instances, including their current state, instance type, AMI ID,
+tags, security groups, and IP addresses. It's useful for monitoring and managing your AWS infrastructure.
+
+```python
+async def get_ec2_instances():
+    result = await ec2_handler.get_ec2_instances()
+```
+
+### Security GroupS:
+This method tests the ability to fetch security group details from EC2 using the AWSEC2Handler. It runs asynchronously
+and ensures that the handler correctly retrieves information such as group names, IDs, and associated rules.
+
+```python
+async def get_ec2_security_groups():
+    result = await ec2_handler.get_ec2_security_groups()
+```
+
+### Volumes:
+This method tests the retrieval of EC2 volume details using the AWSEC2Handler. It runs asynchronously and verifies
+that information such as volume IDs, sizes, states, and attachment details is correctly fetched.
+
+```python
+async def get_ec2_volumes():
+    result = await ec2_handler.get_ec2_volumes()
+```
+
+### Amis:
+This method tests the retrieval of EC2 AMI (Amazon Machine Image) details using the AWSEC2Handler. It runs
+asynchronously and verifies that information such as AMI IDs, names, and creation dates is correctly fetched.
+
+```python
+async def get_ec2_amis():
+    result = await ec2_handler.get_ec2_amis()
+```
+
+### Snapshots:
+This method tests the retrieval of EC2 snapshot details using the AWSEC2Handler. It runs asynchronously and
+ensures that data such as snapshot IDs, associated volumes, sizes, and creation times is correctly fetched.
+
+```python
+async def get_ec2_snapshots():
+    result = await ec2_handler.get_ec2_snapshots()
+```
+
+### Key Pairs:
+This method tests the retrieval of EC2 key pair details using the AWSEC2Handler. It runs asynchronously and verifies
+that information such as key names and fingerprints is correctly fetched.
+
+```python
+async def get_ec2_key_pairs():
+    result = await ec2_handler.get_ec2_key_pairs()
+```
+
+### Network Interfaces:
+This method tests the retrieval of EC2 network interface details using the AWSEC2Handler. It runs asynchronously and
+ensures that data such as interface IDs, statuses, IP addresses, and attachment information is correctly fetched.
+
+
+```python
+async def get_ec2_network_interfaces():
+    result = await ec2_handler.get_ec2_network_interfaces()
+```
+
+### Collect All:
+This method tests the comprehensive collection of all EC2-related resources using the AWSEC2Handler. It runs
+asynchronously and verifies that instance details, volumes, snapshots, AMIs, security groups, key pairs, and network
+interfaces are all fetched correctly.
+
+```python
+async def collect_all_ec2():
+    result = await ec2_handler.collect_all_ec2()
+```
