@@ -30,12 +30,16 @@
         {
             "title": "Handler-1",
             "handlerName": "AIHandler",
-            "attributes": {},
+            "attributes": {
+                "llm": "\"LLM-1\""
+            },
             "srcPath": "superagentx.handler"
         },{
             "title": "Handler-2",
             "handlerName": "AIHandler",
-            "attributes": {},
+            "attributes": {
+                "llm": "\"LLM-1\""
+            },
             "srcPath": "superagentx.handler"
         }
     ],
