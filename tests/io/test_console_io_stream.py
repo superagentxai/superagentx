@@ -1,8 +1,10 @@
+import logging
 
 import pytest
+
 from superagentx.io.console import IOConsole
 from superagentx.utils.console_color import ConsoleColorType
-import logging
+
 logger = logging.getLogger(__name__)
 
 '''PyTest

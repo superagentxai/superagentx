@@ -1,13 +1,13 @@
 import asyncio
 import logging
+import warnings
 
 from rich import print as rprint
+
 from superagentx.agent import Agent
 from superagentx.browser_engine import BrowserEngine
-
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
-import warnings
 
 warnings.filterwarnings('ignore')
 
