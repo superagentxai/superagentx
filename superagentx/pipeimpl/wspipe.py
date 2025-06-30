@@ -1,6 +1,4 @@
-import asyncio
 import json
-import signal
 from collections.abc import Callable, Awaitable
 from json import JSONDecodeError
 
@@ -116,9 +114,6 @@ class WSPipe:
             None
         """
         self._console.rule(f'[bold blue]{self.search_name}')
-        loop = asyncio.get_running_loop()
-        stop = loop.create_future()
-        loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
         self._console.print(
             f'[bold yellow]:rocket: Starting SuperagentX websocket server\n'
             f':smiley: Host: {self.host}\n'
@@ -129,5 +124,5 @@ class WSPipe:
                 host=self.host,
                 port=self.port,
                 **self.kwargs
-        ):
-            await stop
+        ) as server:
+            await server.serve_forever()
