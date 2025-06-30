@@ -1,9 +1,10 @@
 import logging
+
 import pytest
 
 from superagentx.llm import LLMClient
-from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.gemini import GeminiClient
+from superagentx.llm.models import ChatCompletionParams
 
 logger = logging.getLogger(__name__)
 

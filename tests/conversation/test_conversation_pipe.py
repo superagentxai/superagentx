@@ -1,13 +1,16 @@
 import asyncio
 import uuid
+
 from rich import print as rprint
+
 from superagentx.agent import Agent
 from superagentx.agentxpipe import AgentXPipe
 from superagentx.engine import Engine
+from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
 from superagentx.memory import Memory
 from superagentx.prompt import PromptTemplate
-from superagentx.handler import AIHandler
+
 
 async def get_test_ai_handler_pipe() -> AgentXPipe:
     # LLM Configuration
