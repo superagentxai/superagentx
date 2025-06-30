@@ -1,5 +1,6 @@
-from superagentx.utils.helper import get_fstring_variables
 import logging
+
+from superagentx.utils.helper import get_fstring_variables
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,12 @@
 import datetime
+import logging
+import uuid
 
 import pytest
-import uuid
-import logging
-from superagentx.memory import Memory
+
 from superagentx.llm import LLMClient
 from superagentx.llm.models import ChatCompletionParams
+from superagentx.memory import Memory
 
 logger = logging.getLogger(__name__)
 

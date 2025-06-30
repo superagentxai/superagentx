@@ -1,8 +1,7 @@
 from openai.types.chat.chat_completion import ChatCompletion, ChatCompletionMessage
+
 from superagentx.llm import LLMClient
 from superagentx.llm.openai import ChatCompletionParams
-
-import json
 
 llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
 

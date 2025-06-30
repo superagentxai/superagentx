@@ -1,4 +1,5 @@
 import logging
+
 import pytest
 from openai.types.chat.chat_completion import ChatCompletion
 
