@@ -1,11 +1,11 @@
 import json
 from collections.abc import Callable, Awaitable
 from json import JSONDecodeError
-from urllib.parse import urlparse, parse_qs
 
 from rich.console import Console
 from websockets.asyncio.server import ServerConnection, serve
 from websockets.exceptions import ConnectionClosedOK
+
 from superagentx.agentxpipe import AgentXPipe
 
 
@@ -17,9 +17,9 @@ class WSPipe:
             search_name: str,
             agentx_pipe: AgentXPipe,
             ws_handler: Callable[[ServerConnection], Awaitable[None]] | None = None,
+            auth_handler: Callable[[ServerConnection], Awaitable[None]] | None = None,
             host: str | None = None,
             port: int | None = None,
-            valid_api_keys: list[str] | None = None,
             **kwargs
     ):
         """
@@ -34,6 +34,10 @@ class WSPipe:
             ws_handler: An optional callable that handles websocket connections. It takes a `ServerConnection`
                 instance as an argument and returns an awaitable that processes incoming messages or events.
                 If not provided, the WSPipe may use a default websocket handler.
+            auth_handler: An optional callable that handles authentication for websocket connections. It takes a
+                `ServerConnection` instance as an argument and returns boolean. If not provided, not authentication can
+                 happen to verify the connection. This only application for default `ws_handler`. Custom `ws_handler`
+                 can implement their own auth mechanism.
             host: The hostname or IP address of the websocket server where the agentxpipe will be running.
                 This parameter is important for establishing connections. Defaults to None, in which case the WSPipe
                 may use a predefined host or local address.
@@ -46,9 +50,9 @@ class WSPipe:
         self.search_name = search_name
         self.agentx_pipe = agentx_pipe
         self._ws_handler = ws_handler or self.default_handler
+        self._auth_handler = auth_handler
         self.host = host or 'localhost'
         self.port = port or 8765
-        self._valid_api_keys = set(valid_api_keys) if valid_api_keys else set()
         self.kwargs = kwargs
         self._console = Console()
         self._result_not_found = "No results found!"
@@ -58,6 +62,8 @@ class WSPipe:
             ws_conn: ServerConnection
     ) -> None:
         try:
+            if self._auth_handler and not await self._auth_handler(ws_conn):
+                return
             async for query in ws_conn:
                 r_as_json = False
                 try:
@@ -92,28 +98,6 @@ class WSPipe:
         except Exception as e:
             self._console.print(f"[bold red]Error in default_handler: {e}[/bold red]")
 
-    async def _authenticate_connection(self, ws_conn: ServerConnection) -> bool:
-        if not self._valid_api_keys:
-            return True  # No authentication required
-
-        parsed_url = urlparse(ws_conn.request.path)
-        query_params = parse_qs(parsed_url.query)
-        api_key_from_query = query_params.get('token', [None])[0]
-
-        if api_key_from_query in self._valid_api_keys:
-            self._console.print(f"[bold green]Client authenticated with API key: {api_key_from_query}[/bold green]")
-            return True
-        else:
-            self._console.print("[bold red]Authentication failed: Invalid or missing API key.[/bold red]")
-            await ws_conn.close(code=1008, reason="Authentication failed")
-            return False
-
-    async def authenticated_handler(self, ws_conn: ServerConnection) -> None:
-        if await self._authenticate_connection(ws_conn):
-            await self._ws_handler(ws_conn)
-        else:
-            self._console.print("Connection denied due to failed authentication.")
-
     async def start(self) -> None:
         """
         Starts the WebSocket server. If valid API keys are provided, enables authentication.
@@ -125,10 +109,8 @@ class WSPipe:
             f':smiley: Port: {self.port}'
         )
 
-        selected_handler = self.authenticated_handler if self._valid_api_keys else self._ws_handler
-
         async with serve(
-                handler=selected_handler,
+                handler=self._ws_handler,
                 host=self.host,
                 port=self.port,
                 **self.kwargs
