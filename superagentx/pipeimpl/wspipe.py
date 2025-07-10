@@ -22,6 +22,27 @@ class WSPipe:
             valid_api_keys: list[str] | None = None,
             **kwargs
     ):
+        """
+        Initializes the WSPipe with necessary parameters for configuring an agentxpipe that interacts with a specified
+        search mechanism and handles websocket connections.
+        Args:
+            search_name: The name of the search mechanism or service that the WSPipe will utilize. This name is used
+                to identify the search functionality within the broader system.
+            agentx_pipe: An instance of AgentXPipe that facilitates communication between the agent, engine and other
+                components of the system. This pipe is crucial for data transfer and message handling within the
+                agent's operational context.
+            ws_handler: An optional callable that handles websocket connections. It takes a `ServerConnection`
+                instance as an argument and returns an awaitable that processes incoming messages or events.
+                If not provided, the WSPipe may use a default websocket handler.
+            host: The hostname or IP address of the websocket server where the agentxpipe will be running.
+                This parameter is important for establishing connections. Defaults to None, in which case the WSPipe
+                may use a predefined host or local address.
+            port: The port number on which the WSPipe will listen for incoming connections. This is crucial for network
+                communication. Defaults to None, indicating that the WSPipe may use a standard port or a configured
+                setting.
+            kwargs: Additional keyword arguments that may be required for further customization or to pass additional
+                configuration websocket server.
+        """
         self.search_name = search_name
         self.agentx_pipe = agentx_pipe
         self._ws_handler = ws_handler or self.default_handler
