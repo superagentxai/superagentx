@@ -12,3 +12,4 @@ class GoalResult(BaseModel):
     error: str | None = None
     verify_goal: bool = True
     is_goal_satisfied: bool | None = None
+    engine_result: Any | None = None

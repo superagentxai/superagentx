@@ -300,9 +300,9 @@ class BrowserHandler(BaseHandler):
 
         prompt = ('Your task is to extract the content of the page. You will be given a page and a input and you should'
                   ' extract all relevant information around this input from the page. Respond in json format. '
-                  'Extraction input: {goal}')
+                  'Extraction input: {goal}\n\nPage: {page}')
         # template = PromptTemplate(input_variables=['goal', 'page'], template=prompt)
-        _prompt = prompt.format(goal=goal)
+        _prompt = prompt.format(goal=goal, page=content)
         messages = [
             {
                 "role": "system",
@@ -355,6 +355,17 @@ class BrowserHandler(BaseHandler):
         amount = f'{amount} pixels' if amount is not None else 'one page'
         msg = f'🔍  Scrolled down the page by {amount}'
         logger.info(msg)
+        return ToolResult(
+            extracted_content=msg,
+            include_in_memory=True,
+        )
+
+    @tool
+    async def take_screenshot(self):
+        """
+        To take the screenshot.
+        """
+        msg = "Take the screenshot"
         return ToolResult(
             extracted_content=msg,
             include_in_memory=True,
