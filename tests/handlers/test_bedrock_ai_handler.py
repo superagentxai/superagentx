@@ -1,7 +1,8 @@
-import pytest
 import logging
 
-from superagentx.handler import AIHandler
+import pytest
+
+from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
 
 logger = logging.getLogger(__name__)

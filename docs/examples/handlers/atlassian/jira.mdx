@@ -14,6 +14,7 @@ interact with Jira, making it easy to manage tasks, projects, and issues program
 
 To set up Confluence with email, token, and organization access, you can follow these steps in the given <a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account" target="_blank">link</a>.
 >Set up Email, Token and Organisation as an environmental variable and run the following code. <br />
+
  ```python
  export ATLASSIAN_EMAIL = "**********"
  export ATLASSIAN_TOKEN = "*************"
@@ -28,7 +29,11 @@ from superagentx_handlers.atlassian.jira import JiraHandler
 
 
 async def get_active_sprint():
-    jira_handler = JiraHandler()
+    jira_handler = JiraHandler(
+        email="<EMAIL>",
+        token="<TOKEN>",
+        organization="<ORGANIZATION>"
+    )
     return await jira_handler.get_active_sprint(
         board_id=1,
         start=0,

@@ -21,9 +21,16 @@ EMAIL_COMP = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
 
 def dict_to_kwargs(d: dict) -> list:
-    return [
-        f'{key}={"'" + val + "'" if isinstance(val, str) else val}' for key, val in d.items()
-    ]
+    _kwargs = []
+    for key, val in d.items():
+        if isinstance(val, str):
+            if val.startswith('"') and val.endswith('"'):
+                _kwargs.append(f'{key}={to_snake(val.replace('"', ''))}')
+            else:
+                _kwargs.append(f'{key}={"'" + val + "'"}')
+        else:
+            _kwargs.append(f'{key}={val}')
+    return _kwargs
 
 
 def str_to_obj_str(l: list) -> str:

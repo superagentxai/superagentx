@@ -6,8 +6,8 @@
         {
             "title": "LLM-1",
             "llmConfig": {
-                "llmType": "bedrock",
-                "model": "bedrock",
+                "llmType": "openai",
+                "model": "gpt-4o",
                 "apiKey": "string",
                 "baseUrl": "string",
                 "apiVersion": "string",
@@ -30,13 +30,17 @@
         {
             "title": "Handler-1",
             "handlerName": "AIHandler",
-            "attributes": {},
-            "srcPath": "superagentx.handler"
+            "attributes": {
+                "llm": "\"LLM-1\""
+            },
+            "srcPath": "superagentx.handler.ai"
         },{
             "title": "Handler-2",
             "handlerName": "AIHandler",
-            "attributes": {},
-            "srcPath": "superagentx.handler"
+            "attributes": {
+                "llm": "\"LLM-1\""
+            },
+            "srcPath": "superagentx.handler.ai"
         }
     ],
     "promptTemplateConfig": [

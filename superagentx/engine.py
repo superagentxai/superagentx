@@ -2,11 +2,10 @@ import inspect
 import logging
 import typing
 
-from mcp import ClientSession
-
 from superagentx.exceptions import ToolError
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.exceptions import InvalidHandler
+from superagentx.handler.mcp import MCPHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, sync_to_async, rm_trailing_spaces
@@ -148,8 +147,7 @@ class Engine:
         # Process each message returned by the LLM
         async for message in iter_to_aiter(messages):
             if message.tool_calls:
-                if getattr(self.handler, "__type__", None) == "MCP":
-
+                if isinstance(self.handler, MCPHandler):
                     # Special handling for MCP-based tools by SSE transport or Stdio transport
                     _func = self.handler.connect_to_mcp_server
                     if self.handler.sse_transport:
@@ -172,7 +170,8 @@ class Engine:
                                 args = tool.arguments or {}
                                 logger.debug(f"Calling {tool.name} with args {args}")
                                 result = await func(**args) if inspect.iscoroutinefunction(
-                                    func) else await sync_to_async(func, **args)
+                                    func
+                                ) else await sync_to_async(func, **args)
                                 parsed = await self.output_parser.parse(result) if self.output_parser else result
                                 results.append(parsed)
                             else:

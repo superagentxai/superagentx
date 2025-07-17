@@ -1,6 +1,6 @@
 [project]
 name = "superagentx"
-version = "0.1.18.9"
+version = "0.1.18.13"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = { text = "MIT" }
 authors = [
@@ -21,7 +21,7 @@ dependencies = [
     "aiohttp>=3.10.8",
     "rich>=13.9.2",
     "aiosqlite>=0.20.0",
-    "websockets>=13.1",
+    "websockets (>=15.0.1,<16.0.0)",
     "aiofiles>=24.1.0",
     "camel-converter>=4.0.1",
     "yapf (>=0.43.0,<0.44.0)",

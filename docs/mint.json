@@ -83,7 +83,9 @@
               "group": "AWS",
               "icon": "aws",
               "pages": [
-                "examples/handlers/aws/s3"
+                "examples/handlers/aws/s3",
+                "examples/handlers/aws/ec2",
+                "examples/handlers/aws/iam"
               ]
             },
             {
@@ -125,9 +127,6 @@
             "examples/handlers/visualization",
             "examples/handlers/weather",
             "examples/handlers/wikipedia"
-
-
-
       ]
     },
     {
