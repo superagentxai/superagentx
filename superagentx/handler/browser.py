@@ -361,17 +361,6 @@ class BrowserHandler(BaseHandler):
         )
 
     @tool
-    async def take_screenshot(self):
-        """
-        To take the screenshot.
-        """
-        msg = "Take the screenshot"
-        return ToolResult(
-            extracted_content=msg,
-            include_in_memory=True,
-        )
-
-    @tool
     async def scroll_up(
             self,
             amount: int
