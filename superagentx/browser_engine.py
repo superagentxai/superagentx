@@ -396,7 +396,7 @@ class BrowserEngine(BaseEngine):
                     f'{list(self.sensitive_data.keys())} for the autologin.')
             info += (
                 '\nTo use them, write <secret>the placeholder name</secret> to do autologin and corresponding action'
-                '. If password is wrong done the process.')
+                '. If password is wrong done the process. If the url have in placeholder, that is also autologin')
             msgs.append({
                 "role": "user",
                 "content": info

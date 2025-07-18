@@ -300,9 +300,9 @@ class BrowserHandler(BaseHandler):
 
         prompt = ('Your task is to extract the content of the page. You will be given a page and a input and you should'
                   ' extract all relevant information around this input from the page. Respond in json format. '
-                  'Extraction input: {goal}')
+                  'Extraction input: {goal}\n\nPage: {page}')
         # template = PromptTemplate(input_variables=['goal', 'page'], template=prompt)
-        _prompt = prompt.format(goal=goal)
+        _prompt = prompt.format(goal=goal, page=content)
         messages = [
             {
                 "role": "system",
