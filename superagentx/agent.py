@@ -13,6 +13,8 @@ from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.otel.metrics import otel_metrics_traced_async, set_span_attributes
+from opentelemetry.trace import get_current_span
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,7 @@ class Agent:
             role: str,
             llm: LLMClient,
             prompt_template: PromptTemplate,
+            pipe_id: str | None = None,
             agent_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
@@ -96,6 +99,7 @@ class Agent:
         self.goal = goal
         self.llm = llm
         self.prompt_template = prompt_template
+        self.pipe_id = pipe_id
         self.agent_id = agent_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
@@ -156,16 +160,21 @@ class Agent:
             self.engines.append(list(engines))
             logger.debug(f'Engines added as {PARALLEL} : {",".join([str(_engine) for _engine in engines])}')
 
+    @otel_metrics_traced_async
     async def _verify_goal(
             self,
             *,
             query_instruction: str,
             results: list[Any],
+            pipe_id: str | None = None,
             old_memory: str | None = None
     ) -> GoalResult | None:
+        span = get_current_span()  # Get Telemetry Current Span
+
         if old_memory:
             results = f"output_context:\n{old_memory}\n\n{results}"
             logger.debug(f'Updated Output Context with old memory : {results}')
+            span.set_attribute("memory", results)
 
         prompt_message = await self.prompt_template.get_messages(
             input_prompt=_GOAL_PROMPT_TEMPLATE,
@@ -175,14 +184,31 @@ class Agent:
             feedback="",
             output_format=self.output_format or ""
         )
+
         chat_completion_params = ChatCompletionParams(
             messages=prompt_message
         )
+
         logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
+
         messages = await self.llm.achat_completion(
             chat_completion_params=chat_completion_params
         )
         logger.debug(f"Goal Result : {messages}")
+
+        # Telemetry data
+        span.set_attribute("pipe_id", pipe_id or "")
+        span.set_attribute("agent_id", self.agent_id)
+        span.set_attribute("description", self.description or "")
+        span.set_attribute("max_retry", self.max_retry)
+        span.set_attribute("input_prompt", _GOAL_PROMPT_TEMPLATE)
+        span.set_attribute("goal", self.goal)
+        span.set_attribute("input", query_instruction)
+        span.set_attribute("output_format", self.output_format or "")
+        await set_span_attributes(data=self.llm.llm_config)
+        await set_span_attributes(data=chat_completion_params)
+        await set_span_attributes(data=messages)
+
         if messages and messages.choices:
             for choice in messages.choices:
                 if choice and choice.message:
@@ -215,6 +241,7 @@ class Agent:
     async def _execute(
             self,
             query_instruction: str,
+            pipe_id: str | None = None,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
@@ -247,6 +274,7 @@ class Agent:
         logger.debug(f'Verifying agent goal `{verify_goal}`')
         if verify_goal:
             final_result = await self._verify_goal(
+                pipe_id=pipe_id,
                 results=results,
                 query_instruction=query_instruction,
                 old_memory=old_memory
@@ -262,10 +290,12 @@ class Agent:
                 is_goal_satisfied=None
             )
 
+    @otel_metrics_traced_async
     async def execute(
             self,
             *,
             query_instruction: str,
+            pipe_id: str | None = None,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
@@ -283,6 +313,8 @@ class Agent:
         Args:
             query_instruction: A string representing the instruction or query that defines the goal to be achieved.
                 This should be a clear and actionable statement that the method can execute.
+            pipe_id: An optional pipe id passed for telemetry logging purpose. The Pipe id helps to identify which pipe
+                    invokes these agents!
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
             old_memory: An optional previous context of the user's instruction
@@ -303,6 +335,7 @@ class Agent:
         for _retry in range(1, self.max_retry + 1):
             logger.info(f"Agent `{self.name}` retry {_retry}")
             _goal_result = await self._execute(
+                pipe_id=pipe_id,
                 query_instruction=query_instruction,
                 pre_result=pre_result,
                 old_memory=old_memory,

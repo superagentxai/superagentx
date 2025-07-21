@@ -11,6 +11,10 @@ from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, sync_to_async, rm_trailing_spaces
 from superagentx.utils.parsers.base import BaseParser
 
+from superagentx.utils.otel.instrumentation import otel_metrics_traced_async, set_span_attributes
+from opentelemetry.trace import get_current_span
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,6 +96,7 @@ class Engine:
         # Use explicitly provided tools if any, otherwise infer all from handler
         return await self.__funcs_props(funcs=self.tools or funcs)
 
+    @otel_metrics_traced_async
     async def start(
             self,
             input_prompt: str,
@@ -143,6 +148,10 @@ class Engine:
             raise ToolError("No tools matched or executed!")
 
         results = []
+
+        span = get_current_span()  # Get Telemetry Current Span
+        await set_span_attributes(data=messages)
+        await set_span_attributes(data=self.tools)
 
         # Process each message returned by the LLM
         async for message in iter_to_aiter(messages):

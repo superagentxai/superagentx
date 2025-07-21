@@ -216,6 +216,7 @@ class AgentXPipe:
                     _res = await asyncio.gather(
                         *[
                             _agent.execute(
+                                pipe_id=self.pipe_id,
                                 query_instruction=query_instruction,
                                 pre_result=pre_result,
                                 old_memory=old_memory,
@@ -230,6 +231,7 @@ class AgentXPipe:
                 else:
                     logger.debug(f'Agent is executing : {_agents}')
                     _res = await _agents.execute(
+                        pipe_id=self.pipe_id,
                         query_instruction=query_instruction,
                         pre_result=pre_result,
                         old_memory=old_memory,
