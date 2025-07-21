@@ -14,6 +14,18 @@
                 "asyncMode": true,
                 "embedModel": "string"
             }
+        },
+        {
+            "title": "LLM-2",
+            "llmConfig": {
+                "llmType": "openai",
+                "model": "gpt-4o",
+                "apiKey": "string",
+                "baseUrl": "string",
+                "apiVersion": "string",
+                "asyncMode": true,
+                "embedModel": "string"
+            }
         }
     ],
     "memory": [
@@ -38,7 +50,7 @@
             "title": "Handler-2",
             "handlerName": "AIHandler",
             "attributes": {
-                "llm": "\"LLM-1\""
+                "llm": "\"LLM-2\""
             },
             "srcPath": "superagentx.handler.ai"
         }
@@ -61,7 +73,7 @@
         }, {
             "title": "Engine 2",
             "handler": "Handler-2",
-            "llm": "LLM-1",
+            "llm": "LLM-2",
             "promptTemplate": "prompt 1",
             "tools": null,
             "outputParser": null
@@ -87,7 +99,7 @@
             "title": "Agent 2",
             "goal": "string",
             "role": "string",
-            "llm": "LLM-1",
+            "llm": "LLM-2",
             "promptTemplate": "prompt 1",
             "agentId": null,
             "name": null,
