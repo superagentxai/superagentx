@@ -6,6 +6,7 @@ from contextlib import AsyncExitStack
 from typing import Any, List, Optional, Callable
 
 from mcp import StdioServerParameters, ClientSession
+from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
 from mcp.types import ListToolsResult, Tool
 
