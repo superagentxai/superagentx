@@ -191,7 +191,7 @@ class BrowserEngine(BaseEngine):
                     if func and (inspect.ismethod(func) or inspect.isfunction(func)):
                         logger.debug(f'Checking tool function : {self.handler.__class__}.{tool_name}')
                         _kwargs = tool.get(tool_name) or {}
-                        if self.sensitive_data and tool_name in ("go_to_url", "open_new_tab"):
+                        if self.sensitive_data and (tool_name in ["go_to_url", "open_new_tab"]):
                             validated_params = GoToUrl(**_kwargs)
                             _kwargs = await sync_to_async(
                                 self._replace_sensitive_data,
