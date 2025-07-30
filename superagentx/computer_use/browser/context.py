@@ -156,9 +156,9 @@ class BrowserContextConfig(BaseModel):
 
     disable_security: bool = False  # disable_security=True is dangerous as any malicious URL visited could embed an iframe for the user's bank, and use their cookies to steal money
 
-    window_width: int = 1600
-    window_height: int = 1100
-    no_viewport: bool = False  # True is the default for headful mode - browser window size determines viewport
+    window_width: int | None = None
+    window_height: int | None = None
+    no_viewport: bool = True  # True is the default for headful mode - browser window size determines viewport
 
     save_recording_path: str | None = None
     save_downloads_path: str | None = None

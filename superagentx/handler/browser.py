@@ -336,6 +336,30 @@ class BrowserHandler(BaseHandler):
             return ToolResult(extracted_content=msg)
 
     @tool
+    async def remove_cookies_element(self, js_script: str):
+        """
+        Executes a JavaScript snippet to remove a cookie-related DOM element from the page.
+
+        Args:
+            js_script (str): A JavaScript snippet that targets and removes the desired cookie element (e.g., a banner or modal).
+
+        Returns:
+            ToolResult: Contains a success message if the element was removed successfully,
+                        or an error message if the operation failed.
+
+        """
+        try:
+            page = await self.browser_context.get_current_page()
+            await page.evaluate(js_script)
+            msg = f"Removed cookies"
+            return ToolResult(extracted_content=msg, include_in_memory=True)
+        except Exception as ex:
+            msg = f"Failed to remove cookies"
+            logger.error(msg)
+            return ToolResult(error=msg)
+
+
+    @tool
     async def scroll_down(
             self,
             amount: int = None
