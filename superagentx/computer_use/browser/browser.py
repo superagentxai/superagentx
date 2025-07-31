@@ -209,6 +209,7 @@ class Browser:
                 *(CHROME_HEADLESS_ARGS if self.config.headless else []),
                 *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),
                 *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),
+                "--start-maximized",
                 *self.config.extra_browser_args,
             },
         ]
@@ -252,7 +253,7 @@ class Browser:
         """Sets up and returns a Playwright Browser instance with anti-detection measures."""
         assert self.config.chrome_instance_path is None, 'browser_binary_path should be None if trying to use the builtin browsers'
 
-        # Use the configured window size from new_context_config if available
+        # # Use the configured window size from new_context_config if available
         # if (
         #         not self.config.headless
         #         and hasattr(self.config, 'new_context_config')
@@ -278,9 +279,10 @@ class Browser:
             *(CHROME_HEADLESS_ARGS if self.config.headless else []),
             *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),
             *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),
+            "--start-maximized",
             # f'--window-position={offset_x},{offset_y}',
             # f'--window-size={screen_size["width"]},{screen_size["height"]}',
-            *self.config.extra_browser_args,
+            *self.config.extra_browser_args
         }
 
         # check if chrome remote debugging port is already taken,

@@ -300,9 +300,9 @@ class BrowserHandler(BaseHandler):
 
         prompt = ('Your task is to extract the content of the page. You will be given a page and a input and you should'
                   ' extract all relevant information around this input from the page. Respond in json format. '
-                  'Extraction input: {goal}\n\nPage: {page}')
+                  'Extraction input: {goal}')
         # template = PromptTemplate(input_variables=['goal', 'page'], template=prompt)
-        _prompt = prompt.format(goal=goal, page=content)
+        _prompt = prompt.format(goal=goal)
         messages = [
             {
                 "role": "system",
@@ -334,6 +334,30 @@ class BrowserHandler(BaseHandler):
             msg = f'📄  Failed to extract \n: {content}\n'
             logger.error(msg)
             return ToolResult(extracted_content=msg)
+
+    @tool
+    async def remove_cookies_element(self, js_script: str):
+        """
+        Executes a JavaScript snippet to remove a cookie-related DOM element from the page.
+
+        Args:
+            js_script (str): A JavaScript snippet that targets and removes the desired cookie element (e.g., a banner or modal).
+
+        Returns:
+            ToolResult: Contains a success message if the element was removed successfully,
+                        or an error message if the operation failed.
+
+        """
+        try:
+            page = await self.browser_context.get_current_page()
+            await page.evaluate(js_script)
+            msg = f"Removed cookies"
+            return ToolResult(extracted_content=msg, include_in_memory=True)
+        except Exception as ex:
+            msg = f"Failed to remove cookies"
+            logger.error(msg)
+            return ToolResult(error=msg)
+
 
     @tool
     async def scroll_down(
@@ -376,6 +400,62 @@ class BrowserHandler(BaseHandler):
 
         amount = f'{amount} pixels' if amount is not None else 'one page'
         msg = f'🔍  Scrolled up the page by {amount}'
+        logger.info(msg)
+        return ToolResult(
+            extracted_content=msg,
+            include_in_memory=True,
+        )
+
+    @tool
+    async def scroll_table_right(
+            self,
+            amount: int = 300
+    ) -> ToolResult:
+        """
+        Scrolls the vendor table to the right by a specified pixel amount.
+
+        Args:
+            @param amount: Number of pixels to scroll. Default is 300.
+        """
+        page = await self.browser_context.get_current_page()
+
+        # Adjust the selector based on the table container's actual class or structure
+        await page.evaluate(f'''
+                const container = document.querySelector('div[class*="overflow-x-auto"]');
+                if (container) {{
+                    container.scrollLeft += {amount};
+                }}
+            ''')
+
+        msg = f'➡️  Scrolled right in the vendor table by {amount} pixels.'
+        logger.info(msg)
+        return ToolResult(
+            extracted_content=msg,
+            include_in_memory=True,
+        )
+
+    @tool
+    async def scroll_table_left(
+            self,
+            amount: int = 300
+    ) -> ToolResult:
+        """
+        Scrolls the vendor table to the left by a specified pixel amount.
+
+        Args:
+            @param amount: Number of pixels to scroll. Default is 300.
+        """
+        page = await self.browser_context.get_current_page()
+
+        # Adjust the selector based on the table container's actual class or structure
+        await page.evaluate(f'''
+                const container = document.querySelector('div[class*="overflow-x-auto"]');
+                if (container) {{
+                    container.scrollLeft -= {amount};
+                }}
+            ''')
+
+        msg = f'⬅️  Scrolled left in the vendor table by {amount} pixels.'
         logger.info(msg)
         return ToolResult(
             extracted_content=msg,
