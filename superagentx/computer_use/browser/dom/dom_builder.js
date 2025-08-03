@@ -604,7 +604,7 @@
 
     // Always accept body and common container elements
     const alwaysAccept = new Set([
-      "body", "div", "main", "article", "section", "nav", "header", "footer"
+      "body", "div", "main", "article", "section", "nav", "header", "footer", "i", "cookie-warning"
     ]);
     const tagName = element.tagName.toLowerCase();
 
@@ -727,6 +727,8 @@
       "optgroup",   // Option groups
       "fieldset",   // Form fieldsets (can be interactive with legend)
       "legend",     // Fieldset legends
+      "i",
+      "cookie-warning"
     ]);
 
     // Define explicit disable attributes and properties
@@ -813,7 +815,10 @@
       'textbox',         // Text input field
       // 'listbox',         // Selectable list
       'option',          // Selectable option in a list
-      'scrollbar'        // Scrollable control
+      'scrollbar',        // Scrollable control
+      'i',
+      'a',
+      "cookie-warning"
     ]);
 
     // Basic role/attribute checks
@@ -1021,7 +1026,7 @@
 
     // Fast-path for common interactive elements
     const interactiveElements = new Set([
-      "a", "button", "input", "select", "textarea", "details", "summary", "label"
+      "a", "button", "input", "select", "textarea", "details", "summary", "label", "i", "cookie-warning"
     ]);
 
     if (interactiveElements.has(tagName)) return true;
@@ -1039,12 +1044,12 @@
 
   // --- Define constants for distinct interaction check ---
   const DISTINCT_INTERACTIVE_TAGS = new Set([
-    'a', 'button', 'input', 'select', 'textarea', 'summary', 'details', 'label', 'option'
+    'a', 'button', 'input', 'select', 'textarea', 'summary', 'details', 'label', 'option', "i", "cookie-warning"
   ]);
   const INTERACTIVE_ROLES = new Set([
     'button', 'link', 'menuitem', 'menuitemradio', 'menuitemcheckbox',
     'radio', 'checkbox', 'tab', 'switch', 'slider', 'spinbutton',
-    'combobox', 'searchbox', 'textbox', 'listbox', 'option', 'scrollbar'
+    'combobox', 'searchbox', 'textbox', 'listbox', 'option', 'scrollbar', "i", "a", "cookie-warning"
   ]);
 
   /**

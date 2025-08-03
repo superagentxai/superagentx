@@ -40,13 +40,17 @@ Answer should be based on the given output context. Do not try answer by your ow
 
 Make sure generate the result based on the given output format if provided. 
 
+{result_format}
+
+Always generate the JSON output. Don't include any command lines.
+"""
+
+ENGINE_RESULT_FORMAT = """
 {{
     reason: Set the reason for result,
     result: Set this based on given output format if output format given. Otherwise set the result as it is.,
     is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
 }}
-
-Always generate the JSON output. Don't include any command lines.
 """
 
 
@@ -65,7 +69,8 @@ class Agent:
             description: str | None = None,
             engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] | None = None,
             output_format: str | None = None,
-            max_retry: int = 5
+            max_retry: int = 5,
+            return_engine_result: bool = False
     ):
         """
         Initializes a new instance of the Agent class.
@@ -106,6 +111,16 @@ class Agent:
         self.engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
+        self.return_engine_result = return_engine_result
+        self.engine_result_format = ENGINE_RESULT_FORMAT
+        if self.return_engine_result:
+            self.engine_result_format = """
+            {{
+                reason: Set the reason for result,
+                is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
+            }}
+            """
+
         logger.debug(
             f'Initiating Agent...\n'
             f'Id : {self.agent_id}\n'
@@ -182,7 +197,8 @@ class Agent:
             query_instruction=query_instruction,
             output_context=results,
             feedback="",
-            output_format=self.output_format or ""
+            output_format=self.output_format or "",
+            result_format=self.engine_result_format
         )
 
         chat_completion_params = ChatCompletionParams(
@@ -280,14 +296,20 @@ class Agent:
                 old_memory=old_memory
             )
             logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
+            if self.return_engine_result:
+                final_result.engine_result = results
             return final_result
         else:
+            engine_result = None
+            if self.return_engine_result:
+                engine_result = results
             return GoalResult(
                 name=self.name,
                 agent_id=self.agent_id,
                 content=results,
                 verify_goal=False,
-                is_goal_satisfied=None
+                is_goal_satisfied=None,
+                engine_result=engine_result
             )
 
     @otel_metrics_traced_async
