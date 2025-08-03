@@ -27,6 +27,10 @@ from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
 from superagentx.computer_use.browser.models import InputTextParams, GoToUrl, ToastConfig
 
+from superagentx.utils.otel.instrumentation import otel_metrics_traced_async, set_span_attributes
+from opentelemetry.trace import get_current_span
+
+
 logger = logging.getLogger(__name__)
 
 Context = TypeVar('Context')
@@ -374,6 +378,7 @@ class BrowserEngine(BaseEngine):
             results.append(res)
             return results
 
+    @otel_metrics_traced_async
     async def start(
             self,
             input_prompt: str,
@@ -426,4 +431,8 @@ class BrowserEngine(BaseEngine):
         self.msgs = self.msgs + prompt_messages
         logger.debug(f"Prompt Message : {self.msgs}")
         result = await self._execute()
+
+        # Set Span Attributes
+        await set_span_attributes(data=self.msgs)
+
         return result

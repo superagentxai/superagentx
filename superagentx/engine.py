@@ -149,7 +149,7 @@ class Engine:
 
         results = []
 
-        span = get_current_span()  # Get Telemetry Current Span
+        # Set Span Attributes
         await set_span_attributes(data=messages)
         await set_span_attributes(data=self.tools)
 

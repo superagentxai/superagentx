@@ -13,7 +13,7 @@ from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter
-from superagentx.utils.otel.metrics import otel_metrics_traced_async, set_span_attributes
+from superagentx.utils.otel.instrumentation import otel_metrics_traced_async, set_span_attributes
 from opentelemetry.trace import get_current_span
 
 logger = logging.getLogger(__name__)

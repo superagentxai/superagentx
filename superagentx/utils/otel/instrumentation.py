@@ -11,7 +11,7 @@ from opentelemetry import trace, metrics
 from opentelemetry.trace import get_current_span
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader, ConsoleMetricExporter
 
@@ -28,15 +28,17 @@ resource = Resource(attributes={SERVICE_NAME: SERVICE})
 
 # --- Tracing Setup ---
 if METRICS_ENABLED:
-    trace_provider = TracerProvider(resource=resource)
-
     if OTEL_ENDPOINT:
-        span_exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT, insecure=True)
-    else:
-        span_exporter = ConsoleSpanExporter()
+        trace_provider = TracerProvider(resource=resource)
 
-    trace_provider.add_span_processor(BatchSpanProcessor(span_exporter))
-    trace.set_tracer_provider(trace_provider)
+        # Create OTLP span exporter
+        otlp_exporter = OTLPSpanExporter(
+            endpoint=OTEL_ENDPOINT,
+            headers={"content-type": "application/x-protobuf"}
+        )
+
+        trace_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+        trace.set_tracer_provider(trace_provider)
 
 tracer = trace.get_tracer(__name__)
 
@@ -44,11 +46,9 @@ tracer = trace.get_tracer(__name__)
 if METRICS_ENABLED:
     if OTEL_ENDPOINT:
         metric_exporter = OTLPMetricExporter(endpoint=OTEL_ENDPOINT, insecure=True)
-    else:
-        metric_exporter = ConsoleMetricExporter()
+        metric_reader = PeriodicExportingMetricReader(metric_exporter)
+        metrics.set_meter_provider(MeterProvider(resource=resource, metric_readers=[metric_reader]))
 
-    metric_reader = PeriodicExportingMetricReader(metric_exporter)
-    metrics.set_meter_provider(MeterProvider(resource=resource, metric_readers=[metric_reader]))
     meter = metrics.get_meter(__name__)
 
     function_duration = meter.create_histogram("function_duration_ms", unit="ms")

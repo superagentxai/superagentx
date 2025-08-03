@@ -46,7 +46,7 @@ class TestMCPRedditAgent:
 
         # SuperAgentX's Agent to run based on the goal
         reddit_search_agent = Agent(goal=goal, role="You're an Analyst",
-                                    llm=llm_client, prompt_template=prompt_template)
+                                    llm=llm_client, prompt_template=prompt_template, max_retry=1)
         await reddit_search_agent.add(mcp_engine)
 
         # Ask Question and get results
