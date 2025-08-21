@@ -25,6 +25,7 @@ async def get_user_message(
         use_vision: bool = True
 ):
     include_attributes = [
+        'class',
         'title',
         'type',
         'name',
@@ -34,13 +35,13 @@ async def get_user_message(
         'value',
         'alt',
         'aria-expanded',
-        'data-date-format'
+        'data-date-format',
+        'href'
     ]
 
     elements_text = state.element_tree.clickable_elements_to_string(
         include_attributes=include_attributes
     )
-
     has_content_above = (state.pixels_above or 0) > 0
     has_content_below = (state.pixels_below or 0) > 0
 
@@ -346,7 +347,7 @@ system detects that human action is required:
     - Use `wait` actions with a maximum total wait time of 5 minutes.
 
     - Always break the wait into intervals (e.g., 60 seconds) and check for page state changes between intervals.
-    
+
     - If need Authenticator, wait 20 seconds
 
     - Example:

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import pyotp
 
 from superagentx.computer_use.browser.context import BrowserContext
 from superagentx.computer_use.browser.models import ToolResult
@@ -73,12 +74,32 @@ class BrowserHandler(BaseHandler):
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
     @tool
+    async def enter_mfa_otp(
+            self,
+            mfa_secret_key: str,
+            index: int,
+            has_sensitive: bool = False
+    ) -> ToolResult:
+        """
+        Generate the current OTP using the provided MFA secret and enter it into the specified input field.
+        If an MFA/Authenticator page is present and autologin is set to true, invoke this method.
+
+        Args:
+            mfa_secret_key (str): The shared MFA secret used to generate the OTP.
+            index (int): Index of the input element where the OTP should be entered.
+            has_sensitive (bool): Has Sensitive data. Default False
+        """
+        totp = pyotp.TOTP(mfa_secret_key)
+        otp = totp.now()
+        return await self.input_text(index=index, text=otp, has_sensitive=has_sensitive)
+
+    @tool
     async def go_to_url(
             self,
             url: str
     ) -> ToolResult:
         """
-        Navigates to the specified URL in the current tab.
+        Navigates/go to the specified URL in the current tab. If the user say Navigate/go_to_url to the particular url, you should execute this method.
 
         Args:
             url (str):
@@ -161,6 +182,7 @@ class BrowserHandler(BaseHandler):
             raise Exception(f'Element with index {index} does not exist - retry or use alternative actions')
 
         element_node = await self.browser_context.get_dom_element_by_index(index)
+
         initial_pages = len(session.context.pages)
 
         # if element has file uploader then dont click
@@ -259,7 +281,7 @@ class BrowserHandler(BaseHandler):
             return ToolResult(error=f'Element index {index} does not exist - retry or use alternative actions')
         try:
             element_node = await self.browser_context.get_dom_element_by_index(index)
-            await self.wait(seconds=3)
+            # await self.wait(seconds=3)
             await self.browser_context._input_text_element_node(element_node, text=text)
             if not has_sensitive:
                 msg = f'⌨️  Input data into index {index} {text}'
@@ -391,6 +413,9 @@ class BrowserHandler(BaseHandler):
     ) -> ToolResult:
         """
         Scroll up the page by pixel amount - if no amount is specified, scroll up one page
+
+        Args:
+            @param amount: The number of pixels to scroll. If None, scroll down/up one page
         """
         page = await self.browser_context.get_current_page()
         if amount is not None:

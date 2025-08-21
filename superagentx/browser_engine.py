@@ -25,7 +25,7 @@ from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
-from superagentx.computer_use.browser.models import InputTextParams, GoToUrl, ToastConfig
+from superagentx.computer_use.browser.models import InputTextParams, GoToUrl, ToastConfig, MFAParams
 
 logger = logging.getLogger(__name__)
 
@@ -208,6 +208,16 @@ class BrowserEngine(BaseEngine):
                                 self.sensitive_data
                             )
                             _kwargs = _kwargs.model_dump()
+                        if self.sensitive_data and tool_name == "enter_mfa_otp":
+                            _kwargs["has_sensitive"] = True
+                            validated_params = MFAParams(**_kwargs)
+                            _kwargs = await sync_to_async(
+                                self._replace_sensitive_data,
+                                validated_params,
+                                self.sensitive_data
+                            )
+                            _kwargs = _kwargs.model_dump()
+                            print(_kwargs)
                         logger.debug(
                             f'Executing tool function : {self.handler.__class__}.{tool_name}, '
                             f'With arguments : {_kwargs}'
@@ -222,6 +232,7 @@ class BrowserEngine(BaseEngine):
                                     duration=1000
                                 )
                                 _engine_res = await func(**_kwargs)
+                                await self.browser_context._wait_for_page_and_frames_load()
                             _value = list(_kwargs.values())
                             if tool_name == "extract_content":
                                 self.extract_result.append(_engine_res)
@@ -392,11 +403,18 @@ class BrowserEngine(BaseEngine):
             {"role": "assistant", "content": EXAMPLE_DATA}
         ]
         if self.sensitive_data:
+            sensitive_data_keys = list(self.sensitive_data.keys())
             info = (f'\nAutologin Instruction:\n\nHere are placeholders for sensitive data: '
-                    f'{list(self.sensitive_data.keys())} for the autologin.')
+                    f'{sensitive_data_keys} for the autologin.')
             info += (
                 '\nTo use them, write <secret>the placeholder name</secret> to do autologin and corresponding action'
-                '. If password is wrong done the process. If the url have in placeholder, that is also autologin')
+                '. If password is wrong done the process.')
+            if "url" in sensitive_data_keys:
+                info += "If the url have in placeholder, that is also autologin"
+            if "mfa_secret_key" in sensitive_data_keys:
+                info += "If the mfa_secret_key have in placeholder, that is also autologin"
+            else:
+                info += "If the mfs_secret_key not have in placeholder, wait until(20 seconds) user enter MFA code"
             msgs.append({
                 "role": "user",
                 "content": info
