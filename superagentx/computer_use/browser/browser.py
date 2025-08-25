@@ -280,8 +280,8 @@ class Browser:
             *(CHROME_DISABLE_SECURITY_ARGS if self.config.disable_security else []),
             *(CHROME_DETERMINISTIC_RENDERING_ARGS if self.config.deterministic_rendering else []),
             "--start-maximized",
-            # f'--window-position={offset_x},{offset_y}',
-            # f'--window-size={screen_size["width"]},{screen_size["height"]}',
+            # f'--window-position=-8,-8',
+            f'--window-size=1920,1080',
             *self.config.extra_browser_args
         }
 

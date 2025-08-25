@@ -32,7 +32,9 @@ dependencies = [
     "psutil (>=7.0.0 )",
     "playwright (>=1.52.0)",
     "pyyaml (>=6.0.2)",
-    "importlib-resources (>=6.5.2)"
+    "importlib-resources (>=6.5.2)",
+    "pyotp (>=2.9.0)",
+    "ntplib (>=0.4.0)"
 ]
 
 [project.urls]
