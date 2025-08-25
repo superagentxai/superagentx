@@ -58,9 +58,10 @@
         "agent",
         "memory",
         "llm",
-        "engine",
+        "engines",
         "prompt",
         "handler",
+        "mcp",
         "conversation"
       ]
     },
@@ -94,7 +95,8 @@
                 "examples/handlers/aws/helper",
                 "examples/handlers/aws/iam",
                 "examples/handlers/aws/security_groups",
-                "examples/handlers/aws/serverless"
+                "examples/handlers/aws/serverless",
+                "examples/handlers/aws/iam"
               ]
             },
         {
@@ -153,9 +155,6 @@
             "examples/handlers/visualization",
             "examples/handlers/weather",
             "examples/handlers/wikipedia"
-
-
-
       ]
     },
     {

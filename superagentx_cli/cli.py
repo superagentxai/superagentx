@@ -21,9 +21,16 @@ EMAIL_COMP = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
 
 def dict_to_kwargs(d: dict) -> list:
-    return [
-        f'{key}={"'" + val + "'" if isinstance(val, str) else val}' for key, val in d.items()
-    ]
+    _kwargs = []
+    for key, val in d.items():
+        if isinstance(val, str):
+            if val.startswith('"') and val.endswith('"'):
+                _kwargs.append(f'{key}={to_snake(val.replace('"', ''))}')
+            else:
+                _kwargs.append(f"""{key}={'''"''' + val + '''"'''}""")
+        else:
+            _kwargs.append(f'{key}={val}')
+    return _kwargs
 
 
 def str_to_obj_str(l: list) -> str:
@@ -149,10 +156,10 @@ class AppCreation:
     def _construct_llms(self):
         for llm in self.app_config.llm:
             title_2_var = to_snake(s=llm.title)
-            self.llms[llm.title] = (f"{title_2_var} = LLMClient({
-                ', '.join(dict_to_kwargs(llm.model_dump(exclude={'title': True})))
-                }"
-            f")")
+            self.llms[llm.title] = f"""{title_2_var} = LLMClient({
+                ", ".join(dict_to_kwargs(llm.model_dump(exclude={"title": True})))
+                }
+            )"""
         if self.llms:
             self.imports.append(
                 'from superagentx.llm import LLMClient'
@@ -168,9 +175,9 @@ class AppCreation:
             if _vector_store:
                 _vector_store = to_snake(_vector_store)
             _db_path = memory.memory_config.get('db_path')
-            self.memories[memory.title] = (f"{title_2_var} = Memory("
-               f"memory_config={{'llm_client': {_llm_client}, 'vector_store': {_vector_store}, 'db_path': {_db_path}}}"
-           f")")
+            self.memories[memory.title] = f"""{title_2_var} = Memory(
+               memory_config={{"llm_client": {_llm_client}, "vector_store": {_vector_store}, "db_path": {_db_path}}}
+           )"""
         if self.memories:
             self.imports.append(
                 'from superagentx.memory import Memory'
@@ -180,9 +187,9 @@ class AppCreation:
         for handler in self.app_config.handler_config:
             title_2_var = to_snake(handler.title)
             _kwargs = dict_to_kwargs(handler.attributes or {})
-            self.handlers[handler.title] = (f"{title_2_var} = {handler.handler_name}("
-                f"{', '.join(_kwargs)}"
-            f")")
+            self.handlers[handler.title] = f"""{title_2_var} = {handler.handler_name}(
+                {", ".join(_kwargs)}
+            )"""
             _h_import = f'from {handler.src_path} import {handler.handler_name}'
             if not _h_import in self.imports:
                 self.imports.append(
@@ -192,10 +199,10 @@ class AppCreation:
     def _construct_prompt_templates(self):
         for prompt_template in self.app_config.prompt_template_config:
             title_2_var = to_snake(prompt_template.title)
-            _kwargs = dict_to_kwargs(prompt_template.model_dump(exclude={'title': True}))
-            self.prompt_templates[prompt_template.title] = (f"{title_2_var} = PromptTemplate("
-                f"{', '.join(_kwargs)}"
-            f")")
+            _kwargs = dict_to_kwargs(prompt_template.model_dump(exclude={"title": True}))
+            self.prompt_templates[prompt_template.title] = f"""{title_2_var} = PromptTemplate(
+                {", ".join(_kwargs)}
+            )"""
         if self.prompt_templates:
             self.imports.append(
                 'from superagentx.prompt import PromptTemplate'
@@ -207,13 +214,12 @@ class AppCreation:
             _handler = to_snake(engine.handler)
             _llm = to_snake(engine.llm)
             _prompt_template = to_snake(engine.prompt_template)
-            self.engines[engine.title] = (
-                f"{title_2_var} = Engine("
-                f"handler={_handler}, llm={_llm},"
-                    f" prompt_template={_prompt_template}, tools={engine.tools},"
-                    f" output_parser={engine.output_parser}"
-                f")"
-            )
+            self.engines[engine.title] = f"""{title_2_var} = Engine(
+                handler={_handler}, llm={_llm},
+                prompt_template={_prompt_template}, tools={engine.tools},
+                output_parser={engine.output_parser}
+            )"""
+
         if self.engines:
             self.imports.append(
                 'from superagentx.engine import Engine'
@@ -228,12 +234,10 @@ class AppCreation:
             _kwargs = dict_to_kwargs(agent.model_dump(
                 exclude={'title': True, 'llm': True, 'prompt_template': True, 'engines': True}
             ))
-            self.agents[agent.title] = (
-                f"{title_2_var} = Agent("
-                    f"llm={_llm}, prompt_template={_prompt_template}, "
-                    f"engines={_engines}, {', '.join(_kwargs)}"
-                f")"
-            )
+            self.agents[agent.title] = f"""{title_2_var} = Agent(
+                llm={_llm}, prompt_template={_prompt_template}, 
+                engines={_engines}, {", ".join(_kwargs)}
+            )"""
         if self.agents:
             self.imports.append(
                 'from superagentx.agent import Agent'
@@ -245,9 +249,9 @@ class AppCreation:
         _agents = str_to_obj_str(pipe.agents)
         _memory = to_snake(pipe.memory)
         _kwargs = dict_to_kwargs(pipe.model_dump(exclude={'title': True, 'agents': True, 'memory': True}))
-        self.pipe = (f"{title_2_var} = AgentXPipe("
-             f"agents={_agents}, memory={_memory}, {', '.join(_kwargs)}"
-        f")")
+        self.pipe = f"""{title_2_var} = AgentXPipe(
+             agents={_agents}, memory={_memory}, {", ".join(_kwargs)}
+        )"""
         self.imports.append('from superagentx.agentxpipe import AgentXPipe')
         self.pipe_name = title_2_var
 

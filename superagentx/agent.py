@@ -5,12 +5,13 @@ import uuid
 from json import JSONDecodeError
 from typing import Literal, Any
 
-from superagentx.engine import Engine
-from superagentx.result import GoalResult
+from superagentx.browser_engine import BrowserEngine
 from superagentx.constants import SEQUENCE, PARALLEL
+from superagentx.engine import Engine
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
+from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter
 
 logger = logging.getLogger(__name__)
@@ -37,13 +38,17 @@ Answer should be based on the given output context. Do not try answer by your ow
 
 Make sure generate the result based on the given output format if provided. 
 
+{result_format}
+
+Always generate the JSON output. Don't include any command lines.
+"""
+
+ENGINE_RESULT_FORMAT = """
 {{
     reason: Set the reason for result,
     result: Set this based on given output format if output format given. Otherwise set the result as it is.,
     is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
 }}
-
-Always generate the JSON output. Don't include any command lines.
 """
 
 
@@ -59,9 +64,10 @@ class Agent:
             agent_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
-            engines: list[Engine | list[Engine]] | None = None,
+            engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] | None = None,
             output_format: str | None = None,
-            max_retry: int = 5
+            max_retry: int = 5,
+            return_engine_result: bool = False
     ):
         """
         Initializes a new instance of the Agent class.
@@ -98,9 +104,19 @@ class Agent:
         self.agent_id = agent_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
-        self.engines: list[Engine | list[Engine]] = engines or []
+        self.engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
+        self.return_engine_result = return_engine_result
+        self.engine_result_format = ENGINE_RESULT_FORMAT
+        if self.return_engine_result:
+            self.engine_result_format = """
+            {{
+                reason: Set the reason for result,
+                is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
+            }}
+            """
+
         logger.debug(
             f'Initiating Agent...\n'
             f'Id : {self.agent_id}\n'
@@ -122,7 +138,7 @@ class Agent:
 
     async def add(
             self,
-            *engines: Engine,
+            *engines: Engine | BrowserEngine,
             execute_type: Literal['SEQUENCE', 'PARALLEL'] = 'SEQUENCE'
     ) -> None:
         """
@@ -172,7 +188,8 @@ class Agent:
             query_instruction=query_instruction,
             output_context=results,
             feedback="",
-            output_format=self.output_format or ""
+            output_format=self.output_format or "",
+            result_format=self.engine_result_format
         )
         chat_completion_params = ChatCompletionParams(
             messages=prompt_message
@@ -220,30 +237,26 @@ class Agent:
             conversation_id: str | None = None
     ) -> GoalResult:
         results = []
-        instruction = query_instruction
+        params = {
+            "input_prompt": query_instruction,
+            "pre_result": pre_result,
+            "old_memory": old_memory
+        }
+        if conversation_id:
+            params["conversation_id"] = conversation_id
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 logger.debug(f'Engine(s) are executing : {",".join([str(_engine) for _engine in _engines])}')
                 _res = await asyncio.gather(
                     *[
-                        _engine.start(
-                            input_prompt=instruction,
-                            pre_result=pre_result,
-                            old_memory=old_memory,
-                            conversation_id=conversation_id
-                        )
+                        _engine.start(**params)
                         async for _engine in iter_to_aiter(_engines)
                     ]
                 )
                 logger.debug(f'Engine(s) results : {_res}')
             else:
                 logger.debug(f'Engine is executing : {_engines}')
-                _res = await _engines.start(
-                    input_prompt=instruction,
-                    pre_result=pre_result,
-                    old_memory=old_memory,
-                    conversation_id=conversation_id
-                )
+                _res = await _engines.start(**params)
                 logger.debug(f'Engine result : {_res}')
             results.append(_res)
 
@@ -255,14 +268,20 @@ class Agent:
                 old_memory=old_memory
             )
             logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
+            if self.return_engine_result:
+                final_result.engine_result = results
             return final_result
         else:
+            engine_result = None
+            if self.return_engine_result:
+                engine_result = results
             return GoalResult(
                 name=self.name,
                 agent_id=self.agent_id,
                 content=results,
                 verify_goal=False,
-                is_goal_satisfied=None
+                is_goal_satisfied=None,
+                engine_result=engine_result
             )
 
     async def execute(

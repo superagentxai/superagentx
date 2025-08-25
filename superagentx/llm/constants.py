@@ -1,5 +1,5 @@
-
 OPENAI_PRICE1K = {
+    "gpt-4.1": (0.005, 0.015),
     "gpt-4o": (0.005, 0.015),
     "gpt-4o-2024-05-13": (0.005, 0.015),
     "gpt-4o-2024-08-06": (0.0025, 0.01),
@@ -54,3 +54,5 @@ DEFAULT_OPENAI_EMBED = "text-embedding-ada-002"
 DEFAULT_BEDROCK_EMBED = "amazon.titan-embed-g1-text-02"
 DEFAULT_ANTHROPIC_EMBED = 'sentence-transformers/all-MiniLM-L6-v2'
 DEFAULT_OLLAMA_EMBED = "mxbai-embed-large"
+DEFAULT_EMBED = 'sentence-transformers/all-MiniLM-L6-v2'
+DEFAULT_GEMINI_EMBED = "gemini-embedding-exp-03-07"

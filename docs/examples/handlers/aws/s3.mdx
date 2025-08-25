@@ -16,10 +16,7 @@ seamless interaction with S3 for tasks like uploading, downloading, and
 managing files.
 
 ```python s3_handler_test.py
-import os
-
 from superagentx_handlers.aws.s3 import AWSS3Handler
-
 
 s3_handler = AWSS3Handler(
         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),

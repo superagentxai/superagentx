@@ -16,13 +16,13 @@ readme = "README.md"
 keywords = ["{{ package_name }}", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<=3.13"
+python = ">=3.12,<=3.13"
 rich = "^13.9.2"
-websockets = "^13.1"
-superagentx = "^0.1.13"
-superagentx-handlers = "^0.1.5"
+websockets = "^15.0.1"
+superagentx = {extras = ["all"], version = "^0.1.18.4"}
+superagentx-handlers = "^0.1.5.4"
 fastapi = {extras = ["standard"], version = "^0.115.4"}
-opentelemetry-exporter-otlp-proto-grpc = "1.25.0"   # Temprorly added for Chromadb issue https://github.com/chroma-core/chroma/issues/2571
+# opentelemetry-exporter-otlp-proto-grpc = "1.25.0"   # Temprorly added for Chromadb issue https://github.com/chroma-core/chroma/issues/2571
 
 [build-system]
 requires = ["poetry-core"]

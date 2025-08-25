@@ -1,5 +1,4 @@
 import logging
-import json
 import pytest
 
 from superagentx.llm import LLMClient, Message

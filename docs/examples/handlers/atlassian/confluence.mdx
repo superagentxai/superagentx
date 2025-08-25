@@ -28,7 +28,11 @@ from superagentx_handlers.atlassian.confluence import ConfluenceHandler
 
 
 async def get_all_spaces():
-    confluence_handler = ConfluenceHandler()
+    confluence_handler = ConfluenceHandler(
+        email="<EMAIL>",
+        token="<TOKEN>",
+        organization="<ORGANIZATION>"
+    )
     return await confluence_handler.get_all_spaces()
 
 

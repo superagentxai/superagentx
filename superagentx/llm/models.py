@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from pydantic import BaseModel, Field, conlist, conint
 
@@ -8,7 +9,7 @@ class Message(BaseModel):
         description='the role of the messenger (either system, user, assistant or tool)',
         default='system'
     )
-    content: str = Field(
+    content: Any = Field(
         description='the content of the message (e.g., Write me a beautiful poem)'
     )
     name: str | None = Field(
@@ -55,7 +56,7 @@ class ChatCompletionParams(BaseModel):
         description='Penalizes new tokens based on their presence in the text.',
         default=0
     )
-    response_format: str | None = Field(
+    response_format: Any | None = Field(
         description='Specifies the output format, e.g., JSON mode.',
         default=None
     )
@@ -83,6 +84,10 @@ class ChatCompletionParams(BaseModel):
     )
     top_p: float | None = Field(
         description='Uses nucleus sampling; considers tokens with top_p probability mass.',
+        default=None
+    )
+    top_k: float | None = Field(
+        description='Changes how the model selects tokens for output. This applicable for Gemini models!',
         default=None
     )
     tools: list[dict] | None = Field(

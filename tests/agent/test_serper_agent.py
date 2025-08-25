@@ -1,5 +1,7 @@
 import logging
+
 import pytest
+
 from superagentx.agent import Agent
 from superagentx.engine import Engine
 from superagentx.handler.serper_dev import SerperDevToolHandler
@@ -11,12 +13,11 @@ logger = logging.getLogger(__name__)
 '''
  Run Pytest:  
 
-   1. pytest --log-cli-level=INFO tests/agent/test_serper_agent.py::TestSerperDevAgent::test_search_agent
+   1. pytest --log-cli-level=DEBUG tests/agent/test_serper_agent.py::TestSerperDevAgent::test_search_agent
 '''
 
 
 @pytest.fixture
-
 def agent_client_init() -> dict:
     llm_config = {'model': 'gpt-4-turbo-2024-04-09', 'llm_type': 'openai'}
 
@@ -27,6 +28,7 @@ def agent_client_init() -> dict:
 
 class TestSerperDevAgent:
 
+    @pytest.mark.asyncio
     async def test_search_agent(self, agent_client_init: dict):
         llm_client: LLMClient = agent_client_init.get('llm')
         serper_dev_handler = SerperDevToolHandler()
