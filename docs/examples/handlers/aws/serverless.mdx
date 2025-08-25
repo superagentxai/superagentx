@@ -1,0 +1,46 @@
+---
+title: 'Serverless Handler'
+icon: 'lambda'
+---
+
+AWS Lambda is a **serverless compute service** that lets you run code without provisioning or managing servers. You just upload your code (as a ZIP package or container image), and Lambda automatically scales and runs it in response to events such as API Gateway requests, S3 object uploads, DynamoDB streams, or scheduled CloudWatch events.
+
+Lambda integrates seamlessly with **VPC, IAM, Security Groups, and other AWS services**, making it a core component of modern serverless applications.
+
+
+
+## Example
+
+To create the AWSLambdaHandler with AWS credentials:
+
+```python
+import os
+from superagentx_handlers.aws.serverless import AWSLambdaHandler
+
+lambda_handler = AWSLambdaHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="eu-central-1"
+)
+```
+
+**List Lambda Functions:** <br/>
+Retrieves all Lambda functions in the account, including runtime, handler, role, security groups, IAM policies, and environment configurations.
+```python
+functions = await lambda_handler.get_lambda_functions()
+print(functions)
+```
+
+**Get IAM Role Policies for a Lambda Role:** <br/>
+Fetches all attached and inline IAM policies for the IAM role associated with a Lambda.
+```python
+policies = await lambda_handler.get_role_policies("MyLambdaRole")
+print(policies)
+```
+
+**Get Security Group Details:** <br/>
+Fetches inbound/outbound rules for security groups attached to a Lambda function’s VPC.
+```python
+sg_details = await lambda_handler.get_security_group_details(["sg-12345678"])
+print(sg_details)
+```

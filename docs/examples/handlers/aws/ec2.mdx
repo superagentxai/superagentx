@@ -1,0 +1,79 @@
+---
+title: 'EC2 Handler'
+icon: 'server'
+---
+
+Amazon EC2 (Elastic Compute Cloud) is a service that provides secure, resizable compute capacity in the cloud.
+It allows you to launch virtual servers (instances), manage storage volumes, security groups, and networking configurations.
+With the EC2 handler, you can programmatically retrieve and manage EC2 resources such as instances, volumes, AMIs, snapshots, and more.
+
+## Example
+To create the AWSEC2Handler object with AWS credentials.
+The AWSEC2Handler connects to AWS EC2 using access credentials (access key, secret key) and a region name.
+It enables seamless interaction with EC2 for retrieving and managing compute resources.
+
+```python ec2_handler_test.py
+import os
+from superagentx_handlers.aws.ec2 import AWSEC2Handler
+
+ec2_handler = AWSEC2Handler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="eu-central-1"
+)
+```
+**Get Instances:** <br />
+The get_instances method fetches all EC2 instances.
+```python
+await ec2_handler.get_instances()
+print(instances)
+```
+
+**Get Security Groups:** <br />
+The get_security_groups method fetches all security groups.
+```python
+await ec2_handler.get_security_groups()
+print(security_groups)
+```
+
+**Get Volumes:** <br />
+The get_volumes method fetches all EBS volumes.
+```python
+await ec2_handler.get_volumes()
+print(volumes)
+```
+
+**Get AMIs:** <br />
+The get_amis method fetches all AMIs owned by the account.
+```python
+await ec2_handler.get_amis()
+print(amis)
+```
+
+**Get Snapshots:** <br />
+The get_snapshots method fetches all snapshots owned by the account.
+```python
+await ec2_handler.get_snapshots()
+print(snapshots)
+```
+
+**Get Key Pairs:** <br />
+The get_key_pairs method fetches all key pairs.
+```python
+key_pairs = await ec2_handler.get_key_pairs()
+print(key_pairs)
+```
+
+**Get Network Interfaces:** <br />
+The get_network_interfaces method fetches all network interfaces.
+```python
+network_interfaces = await ec2_handler.get_network_interfaces()
+print(network_interfaces)
+```
+
+**Collect All EC2 Resources:** <br />
+The collect_all_ec2 method fetches all EC2 resources in parallel.
+```python
+await ec2_handler.collect_all_ec2()
+print(all_ec2_data)
+```

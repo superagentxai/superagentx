@@ -1,0 +1,34 @@
+---
+title: 'NSG Handler'
+icon: 'shield'
+---
+
+Azure Network Security Group (NSG) is a core networking feature in Microsoft Azure that acts as a virtual firewall.
+It controls inbound and outbound traffic to Azure resources such as Virtual Machines, Subnets, and NICs.
+The `AzureNSGHandler` makes it easy to authenticate with Azure using service principal credentials and retrieve
+all NSGs within a subscription, helping with **network security auditing** and **firewall configuration visibility**.
+
+## Example
+
+To create the `AzureNSGHandler` object, provide your Azure credentials (subscription ID, tenant ID, client ID, and client secret).
+These can also be loaded from environment variables:
+
+```python
+import os
+from superagentx_handlers.azure.nsg import AzureNSGHandler
+
+nsg_handler = AzureNSGHandler(
+    subscription_id=os.getenv("AZURE_SUBSCRIPTION_ID"),
+    tenant_id=os.getenv("AZURE_TENANT_ID"),
+    client_id=os.getenv("AZURE_CLIENT_ID"),
+    client_secret=os.getenv("AZURE_CLIENT_SECRET"),
+)
+```
+
+**List All Network Security Groups (NSGs):** <br />
+Retrieves a list of all NSGs in the subscription. Each NSG includes its rules and properties.
+```python
+nsgs = await nsg_handler.get_network_security_groups()
+print(nsgs)
+```
+

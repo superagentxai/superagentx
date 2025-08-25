@@ -1,6 +1,6 @@
 ---
 title: 'S3 Handler'
-icon: 'hard-drive'
+icon: 'bucket'
 ---
 
 Amazon S3 is a cloud storage service on AWS that lets you store different types of files, like photos, audio, and
@@ -28,30 +28,50 @@ s3_handler = AWSS3Handler(
         region_name="eu-central-1"
 )
 ```
-
 **File Upload:** <br />
 The upload_file method accepts a file name and an object name.
-
 ```python
 await s3_handler.upload_file(
     file_name="test.txt",
     object_name="test.txt"
 )
 ```
-
-**List Bucket:** <br />
+**List Buckets:** <br />
 Returns a list of all buckets owned by the authenticated sender of the request.
-
 ```python
-await s3_handler.list_bucket()
+buckets = await s3_handler.list_bucket()
+print(buckets)
 ```
 
 **Download File:** <br />
-The download_file method accepts the names of the bucket and object to download and the filename to save the file to.
-
+The Download_file method accepts a file download in the buckets
 ```python
+
 await s3_handler.download_file(
     file_name="test.txt",
     object_name="test.txt"
 )
+```
+**List Objects in a Bucket:** <dr />
+The List object method shows list all object in the bucket
+```python
+await s3_handler.list_objects(prefix="folder/")
+print(objects)
+```
+
+**Delete an Object:** <br />
+The Delete object can delete the object in the bucket
+```python
+await s3_handler.delete_object(
+    object_name="test.txt"
+)
+```
+**Generate a Pre-Signed URL:** <br />
+The method will generate_presigned_url for the account
+```python
+await s3_handler.generate_presigned_url(
+    object_name="test.txt",
+    expiration=3600  # URL valid for 1 hour
+)
+print("Presigned URL:", url)
 ```

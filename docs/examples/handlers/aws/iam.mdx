@@ -1,0 +1,110 @@
+---
+title: 'IAM Handler'
+icon: 'shield'
+---
+
+Amazon **IAM (Identity and Access Management)** is a secure AWS service that enables you to manage access to AWS resources.
+It allows you to create users, groups, roles, and policies to define permissions. IAM helps enforce the **principle of least privilege** by giving the right access to the right people or systems.
+
+The **AWSIAMHandler** provides asynchronous helper methods to list and audit IAM entities, including users, groups, roles, managed policies, MFA devices, and account-level security configurations.
+
+
+
+## Example
+
+To create the **AWSIAMHandler** object, initialize it with AWS credentials and a region:
+
+```python
+import os
+from superagentx_handlers.aws.iam import AWSIAMHandler
+
+iam_handler = AWSIAMHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="us-east-1"
+)
+```
+
+**List IAM Users with Details:** <br />
+Fetches all IAM users with attached/inline policies, MFA, login profiles, access keys, and groups.
+```python
+users = await iam_handler.list_iam_users_with_details()
+print(users)
+```
+
+**List IAM Roles with Details:** <br />
+Fetches IAM roles with trust policies, attached policies, inline policies, and instance profiles.
+```python
+roles = await iam_handler.list_iam_roles_with_details()
+print(roles)
+```
+
+**List IAM Groups with Details:** <br />
+Lists IAM groups with members, attached managed policies, and inline policies.
+```python
+groups = await iam_handler.list_iam_groups_with_details()
+print(groups)
+```
+
+**List IAM Managed Policies:** <br />
+Retrieves all IAM managed policies (AWS & customer-managed) along with their documents.
+```python
+policies = await iam_handler.list_iam_managed_policies_with_documents(scope="All")
+print(policies)
+```
+
+**List MFA Enabled Users:** <br />
+Returns IAM users with MFA devices enabled.
+```python
+mfa_users = await iam_handler.list_mfa_enabled_users()
+print(mfa_users)
+```
+
+**Get Account Summary:** <br />
+Fetches IAM resource usage and quota (roles, groups, users, etc.).
+```python
+summary = await iam_handler.get_account_summary()
+print(summary)
+```
+
+**Get Credential Report:** <br />
+Retrieves IAM account credential report (CSV format) for auditing password age, MFA, and access key rotation.
+```python
+report = await iam_handler.get_credential_report()
+print(report)
+```
+
+**List Virtual MFA Devices:** <br />
+Lists assigned and unassigned virtual MFA devices.
+```python
+mfa_devices = await iam_handler.list_virtual_mfa_devices(assignment_status="Any")
+print(mfa_devices)
+```
+
+**Get Account Password Policy:** <br />
+Retrieves password policy (complexity, expiry, rotation, etc.).
+```python
+policy = await iam_handler.get_account_password_policy()
+print(policy)
+```
+
+**List Account Aliases:** <br />
+Lists aliases for the AWS account.
+```python
+aliases = await iam_handler.list_account_aliases()
+print(aliases)
+```
+
+**List Organization Accounts:** <br />
+Lists all accounts under AWS Organizations (if enabled).
+```python
+accounts = await iam_handler.list_organization_accounts()
+print(accounts)
+```
+
+**Collect All IAM Data:** <br />
+Fetches everything (users, groups, roles, policies, MFA, org accounts, etc.) in a single structured call.
+```python
+iam_data = await iam_handler.collect_all_iam()
+print(iam_data.keys())
+```
