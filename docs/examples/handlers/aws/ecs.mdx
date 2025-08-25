@@ -1,0 +1,69 @@
+---
+title: 'ECS Handler'
+icon: 'container-storage'
+---
+
+Amazon ECS (Elastic Container Service) is a fully managed container orchestration service.
+It allows you to run Docker containers at scale, with integration to EC2 and Fargate.
+The ECS Handler helps fetch **clusters, services, tasks, and container instances**.
+
+
+## Example
+
+To create the **ECS Handler**, pass AWS credentials (`access_key`, `secret_key`, and `region`).
+
+```python
+import os
+from superagentx_handlers.aws.ecs import AWSECSHandler
+
+ecs_handler = AWSECSHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="eu-central-1"
+)
+```
+**List Clusters:** <br />
+Fetches all ECS clusters.
+```python
+clusters = await ecs_handler.list_clusters()
+print(clusters)
+```
+
+**List Services:** <br />
+Lists ECS services running inside a cluster.
+```python
+services = await ecs_handler.list_services(cluster="my-cluster")
+print(services)
+```
+**List Tasks:** <br />
+Lists running tasks inside a service.
+```python
+tasks = await ecs_handler.list_tasks(cluster="my-cluster")
+print(tasks)
+```
+
+**Describe Cluster:** <br />
+Fetches detailed information about a cluster.
+```python
+cluster_info = await ecs_handler.describe_cluster(cluster="my-cluster")
+print(cluster_info)
+```
+**Describe Service:** <br />
+Fetches detailed info of a service inside a cluster.
+```python
+service_info = await ecs_handler.describe_service(
+    cluster="my-cluster",
+    service="my-service"
+)
+print(service_info)
+```
+
+**Describe Task:** <br />
+Fetches details about a specific task.
+```python
+task_info = await ecs_handler.describe_task(
+    cluster="my-cluster",
+    task="0123456789abcdef0"
+)
+print(task_info)
+```

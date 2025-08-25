@@ -1,0 +1,43 @@
+---
+title: 'ELB Handler'
+icon: 'server'
+---
+
+Amazon Elastic Load Balancing (ELBv2) automatically distributes incoming application traffic across multiple targets, such as Amazon EC2 instances, containers, and IP addresses.
+It provides high availability, automatic scaling, and robust security features, and supports multiple load balancer types (Application, Network, and Gateway).
+This handler focuses on **Application Load Balancers (ALBs)** and retrieves details about load balancers, listeners, listener rules, target groups, and target health.
+
+
+## Example
+
+To create the 'AWSElasticLoadBalancerHandler' object, you must provide AWS credentials:
+
+```python elb_handler_test.py
+import os
+from superagentx_handlers.aws.elb import AWSElasticLoadBalancerHandler
+
+elb_handler = AWSElasticLoadBalancerHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="us-east-1"
+)
+```
+**Get ELB Details:** <br />
+Fetches all Application Load Balancer (ALB) details, including listeners, rules, target groups, and target health.
+```python
+elb_details = await elb_handler.get_elb_details()
+print(elb_details)
+```
+**Collect Target Groups from Default Actions and Rules:** <br />
+Collects all target groups referenced in listeners’ default actions and custom rules.
+```python
+target_groups = await elb_handler.collect_target_groups_from_listeners("arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-alb/abc123")
+print(target_groups)
+```
+
+**Fetch Detailed Target Group Info:** <br />
+Fetches complete target group configuration and health status, including protocol, port, health check config, and registered targets.
+```python
+tg_info = await elb_handler.get_target_group_info("arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg/ghi789")
+print(tg_info)
+```

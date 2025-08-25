@@ -1,0 +1,128 @@
+---
+title: 'API Gateway Handler'
+icon: 'cloud'
+---
+
+Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain,
+monitor, and secure APIs at any scale.
+
+The `AWSAPIGatewayHandler` class provides async methods to manage **REST APIs, resources, methods, stages, deployments, usage plans, and API keys**.
+
+
+
+## **Initialization**
+
+```python apigateway_handler_test.py
+import os
+from superagentx_handlers.aws.api_gateway import AWSAPIGatewayHandler
+
+api_handler = AWSAPIGatewayHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="eu-central-1"
+)
+```
+**Get All API Gateways Info:** <br />
+Fetches a summary of all API Gateways (REST, HTTP, and WebSocket APIs) with their resources, stages, and deployments.
+```python
+apis = await api_handler.get_all_api_gateways_info()
+print(apis)
+```
+
+**Get REST APIs (API Gateway v1):** <br />
+Retrieves a list of all REST APIs in your account.
+```python
+rest_apis = await api_handler.get_rest_apis()
+print(rest_apis)
+```
+
+**Get Resources for a REST API:** <br />
+Lists all resources (paths/endpoints) for a given REST API.
+```python
+resources = await api_handler.get_rest_api_resources(api_id="your_rest_api_id")
+print(resources)
+```
+
+**Get Stages for a REST API:** <br />
+Returns all stages (e.g., dev, prod) configured for a REST API.
+```python
+stages = await api_handler.get_rest_api_stages(api_id="your_rest_api_id")
+print(stages)
+```
+
+**Get Deployments for a REST API:** <br />
+Lists deployments of a given REST API.
+```python
+deployments = await api_handler.get_rest_api_deployments(api_id="your_rest_api_id")
+print(deployments)
+```
+
+**Get HTTP APIs (API Gateway v2):** <br />
+Retrieves all HTTP APIs in your account.
+```python
+http_apis = await api_handler.get_http_apis()
+print(http_apis)
+```
+
+**Get Routes for an HTTP API:** <br />
+Lists all routes (endpoints) for an HTTP API.
+```python
+routes = await api_handler.get_http_api_routes(api_id="your_http_api_id")
+print(routes)
+```
+
+**Get Stages for an HTTP API:** <br />
+Returns all stages (e.g., beta, prod) for an HTTP API.
+```python
+stages = await api_handler.get_http_api_stages(api_id="your_http_api_id")
+print(stages)
+```
+
+**Get Integrations for an HTTP API:** <br />
+Lists integrations (like Lambda, VPC Link, etc.) for an HTTP API.
+```python
+integrations = await api_handler.get_http_api_integrations(api_id="your_http_api_id")
+print(integrations)
+```
+
+**Get WebSocket APIs (API Gateway v2):** <br />
+Retrieves all WebSocket APIs in your account.
+```python
+ws_apis = await api_handler.get_websocket_apis()
+print(ws_apis)
+```
+
+**Get Routes for a WebSocket API:** <br />
+Lists all routes for a WebSocket API.
+```python
+routes = await api_handler.get_websocket_api_routes(api_id="your_ws_api_id")
+print(routes)
+```
+
+**Get Stages for a WebSocket API:** <br />
+Fetches all stages for a WebSocket API.
+```python
+stages = await api_handler.get_websocket_api_stages(api_id="your_ws_api_id")
+print(stages)
+```
+
+**Get Integrations for a WebSocket API:** <br />
+Lists integrations for a WebSocket API.
+```python
+integrations = await api_handler.get_websocket_api_integrations(api_id="your_ws_api_id")
+print(integrations)
+```
+
+**Get VPC Links (REST APIs v1):** <br />
+Fetches all VPC Links configured for REST APIs.
+```python
+vpc_links = await api_handler.get_vpc_links_v1()
+print(vpc_links)
+```
+
+**Get VPC Links (HTTP/WebSocket APIs v2):** <br />
+Fetches all VPC Links configured for HTTP and WebSocket APIs.
+```python
+vpc_links = await api_handler.get_vpc_links_v2()
+print(vpc_links)
+```

@@ -1,0 +1,43 @@
+---
+title: 'CloudWatch Handler'
+icon: 'chart-bar'
+---
+
+Amazon CloudWatch is a monitoring and observability service that provides data and actionable insights for AWS, hybrid,
+and on-premises applications and infrastructure resources. It allows you to collect metrics, logs, and events, helping
+you monitor system health, detect anomalies, and keep applications running smoothly.
+
+## Example
+To create the AWSCloudWatchHandler object with AWS credentials.
+The AWSCloudWatchHandler connects to Amazon CloudWatch using access credentials
+(access key, secret key) and specifies a region. It enables seamless interaction
+with CloudWatch for tasks like fetching metrics and monitoring resources.
+
+```python cloudwatch_handler_test.py
+import os
+from superagentx_handlers.aws.cloudwatch import AWSCloudWatchHandler
+
+cloudwatch_handler = AWSCloudWatchHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="us-east-1"
+)
+```
+**Get Metric Data:** <br />
+The get_metric_data method retrieves metrics for a specific namespace, metric, and dimensions within a given time range.
+from datetime import datetime, timedelta
+```python
+end_time = datetime.utcnow()
+start_time = end_time - timedelta(hours=1)
+
+response = await cloudwatch_handler.get_metric_data(
+    namespace="AWS/EC2",
+    metric_name="CPUUtilization",
+    start_time=start_time,
+    end_time=end_time,
+    period=300,  # granularity in seconds
+    statistics=["Average"],  # can also use Sum, Minimum, Maximum, etc.
+    dimensions=[{"Name": "InstanceId", "Value": "i-1234567890abcdef0"}]
+)
+print(response)
+```

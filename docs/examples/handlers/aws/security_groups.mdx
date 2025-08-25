@@ -1,0 +1,32 @@
+---
+title: 'Security Groups Handler'
+icon: 'lock'
+---
+
+Amazon EC2 **Security Groups** act as virtual firewalls to control inbound and outbound traffic for your AWS resources, such as EC2 instances and load balancers. They help secure your applications by defining rules that allow or deny specific traffic. Security Groups operate at the instance level and are an essential part of AWS networking and security best practices.
+
+This handler enables you to interact with **AWS Security Groups** using boto3, making it easier to retrieve details such as rules, attached instances, and associated VPCs. It provides an abstraction for developers to collect security group data seamlessly.
+
+
+
+## Example
+
+To create the AWS Security Groups Handler object with AWS credentials:
+
+```python
+import os
+from superagentx_handlers.aws.security_groups import AWSSecurityGroupsHandler
+
+sg_handler = AWSSecurityGroupsHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="us-east-1"
+)
+```
+
+**List Security Groups:** <br />
+Retrieves details of all security groups in your AWS account for the given region, including rules, VPCs, and attached resources.
+```python
+security_groups = await sg_handler.get_ec2_security_groups()
+print(security_groups)
+```

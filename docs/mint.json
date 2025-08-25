@@ -85,9 +85,37 @@
               "pages": [
                 "examples/handlers/aws/s3",
                 "examples/handlers/aws/ec2",
+                "examples/handlers/aws/rds",
+                "examples/handlers/aws/ecs",
+                "examples/handlers/aws/api_gateway",
+                "examples/handlers/aws/elasticache",
+                "examples/handlers/aws/cloudfront",
+                "examples/handlers/aws/cloudwatch",
+                "examples/handlers/aws/elb",
+                "examples/handlers/aws/helper",
+                "examples/handlers/aws/iam",
+                "examples/handlers/aws/security_groups",
+                "examples/handlers/aws/serverless",
                 "examples/handlers/aws/iam"
               ]
             },
+        {
+          "group": "Microsoft Azure",
+          "icon": "A",
+          "pages": [
+            "examples/handlers/azure/application_gateway",
+            "examples/handlers/azure/cloud_functions",
+            "examples/handlers/azure/iam",
+            "examples/handlers/azure/load_balancer",
+            "examples/handlers/azure/nsg",
+            "examples/handlers/azure/storage",
+            "examples/handlers/azure/vm"
+
+
+          ]
+        },
+
+
             {
               "group": "Atlassian",
               "icon": "atlassian",

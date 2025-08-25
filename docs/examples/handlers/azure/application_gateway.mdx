@@ -1,0 +1,97 @@
+---
+title: 'Application Gateway'
+icon: 'window'
+---
+
+Azure Application Gateway is a web traffic load balancer that enables you to manage traffic to your web applications. It provides features like SSL termination, cookie-based session affinity, URL-based routing, and Web Application Firewall (WAF) integration to protect against common exploits and vulnerabilities. With Application Gateway, you can secure, scale, and monitor your application traffic efficiently in Azure.
+
+## Example
+
+To create the AzureApplicationGatewayHandler object with Azure credentials. The handler connects to Azure Application Gateway resources using client credentials or managed identity, and provides methods to fetch gateways, backend health, WAF policies, and networking components.
+
+```python
+import os
+from superagentx_handlers.azure.application_gateway import AzureApplicationGatewayHandler
+
+gateway_handler = AzureApplicationGatewayHandler(
+    subscription_id=os.getenv("AZURE_SUBSCRIPTION_ID"),
+    client_id=os.getenv("AZURE_CLIENT_ID"),
+    client_secret=os.getenv("AZURE_CLIENT_SECRET"),
+    tenant_id=os.getenv("AZURE_TENANT_ID"),
+)
+```
+
+**Get Resource Groups:** <br />
+Retrieve all resource groups in the subscription.
+```python
+groups = await gateway_handler.get_resource_groups()
+print(groups)
+```
+
+**List Application Gateways:** <br />
+Fetch all Application Gateways in the subscription or within a resource group.
+```python
+app_gateways = await gateway_handler.get_application_gateways(resource_group_name="my-rg")
+print(app_gateways)
+```
+
+**Get Application Gateway Details:** <br />
+Fetch detailed info for a specific Application Gateway.
+```python
+gateway = await gateway_handler.get_application_gateway(resource_group_name="my-rg", gateway_name="my-gateway")
+print(gateway)
+```
+
+**Check Backend Health:** <br />
+Retrieve backend pool health information for a gateway.
+```python
+health = await gateway_handler.get_application_gateway_backend_health(resource_group_name="my-rg", gateway_name="my-gateway")
+print(health)
+```
+
+**Get WAF Policies:** <br />
+List all WAF policies associated with Application Gateways.
+```python
+waf_policies = await gateway_handler.get_application_gateway_waf_policies(resource_group_name="my-rg")
+print(waf_policies)
+```
+
+**Get Public IPs:** <br />
+Retrieve public IP addresses available for Application Gateways.
+```python
+public_ips = await gateway_handler.get_public_ip_addresses(resource_group_name="my-rg")
+print(public_ips)
+```
+
+**Get Virtual Networks:** <br />
+List all VNets and subnets associated with Application Gateways.
+```python
+vnets = await gateway_handler.get_virtual_networks(resource_group_name="my-rg")
+print(vnets)
+```
+
+**Start Application Gateway:** <br />
+Start an Application Gateway instance.
+```python
+await gateway_handler.start_application_gateway(resource_group_name="my-rg", gateway_name="my-gateway")
+```
+
+**Stop Application Gateway:** <br />
+Stop an Application Gateway instance.
+```python
+await gateway_handler.stop_application_gateway(resource_group_name="my-rg", gateway_name="my-gateway")
+```
+
+**Collect All Data:** <br />
+Fetch comprehensive data including gateways, WAF policies, backend health, public IPs, and VNets.
+```python
+data = await gateway_handler.collect_all_application_gateway_data(resource_group_name="my-rg")
+print(data)
+```
+
+**Authentication & Authorization Details:** <br />
+Collect authentication, authorization, and RBAC configuration details for API Management linked with gateways.
+```python
+auth_data = await gateway_handler.collect_authentication_authorization_details(resource_group_name="my-rg")
+print(auth_data)
+```

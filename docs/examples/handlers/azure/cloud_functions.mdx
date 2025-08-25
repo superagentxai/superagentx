@@ -1,0 +1,60 @@
+---
+title: 'Cloud Functions'
+icon: 'cloud'
+---
+
+Azure Functions is a **serverless compute service** that enables you to run event-driven code without provisioning or managing infrastructure.
+It allows developers to write functions in multiple languages (like Python, Node.js, C#, etc.) and execute them in response to triggers (HTTP requests, timers, storage events, queues, etc.).
+
+Using the `AzureFunctionHandler`, you can easily **list, retrieve, and configure** function apps within your Azure subscription. It leverages the Azure SDK to interact with Azure Functions resources, supporting authentication via `ClientSecretCredential`.
+
+
+## Example
+
+To create the `AzureFunctionHandler` object, provide your **Azure credentials**:
+
+```python
+import os
+from superagentx_handlers.azure.functions import AzureFunctionHandler
+
+azure_handler = AzureFunctionHandler(
+    subscription_id=os.getenv("AZURE_SUBSCRIPTION_ID"),
+    tenant_id=os.getenv("AZURE_TENANT_ID"),
+    client_id=os.getenv("AZURE_CLIENT_ID"),
+    client_secret=os.getenv("AZURE_CLIENT_SECRET"),
+)
+```
+
+**List All Function Apps in a Subscription:** <br />
+Retrieves all function apps across the given subscription.
+```python
+function_apps = await azure_handler.get_all_function_apps_in_subscription()
+print(function_apps)
+```
+
+**List Function Apps by Resource Group:** <br />
+Get all function apps inside a specific resource group.
+```python
+apps_in_rg = await azure_handler.get_function_apps_by_resource_group("my-resource-group")
+print(apps_in_rg)
+```
+
+**Get a Specific Function App by Name:** <br />
+Retrieve metadata and configuration of a specific function app.
+```python
+function_app = await azure_handler.get_function_app_by_name(
+    resource_group_name="my-resource-group",
+    function_app_name="my-function-app"
+)
+print(function_app)
+```
+
+**Get Function App Configuration:** <br />
+Fetches site configuration, app settings, and connection strings.
+```python
+config = await azure_handler.get_function_app_configuration(
+    resource_group_name="my-resource-group",
+    function_app_name="my-function-app"
+)
+print(config)
+```

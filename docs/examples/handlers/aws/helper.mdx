@@ -1,0 +1,28 @@
+---
+title: 'AWS Helper'
+icon: 'key'
+---
+
+The **AWS Helper** provides utility functions to simplify authentication and temporary credential generation.
+One key feature is the ability to generate **AWS STS temporary credentials**, which are short-lived credentials used for secure authentication in AWS services without exposing long-term access keys.
+
+STS (Security Token Service) is particularly useful when granting temporary access to applications, scripts, or external systems.
+
+## Example
+
+To use the AWS Helper, call the `generate_aws_sts_token` method with your AWS credentials and region details.
+
+```python
+import os
+from helpers.aws_helper import generate_aws_sts_token
+
+# Generate temporary STS token
+sts_credentials = generate_aws_sts_token(
+    region_name="us-east-1",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    duration_seconds=3600  # 1 hour
+)
+
+print(sts_credentials)
+```

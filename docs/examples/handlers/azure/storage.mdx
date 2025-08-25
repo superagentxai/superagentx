@@ -1,0 +1,35 @@
+---
+title: 'Storage Handler'
+icon: 'database'
+---
+
+Azure Storage Accounts are scalable cloud storage solutions in Microsoft Azure,
+commonly used to store **blobs (files), queues, tables, and file shares**.
+The `AzureStorageHandler` provides an abstraction layer to authenticate with Azure using
+service principal credentials and retrieve all storage accounts within a subscription,
+including their **encryption settings, firewall/network rules, and public access status**.
+
+## Example
+
+To create the `AzureStorageHandler` object, provide your Azure credentials
+(subscription ID, tenant ID, client ID, and client secret).
+These can also be loaded from environment variables:
+
+```python
+import os
+from superagentx_handlers.azure.storage import AzureStorageHandler
+
+storage_handler = AzureStorageHandler(
+    subscription_id=os.getenv("AZURE_SUBSCRIPTION_ID"),
+    tenant_id=os.getenv("AZURE_TENANT_ID"),
+    client_id=os.getenv("AZURE_CLIENT_ID"),
+    client_secret=os.getenv("AZURE_CLIENT_SECRET"),
+)
+```
+**List All Storage Accounts:** <br />
+Retrieves a list of all storage accounts within the subscription,
+along with their associated properties.
+```python
+accounts = await storage_handler.list_storage_accounts()
+print(accounts)
+```
