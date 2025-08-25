@@ -2,12 +2,14 @@ import asyncio
 import json
 import logging
 import pyotp
+import ntplib
 
 from superagentx.computer_use.browser.context import BrowserContext
 from superagentx.computer_use.browser.models import ToolResult
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
 from superagentx.llm import LLMClient, ChatCompletionParams
+from superagentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -73,12 +75,19 @@ class BrowserHandler(BaseHandler):
         logger.info(msg)
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
+    def get_ntp_time(self):
+        """Fetch accurate UTC time from an NTP server."""
+        client = ntplib.NTPClient()
+        response = client.request('time.google.com')
+        return response.tx_time
+
     @tool
     async def enter_mfa_otp(
             self,
             mfa_secret_key: str,
             index: int,
-            has_sensitive: bool = False
+            click_element_by_index: int,
+            has_sensitive: bool = False,
     ) -> ToolResult:
         """
         Generate the current OTP using the provided MFA secret and enter it into the specified input field.
@@ -87,11 +96,38 @@ class BrowserHandler(BaseHandler):
         Args:
             mfa_secret_key (str): The shared MFA secret used to generate the OTP.
             index (int): Index of the input element where the OTP should be entered.
+            click_element_by_index (int): Clicks the element at the given index after entering the OTP.
             has_sensitive (bool): Has Sensitive data. Default False
         """
+
+        try:
+            ntp_time = await sync_to_async(self.get_ntp_time)
+        except Exception as e:
+            # fallback to system time if NTP fails
+            print(f" NTP failed: {e}, falling back to system time.")
+            ntp_time = time.time()
         totp = pyotp.TOTP(mfa_secret_key)
-        otp = totp.now()
-        return await self.input_text(index=index, text=otp, has_sensitive=has_sensitive)
+        # otp = totp.now()
+        otp = await sync_to_async(totp.at,ntp_time)
+        is_valid = await sync_to_async(totp.verify, otp, for_time=ntp_time, valid_window=1)
+
+        if is_valid:
+            interval = totp.interval  # usually 30s
+            remaining = interval - (int(ntp_time) % interval)
+
+            if remaining > 15:
+                print(f" The OTP {otp} is valid for another {remaining} seconds.")
+                await self.input_text(index=index, text=otp, has_sensitive=has_sensitive)
+                return await self.click_element_by_index(index=click_element_by_index)
+
+        # Retry once if OTP invalid or about to expire
+        print("Retrying OTP generation...")
+        return await self.enter_mfa_otp(
+            mfa_secret_key=mfa_secret_key,
+            index=index,
+            click_element_by_index=click_element_by_index,
+            has_sensitive=has_sensitive,
+        )
 
     @tool
     async def go_to_url(
