@@ -1,0 +1,32 @@
+---
+title: 'Load Balancer Handler'
+icon: 'network-wired'
+---
+
+The **Azure Load Balancer Handler** is responsible for retrieving and managing **Azure Load Balancers** within a subscription.
+It uses the Azure SDK for Python (`azure-mgmt-network`) and authentication via `azure-identity` to collect server asset details for governance, compliance, and monitoring.
+
+
+
+## Example
+
+To create the **AzureLoadBalancerHandler** object, initialize it with your **Azure Subscription ID, Tenant ID, Client ID, and Client Secret** (or load them from environment variables):
+
+```python
+import os
+from superagentx_handlers.azure.loadbalancer import AzureLoadBalancerHandler
+
+lb_handler = AzureLoadBalancerHandler(
+    subscription_id=os.getenv("AZURE_SUBSCRIPTION_ID"),
+    tenant_id=os.getenv("AZURE_TENANT_ID"),
+    client_id=os.getenv("AZURE_CLIENT_ID"),
+    client_secret=os.getenv("AZURE_CLIENT_SECRET")
+)
+```
+
+**Get All Load Balancers in Subscription:** <br />
+Fetches all load balancers in the configured subscription, including their properties (frontend IPs, backend pools, probes, rules, etc.).
+```python
+lbs = await lb_handler.get_all_load_balancers_in_subscription()
+print(lbs)
+```

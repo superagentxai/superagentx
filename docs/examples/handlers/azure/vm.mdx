@@ -1,0 +1,36 @@
+---
+title: 'VM Handler'
+icon: 'server'
+---
+
+Azure Virtual Machines (VMs) are scalable computing resources in Microsoft Azure.
+They allow you to run Windows or Linux servers in the cloud without needing to maintain physical hardware.
+With Azure VMs, you can host applications, databases, and workloads with built-in high availability, security, and scalability.
+
+This handler provides seamless interaction with Azure VMs to collect information about virtual machines within a subscription.
+It uses service principal authentication (`tenant_id`, `client_id`, `client_secret`) and requires appropriate Azure RBAC permissions (e.g., **Reader** role).
+
+
+
+## Example
+
+To create the `AzureVMHandler` object with your Azure credentials:
+
+```python
+import os
+from superagentx_handlers.azure.vm import AzureVMHandler
+
+azure_vm_handler = AzureVMHandler(
+    subscription_id=os.getenv("AZURE_SUBSCRIPTION_ID"),
+    tenant_id=os.getenv("AZURE_TENANT_ID"),
+    client_id=os.getenv("AZURE_CLIENT_ID"),
+    client_secret=os.getenv("AZURE_CLIENT_SECRET")
+)
+```
+**List Virtual Machines (get_vms):** <br />
+Retrieves a list of all accessible Azure VM instances within the configured subscription.
+Each VM’s details (name, ID, region, size, OS, and network/storage profile) are returned in dictionary format.
+```python
+vms = await azure_vm_handler.get_vms()
+print(vms)
+```
