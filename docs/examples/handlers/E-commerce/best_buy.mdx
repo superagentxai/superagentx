@@ -1,0 +1,30 @@
+---
+title: 'Best Buy Handler'
+icon: 'shopping-cart'
+---
+
+Best Buy is a leading consumer electronics retailer that provides a wide variety of products including laptops, TVs, phones, appliances, and more.
+The **BestbuyHandler** allows programmatic access to Best Buy’s product catalog through its public API. Developers can search products, retrieve prices, discounts, reviews, and detailed product information.
+
+This integration is useful for building product recommendation systems, price tracking tools, or e-commerce integrations.
+
+
+## Example
+
+To create the `BestbuyHandler` object with the API key:
+
+```python
+import os
+from superagentx_handlers.retail.bestbuy import BestbuyHandler
+
+bestbuy_handler = BestbuyHandler(
+    api_key=os.getenv("BESTBUY_API_KEY")
+)
+```
+
+**Search Products (get_best_buy_info):** <br />
+Fetch product details from Best Buy based on a search keyword.
+```python
+products = await bestbuy_handler.get_best_buy_info(search_text="laptop")
+print(products)
+```

@@ -1,0 +1,164 @@
+---
+title: 'GitHub Handler'
+icon: 'github'
+---
+
+GitHub is a leading platform for hosting and collaborating on code repositories. It provides developers with tools for version control, CI/CD workflows, and collaboration across teams.
+The **GitHubHandler** allows secure integration with the GitHub API using a personal access token. It enables governance, risk, and compliance (GRC) data collection, such as repository metadata, MFA checks, and other organizational details.
+
+
+## Example
+
+To create the `GitHubHandler` object with the GitHub credentials:
+The `GitHubHandler` connects to the GitHub API using an access token and base URL. It enables seamless interaction with repositories, users, and organizational data.
+
+```python
+import os
+from superagentx_handlers.github.github import GitHubHandler
+
+github_handler = GitHubHandler(
+    api_base_url=os.getenv("GITHUB_API_BASE_URL", "https://api.github.com"),
+    github_token=os.getenv("GITHUB_TOKEN")
+)
+```
+**Fetch All Pages:** <br />
+The fetch_all_pages method retrieves data across paginated GitHub API responses, such as repositories, branches, pull requests, or secrets.
+url = f"{github_handler.api_base_url}/user/repos"
+headers = github_handler._common_headers
+```python
+repos = await github_handler.fetch_all_pages(url=url, headers=headers)
+print(repos)
+```
+
+**Organization Details:** <br />
+Fetches details about the authenticated GitHub organization.
+```python
+org = await github_handler.organization_details("my-org")
+print(org["login"], org["created_at"])
+```
+
+**User Details:** <br />
+Retrieves information about the authenticated GitHub user.
+```python
+user = await github_handler.user_details()
+print(user["login"], user["email"])
+```
+
+**Single MFA Evidence (Internal):** <br />
+Checks MFA configuration for a single user (internal helper).
+```python
+mfa_status = await github_handler.single_mfa_evidence_internal("octocat")
+print(mfa_status)
+```
+
+**MFA Evidence:** <br />
+Collects MFA enforcement evidence across organization members.
+```python
+mfa_data = await github_handler.mfa_evidence("my-org")
+print(mfa_data)
+```
+
+**Process Repositories (Internal):** <br />
+Processes repositories internally for compliance checks.
+```python
+repos_data = await github_handler.process_repositories_internal("my-org")
+print(len(repos_data))
+```
+
+**Repository Summary:** <br />
+Summarizes details about a given repository.
+```python
+summary = await github_handler.repository_summary("my-org", "superagentx")
+print(summary)
+```
+
+**List Organization Members:** <br />
+Lists all members in an organization.
+```python
+members = await github_handler.list_organization_members("my-org")
+print([m["login"] for m in members])
+```
+
+**Fetch Repo Branches (Internal):** <br />
+Fetches branch details for a repository (internal helper).
+```python
+branches = await github_handler.fetch_repo_branches_internal("my-org", "superagentx")
+print(branches)
+```
+
+**Repository Branches:** <br />
+Gets all branches of a repository.
+```python
+branches = await github_handler.repository_branches("my-org", "superagentx")
+print([b["name"] for b in branches])
+```
+
+**Single Branch Protection (Internal):** <br />
+Fetches branch protection rules for a branch (internal helper).
+```python
+protection = await github_handler.single_branch_protection_internal("my-org", "superagentx", "main")
+print(protection)
+```
+
+**Branch Protection:** <br />
+Gets branch protection details for all branches in a repository.
+```python
+branch_protection = await github_handler.branch_protection("my-org", "superagentx")
+print(branch_protection)
+```
+
+**Fetch Pull Requests for Repo (Internal):** <br />
+Fetches pull requests for a given repository (internal helper).
+```python
+prs = await github_handler._fetch_pull_requests_for_repo("my-org", "superagentx")
+print([pr["title"] for pr in prs])
+```
+
+**Pull Requests:** <br />
+Gets all pull requests for a repository.
+```python
+prs = await github_handler.pull_requests("my-org", "superagentx")
+print(len(prs))
+```
+
+**Fetch Dependabot Alerts for Repo (Internal):** <br />
+Retrieves Dependabot alerts for a repository (internal helper).
+```python
+alerts = await github_handler._fetch_dependabot_alerts_for_repo("my-org", "superagentx")
+print(alerts)
+```
+
+**Get Dependabot Alerts:** <br />
+Fetches Dependabot alerts across repositories.
+```python
+alerts = await github_handler.get_dependabot_alerts("my-org")
+print(alerts)
+```
+
+**Get Repository Dependabot Secrets:** <br />
+Lists Dependabot secrets for a repository.
+```python
+secrets = await github_handler.get_repository_dependabot_secrets("my-org", "superagentx")
+print(secrets)
+```
+
+**Fetch Dependencies for Repo (Internal):** <br />
+Retrieves dependencies for a repository (internal helper).
+```python
+deps = await github_handler._fetch_dependencies_for_repo("my-org", "superagentx")
+print(deps)
+```
+
+**List Repository Dependencies:** <br />
+Lists dependencies across repositories.
+```python
+dependencies = await github_handler.list_repository_dependencies("my-org", "superagentx")
+print(dependencies)
+```
+
+**Get Packages:** <br />
+Fetches packages for an organization or user.
+```python
+packages = await github_handler.get_packages("my-org")
+print([pkg["name"] for pkg in packages])
+```

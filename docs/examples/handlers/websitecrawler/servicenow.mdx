@@ -1,0 +1,36 @@
+---
+title: 'ServiceNow Handler'
+icon: 'server'
+---
+
+ServiceNow is a cloud-based platform that provides IT service management (ITSM), helping organizations manage incidents, assets, changes, and workflows. The `ServiceNowHandler` allows seamless integration with ServiceNow to fetch users, assets, and related tickets programmatically.
+
+## Example
+
+To create the `ServiceNowHandler` object, initialize it with your ServiceNow instance URL and credentials. If not provided, the values will be picked up from environment variables.
+
+```python
+import os
+from superagentx_handlers.servicenow import ServiceNowHandler
+
+servicenow_handler = ServiceNowHandler(
+    instance_url=os.getenv("SERVICENOW_INSTANCE_URL"),
+    username=os.getenv("SERVICENOW_USERNAME"),
+    password=os.getenv("SERVICENOW_PASSWORD"),
+)
+```
+
+**Get User Name:** <br />
+Fetches the user’s display name from ServiceNow using their sys_id.
+```python
+user_name = await servicenow_handler.get_user_name("46d44a2d1b2123009b5f3d92cc4bcb65")
+print(user_name)   # e.g., "John Doe"
+```
+
+**Get Assets with Details and Tickets:** <br />
+Retrieves a list of assets along with details like owner, model, warranty, and their associated incident tickets.
+```python
+assets_report = await servicenow_handler.get_assets_with_details_and_tickets()
+for asset in assets_report:
+    print(asset["Asset Name"], asset["Tickets"])
+```

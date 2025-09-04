@@ -1,0 +1,66 @@
+---
+title: 'Security Role Handler'
+icon: 'shield'
+---
+
+The **GcpSecurityRoleHandler** is a specialized handler for Google Cloud Platform (GCP) that helps collect comprehensive **security and IAM-related information**.
+It focuses on discovering and retrieving IAM policies, service accounts, and custom roles across **organizations, folders, and projects**.
+
+This is particularly useful for compliance, governance, and security evidence collection across multiple levels of the GCP resource hierarchy.
+
+
+
+## Example
+
+To create the handler, pass in your GCP **service account credentials** (either as a JSON dict/string or use the environment variable `GOOGLE_APPLICATION_CREDENTIALS` pointing to your JSON key file).
+
+```python
+import os
+from superagentx_handlers.gcp.security_role import GcpSecurityRoleHandler
+
+gcp_handler = GcpSecurityRoleHandler(
+    service_account_info=os.getenv("GCP_SERVICE_ACCOUNT_JSON")
+)
+```
+
+**Collect Organization IAM Policies:** <br />
+Retrieves IAM policies for all accessible organizations.
+```python
+org_policies = await gcp_handler.collect_organization_iam()
+print(org_policies)
+```
+
+**Collect Folder IAM Policies:** <br />
+Fetches IAM policies for all folders under an organization or another folder.
+```python
+folder_policies = await gcp_handler.collect_folder_iam(organization_id="1234567890")
+print(folder_policies)
+```
+
+**Collect Project IAM Policies:** <br />
+Retrieves IAM policies for specific projects or all accessible projects.
+```python
+project_policies = await gcp_handler.collect_project_iam(project_id="my-gcp-project")
+print(project_policies)
+```
+
+**Collect Service Accounts:** <br />
+Lists service accounts in a given project.
+```python
+service_accounts = await gcp_handler.collect_service_accounts(project_id="my-gcp-project")
+print(service_accounts)
+```
+
+**Collect Custom Roles:** <br />
+Fetches custom IAM roles at the project or organization level.
+```python
+custom_roles = await gcp_handler.collect_custom_roles(project_id="my-gcp-project")
+print(custom_roles)
+```
+
+**Collect All Security Information:** <br />
+Performs a comprehensive security collection across IAM policies, service accounts, and custom roles for an organization or project.
+```python
+security_info = await gcp_handler.collect_all_security_info(organization_id="1234567890")
+print(security_info.keys())
+```
