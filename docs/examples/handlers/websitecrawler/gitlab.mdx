@@ -1,0 +1,90 @@
+---
+title: 'GitLab Handler'
+icon: 'gitlab'
+---
+
+GitLab is a web-based DevOps platform that provides Git repository management, CI/CD pipelines, issue tracking, and more. It enables teams to collaborate on code, automate software delivery, and enforce security and compliance policies. Using the GitLab API, you can programmatically manage projects, users, groups, pipelines, and repository data for governance and auditing.
+
+## Example
+
+To create the `GitlabHandler` object, initialize it with your GitLab private token and instance URL. The handler authenticates with GitLab and provides methods to fetch projects, issues, merge requests, and more.
+
+```python
+import os
+from superagentx_handlers.gitlab import GitlabHandler
+
+gitlab_handler = GitlabHandler(
+    private_token=os.getenv("GITLAB_PRIVATE_TOKEN"),
+    url="https://gitlab.com"
+)
+```
+
+**Get User Profile:** <br />
+Retrieves the full authenticated GitLab user profile.
+```python
+user = await gitlab_handler.get_user_profile()
+print(user["username"], user["email"])
+```
+
+**Get Projects:** <br />
+Lists all projects owned by the authenticated user.
+```python
+projects = await gitlab_handler.get_projects()
+print([p["name"] for p in projects])
+```
+
+**Get Groups and Members:** <br />
+Lists groups owned by the user and their members.
+```python
+groups = await gitlab_handler.get_groups_and_members()
+print(groups)
+```
+
+**Get Issues:** <br />
+Fetches issues for a specific project or across all accessible projects.
+```python
+issues = await gitlab_handler.get_issues(project_id=12345)
+print([i["title"] for i in issues])
+```
+
+**Get Merge Requests:** <br />
+Fetches merge requests for a project or across all projects.
+```python
+mrs = await gitlab_handler.get_merge_requests(project_id=12345)
+print([mr["title"] for mr in mrs])
+```
+
+**Get Hooks:** <br />
+Retrieves webhooks configured for a project (or all projects).
+```python
+hooks = await gitlab_handler.get_hooks(project_id=12345)
+print(hooks)
+```
+
+**Get Pipelines:** <br />
+Lists recent pipelines for a project or across all accessible projects.
+```python
+pipelines = await gitlab_handler.get_pipelines(project_id=12345)
+print(pipelines)
+```
+
+**Get Branches:** <br />
+Fetches all branches for a project or across all projects.
+```python
+branches = await gitlab_handler.get_branches(project_id=12345)
+print([b["name"] for b in branches])
+```
+
+**Get Branch Protection Rules:** <br />
+Fetches branch protection rules for a project (or all projects).
+```python
+rules = await gitlab_handler.get_branch_protection_rules(project_id=12345)
+print(rules)
+```
+
+**Get Packages:** <br />
+Lists all packages published to GitLab’s package registry for a project or across projects.
+```python
+packages = await gitlab_handler.get_packages(project_id=12345)
+print([pkg["name"] for pkg in packages])
+```

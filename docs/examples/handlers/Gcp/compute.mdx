@@ -1,0 +1,81 @@
+---
+title: 'Compute Handler'
+icon: 'server'
+---
+
+Google Cloud Compute Engine is an Infrastructure-as-a-Service (IaaS) offering from GCP that allows you to run virtual machines (VMs), manage disks, networks, firewalls, snapshots, and images.
+This handler (`GcpComputeHandler`) provides methods to collect detailed information about Compute resources for governance, auditing, and monitoring purposes.
+
+It authenticates using a **GCP service account** and leverages the Google Cloud SDK (`google-cloud-compute`) to fetch data.
+
+## Example
+
+To create the `GcpComputeHandler` object with your service account:
+
+```python
+import os
+import json
+from superagentx_handlers.gcp.compute import GcpComputeHandler
+
+# Load service account credentials
+with open("service_account.json", "r") as f:
+    service_account_info = json.load(f)
+
+compute_handler = GcpComputeHandler(service_account_info=service_account_info)
+```
+
+**Collect Instances:** <br />
+Retrieve details of all VM instances in a project or specific zone.
+```python
+instances = await compute_handler.collect_instances(project_id="my-project-id", zone="us-central1-a")
+print(instances[:2])  # preview first 2 VMs
+```
+
+**Collect Disks:** <br />
+Fetch persistent disk information across all zones or a specific zone.
+```python
+disks = await compute_handler.collect_disks(project_id="my-project-id")
+print(disks[:2])  # preview first 2 disks
+```
+
+**Collect Networks:** <br />
+Get all VPC networks within a project.
+```python
+networks = await compute_handler.collect_networks(project_id="my-project-id")
+print(networks)
+```
+
+**Collect Subnetworks:** <br />
+Retrieve subnetworks across all regions or a specific region.
+```python
+subnets = await compute_handler.collect_subnetworks(project_id="my-project-id", region="us-central1")
+print(subnets[:2])
+```
+
+**Collect Firewall Rules:** <br />
+Fetch firewall rules that define ingress/egress traffic control for resources.
+```python
+firewalls = await compute_handler.collect_firewall_rules(project_id="my-project-id")
+print(firewalls[:2])
+```
+
+**Collect Images:** <br />
+Retrieve custom images created in the project.
+```python
+images = await compute_handler.collect_images(project_id="my-project-id")
+print(images)
+```
+
+**Collect Snapshots:** <br />
+Fetch disk snapshots for backup and disaster recovery.
+```python
+snapshots = await compute_handler.collect_snapshots(project_id="my-project-id")
+print(snapshots)
+```
+
+**Collect All Compute Info:** <br />
+Retrieve a comprehensive dictionary with all compute resources (instances, disks, networks, subnetworks, firewalls, images, and snapshots).
+```python
+all_compute_info = await compute_handler.collect_all_compute_info(project_id="my-project-id")
+print(all_compute_info.keys())
+```
