@@ -1,6 +1,8 @@
 import asyncio
 import json
 import logging
+import time
+
 import pyotp
 import ntplib
 
@@ -75,10 +77,10 @@ class BrowserHandler(BaseHandler):
         logger.info(msg)
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
-    def get_ntp_time(self):
+    async def get_ntp_time(self):
         """Fetch accurate UTC time from an NTP server."""
         client = ntplib.NTPClient()
-        response = client.request('time.google.com')
+        response = await sync_to_async(client.request, 'time.google.com')
         return response.tx_time
 
     @tool
@@ -101,7 +103,7 @@ class BrowserHandler(BaseHandler):
         """
 
         try:
-            ntp_time = await sync_to_async(self.get_ntp_time)
+            ntp_time = await self.get_ntp_time()
         except Exception as e:
             # fallback to system time if NTP fails
             print(f" NTP failed: {e}, falling back to system time.")
