@@ -1,0 +1,48 @@
+---
+title: 'Slack Handler'
+icon: 'slack'
+---
+
+Slack is a messaging platform widely used for team communication and collaboration. It provides channels for organizing conversations, direct messaging, file sharing, and integrates with external tools via its API. Using the Slack API, you can send messages, fetch messages, and manage channels programmatically.
+
+## Example
+
+To create the `SlackHandler` object, initialize it with your Slack **bot token**.
+The handler uses the Slack Web API to interact with channels and messages.
+
+```python
+import os
+from superagentx_handlers.slack import SlackHandler
+
+slack_handler = SlackHandler(
+    bot_token=os.getenv("SLACK_BOT_TOKEN")
+)
+```
+
+**Send Slack Message:** <br />
+Sends a plain text message to a specific Slack channel.
+```python
+response = await slack_handler.send_slack_message(
+    text="Hello team! :wave:",
+    channel_id="C1234567890"
+)
+print(response)
+```
+
+**Get Messages from a Channel:** <br />
+Retrieves the most recent messages from a given Slack channel.
+```python
+messages = await slack_handler.get_messages_from_channel(
+    channel_id="C1234567890",
+    limit=5
+)
+for msg in messages:
+    print(msg["text"])
+```
+
+**Get Channel ID by Name:** <br />
+Looks up the channel ID using its name.
+```python
+channel_id = await slack_handler.get_channel_id("general")
+print("Channel ID:", channel_id)
+```

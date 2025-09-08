@@ -1,0 +1,129 @@
+---
+title: 'Storage Handler'
+icon: 'database'
+---
+
+Google Cloud Storage (GCS) is a scalable, fully managed object storage service that lets you store and retrieve any amount of data at any time.
+It supports storing unstructured data such as images, videos, backups, and datasets with **high durability, availability, and security**.
+
+The **GCPStorageHandler** enables seamless interaction with Google Cloud Storage for tasks like managing buckets, listing files, retrieving metadata, and fetching IAM policies.
+
+
+## Example
+
+```python
+import os
+from superagentx_handlers.gcp.storage import GCPStorageHandler
+
+gcs_handler = GCPStorageHandler(
+    service_account_info=os.getenv("GCP_SERVICE_ACCOUNT_JSON")
+)
+```
+
+**List Buckets:** <br />
+Retrieve all buckets in the Google Cloud Storage project.
+```python
+buckets = await gcs_handler.list_buckets()
+print(buckets)
+```
+
+**Get Bucket:** <br />
+Retrieve detailed information about a specific bucket.
+```python
+bucket_info = await gcs_handler.get_bucket("my-bucket")
+print(bucket_info)
+```
+
+**Get Bucket ACL:** <br />
+Retrieve the Access Control List (ACL) of a bucket.
+```python
+acl = await gcs_handler.get_bucket_acl("my-bucket")
+print(acl)
+```
+
+**Get Bucket CORS:** <br />
+Retrieve the CORS configuration for a bucket.
+```python
+cors = await gcs_handler.get_bucket_cors("my-bucket")
+print(cors)
+```
+
+**Get Bucket Encryption:** <br />
+Retrieve the default KMS encryption key of a bucket.
+```python
+encryption = await gcs_handler.get_bucket_encryption("my-bucket")
+print(encryption)
+```
+
+**Get Bucket Labels:** <br />
+Retrieve all labels assigned to a bucket.
+```python
+labels = await gcs_handler.get_bucket_labels("my-bucket")
+print(labels)
+```
+
+**Get Bucket Lifecycle Rules:** <br />
+Retrieve lifecycle rules applied to a bucket.
+```python
+rules = await gcs_handler.get_bucket_lifecycle_rules("my-bucket")
+print(rules)
+```
+
+**Get Bucket Location:** <br />
+Retrieve the geographic location of a bucket.
+```python
+location = await gcs_handler.get_bucket_location("my-bucket")
+print(location)
+```
+
+**Get Bucket Logging:** <br />
+Retrieve the logging configuration of a bucket.
+```python
+logging_cfg = await gcs_handler.get_bucket_logging("my-bucket")
+print(logging_cfg)
+```
+
+**Get Bucket Notifications:** <br />
+Retrieve the notification configurations of a bucket.
+```python
+notifications = await gcs_handler.get_bucket_notification_config("my-bucket")
+print(notifications)
+```
+
+**Get Bucket Owner:** <br />
+Retrieve the ownership information of a bucket.
+```python
+owner = await gcs_handler.get_bucket_owner("my-bucket")
+print(owner)
+```
+
+**Get Bucket IAM Policy:** <br />
+Retrieve the IAM policy attached to a bucket.
+```python
+iam_policy = await gcs_handler.get_bucket_iam_policy("my-bucket")
+print(iam_policy)
+```
+
+**Get All Buckets Info:** <br />
+Retrieve full details (ACL, encryption, IAM, logging, notifications) of all buckets.
+```python
+all_info = await gcs_handler.get_all_buckets_info()
+print(all_info)
+```
+
+**List Files:** <br />
+List all files (blobs) in a bucket with an optional prefix.
+```python
+files = await gcs_handler.list_files("my-bucket", prefix="folder/")
+print(files)
+```
+
+**Get File Info:** <br />
+Retrieve metadata and properties of a file (blob) in a bucket.
+```python
+file_info = await gcs_handler.get_file_info(
+    bucket_name="my-bucket",
+    file_name="data/report.csv"
+)
+print(file_info)
+```

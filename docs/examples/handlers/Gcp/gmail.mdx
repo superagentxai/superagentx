@@ -1,0 +1,56 @@
+---
+title: 'Gmail Handler'
+icon: 'inbox'
+---
+
+The Gmail Handler enables seamless interaction with the Gmail API for sending, reading, and managing emails. It handles authentication using OAuth 2.0, and provides methods to fetch user profiles, read emails with attachments, send new emails, and create drafts. It is designed to integrate Gmail into automation workflows securely and efficiently.
+
+## Example
+
+To create the GmailHandler, initialize it with credentials JSON for OAuth:
+
+```python
+from superagentx_handlers.gcp.gmail import GmailHandler
+
+gmail_handler = GmailHandler(
+    credentials="credentials.json"  # path to your OAuth 2.0 credentials file
+)
+```
+
+**Get User Profile:** <br />
+Retrieve Gmail profile information for the authenticated user.
+```python
+profile = await gmail_handler.get_user_profile()
+print(profile)
+```
+
+**Read Emails:** <br />
+Fetches the latest emails, including sender, receiver, subject, body, and attachments.
+```python
+emails = await gmail_handler.read_mail(max_results=10)
+for mail in emails:
+    print(mail["subject"], mail["sender"])
+```
+
+**Send Email:** <br />
+Send an email via Gmail.
+```python
+await gmail_handler.send_email(
+    from_address="you@example.com",
+    to="friend@example.com",
+    subject="Hello from GmailHandler",
+    content="This is a test email!"
+)
+```
+
+**Create Draft Email:** <br />
+Create a draft email that can be sent later.
+```python
+draft = await gmail_handler.create_draft_email(
+    from_address="you@example.com",
+    to="friend@example.com",
+    subject="Draft subject",
+    content="This is a saved draft message."
+)
+print(draft)
+```

@@ -1,0 +1,87 @@
+---
+title: 'Cloud Run Handler'
+icon: 'cloud'
+---
+
+Google Cloud Run is a **serverless compute platform** that lets you run containers without managing servers.
+It automatically scales up or down based on traffic, integrates with other GCP services, and supports deployments in multiple regions.
+Cloud Run abstracts away infrastructure management, allowing you to focus on your application logic.
+
+## Example
+
+To create the `GCPCloudRunHandler`, pass Google service account credentials (either JSON file path or dict).
+
+```python
+import os
+from superagentx.handler.gcp.cloud_run import GCPCloudRunHandler
+
+cloud_run_handler = GCPCloudRunHandler(
+    creds=os.getenv("GOOGLE_APPLICATION_CREDENTIALS")  # Path to service account JSON
+)
+```
+
+**get_attr:** <br />
+Safely fetches an attribute, dict key, or list index with a default fallback.
+```python
+from superagentx.handler.gcp.cloud_run import get_attr
+data = {"name": "cloudrun", "type": "service"}
+print(get_attr(data, "name"))         # "cloudrun"
+print(get_attr(data, "invalid", "N/A"))  # "N/A"
+```
+
+**get_nested_attr:** <br />
+Fetches nested attributes safely using a path list.
+```python
+from superagentx.handler.gcp.cloud_run import get_nested_attr
+data = {"spec": {"template": {"spec": {"service_account": "default"}}}}
+print(get_nested_attr(data, ["spec", "template", "spec", "service_account"]))
+# Output: "default"
+```
+
+**client (property):** <br />
+Lazy initialization of the async Cloud Run client.
+```python
+client = cloud_run_handler.client
+print(type(client))  # google.cloud.run_v2.ServicesAsyncClient
+```
+
+**close:** <br />
+Closes the async client to free resources.
+```python
+await cloud_run_handler.close()
+```
+
+**_process_container_info:** <br />
+Extracts metadata for a Cloud Run container (image, ports, env vars, resources).
+```python
+container_info = await cloud_run_handler._process_container_info(container_obj)
+print(container_info["image"])
+```
+
+**_process_service_info:** <br />
+Processes a Cloud Run service object into a structured dictionary.
+```python
+service_info = await cloud_run_handler._process_service_info(service_obj, "us-central1")
+print(service_info["name"], service_info["url"])
+```
+
+**_fetch_services_for_location:** <br />
+Fetches all Cloud Run services in a specific region.
+```python
+services = await cloud_run_handler._fetch_services_for_location("us-central1")
+print([s["name"] for s in services])
+```
+
+**fetch_location_with_semaphore:** <br />
+Helper method to fetch services from a location with concurrency limits.
+```python
+# Example inside async workflow
+services = await cloud_run_handler._fetch_services_for_location("us-west1")
+```
+
+**get_gcp_cloud_run_details:** <br />
+Lists all Cloud Run services across all supported GCP regions with summary.
+```python
+cloud_run_data = await cloud_run_handler.get_gcp_cloud_run_details()
+print(cloud_run_data["summary"])
+```

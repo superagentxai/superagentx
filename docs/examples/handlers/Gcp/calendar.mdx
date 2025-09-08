@@ -1,0 +1,54 @@
+---
+title: 'Calendar Handler'
+icon: 'calendar'
+---
+
+Google Calendar is a scheduling and time-management service that allows users to create, manage, and share events. It provides features like reminders, recurring events, and integration with other Google Workspace services. With the `CalenderHandler`, you can connect to Google Calendar via OAuth 2.0 and programmatically fetch events for a day, week, month, or specific type.
+
+## Example
+
+To create the `CalenderHandler` object, initialize it with your Google OAuth credentials file. The handler manages authentication and provides methods to retrieve events from Google Calendar.
+
+```python
+import os
+from superagentx_handlers.gcp.calendar import CalenderHandler
+
+calendar_handler = CalenderHandler(
+    credentials="credentials.json"   # Path to Google OAuth client secrets file
+)
+```
+
+**Get Today’s Events:** <br />
+Retrieves all events scheduled for today.
+```python
+events_today = await calendar_handler.get_today_events()
+print(events_today)
+```
+
+**Get Week Events:** <br />
+Retrieves all events scheduled for the next 7 days.
+```python
+events_week = await calendar_handler.get_week_events()
+print(events_week)
+```
+
+**Get Month Events:** <br />
+Retrieves all events scheduled for the next 30 days.
+```python
+events_month = await calendar_handler.get_month_events()
+print(events_month)
+```
+
+**Get Events by Custom Days:** <br />
+Fetches events for a custom range between 1 and 30 days.
+```python
+events_5days = await calendar_handler.get_events_by_days(days=5)
+print(events_5days)
+```
+
+**Get Events by Type:** <br />
+Fetches events of a specific type such as "birthday", "focusTime", or "workingLocation".
+```python
+birthday_events = await calendar_handler.get_events_by_type(event_type="birthday")
+print(birthday_events)
+```

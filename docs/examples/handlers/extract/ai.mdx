@@ -1,0 +1,54 @@
+---
+title: 'Extract AI Handler'
+icon: 'brain'
+---
+
+The **ExtractAIHandler** is a utility for document AI extraction.
+It integrates with an AI-powered backend to process files (e.g., invoices, PDFs, receipts) and extract structured JSON data.
+It supports Base64 file encoding, asynchronous extraction requests, job polling, and retrieval of processed results.
+
+This handler is useful for **invoice extraction, document digitization, and structured data retrieval** from files.
+
+
+
+## Example
+
+To create the `ExtractAIHandler` object with your Extract API credentials:
+
+```python
+import os
+from superagentx.handler.ai.extract import ExtractAIHandler
+
+extract_handler = ExtractAIHandler(
+    prompt_name="invoice_extraction",
+    api_token=os.getenv("EXTRACT_API_TOKEN"),
+    base_url=os.getenv("BASE_URL"),
+    project_id="test_project_123"
+)
+```
+
+**Get File Base64 Data:** <br />
+Reads a file from the given path and returns its Base64-encoded content.
+```python
+file_data = await extract_handler.get_file_base64_data("invoice.pdf")
+print(file_data[:100])  # preview first 100 chars
+```
+
+**Extract API:** <br />
+Initiates a file extraction request and polls until results are available.
+```python
+result = await extract_handler.extract_api(
+    file_path="invoice.pdf",
+    file_data=file_data,
+    poll_interval=5,
+    retry=10
+)
+print(result)
+```
+
+**Get Invoice JSON Data:** <br />
+Fetches the extracted JSON data using the reference ID of a completed job.
+```python
+invoice_data = await extract_handler.get_invoice_json_data("ref12345")
+print(invoice_data)
+```

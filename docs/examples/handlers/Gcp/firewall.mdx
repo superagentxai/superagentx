@@ -1,0 +1,31 @@
+---
+title: 'Firewall Handler'
+icon: 'shield-check'
+---
+
+Google Cloud Firewall is a **network security feature** that lets you define rules to allow or block traffic to and from your VM instances.
+This handler helps you **list firewall rules** in your GCP project using service account authentication.
+It makes it easier to fetch firewall configurations for auditing, monitoring, or compliance checks.
+
+## Example
+
+To create the `GCPFirewallHandler` object with GCP credentials:
+
+```python
+import os
+from superagentx.handler.gcp.firewall import GCPFirewallHandler
+
+# Initialize with a service account file
+firewall_handler = GCPFirewallHandler(
+    creds="/path/to/service-account.json"
+)
+```
+**List Firewall Rules:** <br />
+The get_firewall_details method retrieves all firewall rules in your GCP project.
+It returns details like name, allowed protocols/ports, source/destination ranges, and priority.
+```python
+firewalls = await firewall_handler.get_firewall_details()
+for fw in firewalls:
+    print(fw.name, fw.direction, fw.priority)
+```
+

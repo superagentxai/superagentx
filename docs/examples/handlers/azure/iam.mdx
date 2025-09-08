@@ -1,0 +1,70 @@
+---
+title: 'Entra IAM Handler'
+icon: 'shield'
+---
+
+Microsoft Entra IAM (Identity and Access Management) is part of Microsoft Entra ID (formerly Azure Active Directory). It helps manage **users, groups, applications, roles, and MFA (multi-factor authentication)**. Using Microsoft Graph APIs, you can collect IAM evidence for governance, compliance, and auditing purposes.
+
+This handler provides methods to retrieve IAM data like users, groups, service principals (applications), role definitions, and MFA status.
+
+
+## Example
+
+To create the **EntraIAMHandler** object, initialize it with your **Entra Tenant ID, Client ID, and Client Secret** (or load them from environment variables).
+
+```python
+import os
+from superagentx_handlers.azure.iam import EntraIAMHandler
+
+entra_handler = EntraIAMHandler(
+    tenant_id=os.getenv("ENTRA_TENANT_ID"),
+    client_id=os.getenv("ENTRA_CLIENT_ID"),
+    client_secret=os.getenv("ENTRA_CLIENT_SECRET")
+)
+```
+**Collect Users IAM Evidence:** <br />
+Fetches all users and their IAM-related details (display name, UPN, email, type, assigned roles).
+Requires User.Read.All and optionally RoleManagement.Read.All.
+```python
+users = await entra_handler.collect_users_iam_evidence()
+print(users)
+```
+
+**Collect Groups IAM Evidence:** <br />
+Fetches all groups and their members (users, devices, service principals).
+Requires Group.Read.All.
+```python
+groups = await entra_handler.collect_groups_iam_evidence()
+print(groups)
+```
+
+**Collect Applications IAM Evidence (Service Principals):** <br />
+Retrieves all applications (service principals) and their owners.
+Requires Application.Read.All.
+```python
+apps = await entra_handler.collect_applications_iam_evidence()
+print(apps)
+```
+
+**Collect Role Definitions:** <br />
+Retrieves all built-in and custom role definitions available in Microsoft Entra ID.
+Requires RoleManagement.Read.Directory.
+```python
+roles = await entra_handler.collect_roles_definitions()
+print(roles)
+```
+
+**Collect MFA Status Evidence:** <br />
+Collects MFA registration status and recent MFA usage from sign-in logs for users.
+Requires Reports.Read.All, UserAuthenticationMethod.Read.All, and AuditLog.Read.All.
+```python
+mfa = await entra_handler.collect_mfa_status_evidence(days_ago=30)
+print(mfa)
+```
+
+**Collect All entra IAM Evidence (Summary):** <br />
+Fetches users, groups, applications, roles, and MFA evidence in a single call.
+```python
+all_evidence = await entra_handler.collect_all_entra_iam_evidence()
+print(all_evidence)
+```

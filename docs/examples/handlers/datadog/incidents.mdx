@@ -1,0 +1,40 @@
+---
+title: 'Datadog Incidents'
+icon: 'shield-dog'
+---
+
+Datadog Incidents is a service that helps engineering and operations teams track, manage, and resolve incidents efficiently.
+It provides powerful integrations, collaborative workflows, and monitoring visibility to ensure quick resolution of critical issues.
+
+This handler allows seamless interaction with **Datadog Incidents API**, enabling you to **list** and **search** incidents programmatically.
+It uses API and Application keys for authentication (`DD_API_KEY`, `DD_APP_KEY`) and requires the `DD_SITE` configuration (e.g., `us5.datadoghq.com`).
+
+
+
+## Example
+
+To create the `DDIncidentsHandler` object with Datadog credentials:
+
+```python
+import os
+from superagentx_handlers.datadog.incidents import DDIncidentsHandler
+
+dd_handler = DDIncidentsHandler(
+    host=os.getenv("DD_SITE"),  # e.g., "us5.datadoghq.com"
+    api_key=os.getenv("DD_API_KEY"),
+    app_key=os.getenv("DD_APP_KEY")
+)
+```
+**List Incidents (list_incidents):** <br />
+Retrieves a list of all incidents in your Datadog account.
+```python
+incidents = await dd_handler.list_incidents()
+print(incidents)
+```
+
+**Search Incidents (search_incidents):** <br />
+Search for incidents that match a specific query (by title, status, severity, etc.).
+```python
+results = await dd_handler.search_incidents(query="status:active severity:SEV-1")
+print(results)
+```
