@@ -300,3 +300,10 @@ class OllamaClient(Client):
             if _key in source_instance.__fields__:
                 setattr(source_instance, _key, self.kwargs[_key])
         return source_instance
+
+
+    def count_tokens(self, **kwargs):
+        return 1
+
+    async def acount_tokens(self, **kwargs):
+        return 1

@@ -281,3 +281,17 @@ class GeminiClient(Client):
     async def aembed(self, text: str, **kwargs):
         result = await sync_to_async(self.client.models.embed_content, self._embed_model_cli, text)
         return result
+
+    def count_tokens(self, chat_completion_params: ChatCompletionParams):
+        """
+        Count tokens for Gemini messages.
+        """
+        if chat_completion_params.messages:
+            user_contents, system_contents = self._construct_message(chat_completion_params.messages)
+            user_response = self.client.models.count_tokens(model=self._model, contents=user_contents)
+            system_response = self.client.models.count_tokens(model=self._model, contents=system_contents)
+            return user_response.total_tokens + system_response.total_tokens
+        return None
+
+    async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
+        return await sync_to_async(self.count_tokens, chat_completion_params)
