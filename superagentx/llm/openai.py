@@ -241,10 +241,7 @@ class OpenAIClient(Client):
 
         for message in chat_completion_params.messages:
             num_tokens += tokens_per_message
-            for key, value in message.items():
-                num_tokens += len(encoding.encode(value))
-                if key == "name":
-                    num_tokens += tokens_per_name
+            num_tokens += len(encoding.encode(message.content))
         num_tokens += 3  # every reply is primed with <|start|>assistant
         return num_tokens
 
