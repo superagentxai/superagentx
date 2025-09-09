@@ -315,15 +315,10 @@ class CliApp:
         )
         _pipe_path.write_text(_render_pipe)
 
-    def create_pipe_file_from_app_config(self):
-        if not self.app_config:
-            raise AppConfigError('Not valida app configuration!')
-
+    def render_pipe(self):
         app_creation = AppCreation(app_config=self.app_config)
         app_creation.construct()
         self.pipe_name = app_creation.pipe_name
-        _pipe_path = self._pkg_dir / 'pipe.py'
-        rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
         _pipe_template_file = self._jinja_env.get_template('app_pipe.py.jinja2')
         _render_pipe = _pipe_template_file.render(
             imports=app_creation.imports,
@@ -337,6 +332,15 @@ class CliApp:
             pipe=app_creation.pipe
         )
         _formatted_code, _ = yapf.yapflib.yapf_api.FormatCode(_render_pipe)
+        return _formatted_code
+
+    def create_pipe_file_from_app_config(self):
+        if not self.app_config:
+            raise AppConfigError('Not valida app configuration!')
+
+        _pipe_path = self._pkg_dir / 'pipe.py'
+        rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
+        _formatted_code = self.render_pipe()
         _pipe_path.write_text(_formatted_code)
 
     def _create_app_pipe_file(self, app_type: str):

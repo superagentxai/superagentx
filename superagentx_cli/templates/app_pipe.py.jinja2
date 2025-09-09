@@ -30,4 +30,7 @@ async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     {%- endfor %}
     # Pipe
     {{ pipe }}
-    return {{ pipe_name }}{{'\n'}}
+    return {{ pipe_name }}
+
+
+get_pipe = get_{{ pipe_name }}_pipe{{'\n'}}
