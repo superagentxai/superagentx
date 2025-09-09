@@ -115,19 +115,6 @@
           ]
         },
         {
-          "group": "websitecrawler",
-          "icon": "browser",
-          "pages": [
-            "examples/handlers/websitecrawler/github",
-            "examples/handlers/websitecrawler/gitlab",
-            "examples/handlers/websitecrawler/servicenow",
-            "examples/handlers/websitecrawler/slack",
-            "examples/handlers/websitecrawler/zohohirs"
-
-          ]
-        },
-
-        {
           "group": "cybersecurity",
           "icon": "shield",
           "pages": [
@@ -191,6 +178,14 @@
                 "examples/handlers/Google/gmail"
               ]
             },
+              {
+              "group": "Extract",
+              "icon": "file-import",
+              "pages": [
+                "examples/handlers/extract/ai"
+
+              ]
+            },
             "examples/handlers/hubspot",
             "examples/handlers/openapi",
             "examples/handlers/scrape",
@@ -198,7 +193,12 @@
             "examples/handlers/sql",
             "examples/handlers/visualization",
             "examples/handlers/weather",
-            "examples/handlers/wikipedia"
+            "examples/handlers/wikipedia",
+            "examples/handlers/servicenow",
+            "examples/handlers/zohohirs",
+            "examples/handlers/slack",
+            "examples/handlers/gitlab",
+            "examples/handlers/github"
       ]
     },
     {
