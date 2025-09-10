@@ -1,0 +1,165 @@
+---
+title: 'Snyk Handler'
+icon: 'shield'
+---
+
+Snyk is a developer-first security platform that helps identify and fix vulnerabilities in code, open-source libraries, containers, and infrastructure as code.
+It integrates into your development workflow, enabling continuous security monitoring, license compliance checks, and proactive vulnerability management.
+
+The **SnykHandler** provides programmatic access to the Snyk REST API. It allows you to retrieve organizations, projects, issues, vulnerabilities, dependencies, container images, and more. You can also monitor projects and dependencies for vulnerabilities.
+
+
+## Example
+
+To create the `SnykHandler` object with credentials:
+
+```python
+import os
+from superagentx_handlers.snyk import SnykHandler
+
+snyk_handler = SnykHandler(
+    api_token=os.getenv("SNYK_API_TOKEN"),
+    base_url="https://api.snyk.io/rest",  # default
+    version="2024-10-15"                  # default
+)
+```
+
+**Get Organizations (get_organizations):** <br />
+Retrieve all organizations accessible to the user.
+```python
+orgs = await snyk_handler.get_organizations()
+print(orgs)
+```
+
+**Get Projects (get_projects):** <br />
+Retrieve all projects for a specific organization.
+```python
+projects = await snyk_handler.get_projects(org_id="your-org-id")
+print(projects)
+```
+
+**Get Project Issues (get_project_issues):** <br />
+Retrieve all issues for a specific project.
+```python
+issues = await snyk_handler.get_project_issues(org_id="your-org-id", project_id="your-project-id")
+print(issues)
+```
+
+**Get Vulnerabilities (get_vulnerabilities):** <br />
+Retrieve vulnerabilities for an organization, with optional severity filter.
+```python
+vulns = await snyk_handler.get_vulnerabilities(org_id="your-org-id", severity="high")
+print(vulns)
+```
+
+**Get Licenses (get_licenses):** <br />
+Retrieve license issues for an organization.
+```python
+licenses = await snyk_handler.get_licenses(org_id="your-org-id")
+print(licenses)
+```
+
+**Get Dependencies (get_dependencies):** <br />
+Retrieve dependencies for a specific project.
+```python
+deps = await snyk_handler.get_dependencies(org_id="your-org-id", project_id="your-project-id")
+print(deps)
+```
+
+**Get Container Images (get_container_images):** <br />
+Retrieve container images for an organization.
+```python
+images = await snyk_handler.get_container_images(org_id="your-org-id")
+print(images)
+```
+
+**Get Container Image Details (get_container_image):** <br />
+Retrieve details for a specific container image.
+```python
+image = await snyk_handler.get_container_image(org_id="your-org-id", image_id="image-123")
+print(image)
+```
+
+**Update Container Image Target Refs (update_container_image_target_refs):** <br />
+Update target references for a container image.
+```python
+response = await snyk_handler.update_container_image_target_refs(
+    org_id="your-org-id",
+    image_id="image-123",
+    target_refs_data=[{"type": "target", "id": "target-456"}]
+)
+print(response)
+```
+
+**Monitor Dependency Graph (monitor_dep_graph):** <br />
+Monitor a dependency graph for vulnerabilities.
+```python
+results = await snyk_handler.monitor_dep_graph(dep_graph_data={"graph": {...}})
+print(results)
+```
+
+**Test Project (test_project):** <br />
+Test a project for vulnerabilities.
+```python
+results = await snyk_handler.test_project(org_id="your-org-id", project_id="your-project-id")
+print(results)
+```
+
+**Get Users (get_users):** <br />
+Retrieve users in an organization.
+```python
+users = await snyk_handler.get_users(org_id="your-org-id")
+print(users)
+```
+
+**Get Integrations (get_integrations):** <br />
+Retrieve integrations for an organization.
+```python
+integrations = await snyk_handler.get_integrations(org_id="your-org-id")
+print(integrations)
+```
+
+**Get Targets (get_targets):** <br />
+Retrieve targets in an organization.
+```python
+targets = await snyk_handler.get_targets(org_id="your-org-id")
+print(targets)
+```
+
+**Get Apps (get_apps):** <br />
+Retrieve apps for an organization.
+```python
+apps = await snyk_handler.get_apps(org_id="your-org-id")
+print(apps)
+```
+
+**Get Vulnerability Details (get_vulnerability_details):** <br />
+Retrieve detailed information about a specific vulnerability.
+```python
+vuln = await snyk_handler.get_vulnerability_details(vuln_id="CVE-2025-1234")
+print(vuln)
+```
+
+**Monitor Project (monitor_project):** <br />
+Monitor a project for vulnerabilities.
+```python
+response = await snyk_handler.monitor_project(
+    org_id="your-org-id",
+    project_data={"name": "new-project", "source": {...}}
+)
+print(response)
+```
+
+**Collect All Container Data (collect_all_container_data):** <br />
+Collect all container-related data for an organization.
+```python
+data = await snyk_handler.collect_all_container_data(org_id="your-org-id")
+print(data)
+```
+
+**Collect All Snyk Data (collect_all_snyk_data):** <br />
+Collect all available Snyk data for an organization (projects, issues, dependencies, vulnerabilities, users, integrations, containers, etc.).
+```python
+data = await snyk_handler.collect_all_snyk_data(org_id="your-org-id")
+print(data)
+```

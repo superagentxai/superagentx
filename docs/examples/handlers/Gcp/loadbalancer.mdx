@@ -1,0 +1,81 @@
+---
+title: 'Load Balancer Handler'
+icon: 'split'
+---
+
+Google Cloud Load Balancer is a fully distributed, software-defined managed service for distributing traffic across multiple instances, services, and regions.
+It supports HTTP(S), TCP/SSL, and UDP load balancing, integrates seamlessly with Google Cloud services, and provides **high availability, scalability, and global reach**.
+
+The `GCPLoadBalancerHandler` provides programmatic access to **all load balancer components**, including URL maps, backend services, proxies, forwarding rules, SSL certificates, and health checks.
+
+
+## Example
+
+To create the `GCPLoadBalancerHandler` with Google Cloud credentials:
+
+```python
+import os
+from superagentx_handlers.gcp.load_balancer import GCPLoadBalancerHandler
+
+# Initialize handler with a service account file
+handler = GCPLoadBalancerHandler(
+    creds=os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+)
+```
+
+**List All Load Balancer Components:** <br />
+Fetches all components (URL maps, backend services, proxies, SSL certs, health checks) concurrently.
+```python
+components = await handler.list_all_load_balancer_components()
+print(components.keys())
+# Output: dict with url_maps, backend_services, proxies, ssl_certificates, health_checks
+```
+
+**Get URL Maps (Application Load Balancers):** <br />
+Retrieves URL maps including host rules, path matchers, and route actions.
+```python
+url_maps = await handler.get_url_maps()
+print(url_maps)
+```
+
+**Get Backend Services:** <br />
+Fetches backend services with protocols, ports, CDN settings, session affinity, and backend group details.
+```python
+backends = await handler.get_backend_services()
+print(backends)
+```
+
+**Get Target HTTP Proxies:** <br />
+Lists all HTTP proxies linked to URL maps.
+```python
+http_proxies = await handler.get_target_http_proxies()
+print(http_proxies)
+```
+
+**Get Target HTTPS Proxies:** <br />
+Lists all HTTPS proxies along with SSL certificates and QUIC override settings.
+```python
+https_proxies = await handler.get_target_https_proxies()
+print(https_proxies)
+```
+
+**Get Global Forwarding Rules:** <br />
+Fetches forwarding rules with IP addresses, protocols, port ranges, and targets.
+```python
+rules = await handler.get_global_forwarding_rules()
+print(rules)
+```
+
+**Get SSL Certificates:** <br />
+Retrieves SSL certificates (truncated for security) with SANs and expiration details.
+```python
+certs = await handler.get_ssl_certificates()
+print(certs)
+```
+
+**Get Health Checks:** <br />
+Lists health checks with thresholds, intervals, timeouts, and protocol-specific details (HTTP/HTTPS).
+```python
+health_checks = await handler.get_health_checks()
+print(health_checks)
+```

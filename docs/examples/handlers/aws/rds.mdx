@@ -1,0 +1,79 @@
+---
+title: 'RDS Handler'
+icon: 'database'
+---
+
+Amazon RDS (Relational Database Service) is a managed service that makes it easy to set up, operate, and scale relational databases in the cloud.
+It supports multiple engines like MySQL, PostgreSQL, MariaDB, Oracle, and SQL Server, and provides features such as automated backups, scaling, monitoring, and high availability.
+
+
+## Example
+
+To create the **RDS Handler**, you must pass AWS credentials (`access_key`, `secret_key`, and `region`).
+This enables you to interact with RDS resources, clusters, proxies, and their associations with EC2.
+
+```python
+import os
+from superagentx_handlers.aws.rds import AWSRDSHandler
+
+rds_handler = AWSRDSHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="eu-central-1"
+)
+```
+**Get RDS Association Details:** <br />
+Provides a comprehensive inventory of RDS resources and their associations.
+```python
+details = await rds_handler.get_rds_association_details()
+print(details)
+```
+
+**List RDS Instances:** <br />
+Fetches all RDS database instances in the account.
+```python
+instances = await rds_handler.get_rds_instances()
+print(instances)
+```
+
+**List RDS Clusters:** <br />
+Fetches all Aurora RDS clusters.
+```python
+clusters = await rds_handler.get_rds_clusters()
+print(clusters)
+```
+
+**List RDS Proxies:** <br />
+Fetches all RDS database proxies.
+```python
+proxies = await rds_handler.get_rds_proxies()
+print(proxies)
+```
+
+**Get Proxy Targets:** <br />
+Retrieves targets associated with a specific RDS proxy.
+```python
+targets = await rds_handler.get_proxy_targets(
+    proxy_name="my-rds-proxy"
+)
+print(targets)
+```
+
+**Get EC2 Associations:** <br />
+Finds EC2 instances that are associated with RDS security groups.
+```python
+associations = await rds_handler.get_ec2_associations(
+    rds_instances=instances
+)
+print(associations)
+```
+
+**Get Backup Configuration:** <br />
+Fetches backup details such as retention period, backup window, and maintenance window for an RDS instance or cluster.
+```python
+backup = await rds_handler.get_backup_config(
+    db_identifier="my-db-instance",
+    is_cluster=False  # set True for clusters
+)
+print(backup)
+```

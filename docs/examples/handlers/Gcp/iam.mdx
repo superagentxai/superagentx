@@ -1,0 +1,72 @@
+---
+title: 'IAM Handler'
+icon: 'shield'
+---
+
+Google Cloud IAM (Identity and Access Management) allows you to securely manage access to your GCP resources.
+It provides fine-grained controls for organizations, folders, and projects, ensuring that only authorized users and services can access resources.
+
+With the **GCPIAMHandler**, you can fetch IAM policy details across organizations, folders, and projects, and also collect MFA-related evidence to strengthen compliance and security posture.
+
+It helps with:
+- Discovering IAM policies for GCP organizations, folders, and projects.
+- Checking roles, bindings, and enforced conditions like MFA.
+- Building a full compliance picture of your GCP environment.
+
+
+## Example
+### Initialization
+
+To create a handler with your service account credentials:
+
+```python
+from superagentx_handlers.gcp.iam import GCPIAMHandler
+
+iam_handler = GCPIAMHandler(
+    creds="service_account.json",  # path to service account json
+    scope=["https://www.googleapis.com/auth/cloud-platform"]
+)
+```
+
+**Collect Organization IAM Evidence:** <br />
+Fetch IAM policy evidence for all accessible GCP organizations.
+```python
+org_evidence = await iam_handler.collect_organization_iam_evidence()
+print(org_evidence)
+```
+
+**Collect Folder IAM Evidence:** <br />
+Fetch IAM policy evidence for folders under a specific organization or folder.
+```python
+folder_evidence = await iam_handler.collect_folder_iam_evidence(
+    parent_resource="organizations/123456789"
+)
+print(folder_evidence)
+```
+
+**Collect Project IAM Evidence:** <br />
+Fetch IAM policies for projects under an organization or folder.
+```python
+project_evidence = await iam_handler.collect_project_iam_evidence(
+    parent_resource="folders/987654321"
+)
+print(project_evidence)
+```
+
+**Collect All IAM Evidence:** <br />
+Collects IAM evidence across organizations, folders, and projects in one run.
+```python
+all_evidence = await iam_handler.collect_all_iam_evidence()
+print(all_evidence)
+```
+
+**_get_resource_iam_policy(resource_name: str, resource_type: str):** <br />
+Internal method that retrieves IAM policy details for a specific resource (organization, folder, or project).
+It returns information about roles, members, bindings, conditions, and MFA enforcement.
+```python
+policy = await iam_handler._get_resource_iam_policy(
+    resource_name="projects/my-project-123",
+    resource_type="project"
+)
+print(policy)
+```

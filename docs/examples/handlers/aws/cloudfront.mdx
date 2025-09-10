@@ -1,0 +1,55 @@
+---
+title: 'CloudFront Handler'
+icon: 'globe'
+---
+
+Amazon CloudFront is a fast Content Delivery Network (CDN) service that securely delivers data, videos, applications,
+and APIs to customers globally with low latency and high transfer speeds. CloudFront works seamlessly with services
+like S3, API Gateway, and ACM for SSL/TLS certificates.
+
+## Example
+To create the AWSCloudFrontHandler object with AWS credentials.
+The AWSCloudFrontHandler enables you to interact with CloudFront for tasks such as
+listing distributions, cache behaviors, access control settings, and certificates.
+
+```python cloudfront_handler_test.py
+import os
+
+from superagentx_handlers.aws.cloudfront import AWSCloudFrontHandler
+
+
+cloudfront_handler = AWSCloudFrontHandler(
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="us-east-1"
+)
+```
+
+**List Distributions:** <br />
+The list_distributions method retrieves all CloudFront distributions.
+```python
+distributions = await cloudfront_handler.list_distributions()
+print(distributions)
+```
+
+**List Certificates:** <br />
+The list_certificates method retrieves all ACM-managed certificates in us-east-1,
+typically used with CloudFront.
+```python
+certificates = await cloudfront_handler.list_certificates()
+print(certificates)
+```
+
+**List Cache Behaviors:** <br />
+The list_cache_behaviors method shows default and ordered cache behaviors for all distributions.
+```python
+cache_behaviors = await cloudfront_handler.list_cache_behaviors()
+print(cache_behaviors)
+```
+
+**List Access Control Configurations:** <br />
+The list_access_control_configs method retrieves access control settings like geo-restrictions and WAF associations.
+```python
+access_controls = await cloudfront_handler.list_access_control_configs()
+print(access_controls)
+```

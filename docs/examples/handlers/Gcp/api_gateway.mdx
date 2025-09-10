@@ -1,0 +1,54 @@
+---
+title: 'API Gateway Handler'
+icon: 'server'
+---
+
+Google Cloud API Gateway is a fully managed service that allows developers to create, secure, and monitor APIs for their applications. It enables seamless management of APIs at scale, integrates with IAM for authentication, and provides features like quota management, monitoring, and logging.
+
+The `GCPAPIGatewayHandler` helps interact with Google Cloud’s API Gateway service to fetch gateway details programmatically.
+
+## Example
+
+To create the `GCPAPIGatewayHandler` object, initialize it with your Google service account credentials (JSON file path or dictionary).
+
+```python
+from superagentx_handlers.gcp.api_gateway import GCPAPIGatewayHandler
+
+gateway_handler = GCPAPIGatewayHandler(
+    creds="service-account.json"   # or dict with service account info
+)
+```
+
+**List API Gateways:** <br />
+Lists all API Gateways available in your GCP project across supported regions.
+```python
+gateways = await gateway_handler.list_gateways(page_size=50)
+for g in gateways:
+    print(g["name"], g["state"], g["default_hostname"])
+```
+
+**Convert Gateway to Dictionary (_gateway_to_dict):** <br />
+Converts a Gateway object into a structured dictionary with useful metadata.
+```python
+gateway_obj = (await gateway_handler.client.list_gateways(
+    request={"parent": "projects/my-project/locations/us-central1"}
+)).pages[0][0]
+
+gateway_dict = await gateway_handler._gateway_to_dict(gateway_obj, location="us-central1")
+print(gateway_dict)
+```
+
+**Get Gateway State (_get_gateway_state):** <br />
+Converts a raw state value (string, int, or enum) into a Gateway.State enum.
+```python
+from google.cloud import apigateway_v1
+
+# Using string
+print(_get_gateway_state("CREATING").name)   # Output: CREATING
+
+# Using integer (matches enum value)
+print(_get_gateway_state(1).name)            # Output: ACTIVE
+
+# Using enum directly
+print(_get_gateway_state(apigateway_v1.Gateway.State.FAILED).name)  # Output: FAILED
+```

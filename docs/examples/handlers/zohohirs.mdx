@@ -1,0 +1,49 @@
+---
+title: 'ZohoHIRS Handler'
+icon: 'users'
+---
+
+Zoho People (Zoho HIRS) is a cloud-based Human Resource Information System that helps organizations manage employees, onboarding, offboarding, and role changes. Using the Zoho People API, you can programmatically access employee records, workflows, and other HR-related data.
+
+## Example
+
+To create the `ZohoHIRSHandler` object, initialize it with your Zoho **access token**.
+The handler provides methods for fetching employee records and HR workflows.
+
+```python
+import os
+from superagentx_handlers.zoho.hirs import ZohoHIRSHandler
+
+zoho_handler = ZohoHIRSHandler(
+    access_token=os.getenv("ZOHO_PEOPLE_ACCESS_TOKEN")
+)
+```
+
+**List Employees:** <br />
+Retrieves the list of all employees in the Zoho People organization.
+```python
+employees = await zoho_handler.list_employees()
+for emp in employees:
+    print(emp["Name"], emp["Email"])
+```
+
+**List Onboarding Workflows:** <br />
+Fetches onboarding workflows configured in Zoho People.
+```python
+onboarding_flows = await zoho_handler.list_onboarding_workflows()
+print(onboarding_flows)
+```
+
+**List Offboarding Workflows:** <br />
+Fetches offboarding workflows configured in Zoho People.
+```python
+offboarding_flows = await zoho_handler.list_offboarding_workflows()
+print(offboarding_flows)
+```
+
+**List Role Change Workflows:** <br />
+Retrieves role change (transfer) workflows configured in Zoho People.
+```python
+role_change_flows = await zoho_handler.list_role_change_workflows()
+print(role_change_flows)
+```

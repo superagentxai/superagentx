@@ -85,15 +85,73 @@
               "pages": [
                 "examples/handlers/aws/s3",
                 "examples/handlers/aws/ec2",
+                "examples/handlers/aws/rds",
+                "examples/handlers/aws/ecs",
+                "examples/handlers/aws/api_gateway",
+                "examples/handlers/aws/elasticache",
+                "examples/handlers/aws/cloudfront",
+                "examples/handlers/aws/cloudwatch",
+                "examples/handlers/aws/elb",
+                "examples/handlers/aws/helper",
+                "examples/handlers/aws/iam",
+                "examples/handlers/aws/security_groups",
+                "examples/handlers/aws/serverless",
                 "examples/handlers/aws/iam"
               ]
             },
+        {
+          "group": "Microsoft Azure",
+          "icon": "A",
+          "pages": [
+            "examples/handlers/azure/application_gateway",
+            "examples/handlers/azure/cloud_functions",
+            "examples/handlers/azure/iam",
+            "examples/handlers/azure/load_balancer",
+            "examples/handlers/azure/nsg",
+            "examples/handlers/azure/storage",
+            "examples/handlers/azure/vm"
+
+
+          ]
+        },
+        {
+          "group": "cybersecurity",
+          "icon": "shield",
+          "pages": [
+            "examples/handlers/cybersecurity/snyk"
+
+          ]
+        },
+        {
+          "group": "datadog",
+          "icon": "D",
+          "pages": [
+            "examples/handlers/datadog/incidents"
+
+          ]
+        },
             {
               "group": "Atlassian",
               "icon": "atlassian",
               "pages": [
                 "examples/handlers/atlassian/confluence",
                 "examples/handlers/atlassian/jira"
+              ]
+            },
+            {
+              "group": "Gcp",
+              "icon": "G",
+              "pages": [
+                "examples/handlers/Gcp/api_gateway",
+                "examples/handlers/Gcp/calendar",
+                "examples/handlers/Gcp/cloud_run",
+                "examples/handlers/Gcp/compute",
+                "examples/handlers/Gcp/firewall",
+                "examples/handlers/Gcp/gmail",
+                "examples/handlers/Gcp/iam",
+                "examples/handlers/Gcp/loadbalancer",
+                "examples/handlers/Gcp/security_role",
+                "examples/handlers/Gcp/storage"
               ]
             },
             "examples/handlers/content_creator",
@@ -104,7 +162,8 @@
               "pages": [
                 "examples/handlers/E-commerce/amazon",
                 "examples/handlers/E-commerce/flipkart",
-                "examples/handlers/E-commerce/walmart"
+                "examples/handlers/E-commerce/walmart",
+                "examples/handlers/E-commerce/best_buy"
               ]
             },
             "examples/handlers/exa",
@@ -119,6 +178,14 @@
                 "examples/handlers/Google/gmail"
               ]
             },
+              {
+              "group": "Extract",
+              "icon": "file-import",
+              "pages": [
+                "examples/handlers/extract/ai"
+
+              ]
+            },
             "examples/handlers/hubspot",
             "examples/handlers/openapi",
             "examples/handlers/scrape",
@@ -126,7 +193,12 @@
             "examples/handlers/sql",
             "examples/handlers/visualization",
             "examples/handlers/weather",
-            "examples/handlers/wikipedia"
+            "examples/handlers/wikipedia",
+            "examples/handlers/servicenow",
+            "examples/handlers/zohohirs",
+            "examples/handlers/slack",
+            "examples/handlers/gitlab",
+            "examples/handlers/github"
       ]
     },
     {
