@@ -24,7 +24,12 @@ OTEL_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")  # Example: http://loca
 SERVICE = os.getenv("OTEL_SERVICE_NAME", "superagentx")
 
 # --- Resource Info ---
-resource = Resource(attributes={SERVICE_NAME: SERVICE})
+resource = Resource(
+    attributes={
+        SERVICE_NAME: SERVICE,
+        "tenant_id": os.getenv("TENANT_ID", "00000000-0000-0000-0000-000000000000")
+    }
+)
 
 # --- Tracing Setup ---
 if METRICS_ENABLED:
