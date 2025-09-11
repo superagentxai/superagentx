@@ -315,7 +315,7 @@ class CliApp:
         )
         _pipe_path.write_text(_render_pipe)
 
-    def render_pipe(self):
+    def render_pipe(self) -> str:
         app_creation = AppCreation(app_config=self.app_config)
         app_creation.construct()
         self.pipe_name = app_creation.pipe_name
