@@ -403,3 +403,9 @@ class BedrockClient(Client):
             self.embed,
             text
         )
+
+    def count_tokens(self, **kwargs):
+        return 1
+
+    async def acount_tokens(self, **kwargs):
+        return 1

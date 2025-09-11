@@ -57,6 +57,11 @@ class OpenAIClient(Client):
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
+        if self._model in ["gpt-5-mini", "gpt-5", "gpt-5-nano"]:
+            default_exclude = ["temperature", "top_p", "top_k", "frequency_penalty", "performance_config"]
+            if not chat_completion_params.max_tokens:
+                default_exclude.append("max_tokens")
+            params = chat_completion_params.model_dump(exclude=default_exclude)
         params['model'] = self._model  # Get model name from client object attribute and set
         return self.client.chat.completions.create(**params)
 
@@ -66,6 +71,11 @@ class OpenAIClient(Client):
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
+        if self._model in ["gpt-5-mini", "gpt-5", "gpt-5-nano"]:
+            default_exclude = ["temperature", "top_p", "top_k", "frequency_penalty", "performance_config"]
+            if not chat_completion_params.max_tokens:
+                default_exclude.append("max_tokens")
+            params = chat_completion_params.model_dump(exclude=default_exclude)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = await self.client.chat.completions.create(**params)
         return chat_completion_response
@@ -224,3 +234,27 @@ class OpenAIClient(Client):
             if _key in source_instance.__fields__:
                 setattr(source_instance, _key, self.llm_params[_key])
         return source_instance
+
+    def count_tokens(self, chat_completion_params: ChatCompletionParams):
+        import tiktoken
+        """
+        Count tokens for OpenAI chat messages.
+        """
+        try:
+            encoding = tiktoken.encoding_for_model(self._model)
+        except KeyError:
+            encoding = tiktoken.get_encoding("cl100k_base")
+
+        tokens_per_message = 3
+        tokens_per_name = 1
+        num_tokens = 0
+
+        for message in chat_completion_params.messages:
+            num_tokens += tokens_per_message
+            num_tokens += len(encoding.encode(message.content))
+        num_tokens += 3  # every reply is primed with <|start|>assistant
+        return num_tokens
+
+
+    async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
+        return await sync_to_async(self.count_tokens, chat_completion_params)

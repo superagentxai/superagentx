@@ -322,3 +322,12 @@ class LLMClient:
                 )
 
         return message_instances
+
+    def count_tokens(self, chat_completion_params: ChatCompletionParams):
+        return self.client.count_tokens(chat_completion_params=chat_completion_params)
+
+    async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
+        if self.async_mode:
+            return await self.client.acount_tokens(chat_completion_params=chat_completion_params)
+        else:
+            return await sync_to_async(self.count_tokens, chat_completion_params)

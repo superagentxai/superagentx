@@ -70,3 +70,9 @@ class Client(metaclass=ABCMeta):
             list: The embedding vector.
         """
         raise NotImplementedError
+
+    def count_tokens(self, **kwargs):
+        raise NotImplementedError
+
+    async def acount_tokens(self, **kwargs):
+        raise NotImplementedError
