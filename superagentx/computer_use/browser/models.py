@@ -27,6 +27,11 @@ class InputTextParams(BaseModel):
     text: str
     has_sensitive: bool
 
+class MFAParams(BaseModel):
+    index: int
+    mfa_secret_key: str
+    has_sensitive: bool
+    click_element_by_index: int
 
 class GoToUrl(BaseModel):
     url: str

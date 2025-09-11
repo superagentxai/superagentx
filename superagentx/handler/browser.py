@@ -1,12 +1,17 @@
 import asyncio
 import json
 import logging
+import time
+
+import pyotp
+import ntplib
 
 from superagentx.computer_use.browser.context import BrowserContext
 from superagentx.computer_use.browser.models import ToolResult
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
 from superagentx.llm import LLMClient, ChatCompletionParams
+from superagentx.utils.helper import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -72,13 +77,67 @@ class BrowserHandler(BaseHandler):
         logger.info(msg)
         return ToolResult(extracted_content=msg, include_in_memory=True)
 
+    async def get_ntp_time(self):
+        """Fetch accurate UTC time from an NTP server."""
+        client = ntplib.NTPClient()
+        response = await sync_to_async(client.request, 'time.google.com')
+        return response.tx_time
+
+    @tool
+    async def enter_mfa_otp(
+            self,
+            mfa_secret_key: str,
+            index: int,
+            click_element_by_index: int,
+            has_sensitive: bool = False,
+    ) -> ToolResult:
+        """
+        Generate the current OTP using the provided MFA secret and enter it into the specified input field.
+        If an MFA/Authenticator page is present and autologin is set to true, invoke this method.
+
+        Args:
+            mfa_secret_key (str): The shared MFA secret used to generate the OTP.
+            index (int): Index of the input element where the OTP should be entered.
+            click_element_by_index (int): Clicks the element at the given index after entering the OTP.
+            has_sensitive (bool): Has Sensitive data. Default False
+        """
+
+        try:
+            ntp_time = await self.get_ntp_time()
+        except Exception as e:
+            # fallback to system time if NTP fails
+            print(f" NTP failed: {e}, falling back to system time.")
+            ntp_time = time.time()
+        totp = pyotp.TOTP(mfa_secret_key)
+        # otp = totp.now()
+        otp = await sync_to_async(totp.at,ntp_time)
+        is_valid = await sync_to_async(totp.verify, otp, for_time=ntp_time, valid_window=1)
+
+        if is_valid:
+            interval = totp.interval  # usually 30s
+            remaining = interval - (int(ntp_time) % interval)
+
+            if remaining > 15:
+                print(f" The OTP {otp} is valid for another {remaining} seconds.")
+                await self.input_text(index=index, text=otp, has_sensitive=has_sensitive)
+                return await self.click_element_by_index(index=click_element_by_index)
+
+        # Retry once if OTP invalid or about to expire
+        print("Retrying OTP generation...")
+        return await self.enter_mfa_otp(
+            mfa_secret_key=mfa_secret_key,
+            index=index,
+            click_element_by_index=click_element_by_index,
+            has_sensitive=has_sensitive,
+        )
+
     @tool
     async def go_to_url(
             self,
             url: str
     ) -> ToolResult:
         """
-        Navigates to the specified URL in the current tab.
+        Navigates/go to the specified URL in the current tab. If the user say Navigate/go_to_url to the particular url, you should execute this method.
 
         Args:
             url (str):
@@ -161,6 +220,7 @@ class BrowserHandler(BaseHandler):
             raise Exception(f'Element with index {index} does not exist - retry or use alternative actions')
 
         element_node = await self.browser_context.get_dom_element_by_index(index)
+
         initial_pages = len(session.context.pages)
 
         # if element has file uploader then dont click
@@ -259,7 +319,7 @@ class BrowserHandler(BaseHandler):
             return ToolResult(error=f'Element index {index} does not exist - retry or use alternative actions')
         try:
             element_node = await self.browser_context.get_dom_element_by_index(index)
-            await self.wait(seconds=3)
+            # await self.wait(seconds=3)
             await self.browser_context._input_text_element_node(element_node, text=text)
             if not has_sensitive:
                 msg = f'⌨️  Input data into index {index} {text}'
@@ -391,6 +451,9 @@ class BrowserHandler(BaseHandler):
     ) -> ToolResult:
         """
         Scroll up the page by pixel amount - if no amount is specified, scroll up one page
+
+        Args:
+            @param amount: The number of pixels to scroll. If None, scroll down/up one page
         """
         page = await self.browser_context.get_current_page()
         if amount is not None:
