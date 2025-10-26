@@ -11,6 +11,7 @@ from superagentx.exceptions import InvalidType
 from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_EMBED, DEFAULT_GEMINI_EMBED
 )
+from superagentx.llm.litellm import LiteLLMClient
 
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.openai import OpenAIClient
@@ -67,7 +68,8 @@ class LLMClient:
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
-                raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
+                self.client = self.__init_litellm_cli()
+                # raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
 
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
@@ -102,6 +104,10 @@ class LLMClient:
             embed_model=embed_model or DEFAULT_OPENAI_EMBED,
             llm_type=self.llm_config_model.llm_type
         )
+
+    def __init_litellm_cli(self):
+        return LiteLLMClient(model=self.llm_config_model.model)
+
 
     def __init_gemini_cli(self, **kwargs):
         from superagentx.llm.gemini import GeminiClient

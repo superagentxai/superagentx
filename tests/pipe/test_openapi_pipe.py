@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def openapi_client_init() -> dict:
     llm_config = {"model": 'anthropic.claude-3-5-haiku-20241022-v1:0', "llm_type": 'bedrock'}
+    llm_config = {
+        'llm_type': 'openai'
+    }
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
 

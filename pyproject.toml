@@ -1,6 +1,6 @@
 [project]
 name = "superagentx"
-version = "0.1.18.17b2"
+version = "1.01.0"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
 license = { text = "MIT" }
 authors = [
@@ -17,6 +17,7 @@ requires-python = ">=3.12,<=3.13"
 dependencies = [
     "pydantic>=2.8.2",
     "openai>=1.47.1",
+    "litellm>=1.79.0",
     "exa-py>=1.1.4",
     "aiohttp>=3.10.8",
     "rich>=13.9.2",

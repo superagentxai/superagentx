@@ -255,6 +255,5 @@ class OpenAIClient(Client):
         num_tokens += 3  # every reply is primed with <|start|>assistant
         return num_tokens
 
-
     async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
         return await sync_to_async(self.count_tokens, chat_completion_params)

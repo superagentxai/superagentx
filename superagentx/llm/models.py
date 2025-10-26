@@ -36,10 +36,10 @@ class ChatCompletionParams(BaseModel):
         description='Modifies likelihood of specified tokens with bias values.',
         default=None
     )
-    logprobs: bool | None = Field(
-        description='Returns log probabilities of output tokens if true.',
-        default=False
-    )
+    # logprobs: bool | None = Field(
+    #     description='Returns log probabilities of output tokens if true.',
+    #     default=None
+    # )
     top_logprobs: conint(ge=0) | None = Field(
         description='Specifies the number of most likely tokens to return at each position.',
         default=None
@@ -52,10 +52,10 @@ class ChatCompletionParams(BaseModel):
         description='Generates a specified number of chat completion choices for each input.',
         default=1
     )
-    presence_penalty: float | None = Field(
-        description='Penalizes new tokens based on their presence in the text.',
-        default=0
-    )
+    # presence_penalty: float | None = Field(
+    #     description='Penalizes new tokens based on their presence in the text.',
+    #     default=None
+    # )
     response_format: Any | None = Field(
         description='Specifies the output format, e.g., JSON mode.',
         default=None

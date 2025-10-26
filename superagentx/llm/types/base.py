@@ -19,9 +19,10 @@ class LLMModelConfig(BaseModel):
         default=None
     )
 
-    llm_type: str = Field(
-            description=f'LLM llm_type should in anyone of '
-                        f'{", ".join(map(lambda member: member.value, LLMType))}'
+    llm_type: str | None = Field(
+        description=f'LLM llm_type should in anyone of '
+                    f'{", ".join(map(lambda member: member.value, LLMType))}',
+        default=None
     )
 
     base_url: str | None = Field(
@@ -44,49 +45,49 @@ class LLMModelConfig(BaseModel):
         default=None
     )
 
-    @model_validator(mode="after")
-    def __validate_variables__(self) -> Self:
+    # @model_validator(mode="after")
+    # def __validate_variables__(self) -> Self:
+    #
+    #     if not LLMType.has_member_value(self.llm_type):
+    #         _msg = (
+    #             f'LLM llm_type is should be one of the following '
+    #             f'{", ".join(map(lambda member: member.value, LLMType))}'
+    #         )
+    #         logger.error(_msg)
+    #         raise ValueError(_msg)
+    #     return self
 
-        if not LLMType.has_member_value(self.llm_type):
-            _msg = (
-                f'LLM llm_type is should be one of the following '
-                f'{", ".join(map(lambda member: member.value, LLMType))}'
-            )
-            logger.error(_msg)
-            raise ValueError(_msg)
-        return self
-
-    @model_validator(mode="after")
-    def __validate_model_name__(self) -> Self:
-        # Validate for Open AI. Azure OpenAI deployment model can be custom name. Hence validation not required!!!
-        if self.llm_type == LLMType.OPENAI_CLIENT.value:
-            if not self.model:
-                self.model = 'gpt-4o'
-            elif self.model not in OPENAI_MODELS:
-                _msg = (
-                    f'Invalid Open AI or Azure Open AI Model - '
-                    f'{self.model}. It should be one of the following {", ".join(OPENAI_MODELS)}'
-                )
-                logger.error(_msg)
-                raise ValueError(_msg)
-        elif self.llm_type == LLMType.DEEPSEEK:
-            if not self.model:
-                self.model = 'deepseek-chat'
-            elif self.model not in OPENAI_MODELS:
-                _msg = (
-                    f'Invalid Deepseek AI Model - '
-                    f'{self.model}. It should be one of the following {", ".join(OPENAI_MODELS)}'
-                )
-                logger.error(_msg)
-                raise ValueError(_msg)
-        elif self.llm_type == LLMType.BEDROCK_CLIENT.value:
-            if not self.model:
-                _msg = (
-                    f'Please enable and grant access the model. Refer the following'
-                    f' link https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html'
-                )
-                logger.error(_msg)
-                raise ValueError(_msg)
-        if self.async_mode is None:
-            self.async_mode = True
-        return self
+    # @model_validator(mode="after")
+    # def __validate_model_name__(self) -> Self:
+    #     # Validate for Open AI. Azure OpenAI deployment model can be custom name. Hence validation not required!!!
+    #     if self.llm_type == LLMType.OPENAI_CLIENT.value:
+    #         if not self.model:
+    #             self.model = 'gpt-4o'
+    #         elif self.model not in OPENAI_MODELS:
+    #             _msg = (
+    #                 f'Invalid Open AI or Azure Open AI Model - '
+    #                 f'{self.model}. It should be one of the following {", ".join(OPENAI_MODELS)}'
+    #             )
+    #             logger.error(_msg)
+    #             raise ValueError(_msg)
+    #     elif self.llm_type == LLMType.DEEPSEEK:
+    #         if not self.model:
+    #             self.model = 'deepseek-chat'
+    #         elif self.model not in OPENAI_MODELS:
+    #             _msg = (
+    #                 f'Invalid Deepseek AI Model - '
+    #                 f'{self.model}. It should be one of the following {", ".join(OPENAI_MODELS)}'
+    #             )
+    #             logger.error(_msg)
+    #             raise ValueError(_msg)
+    #     elif self.llm_type == LLMType.BEDROCK_CLIENT.value:
+    #         if not self.model:
+    #             _msg = (
+    #                 f'Please enable and grant access the model. Refer the following'
+    #                 f' link https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html'
+    #             )
+    #             logger.error(_msg)
+    #             raise ValueError(_msg)
+    #     if self.async_mode is None:
+    #         self.async_mode = True
+    #     return self
