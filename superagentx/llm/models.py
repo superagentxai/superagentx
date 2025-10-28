@@ -38,7 +38,7 @@ class ChatCompletionParams(BaseModel):
     )
     logprobs: bool | None = Field(
         description='Returns log probabilities of output tokens if true.',
-        default=False
+        default=None
     )
     top_logprobs: conint(ge=0) | None = Field(
         description='Specifies the number of most likely tokens to return at each position.',
@@ -54,7 +54,7 @@ class ChatCompletionParams(BaseModel):
     )
     presence_penalty: float | None = Field(
         description='Penalizes new tokens based on their presence in the text.',
-        default=0
+        default=None
     )
     response_format: Any | None = Field(
         description='Specifies the output format, e.g., JSON mode.',

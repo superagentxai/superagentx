@@ -19,9 +19,11 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4.1', 'llm_type': 'openai'}
+    # llm_config = {'model': 'gpt-5-mini', 'llm_type': 'openai'}
     # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'anthropic'}
-
+    # llm_config = {'model': 'openai/gpt-5-mini'}
+    llm_config = {'model': 'bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0'}
+    # llm_config = {'model': 'anthropic/claude-sonnet-4-5-20250929'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response

@@ -1,8 +1,7 @@
 import json
 import logging
 import os
-import typing
-from typing import List
+from typing import List, Callable
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
@@ -11,6 +10,7 @@ from superagentx.exceptions import InvalidType
 from superagentx.llm.constants import (
     DEFAULT_OPENAI_EMBED, DEFAULT_BEDROCK_EMBED, DEFAULT_OLLAMA_EMBED, DEFAULT_EMBED, DEFAULT_GEMINI_EMBED
 )
+from superagentx.llm.litellm import LiteLLMClient
 
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.openai import OpenAIClient
@@ -67,7 +67,7 @@ class LLMClient:
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
-                raise InvalidType(f'Not a valid LLM model `{self.llm_config_model.llm_type}`.')
+                self.client = self.__init_litellm_cli()
 
     def _init_openai_cli(self) -> OpenAIClient:
         # Set the API Key from pydantic model class or from environment variables.
@@ -102,6 +102,9 @@ class LLMClient:
             embed_model=embed_model or DEFAULT_OPENAI_EMBED,
             llm_type=self.llm_config_model.llm_type
         )
+
+    def __init_litellm_cli(self):
+        return LiteLLMClient(model=self.llm_config_model.model)
 
     def __init_gemini_cli(self, **kwargs):
         from superagentx.llm.gemini import GeminiClient
@@ -229,7 +232,7 @@ class LLMClient:
     async def get_tool_json(
             self,
             *,
-            func: typing.Callable
+            func: Callable
     ) -> dict:
         return await self.client.get_tool_json(func=func)
 
@@ -326,7 +329,7 @@ class LLMClient:
     def count_tokens(self, chat_completion_params: ChatCompletionParams):
         return self.client.count_tokens(chat_completion_params=chat_completion_params)
 
-    async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
+    async def account_tokens(self, chat_completion_params: ChatCompletionParams):
         if self.async_mode:
             return await self.client.acount_tokens(chat_completion_params=chat_completion_params)
         else:

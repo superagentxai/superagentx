@@ -4,13 +4,13 @@ import logging
 import re
 import time
 import uuid
-
+import typing
+from typing import Callable
 from ollama import AsyncClient
 from ollama import Client as OllamaCli
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage, ChatCompletionMessageToolCall
 from openai.types.chat.chat_completion import Choice
-from pydantic import typing
 
 from superagentx.llm import ChatCompletionParams
 from superagentx.llm.client import Client
@@ -214,7 +214,7 @@ class OllamaClient(Client):
             usage=usage
         )
 
-    async def get_tool_json(self, func: typing.Callable) -> dict:
+    async def get_tool_json(self, func: Callable) -> dict:
         _func_name = func.__name__
         _doc_str = inspect.getdoc(func)
         _properties = {}
@@ -301,9 +301,8 @@ class OllamaClient(Client):
                 setattr(source_instance, _key, self.kwargs[_key])
         return source_instance
 
-
     def count_tokens(self, **kwargs):
         return 1
 
-    async def acount_tokens(self, **kwargs):
+    async def account_tokens(self, **kwargs):
         return 1

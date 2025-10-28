@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Dict
+from typing import List, Dict, Callable
 
 import boto3
 from openai.types import CompletionUsage
@@ -263,7 +263,7 @@ class BedrockClient(Client):
     async def get_tool_json(
             self,
             *,
-            func: typing.Callable
+            func: Callable
     ) -> dict:
         _func_name = func.__name__
         _doc_str = inspect.getdoc(func)
@@ -407,5 +407,5 @@ class BedrockClient(Client):
     def count_tokens(self, **kwargs):
         return 1
 
-    async def acount_tokens(self, **kwargs):
+    async def account_tokens(self, **kwargs):
         return 1

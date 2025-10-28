@@ -1,17 +1,16 @@
-import base64
 import json
 import logging
 import time
 import uuid
 from typing import Any
 import inspect
-
+import typing
+from typing import Callable
 from google import genai
 from google.genai import types
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
-from pydantic import typing
 
 from superagentx.llm.client import Client
 from superagentx.llm.models import ChatCompletionParams, Message
@@ -234,7 +233,7 @@ class GeminiClient(Client):
                     )
         return tool_calls
 
-    async def get_tool_json(self, func: typing.Callable) -> dict:
+    async def get_tool_json(self, func: Callable) -> dict:
         _func_name = func.__name__
         _doc_str = inspect.getdoc(func)
         _properties = {}
@@ -293,5 +292,5 @@ class GeminiClient(Client):
             return user_response.total_tokens + system_response.total_tokens
         return None
 
-    async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
+    async def account_tokens(self, chat_completion_params: ChatCompletionParams):
         return await sync_to_async(self.count_tokens, chat_completion_params)

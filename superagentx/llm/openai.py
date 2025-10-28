@@ -1,12 +1,13 @@
 import inspect
 import logging
 import re
+import typing
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types import CreateEmbeddingResponse
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
-from pydantic import typing
+from typing import Callable
 
 from superagentx.llm import ChatCompletionParams
 from superagentx.llm.client import Client
@@ -162,7 +163,7 @@ class OpenAIClient(Client):
         api_key_re = re.compile(r"^sk-([A-Za-z0-9]+(-+[A-Za-z0-9]+)*-)?[A-Za-z0-9]{32,}$")
         return bool(re.fullmatch(api_key_re, api_key))
 
-    async def get_tool_json(self, func: typing.Callable) -> dict:
+    async def get_tool_json(self, func: Callable) -> dict:
         _func_name = func.__name__
         _doc_str = inspect.getdoc(func)
         _properties = {}
@@ -255,6 +256,5 @@ class OpenAIClient(Client):
         num_tokens += 3  # every reply is primed with <|start|>assistant
         return num_tokens
 
-
-    async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
+    async def account_tokens(self, chat_completion_params: ChatCompletionParams):
         return await sync_to_async(self.count_tokens, chat_completion_params)
