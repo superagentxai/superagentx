@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
-from pydantic import typing
+
+from typing import Callable
 
 
 class Client(metaclass=ABCMeta):
@@ -33,7 +34,7 @@ class Client(metaclass=ABCMeta):
     @abstractmethod
     async def get_tool_json(
             self,
-            func: typing.Callable
+            func: Callable
     ) -> dict:
         raise NotImplementedError
 
@@ -74,5 +75,5 @@ class Client(metaclass=ABCMeta):
     def count_tokens(self, **kwargs):
         raise NotImplementedError
 
-    async def acount_tokens(self, **kwargs):
+    async def account_tokens(self, **kwargs):
         raise NotImplementedError

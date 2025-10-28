@@ -1,22 +1,30 @@
 import inspect
 import logging
-import re
-from pydantic import typing
+import typing
+from typing import Callable
 
 from openai.types.chat.chat_completion import ChatCompletion, Choice, ChoiceLogprobs
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from openai.types.completion_usage import CompletionUsage
 from litellm import completion, acompletion, embedding, aembedding, ModelResponse
-from openai.types.chat.chat_completion import ChatCompletion
 from superagentx.llm.models import ChatCompletionParams
 from superagentx.llm.client import Client
-from superagentx.utils.helper import sync_to_async, iter_to_aiter, ptype_to_json_scheme
+from superagentx.utils.helper import sync_to_async, ptype_to_json_scheme
 
 logger = logging.getLogger(__name__)
 
 
+def _to_chat_message(obj) -> ChatCompletionMessage:
+    """Convert dict/BaseModel-like object to ChatCompletionMessage."""
+    if isinstance(obj, dict):
+        return ChatCompletionMessage(**obj)
+    if hasattr(obj, "model_dump"):
+        return ChatCompletionMessage(**obj.model_dump())
+    raise ValueError(f"Unsupported message type: {type(obj)}")
+
+
 def convert_model_response_to_chat_completion(
-        model_response: ModelResponse,
+    model_response: ModelResponse,
 ) -> ChatCompletion:
     """
     Convert a custom ModelResponse object into a standard OpenAI ChatCompletion object.
@@ -27,64 +35,40 @@ def convert_model_response_to_chat_completion(
     Returns:
         ChatCompletion: Converted ChatCompletion instance.
     """
-
-    # Ensure ModelResponse has choices and model attributes
-    if not hasattr(model_response, "choices"):
-        raise ValueError("Invalid ModelResponse: missing 'choices' field")
-    if not hasattr(model_response, "model"):
-        raise ValueError("Invalid ModelResponse: missing 'model' field")
+    if not hasattr(model_response, "choices") or not hasattr(model_response, "model"):
+        raise ValueError("Invalid ModelResponse: missing required fields ('choices', 'model')")
 
     converted_choices: list[Choice] = []
 
     for idx, choice in enumerate(model_response.choices):
-        # Determine message content
-        message_content = None
-        finish_reason = getattr(choice, "finish_reason", "stop")
-
-        # Some models might have 'message' dict or 'delta' (streamed output)
-        if hasattr(choice, "message") and choice.message:
-            msg_data = choice.message
-            if isinstance(msg_data, dict):
-                message_content = ChatCompletionMessage(**msg_data)
-            else:
-                # Assume BaseModel
-                message_content = ChatCompletionMessage(**msg_data.model_dump())
-        elif hasattr(choice, "delta") and choice.delta:
-            # Streaming partials
-            delta = choice.delta
-            if isinstance(delta, dict):
-                message_content = ChatCompletionMessage(**delta)
-            else:
-                message_content = ChatCompletionMessage(**delta.model_dump())
-        else:
-            message_content = ChatCompletionMessage(role="assistant", content="")
+        # Get message content from message or delta
+        msg = getattr(choice, "message", None) or getattr(choice, "delta", None)
+        message_content = _to_chat_message(msg) if msg else ChatCompletionMessage(role="assistant", content="")
 
         # Handle optional logprobs
         logprobs = getattr(choice, "logprobs", None)
-        if logprobs and isinstance(logprobs, dict):
+        if isinstance(logprobs, dict):
             logprobs = ChoiceLogprobs(**logprobs)
-        elif logprobs is None:
-            logprobs = None
 
         converted_choices.append(
             Choice(
                 index=idx,
                 message=message_content,
-                finish_reason=finish_reason or "stop",
+                finish_reason=getattr(choice, "finish_reason", "stop") or "stop",
                 logprobs=logprobs,
             )
         )
 
     # Convert usage if present
     usage = None
-    if hasattr(model_response, "usage") and model_response.usage:
-        usage_data = model_response.usage
+    usage_data = getattr(model_response, "usage", None)
+    if usage_data:
         if isinstance(usage_data, dict):
             usage = CompletionUsage(**usage_data)
-        else:
+        elif hasattr(usage_data, "model_dump"):
             usage = CompletionUsage(**usage_data.model_dump())
 
-    chat_completion = ChatCompletion(
+    return ChatCompletion(
         id=getattr(model_response, "id", "unknown"),
         choices=converted_choices,
         created=getattr(model_response, "created", 0),
@@ -94,8 +78,6 @@ def convert_model_response_to_chat_completion(
         usage=usage,
     )
 
-    return chat_completion
-
 
 class LiteLLMClient(Client):
     """
@@ -104,102 +86,118 @@ class LiteLLMClient(Client):
     """
 
     def chat_completion(
-            self,
-            *,
-            chat_completion_params: ChatCompletionParams,
+        self,
+        *,
+        chat_completion_params: ChatCompletionParams,
     ) -> ChatCompletion:
         """Synchronous chat completion"""
         params = chat_completion_params.model_dump(exclude_none=True)
         params["model"] = self._model
+        params["stream"] = False  # Streaming not yet supported
 
-        # LiteLLM unified interface
-        response = completion(**params)
-        chat_completion_response: ChatCompletion = convert_model_response_to_chat_completion(model_response=response)
+        response: ModelResponse = completion(**params)
+        logger.debug(
+            f"LiteLLM sync completion: model={response.model}, "
+            f"choices={len(response.choices)}, usage={getattr(response, 'usage', None)}"
+        )
 
-        return chat_completion_response
+        return convert_model_response_to_chat_completion(model_response=response)
 
     async def achat_completion(
-            self,
-            *,
-            chat_completion_params: ChatCompletionParams,
-    ):
+        self,
+        *,
+        chat_completion_params: ChatCompletionParams,
+    ) -> ChatCompletion:
         """Asynchronous chat completion"""
         params = chat_completion_params.model_dump(exclude_none=True)
         params["model"] = self._model
-        response = await acompletion(**params)
-        chat_completion_response: ChatCompletion = await sync_to_async(convert_model_response_to_chat_completion,
-                                                                       model_response=response)
-        return chat_completion_response
+        params["stream"] = False  # Streaming not yet supported
 
-    async def get_tool_json(self, func: typing.Callable) -> dict:
-        _func_name = func.__name__
-        _doc_str = inspect.getdoc(func)
-        _properties = {}
-        _type_hints = typing.get_type_hints(func)
-        async for param, param_type in iter_to_aiter(_type_hints.items()):
-            if param != 'return':
-                _type = await ptype_to_json_scheme(param_type.__name__)
-                if _type == "array":
-                    if hasattr(param_type, "__args__"):
-                        _properties[param] = {
-                            "type": _type,
-                            "description": f"The {param.replace('_', ' ')}.",
-                            'items': {
-                                "type": await ptype_to_json_scheme(param_type.__args__[0].__name__)
-                            }
-                        }
-                    else:
-                        _properties[param] = {
-                            "type": _type,
-                            "description": f"The {param.replace('_', ' ')}.",
-                            'items': {
-                                "type": "object"
-                            }
-                        }
-                else:
-                    _properties[param] = {
-                        "type": _type,
-                        "description": f"The {param.replace('_', ' ')}."
-                    }
+        response = await acompletion(**params)
+        logger.debug(
+            f"LiteLLM async completion: model={response.model}, "
+            f"choices={len(response.choices)}, usage={getattr(response, 'usage', None)}"
+        )
+
+        return await sync_to_async(convert_model_response_to_chat_completion, model_response=response)
+
+    async def get_tool_json(self, func: Callable) -> dict:
+        """
+        Generate a JSON schema definition for a callable function for LLM tool use.
+        """
+        func_name = func.__name__
+        doc_str = inspect.getdoc(func)
+        properties: dict[str, dict] = {}
+        type_hints = typing.get_type_hints(func)
+
+        for param, param_type in type_hints.items():
+            if param == "return":
+                continue
+
+            type_name = await ptype_to_json_scheme(param_type.__name__)
+            if type_name == "array":
+                item_type = (
+                    await ptype_to_json_scheme(param_type.__args__[0].__name__)
+                    if hasattr(param_type, "__args__")
+                    else "object"
+                )
+                properties[param] = {
+                    "type": "array",
+                    "description": f"The {param.replace('_', ' ')}.",
+                    "items": {"type": item_type},
+                }
+            else:
+                properties[param] = {
+                    "type": type_name,
+                    "description": f"The {param.replace('_', ' ')}.",
+                }
 
         return {
-            'type': 'function',
-            'function': {
-                'name': _func_name,
-                'description': _doc_str,
-                'parameters': {
+            "type": "function",
+            "function": {
+                "name": func_name,
+                "description": doc_str,
+                "parameters": {
                     "type": "object",
-                    "properties": _properties,
-                    "required": list(_properties.keys()),
-                }
-            }
+                    "properties": properties,
+                    "required": list(properties.keys()),
+                },
+            },
         }
 
     def embed(self, text: str, **kwargs):
-        pass
+        """Synchronous embedding"""
+        return embedding(model=self._embed_model, input=[text])
 
     async def aembed(self, text: str, **kwargs):
-        pass
+        """Asynchronous embedding"""
+        return await aembedding(model=self._embed_model, input=[text])
 
     def count_tokens(self, chat_completion_params: ChatCompletionParams):
+        """
+        Count tokens for OpenAI-style chat messages.
+        """
         import tiktoken
-        """
-        Count tokens for OpenAI chat messages.
-        """
+
         try:
             encoding = tiktoken.encoding_for_model(self._model)
         except KeyError:
             encoding = tiktoken.get_encoding("cl100k_base")
 
         tokens_per_message = 3
-        tokens_per_name = 1
         num_tokens = 0
 
         for message in chat_completion_params.messages:
             num_tokens += tokens_per_message
-            num_tokens += len(encoding.encode(message.content))
+            content = message.content
+            if isinstance(content, str):
+                num_tokens += len(encoding.encode(content))
+            elif isinstance(content, dict):
+                num_tokens += len(encoding.encode(str(content)))
+
         num_tokens += 3  # every reply is primed with <|start|>assistant
         return num_tokens
 
-    async def acount_tokens(self, chat_completion_params: ChatCompletionParams):
+    async def account_tokens(self, chat_completion_params: ChatCompletionParams):
+        """Asynchronous token counter"""
         return await sync_to_async(self.count_tokens, chat_completion_params)
