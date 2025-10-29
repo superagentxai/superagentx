@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import uuid
-from itertools import count
 from json import JSONDecodeError
 from typing import Literal, Any
 
@@ -195,7 +194,7 @@ class Agent:
         chat_completion_params = ChatCompletionParams(
             messages=prompt_message
         )
-        tokens_count = await self.llm.acount_tokens(chat_completion_params=chat_completion_params)
+        tokens_count = await self.llm.account_tokens(chat_completion_params=chat_completion_params)
         logger.info(f"Tokens Count: {tokens_count}")
         if tokens_count and tokens_count < 128000:
             logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
