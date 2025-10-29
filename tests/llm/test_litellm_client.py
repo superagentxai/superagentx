@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def litellm_client_init() -> dict:
     # llm_config = {'model': 'DFGPT4o', 'llm_type': 'azure-openai'}
     llm_config = {'model': 'openai/gpt-5-mini'}
-    llm_config = {'model': 'anthropic/claude-sonnet-4-5-20250929'}
+    # llm_config = {'model': 'anthropic/claude-sonnet-4-5-20250929'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
