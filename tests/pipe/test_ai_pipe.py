@@ -113,6 +113,7 @@ class TestIOConsolePipe:
             agents=[spamfilter],
             memory=memory
         )
+
         _discussion = """
         From: sam@techchange.net (Sam Winters)
         Subject: Re: <Remote Work: A New Era or a Failing Experiment?>

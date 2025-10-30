@@ -7,6 +7,11 @@ async def sync_to_async(func, *args, **kwargs) -> Any:
     return await asyncio.to_thread(func, *args, **kwargs)
 
 
+async def _maybe_await(coro):
+    if asyncio.iscoroutine(coro):
+        await coro
+
+
 async def iter_to_aiter(iterable):
     for item in iterable:
         yield item
@@ -29,6 +34,7 @@ async def ptype_to_json_scheme(ptype: str) -> str:
             return "array"
         case 'dict' | _:
             return "object"
+
 
 async def rm_trailing_spaces(data):
     """Recursively remove trailing whitespace from all string values in a JSON-like structure."""
