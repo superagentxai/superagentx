@@ -10,7 +10,7 @@ from superagentx.config import is_verbose_enabled
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, StatusCallback
 
 is_verbose_enabled()
 
@@ -199,7 +199,8 @@ class AgentXPipe:
             self,
             query_instruction: str,
             verify_goal: bool = True,
-            conversation_id: str | None = None
+            conversation_id: str | None = None,
+            status_callback: StatusCallback | None = None
     ):
         trigger_break = False
         results = []
@@ -221,7 +222,9 @@ class AgentXPipe:
                                 old_memory=old_memory,
                                 verify_goal=verify_goal,
                                 stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
-                                conversation_id=conversation_id
+                                conversation_id=conversation_id,
+                                status_callback=status_callback
+
                             )
                             async for _agent in iter_to_aiter(_agents)
                         ]
@@ -235,7 +238,8 @@ class AgentXPipe:
                         old_memory=old_memory,
                         verify_goal=verify_goal,
                         stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
-                        conversation_id=conversation_id
+                        conversation_id=conversation_id,
+                        status_callback=status_callback
                     )
                     logger.debug(f'Agent result : {_res}')
                 if self.memory:
@@ -264,7 +268,8 @@ class AgentXPipe:
             self,
             query_instruction: str,
             verify_goal: bool = True,
-            conversation_id: str | None = None
+            conversation_id: str | None = None,
+            status_callback: StatusCallback | None = None
     ) -> list[GoalResult]:
         """
         Processes the specified query instruction and executes a flow of operations.
@@ -275,11 +280,11 @@ class AgentXPipe:
         The method returns a list of GoalResult instances that indicate the outcomes of
         the executed operations.
 
-        Args:
-            query_instruction: A string representing the instruction or query that defines the goal to be achieved.
-                This should be a clear and actionable statement that the method can execute.
-            verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
-            conversation_id: A string representing the unique identifier of the conversation. Default `None`
+        Args: query_instruction: A string representing the instruction or query that defines the goal to be achieved.
+        This should be a clear and actionable statement that the method can execute. verify_goal: Option to enable or
+        disable goal verification after agent execution. Default `True` conversation_id: A string representing the
+        unique identifier of the conversation. Default `None` status_callback: status call back method helps enhance
+        user experience to get live updates of agents executions. Default `None`
 
         Returns:
             list[GoalResult]
@@ -291,5 +296,6 @@ class AgentXPipe:
         return await self._flow(
             query_instruction=query_instruction,
             verify_goal=verify_goal,
-            conversation_id=conversation_id
+            conversation_id=conversation_id,
+            status_callback=status_callback
         )

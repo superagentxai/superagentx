@@ -2,6 +2,10 @@ from typing import Any
 import re
 import asyncio
 
+from typing import Callable, Awaitable, Any, Optional, Union
+
+StatusCallback = Callable[..., Awaitable[Any]]
+
 
 async def sync_to_async(func, *args, **kwargs) -> Any:
     return await asyncio.to_thread(func, *args, **kwargs)
