@@ -10,7 +10,7 @@ from superagentx.config import is_verbose_enabled
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
-from superagentx.utils.helper import iter_to_aiter, StatusCallback
+from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
 
 is_verbose_enabled()
 
@@ -218,6 +218,7 @@ class AgentXPipe:
                         *[
                             _agent.execute(
                                 query_instruction=query_instruction,
+                                pipe_id=self.pipe_id,
                                 pre_result=pre_result,
                                 old_memory=old_memory,
                                 verify_goal=verify_goal,
@@ -234,6 +235,7 @@ class AgentXPipe:
                     logger.debug(f'Agent is executing : {_agents}')
                     _res = await _agents.execute(
                         query_instruction=query_instruction,
+                        pipe_id=self.pipe_id,
                         pre_result=pre_result,
                         old_memory=old_memory,
                         verify_goal=verify_goal,
@@ -293,6 +295,14 @@ class AgentXPipe:
                 corresponding operation and may include additional context or data.
         """
         logger.info(f"Pipe {self.name} starting...")
+        if status_callback:
+            await _maybe_await(status_callback(
+                event="pipe_flow_start",
+                pipe_id=self.pipe_id,
+                query=query_instruction,
+                conversation_id=conversation_id
+            ))
+
         return await self._flow(
             query_instruction=query_instruction,
             verify_goal=verify_goal,

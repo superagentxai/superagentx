@@ -8,7 +8,7 @@ from superagentx.handler.exceptions import InvalidHandler
 from superagentx.handler.mcp import MCPHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
-from superagentx.utils.helper import iter_to_aiter, sync_to_async, rm_trailing_spaces
+from superagentx.utils.helper import iter_to_aiter, sync_to_async, rm_trailing_spaces, StatusCallback, _maybe_await
 from superagentx.utils.parsers.base import BaseParser
 
 logger = logging.getLogger(__name__)
@@ -95,9 +95,13 @@ class Engine:
     async def start(
             self,
             input_prompt: str,
+            pipe_id: str | None = None,
+            agent_id: str | None = None,
+            agent_name: str | None = None,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             conversation_id: str | None = None,
+            status_callback: StatusCallback | None = None,
             **kwargs
     ) -> list[typing.Any]:
         """
@@ -105,10 +109,15 @@ class Engine:
 
         Args:
             input_prompt: The main input instruction to process.
+            pipe_id: Optional Pipe - An Optional, complete Agent workflow ID
+            agent_id: Optional Agent - An Optional, specific agent execution ID
+            agent_name: Optional Agent - An Optional, specific agent execution name
             pre_result: Optional string to prepend to the prompt.
             old_memory: List of previous context (memory).
             conversation_id: Unique identifier for the conversation session.
             kwargs: Dynamic parameters for the prompt template.
+            status_callback: This optional status call back method helps enhance user experience to get
+            live updates of agents executions
 
         Returns:
             A list of parsed or raw results depending on output parser.
@@ -143,6 +152,17 @@ class Engine:
             raise ToolError("No tools matched or executed!")
 
         results = []
+
+        # Callback: agent execution started
+        if status_callback:
+            await _maybe_await(status_callback(
+                event="agent_llm_execute",
+                pipe_id=pipe_id,
+                agent_id=agent_id,
+                agent=agent_name,
+                conversation_id=conversation_id,
+                messages=messages
+            ))
 
         # Process each message returned by the LLM
         async for message in iter_to_aiter(messages):
