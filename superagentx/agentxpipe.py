@@ -295,6 +295,7 @@ class AgentXPipe:
                 corresponding operation and may include additional context or data.
         """
         logger.info(f"Pipe {self.name} starting...")
+
         if status_callback:
             await _maybe_await(status_callback(
                 event="pipe_flow_start",
@@ -303,9 +304,20 @@ class AgentXPipe:
                 conversation_id=conversation_id
             ))
 
-        return await self._flow(
+        goal_result: list[GoalResult] = await self._flow(
             query_instruction=query_instruction,
             verify_goal=verify_goal,
             conversation_id=conversation_id,
             status_callback=status_callback
         )
+
+        if status_callback:
+            await _maybe_await(status_callback(
+                event="pipe_flow_end",
+                pipe_id=self.pipe_id,
+                query=query_instruction,
+                conversation_id=conversation_id,
+                result=goal_result
+            ))
+
+        return goal_result

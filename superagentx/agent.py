@@ -240,50 +240,6 @@ class Agent:
                 is_goal_satisfied=False
             )
 
-        # tokens_count = await self.llm.account_tokens(chat_completion_params=chat_completion_params)
-        # logger.info(f"Tokens Count: {tokens_count}")
-        # if tokens_count and tokens_count < 128000:
-        #     logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
-        #     messages = await self.llm.achat_completion(
-        #         chat_completion_params=chat_completion_params
-        #     )
-        #     logger.debug(f"Goal Result : {messages}")
-        #     if messages and messages.choices:
-        #         for choice in messages.choices:
-        #             if choice and choice.message:
-        #                 _res = choice.message.content or ''
-        #                 _res = _res.replace('```json', '').replace('```', '')
-        #                 try:
-        #                     __res = json.loads(_res)
-        #                     return GoalResult(
-        #                         name=self.name,
-        #                         agent_id=self.agent_id,
-        #                         **__res
-        #                     )
-        #                 except JSONDecodeError as ex:
-        #                     _msg = f'Cannot verify goal!\n{ex}'
-        #                     logger.warning(_msg)
-        #                     return GoalResult(
-        #                         name=self.name,
-        #                         agent_id=self.agent_id,
-        #                         content=_res,
-        #                         error=_msg
-        #                     )
-        #     else:
-        #         return GoalResult(
-        #             name=self.name,
-        #             agent_id=self.agent_id,
-        #             error='No results found!',
-        #             is_goal_satisfied=False
-        #         )
-        # else:
-        #     return GoalResult(
-        #         name=self.name,
-        #         agent_id=self.agent_id,
-        #         reason="Context is Very large. Hence attached the raw data.",
-        #         result=results
-        #     )
-
     async def _execute(
             self,
             query_instruction: str,
@@ -301,6 +257,8 @@ class Agent:
             "pre_result": pre_result,
             "old_memory": old_memory,
             "pipe_id": pipe_id,
+            "agent_id": self.agent_id,
+            "agent_name": self.name,
             "status_callback": status_callback
         }
         if conversation_id:
