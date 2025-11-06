@@ -331,6 +331,6 @@ class LLMClient:
 
     async def account_tokens(self, chat_completion_params: ChatCompletionParams):
         if self.async_mode:
-            return await self.client.acount_tokens(chat_completion_params=chat_completion_params)
+            return await self.client.account_tokens(chat_completion_params=chat_completion_params)
         else:
             return await sync_to_async(self.count_tokens, chat_completion_params)

@@ -146,22 +146,10 @@ class MCPHandler(BaseHandler):
             env=self.env
 
         )
-        # Establish stdio transport and register it with the exit stack
-        with tempfile.TemporaryFile(mode='+wb') as fp:
-            stdio_transport = await self.exit_stack.enter_async_context(
-                stdio_client(
-                    server_params,
-                    errlog=fp
-                )
-            )
-
-        # Unpack the stdio reader and writer
+        stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
         self.stdio, self.write = stdio_transport
+        self.session = await self.exit_stack.enter_async_context(ClientSession(self.stdio, self.write))
 
-        # Create and initialize the client session over stdio
-        self.session = await self.exit_stack.enter_async_context(
-            ClientSession(self.stdio, self.write)
-        )
         await self.session.initialize()
 
         return self.session

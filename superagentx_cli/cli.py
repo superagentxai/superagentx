@@ -118,7 +118,7 @@ class AppConfig(BaseModel):
     app_name: str
     app_type: str  # TODO: Change this with CliAppTypeEnum
     llm: list[LLM]
-    memory: list[Memory]
+    memory: list[Memory] = []
     handler_config: list[HandlerConfig]
     prompt_template_config: list[PromptTemplateConfig]
     engine_config: list[EngineConfig]
@@ -157,8 +157,8 @@ class AppCreation:
         for llm in self.app_config.llm:
             title_2_var = to_snake(s=llm.title)
             self.llms[llm.title] = f"""{title_2_var} = LLMClient({
-                ", ".join(dict_to_kwargs(llm.model_dump(exclude={"title": True})))
-                }
+            ", ".join(dict_to_kwargs(llm.model_dump(exclude={"title": True})))
+            }
             )"""
         if self.llms:
             self.imports.append(
@@ -247,11 +247,22 @@ class AppCreation:
         pipe = self.app_config.pipe_config[0]
         title_2_var = to_snake(pipe.title)
         _agents = str_to_obj_str(pipe.agents)
-        _memory = to_snake(pipe.memory)
-        _kwargs = dict_to_kwargs(pipe.model_dump(exclude={'title': True, 'agents': True, 'memory': True}))
+
+        # Handle memory safely
+        _memory = "[]"  # default empty list
+        if pipe.memory:
+            _memory = to_snake(pipe.memory)
+
+        # Prepare kwargs excluding title, agents, memory
+        _kwargs = dict_to_kwargs(
+            pipe.model_dump(exclude={'title', 'agents', 'memory'})
+        )
+
+        # Build the final pipe creation string
         self.pipe = f"""{title_2_var} = AgentXPipe(
-             agents={_agents}, memory={_memory}, {", ".join(_kwargs)}
+            agents={_agents}, memory={_memory}, {", ".join(_kwargs)}
         )"""
+
         self.imports.append('from superagentx.agentxpipe import AgentXPipe')
         self.pipe_name = title_2_var
 
@@ -293,7 +304,7 @@ class CliApp:
         self.package_name = to_snake(s=self.app_name)
         self.pipe_name = to_snake(s=pipe_name or self.app_name)
         self.author_name = author_name
-        self.author_email =author_email
+        self.author_email = author_email
         self.maintainer_name = maintainer_name
         self.maintainer_email = maintainer_email
         _app_dir = Path(app_dir_path) if app_dir_path else Path().cwd()
@@ -438,9 +449,9 @@ class CliApp:
         self.create_base_pkg()
 
         if self.app_type in (
-            CliAppTypeEnum.all.value,
-            CliAppTypeEnum.rest.value,
-            CliAppTypeEnum.ws.value
+                CliAppTypeEnum.all.value,
+                CliAppTypeEnum.rest.value,
+                CliAppTypeEnum.ws.value
         ):
             if self.app_config:
                 token = self.app_config.app_auth_token or uuid.uuid4().hex

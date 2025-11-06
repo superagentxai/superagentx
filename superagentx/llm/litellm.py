@@ -114,6 +114,7 @@ class LiteLLMClient(Client):
         params["stream"] = False  # Streaming not yet supported
 
         response = await acompletion(**params)
+
         logger.debug(
             f"LiteLLM async completion: model={response.model}, "
             f"choices={len(response.choices)}, usage={getattr(response, 'usage', None)}"
