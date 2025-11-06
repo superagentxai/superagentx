@@ -282,11 +282,12 @@ class AgentXPipe:
         The method returns a list of GoalResult instances that indicate the outcomes of
         the executed operations.
 
-        Args: query_instruction: A string representing the instruction or query that defines the goal to be achieved.
-        This should be a clear and actionable statement that the method can execute. verify_goal: Option to enable or
-        disable goal verification after agent execution. Default `True` conversation_id: A string representing the
-        unique identifier of the conversation. Default `None` status_callback: status call back method helps enhance
-        user experience to get live updates of agents executions. Default `None`
+        query_instruction: A string representing the instruction or query that defines the goal to be achieved.
+                This should be a clear and actionable statement that the method can execute.
+            verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
+            conversation_id: A string representing the unique identifier of the conversation. Default `None`
+             status_callback: status call back method helps enhance user experience to get live updates of
+                agents executions. Default `None`
 
         Returns:
             list[GoalResult]
