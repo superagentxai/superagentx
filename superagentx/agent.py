@@ -425,7 +425,8 @@ class Agent:
                         message='SuperAgentX stopped forcefully since `stop` flag has been set!',
                         goal_result=_goal_result
                     )
-
+            except StopSuperAgentX:
+                raise
             except Exception as e:
                 logger.exception(f"Error executing agent `{self.name}` on retry {_retry}: {e}")
                 if status_callback:
