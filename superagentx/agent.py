@@ -325,16 +325,20 @@ class Agent:
         is designed to perform the necessary operations to fulfill the goal associated
         with the instruction and return a structured result indicating the outcome.
 
-        Args: query_instruction: A string representing the instruction or query that defines the goal to be achieved.
-        This should be a clear and actionable statement that the method can execute. pre_result: An optional
-        pre-computed result or state to be used during the execution. Defaults to `None` if not provided. old_memory:
-        An optional previous context of the user's instruction verify_goal: Option to enable or disable goal
-        verification after agent execution. Default `True` stop_if_goal_not_satisfied: A flag indicating whether to
-        stop processing if the goal is not satisfied. When set to True, the engine operation will halt if the defined
-        goal is not met, preventing any further actions. Defaults to False, allowing the process to continue
-        regardless of goal satisfaction. conversation_id: A string representing the unique identifier of the
-        conversation. status_callback: This optional status call back method helps enhance user experience to get
-        live updates of agents executions
+        Args:
+            query_instruction: A string representing the instruction or query that defines the goal to be achieved.
+                This should be a clear and actionable statement that the method can execute.
+            pre_result: An optional pre-computed result or state to be used during the execution.
+                Defaults to `None` if not provided.
+            old_memory: An optional previous context of the user's instruction
+            verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
+            stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
+                When set to True, the engine operation will halt if the defined goal is not met,
+                preventing any further actions. Defaults to False, allowing the process to continue regardless
+                of goal satisfaction.
+            conversation_id: A string representing the unique identifier of the conversation.
+            status_callback: This optional status call back method helps enhance user experience to get live updates of
+                agents executions
 
         Returns:
             GoalResult | None
