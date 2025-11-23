@@ -69,7 +69,7 @@ discussion = """From: jane@edu.tech.net (Jane Mitchell)
 
 @pytest.fixture
 def ai_client_init() -> dict:
-    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai', 'async_mode': False}
+    llm_config = {'model': 'gpt-5-mini', 'llm_type': 'openai', 'async_mode': False}
 
     # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
 
@@ -91,6 +91,11 @@ def ai_client_init() -> dict:
     return response
 
 
+async def status_callback(event: str, agent_id: str, agent: str, **kwargs):
+    logger.info(f"[Callback] Event: {event}")
+    logger.info(f"[Callback] Event: {event}, Agent ID: {agent_id}, Agent Name: {agent}  Data: {kwargs}")
+
+
 class TestIOConsolePipe:
 
     async def test_ai_spamfilter(self, ai_client_init: dict):
@@ -106,13 +111,16 @@ class TestIOConsolePipe:
             llm=llm_client,
             prompt_template=prompt_template,
             engines=[ai_agent_engine],
-            max_retry=1
+            max_retry=1,
+
         )
 
         pipe = AgentXPipe(
             agents=[spamfilter],
-            memory=memory
+            memory=memory,
+
         )
+
         _discussion = """
         From: sam@techchange.net (Sam Winters)
         Subject: Re: <Remote Work: A New Era or a Failing Experiment?>
@@ -168,7 +176,8 @@ class TestIOConsolePipe:
         Balance or not, remote work is a ticking time bomb.
         """
         result = await pipe.flow(
-            query_instruction=discussion
+            query_instruction=discussion,
+            status_callback=status_callback
         )
         logger.info(f"Spamfilter result => \n{result}")
         assert result
@@ -185,7 +194,8 @@ class TestIOConsolePipe:
             role="analyse",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_agent_engine]
+            engines=[ai_agent_engine],
+            max_retry=1
         )
 
         scriptwriter = Agent(
@@ -196,7 +206,8 @@ class TestIOConsolePipe:
             role="scriptwriter",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_agent_engine]
+            engines=[ai_agent_engine],
+            max_retry=1
 
         )
 
@@ -207,14 +218,16 @@ class TestIOConsolePipe:
             role="formatter",
             llm=llm_client,
             prompt_template=prompt_template,
-            engines=[ai_agent_engine]
+            engines=[ai_agent_engine],
+            max_retry=1
         )
 
         pipe = AgentXPipe(
             agents=[analyst, scriptwriter, formatter], stop_if_goal_not_satisfied=False
         )
         result = await pipe.flow(
-            query_instruction=discussion
+            query_instruction=discussion,
+            status_callback=status_callback
         )
         logger.info(f"Writer result => \n{result}")
         assert result

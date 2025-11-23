@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def openai_client_init() -> dict:
     # llm_config = {'model': 'DFGPT4o', 'llm_type': 'azure-openai'}
-    llm_config = {'llm_type': 'openai'}
+    llm_config = {'llm_type': 'openai', 'model': 'gpt-5-nano'}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
     return response
@@ -99,10 +99,10 @@ class TestOpenAIClient:
         chat_completion_params = ChatCompletionParams(
             messages=messages,
         )
+        logger.info(f"Params {chat_completion_params.model_dump(exclude_none=True)}")
         response = await llm_client.achat_completion(chat_completion_params=chat_completion_params)
         logger.info(f"Open AI Async ChatCompletion Response {response}")
         assert isinstance(response, ChatCompletion)
-
 
     async def test_aclient_embed(self, openai_client_init: dict):
         llm_client: LLMClient = openai_client_init.get('llm')

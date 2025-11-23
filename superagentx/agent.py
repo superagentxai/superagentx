@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import uuid
-from itertools import count
 from json import JSONDecodeError
 from typing import Literal, Any
 
@@ -13,7 +12,7 @@ from superagentx.exceptions import StopSuperAgentX
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.result import GoalResult
-from superagentx.utils.helper import iter_to_aiter
+from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +176,10 @@ class Agent:
             *,
             query_instruction: str,
             results: list[Any],
-            old_memory: str | None = None
+            old_memory: str | None = None,
+            pipe_id: str | None = None,
+            status_callback: StatusCallback | None = None
+
     ) -> GoalResult | None:
         if old_memory:
             results = f"output_context:\n{old_memory}\n\n{results}"
@@ -195,48 +197,47 @@ class Agent:
         chat_completion_params = ChatCompletionParams(
             messages=prompt_message
         )
-        tokens_count = await self.llm.acount_tokens(chat_completion_params=chat_completion_params)
-        logger.info(f"Tokens Count: {tokens_count}")
-        if tokens_count and tokens_count < 128000:
-            logger.debug(f'Chat Completion Params : {chat_completion_params.model_dump(exclude_none=True)}')
-            messages = await self.llm.achat_completion(
-                chat_completion_params=chat_completion_params
-            )
-            logger.debug(f"Goal Result : {messages}")
-            if messages and messages.choices:
-                for choice in messages.choices:
-                    if choice and choice.message:
-                        _res = choice.message.content or ''
-                        _res = _res.replace('```json', '').replace('```', '')
-                        try:
-                            __res = json.loads(_res)
-                            return GoalResult(
-                                name=self.name,
-                                agent_id=self.agent_id,
-                                **__res
-                            )
-                        except JSONDecodeError as ex:
-                            _msg = f'Cannot verify goal!\n{ex}'
-                            logger.warning(_msg)
-                            return GoalResult(
-                                name=self.name,
-                                agent_id=self.agent_id,
-                                content=_res,
-                                error=_msg
-                            )
-            else:
-                return GoalResult(
-                    name=self.name,
-                    agent_id=self.agent_id,
-                    error='No results found!',
-                    is_goal_satisfied=False
-                )
+        messages = await self.llm.achat_completion(
+            chat_completion_params=chat_completion_params
+        )
+        # Callback: agent execution started
+        if status_callback:
+            await _maybe_await(status_callback(
+                event="agent_verify_goal_usage",
+                pipe_id=pipe_id,
+                agent_id=self.agent_id,
+                agent=self.name,
+                query=query_instruction,
+                messages=messages
+            ))
+
+        if messages and messages.choices:
+            for choice in messages.choices:
+                if choice and choice.message:
+                    _res = choice.message.content or ''
+                    _res = _res.replace('```json', '').replace('```', '')
+                    try:
+                        __res = json.loads(_res)
+                        return GoalResult(
+                            name=self.name,
+                            agent_id=self.agent_id,
+                            **__res
+                        )
+                    except JSONDecodeError as ex:
+                        _msg = f'Cannot verify goal!\n{ex}'
+                        logger.warning(_msg)
+                        return GoalResult(
+                            name=self.name,
+                            agent_id=self.agent_id,
+                            content=_res,
+                            error=_msg
+                        )
         else:
             return GoalResult(
                 name=self.name,
                 agent_id=self.agent_id,
-                reason="Context is Very large. So we attached the raw data.",
-                result=results
+                error='No results found!',
+                is_goal_satisfied=False
             )
 
     async def _execute(
@@ -245,13 +246,20 @@ class Agent:
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
-            conversation_id: str | None = None
+            pipe_id: str | None = None,
+            conversation_id: str | None = None,
+            status_callback: StatusCallback | None = None
+
     ) -> GoalResult:
         results = []
         params = {
             "input_prompt": query_instruction,
             "pre_result": pre_result,
-            "old_memory": old_memory
+            "old_memory": old_memory,
+            "pipe_id": pipe_id,
+            "agent_id": self.agent_id,
+            "agent_name": self.name,
+            "status_callback": status_callback
         }
         if conversation_id:
             params["conversation_id"] = conversation_id
@@ -276,7 +284,9 @@ class Agent:
             final_result = await self._verify_goal(
                 results=results,
                 query_instruction=query_instruction,
-                old_memory=old_memory
+                old_memory=old_memory,
+                pipe_id=pipe_id,
+                status_callback=status_callback
             )
             logger.debug(f"Final Goal Result :\n{final_result.model_dump()}")
             if self.return_engine_result:
@@ -299,11 +309,13 @@ class Agent:
             self,
             *,
             query_instruction: str,
+            pipe_id: str | None = None,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             stop_if_goal_not_satisfied: bool = False,
-            conversation_id: str | None = None
+            conversation_id: str | None = None,
+            status_callback: StatusCallback | None = None
     ) -> GoalResult | None:
         """
         Executes the specified query instruction to achieve a defined goal.
@@ -325,6 +337,8 @@ class Agent:
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
             conversation_id: A string representing the unique identifier of the conversation.
+            status_callback: This optional status call back method helps enhance user experience to get live updates of
+                agents executions
 
         Returns:
             GoalResult | None
@@ -332,23 +346,111 @@ class Agent:
                 details about the success or failure of the operation, along with relevant data. If the
                 execution cannot be completed or if an error occurs, the method may return `None`.
         """
+
         _goal_result = None
-        for _retry in range(1, self.max_retry + 1):
-            logger.info(f"Agent `{self.name}` retry {_retry}")
-            _goal_result = await self._execute(
-                query_instruction=query_instruction,
-                pre_result=pre_result,
-                old_memory=old_memory,
-                verify_goal=verify_goal,
+
+        # Callback: agent execution started
+        if status_callback:
+            await _maybe_await(status_callback(
+                event="agent_execute_start",
+                pipe_id=pipe_id,
+                agent_id=self.agent_id,
+                agent=self.name,
+                query=query_instruction,
                 conversation_id=conversation_id
-            )
-            if not verify_goal or _goal_result.is_goal_satisfied:
-                return _goal_result
-            elif _goal_result.is_goal_satisfied is False and stop_if_goal_not_satisfied:
-                raise StopSuperAgentX(
-                    message='Superagentx stopped forcefully since `stop` flag has been set!',
-                    goal_result=_goal_result
+            ))
+
+        for _retry in range(1, self.max_retry + 1):
+            # Callback: retry started
+            if status_callback:
+                await _maybe_await(status_callback(
+                    event=f"agent_execute",
+                    pipe_id=pipe_id,
+                    agent_id=self.agent_id,
+                    agent=self.name,
+                    retry=_retry,
+                    conversation_id=conversation_id,
+                ))
+
+            logger.info(f"Agent `{self.name}` retry {_retry}")
+            try:
+                _goal_result = await self._execute(
+                    query_instruction=query_instruction,
+                    pre_result=pre_result,
+                    old_memory=old_memory,
+                    pipe_id=pipe_id,
+                    verify_goal=verify_goal,
+                    conversation_id=conversation_id,
+                    status_callback=status_callback
                 )
 
+                # Callback: iteration complete
+                if status_callback:
+                    await _maybe_await(status_callback(
+                        event="agent_iteration_complete",
+                        pipe_id=pipe_id,
+                        agent_id=self.agent_id,
+                        agent=self.name,
+                        retry=_retry,
+                        goal_result=_goal_result,
+                        conversation_id=conversation_id
+                    ))
+
+                if not verify_goal or _goal_result.is_goal_satisfied:
+                    if status_callback:
+                        await _maybe_await(status_callback(
+                            event="agent_goal_satisfied",
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent=self.name,
+                            retry=_retry,
+                            goal_result=_goal_result,
+                            conversation_id=conversation_id
+                        ))
+                    return _goal_result
+
+                elif _goal_result.is_goal_satisfied is False and stop_if_goal_not_satisfied:
+                    if status_callback:
+                        await _maybe_await(status_callback(
+                            event="agent_goal_unsatisfied_stopped",
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent=self.name,
+                            retry=_retry,
+                            goal_result=_goal_result,
+                            conversation_id=conversation_id
+                        ))
+
+                    raise StopSuperAgentX(
+                        message='SuperAgentX stopped forcefully since `stop` flag has been set!',
+                        goal_result=_goal_result
+                    )
+            except StopSuperAgentX:
+                raise
+            except Exception as e:
+                logger.exception(f"Error executing agent `{self.name}` on retry {_retry}: {e}")
+                if status_callback:
+                    await _maybe_await(status_callback(
+                        event="agent_execute_error",
+                        pipe_id=pipe_id,
+                        agent_id=self.agent_id,
+                        agent=self.name,
+                        retry=_retry,
+                        error=str(e),
+                        conversation_id=conversation_id
+                    ))
+
         logger.warning(f"Done engine `{self.name}` max retry {self.max_retry}!")
+
+        # Callback: execution finished (max retries reached)
+        if status_callback:
+            await _maybe_await(status_callback(
+                event="agent_execute_complete",
+                pipe_id=pipe_id,
+                agent_id=self.agent_id,
+                agent=self.name,
+                goal_result=_goal_result,
+                conversation_id=conversation_id
+            ))
+
         return _goal_result

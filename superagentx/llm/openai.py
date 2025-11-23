@@ -58,11 +58,6 @@ class OpenAIClient(Client):
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
-        if self._model in ["gpt-5-mini", "gpt-5", "gpt-5-nano"]:
-            default_exclude = ["temperature", "top_p", "top_k", "frequency_penalty", "performance_config"]
-            if not chat_completion_params.max_tokens:
-                default_exclude.append("max_tokens")
-            params = chat_completion_params.model_dump(exclude=default_exclude)
         params['model'] = self._model  # Get model name from client object attribute and set
         return self.client.chat.completions.create(**params)
 
@@ -72,11 +67,6 @@ class OpenAIClient(Client):
             chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
         params = chat_completion_params.model_dump(exclude_none=True)
-        if self._model in ["gpt-5-mini", "gpt-5", "gpt-5-nano"]:
-            default_exclude = ["temperature", "top_p", "top_k", "frequency_penalty", "performance_config"]
-            if not chat_completion_params.max_tokens:
-                default_exclude.append("max_tokens")
-            params = chat_completion_params.model_dump(exclude=default_exclude)
         params['model'] = self._model  # Get model name from client object attribute and set
         chat_completion_response = await self.client.chat.completions.create(**params)
         return chat_completion_response
