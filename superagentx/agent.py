@@ -6,6 +6,7 @@ from json import JSONDecodeError
 from typing import Literal, Any
 
 from superagentx.browser_engine import BrowserEngine
+from superagentx.task_engine import TaskEngine
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.engine import Engine
 from superagentx.exceptions import StopSuperAgentX
@@ -57,14 +58,14 @@ class Agent:
     def __init__(
             self,
             *,
-            goal: str,
-            role: str,
-            llm: LLMClient,
-            prompt_template: PromptTemplate,
+            goal: str | None = None,
+            role: str | None = None,
+            llm: LLMClient | None = None,
+            prompt_template: PromptTemplate | None = None,
             agent_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
-            engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] | None = None,
+            engines: list[Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] | None = None,
             output_format: str | None = None,
             max_retry: int = 5,
             return_engine_result: bool = False
@@ -348,6 +349,9 @@ class Agent:
         """
 
         _goal_result = None
+
+        if not self.llm:
+            verify_goal = False
 
         # Callback: agent execution started
         if status_callback:
