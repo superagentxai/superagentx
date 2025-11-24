@@ -105,31 +105,14 @@ class Agent:
         self.agent_id = agent_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
-        self.engines: list[Engine | BrowserEngine | list[Engine | BrowserEngine]] = engines or []
+        self.engines: list[Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
         self.return_engine_result = return_engine_result
         self.engine_result_format = ENGINE_RESULT_FORMAT
         if self.return_engine_result:
-            self.engine_result_format = """
-            {{
-                reason: Set the reason for result,
-                is_goal_satisfied: 'True' if result satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean.
-            }}
-            """
-
-        logger.debug(
-            f'Initiating Agent...\n'
-            f'Id : {self.agent_id}\n'
-            f'Name : {self.name}\n'
-            f'Description : {self.description}\n'
-            f'Engines Associated : {",".join([str(_engine) for _engine in self.engines])}\n'
-            f'Engine Role : {self.role}\nEngine Goal: {self.goal}\n'
-            f'LLM Client : {self.llm.llm_config}\n'
-            f'Prompt Template : Type - {self.prompt_template.prompt_type} '
-            f'| System Message - {self.prompt_template.system_message}\n'
-            f'Output Format : {self.output_format}\nMax Retry : {self.max_retry}\n'
-        )
+            self.engine_result_format = """{{ reason: Set the reason for result, is_goal_satisfied: 'True' if result 
+            satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean. }}"""
 
     def __str__(self):
         return "Agent"
@@ -139,7 +122,7 @@ class Agent:
 
     async def add(
             self,
-            *engines: Engine | BrowserEngine,
+            *engines: Engine | BrowserEngine | TaskEngine,
             execute_type: Literal['SEQUENCE', 'PARALLEL'] = 'SEQUENCE'
     ) -> None:
         """
