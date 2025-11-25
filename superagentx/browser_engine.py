@@ -293,8 +293,7 @@ class BrowserEngine(BaseEngine):
                     counter = 0
 
                 chat_completion_params = ChatCompletionParams(
-                    messages=self.msgs,
-                    temperature=0
+                    messages=self.msgs
                 )
                 chat_completion_params.response_format = {"type": "json_object"}
                 messages = await self.llm.afunc_chat_completion(
