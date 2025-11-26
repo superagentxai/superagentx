@@ -126,10 +126,10 @@ class LLMClient:
 
     def _init_azure_openai_cli(self) -> OpenAIClient:
         # Set the parameters from pydantic model class or from environment variables.
-        api_key = self.llm_config_model.api_key or os.getenv("AZURE_OPENAI_API_KEY")
-        base_url = self.llm_config_model.base_url or os.getenv("AZURE_ENDPOINT")
+        api_key = self.llm_config_model.api_key or os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("AZURE_API_KEY")
+        base_url = self.llm_config_model.base_url or os.getenv("AZURE_ENDPOINT") or os.getenv("AZURE_API_BASE")
         azure_deployment = self.llm_config_model.model or os.getenv("AZURE_DEPLOYMENT")
-        api_version = self.llm_config_model.api_version or os.getenv("API_VERSION")
+        api_version = self.llm_config_model.api_version or os.getenv("API_VERSION") or os.getenv("AZURE_API_VERSION")
 
         # Determine the client class based on async_mode
         client_class = AsyncAzureOpenAI if self.llm_config_model.async_mode else AzureOpenAI
@@ -153,13 +153,13 @@ class LLMClient:
         from botocore.config import Config
         from superagentx.llm.bedrock import BedrockClient
 
-        aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION")
+        aws_region = kwargs.get("aws_region", None) or os.getenv("AWS_REGION") or os.getenv("AWS_REGION_NAME")
 
         if not aws_region:
             raise ValueError("Region is required to use the Amazon Bedrock API.")
 
-        aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY")
-        aws_secret_key = kwargs.get("aws_secret_key", None) or os.getenv("AWS_SECRET_KEY")
+        aws_access_key = kwargs.get("aws_access_key", None) or os.getenv("AWS_ACCESS_KEY") or os.getenv("AWS_ACCESS_KEY_ID")
+        aws_secret_key = kwargs.get("aws_secret_key", None) or os.getenv("AWS_SECRET_KEY") or os.getenv("AWS_SECRET_ACCESS_KEY")
 
         # Initialize Bedrock client, session, and runtime
         bedrock_config = Config(
