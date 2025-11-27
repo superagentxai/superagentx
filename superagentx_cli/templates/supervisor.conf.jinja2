@@ -12,7 +12,7 @@ directory={{ app_path }}
 command={{ app_path }}/.venv/bin/dotenv -f {{ app_path }}/.env run -- \
         {{ app_path }}/.venv/bin/uvicorn \
         ai_chat_application.restpipe:ai_chat_application_app \
-        --host 0.0.0.0 --port 8000
+        --host 0.0.0.0 --port 9000
 
 ; Logging configuration
 stdout_logfile=/var/log/supervisor/agent-worker-out.log
