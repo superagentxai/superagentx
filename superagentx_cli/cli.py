@@ -308,7 +308,7 @@ class CliApp:
         self.maintainer_name = maintainer_name
         self.maintainer_email = maintainer_email
         _app_dir = Path(app_dir_path) if app_dir_path else Path().cwd()
-        self._app_dir = _app_dir / self.app_name
+        self._app_dir = _app_dir / to_snake(self.app_name).replace("_", "-")
         self._config_dir = self._app_dir / 'config'
         self._pkg_dir = self._app_dir / self.package_name
         self._jinja_env = Environment(
@@ -413,6 +413,26 @@ class CliApp:
         )
         _toml_path.write_text(_render_toml)
 
+    def create_conf_file(self):
+        _pipe_path = self._pkg_dir / f'{self.package_name}.conf'
+        rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
+        _pipe_template_file = self._jinja_env.get_template('supervisor.conf.jinja2')
+        _render_pipe = _pipe_template_file.render(
+            app_path=self._app_dir,
+            app_name=self.package_name
+        )
+        _pipe_path.write_text(_render_pipe)
+
+    def create_sh_file(self):
+        _pipe_path = self._pkg_dir / f'{self.package_name}.sh'
+        rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
+        _pipe_template_file = self._jinja_env.get_template('deployment.sh.jinja2')
+        _render_pipe = _pipe_template_file.render(
+            app_path=self._app_dir,
+            app_name=self.package_name
+        )
+        _pipe_path.write_text(_render_pipe)
+
     def create_package(self):
         if self._app_dir.exists():
             rprint(
@@ -430,6 +450,8 @@ class CliApp:
         self.create_package()
         self.create_toml_file()
         self.create_readme_file()
+        self.create_conf_file()
+        self.create_sh_file()
         if self.app_config:
             self.create_pipe_file_from_app_config()
         else:

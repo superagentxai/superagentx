@@ -1,0 +1,100 @@
+#!/bin/bash
+set -e
+set -u
+
+echo "🚀 Starting deployment of {{ app_name }}..."
+
+PROJECT_PATH="{{ app_path }}"
+VENV_PATH="{{ app_path }}/.venv"
+CONF_SRC="{{ app_path }}/{{ app_name }}/{{ app_name }}.conf"
+
+###############################################
+#  Detect Linux distribution
+###############################################
+
+OS="unknown"
+
+if [[ -f /etc/debian_version ]]; then
+    OS="debian"
+elif [[ -f /etc/redhat-release ]]; then
+    OS="rhel"
+else
+    echo "❌ Unsupported Linux distribution."
+    exit 1
+fi
+
+echo "🖥 Detected Linux OS: $OS"
+
+###############################################
+#  STEP 1 — Install uv (if missing)
+###############################################
+
+if ! command -v uv &>/dev/null; then
+    echo "📦 Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+echo "✔ uv available at: $(command -v uv)"
+
+###############################################
+#  STEP 2 — Create venv (uv venv)
+###############################################
+
+if [[ ! -d "$VENV_PATH" ]]; then
+    echo "🐍 Creating virtual environment using uv..."
+    uv venv "$VENV_PATH"
+else
+    echo "🐍 venv already exists."
+fi
+
+# Activate environment
+source "$VENV_PATH/bin/activate"
+
+###############################################
+#  STEP 3 — Install dependencies from pyproject
+###############################################
+
+echo "📦 Installing dependencies via uv..."
+cd "$PROJECT_PATH"
+uv sync --reinstall
+
+echo "✔ Python environment ready."
+
+###############################################
+#  STEP 4 — Install Supervisor (after venv setup)
+###############################################
+
+echo "📦 Installing Supervisor..."
+
+if [[ "$OS" == "debian" ]]; then
+    SUPERVISOR_DIR="/etc/supervisor/conf.d"
+    sudo apt-get update -y
+    sudo apt-get install -y supervisor
+    sudo systemctl enable supervisor
+    sudo systemctl start supervisor
+elif [[ "$OS" == "rhel" ]]; then
+    SUPERVISOR_DIR="/etc/supervisord.d"
+    sudo yum install -y supervisor
+    sudo systemctl enable supervisord
+    sudo systemctl start supervisord
+fi
+
+###############################################
+#  STEP 5 — Supervisor config + service start
+###############################################
+
+echo "📁 Copying Supervisor config..."
+sudo cp "$CONF_SRC" "$SUPERVISOR_DIR/{{ app_name }}.conf"
+
+# Replace placeholder in config with venv python
+sudo sed -i "s|__VENV_PYTHON__|$VENV_PATH/bin/python|g" \
+    "$SUPERVISOR_DIR/{{ app_name }}.conf"
+
+sudo supervisorctl reread
+sudo supervisorctl update
+
+echo "🚀 Starting service..."
+supervisorctl restart "{{ app_name }}" || supervisorctl start "{{ app_name }}"
+
+echo "🎉 Deployment Completed Successfully!"
