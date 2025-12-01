@@ -9,14 +9,11 @@
 
 directory={{ app_path }}
 
-command={{ app_path }}/.venv/bin/dotenv -f {{ app_path }}/.env run -- \
-        {{ app_path }}/.venv/bin/uvicorn \
-        ai_chat_application.restpipe:ai_chat_application_app \
-        --host 0.0.0.0 --port 9000
+command={{ app_path }}/.venv/bin/dotenv -f {{ app_path }}/.env run -- {{ app_path }}/.venv/bin/uvicorn ai_chat_application.restpipe:ai_chat_application_app --host 0.0.0.0 --port 9000
 
 ; Logging configuration
-stdout_logfile=/var/log/supervisor/agent-worker-out.log
-stderr_logfile=/var/log/supervisor/agent-worker-err.log
+stdout_logfile=/var/log/supervisor/{{ app_name }}.log
+stderr_logfile=/var/log/supervisor/{{ app_name }}.log
 stdout_logfile_maxbytes=20MB
 stderr_logfile_maxbytes=20MB
 stdout_logfile_backups=5

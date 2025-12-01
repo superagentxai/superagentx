@@ -440,9 +440,8 @@ class CliApp:
                 f'[italic bold yellow]`{self._app_dir.resolve()}`[/italic bold yellow] '
                 f'already exists![/bold red]'
             )
-            sys.exit(1)
         rprint(f'Creating app at [yellow]{self._pkg_dir.parent.resolve()}')
-        self._pkg_dir.mkdir(parents=True)
+        self._pkg_dir.mkdir(parents=True, exist_ok=True)
         pkg_init = self._pkg_dir / '__init__.py'
         pkg_init.touch()
 
