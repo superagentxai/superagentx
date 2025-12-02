@@ -5,7 +5,7 @@ import uuid
 from enum import Enum
 from os import PathLike
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 import typer
 import yapf.yapflib.yapf_api
@@ -47,15 +47,20 @@ def str_to_obj_str(l: list) -> str:
 
 
 def to_snake(s: str):
-    return '_'.join(
-        re.sub(
-            '([A-Z][a-z]+)', r' \1',
+    if s:
+        return '_'.join(
             re.sub(
-                '([A-Z]+)', r' \1',
-                s.replace('-', ' ')
-            )
-        ).split()
-    ).lower()
+                '([A-Z][a-z]+)', r' \1',
+                re.sub(
+                    '([A-Z]+)', r' \1',
+                    s.replace('-', ' ')
+                )
+            ).split()
+        ).lower()
+
+class EngineType(Enum):
+    browser = "BROWSER"
+    task = "TASK"
 
 
 class LLM(BaseModel):
@@ -83,19 +88,23 @@ class PromptTemplateConfig(BaseModel):
 
 class EngineConfig(BaseModel):
     title: str
-    handler: str
-    llm: str
-    prompt_template: str
+    handler: str | None = None
+    llm: str | None = None
+    prompt_template: str | None = None
     tools: list | None = None
     output_parser: Any | None = None
+    engine_type: str | Enum = None
+    instructions: List[Any] | None = None
+    browser_engine_config: dict | None = None
+    task_engine_config: dict | None = None
 
 
 class AgentConfig(BaseModel):
     title: str
-    goal: str
-    role: str
-    llm: str
-    prompt_template: str
+    goal: str | None = None
+    role: str | None = None
+    llm: str | None = None
+    prompt_template: str | None = None
     agent_id: str | None = None
     name: str | None = None
     description: str | None = None
@@ -117,13 +126,13 @@ class PipeConfig(BaseModel):
 class AppConfig(BaseModel):
     app_name: str
     app_type: str  # TODO: Change this with CliAppTypeEnum
-    llm: list[LLM]
+    llm: list[LLM] | None = None
     memory: list[Memory] = []
-    handler_config: list[HandlerConfig]
-    prompt_template_config: list[PromptTemplateConfig]
-    engine_config: list[EngineConfig]
-    agent_config: list[AgentConfig]
-    pipe_config: list[PipeConfig]
+    handler_config: list[HandlerConfig] | None = None
+    prompt_template_config: list[PromptTemplateConfig] | None = None
+    engine_config: list[EngineConfig] | None = None
+    agent_config: list[AgentConfig] | None = None
+    pipe_config: list[PipeConfig] | None = None
     app_auth_token: str | None = None
 
 
@@ -211,15 +220,45 @@ class AppCreation:
     def _construct_engines(self):
         for engine in self.app_config.engine_config:
             title_2_var = to_snake(engine.title)
-            _handler = to_snake(engine.handler)
-            _llm = to_snake(engine.llm)
-            _prompt_template = to_snake(engine.prompt_template)
-            self.engines[engine.title] = f"""{title_2_var} = Engine(
-                handler={_handler}, llm={_llm},
-                prompt_template={_prompt_template}, tools={engine.tools},
-                output_parser={engine.output_parser}
-            )"""
-
+            engine_type = engine.engine_type.upper()
+            if engine_type == EngineType.task.value:
+                _handler = to_snake(engine.handler)
+                self.engines[engine.title] = f"""{title_2_var} = TaskEngine(
+                                    handler={_handler}, instructions={engine.instructions}
+                                )"""
+                if engine.task_engine_config:
+                    self.engines[engine.title] = f"""{title_2_var} = TaskEngine(
+                                                        handler={_handler}, instructions={engine.instructions},
+                                                        **{engine.task_engine_config}
+                                                    )"""
+                if 'from superagentx.task_engine import TaskEngine' not in self.imports:
+                    self.imports.append(
+                        'from superagentx.task_engine import TaskEngine'
+                    )
+            elif engine_type == EngineType.browser.value:
+                _llm = to_snake(engine.llm)
+                _prompt_template = to_snake(engine.prompt_template)
+                self.engines[engine.title] = f"""{title_2_var} = BrowserEngine(
+                                                llm={_llm}, prompt_template={_prompt_template},
+                                                )"""
+                if engine.browser_engine_config:
+                    self.engines[engine.title] = f"""{title_2_var} = BrowserEngine(
+                                                        llm={_llm}, prompt_template={_prompt_template},
+                                                        **{engine.browser_engine_config}
+                                                    )"""
+                if 'from superagentx.browser_engine import BrowserEngine' not in self.imports:
+                    self.imports.append(
+                        'from superagentx.browser_engine import BrowserEngine'
+                    )
+            else:
+                _handler = to_snake(engine.handler)
+                _llm = to_snake(engine.llm)
+                _prompt_template = to_snake(engine.prompt_template)
+                self.engines[engine.title] = f"""{title_2_var} = Engine(
+                    handler={_handler}, llm={_llm},
+                    prompt_template={_prompt_template}, tools={engine.tools},
+                    output_parser={engine.output_parser}
+                )"""
         if self.engines:
             self.imports.append(
                 'from superagentx.engine import Engine'
