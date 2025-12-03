@@ -9,7 +9,6 @@ from typing import Any, List
 
 import typer
 import yapf.yapflib.yapf_api
-from camel_converter import dict_to_snake
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, ValidationError
 from rich import print as rprint
@@ -311,6 +310,38 @@ class CliAppTypeEnum(str, Enum):
     io = 'console'
     ws = 'websocket'
     rest = 'rest'
+
+def dict_to_snake(
+    data: dict[Any, Any], *, treat_digits_as_capitals: bool = False
+) -> dict[Any, Any]:
+
+    converted: dict[Any, Any] = {}
+
+    for k, v in data.items():
+
+        if isinstance(k, str):
+
+            # --- FIX START ---
+            # If the key is ALL CAPS (env var style), keep it exactly as-is
+            if k.isupper():
+                key = k
+            else:
+                key = to_snake(k)
+            # --- FIX END ---
+
+        else:
+            key = k
+
+        if isinstance(v, dict):
+            converted[key] = dict_to_snake(v)
+        elif isinstance(v, list):
+            converted[key] = [dict_to_snake(x) if isinstance(x, dict) else x for x in v]
+        elif isinstance(v, tuple):
+            converted[key] = tuple(dict_to_snake(x) if isinstance(x, dict) else x for x in v)
+        else:
+            converted[key] = v
+
+    return converted
 
 
 class CliApp:
