@@ -1,0 +1,40 @@
+[program:{{ app_name }}]
+; -------------------------
+; Metadata & Purpose
+; -------------------------
+; SuperAgentX CLI Worker
+; Handles agentic job execution in production
+; Starts after other system services (priority=1010)
+; -------------------------
+
+directory={{ app_path }}
+
+command={{ app_path }}/.venv/bin/dotenv -f {{ app_path }}/.env run -- {{ app_path }}/.venv/bin/uvicorn ai_chat_application.restpipe:ai_chat_application_app --host 0.0.0.0 --port 9000
+
+; Logging configuration
+stdout_logfile=/var/log/supervisor/{{ app_name }}.log
+stderr_logfile=/var/log/supervisor/{{ app_name }}.log
+stdout_logfile_maxbytes=20MB
+stderr_logfile_maxbytes=20MB
+stdout_logfile_backups=5
+stderr_logfile_backups=5
+
+; Process control
+autostart=true
+autorestart=true
+startsecs=5
+startretries=3
+
+; Graceful shutdown behavior
+stopsignal=INT
+stopasgroup=true
+killasgroup=true
+
+; Run as root (can change to non-root for extra security)
+user=root
+
+; Process priority (start order)
+priority=1010
+
+; Environment variables (customize as needed)
+environment=APP_ENV="production",PYTHONUNBUFFERED="1",PATH="{{ app_path }}/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

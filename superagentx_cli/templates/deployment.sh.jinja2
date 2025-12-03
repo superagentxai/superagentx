@@ -1,0 +1,54 @@
+#!/bin/bash
+set -e
+set -u
+
+echo "🚀 Starting deployment of {{ app_name }}..."
+
+PROJECT_PATH="{{ app_path }}"
+VENV_PATH="{{ app_path }}/.venv"
+CONF_SRC="{{ app_path }}/{{ app_name }}/{{ app_name }}.conf"
+
+###############################################
+#  STEP 1 — Install uv (if missing)
+###############################################
+
+if ! command -v uv &>/dev/null; then
+    echo "📦 Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+echo "✔ uv available at: $(command -v uv)"
+
+###############################################
+#  STEP 2 — Create venv (uv venv)
+###############################################
+
+if [[ ! -d "$VENV_PATH" ]]; then
+    echo "🐍 Creating virtual environment using uv..."
+    uv venv "$VENV_PATH"
+else
+    echo "🐍 venv already exists."
+fi
+
+# Activate environment
+source "$VENV_PATH/bin/activate"
+
+###############################################
+#  STEP 3 — Install dependencies from pyproject
+###############################################
+
+echo "📦 Installing dependencies via uv..."
+cd "$PROJECT_PATH"
+uv sync --reinstall
+
+echo "✔ Python environment ready."
+##############################
+#  STEP 4 — Supervisor config
+##############################
+
+echo "📁 Copying Supervisor config..."
+SUPERVISOR_DIR="/etc/supervisor/conf.d"
+cp "$CONF_SRC" "$SUPERVISOR_DIR/{{ app_name }}.conf"
+
+echo "🎉 {{ app_name }} Setup Completed Successfully!"

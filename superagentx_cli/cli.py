@@ -5,11 +5,10 @@ import uuid
 from enum import Enum
 from os import PathLike
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 import typer
 import yapf.yapflib.yapf_api
-from camel_converter import dict_to_snake
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, ValidationError
 from rich import print as rprint
@@ -47,15 +46,20 @@ def str_to_obj_str(l: list) -> str:
 
 
 def to_snake(s: str):
-    return '_'.join(
-        re.sub(
-            '([A-Z][a-z]+)', r' \1',
+    if s:
+        return '_'.join(
             re.sub(
-                '([A-Z]+)', r' \1',
-                s.replace('-', ' ')
-            )
-        ).split()
-    ).lower()
+                '([A-Z][a-z]+)', r' \1',
+                re.sub(
+                    '([A-Z]+)', r' \1',
+                    s.replace('-', ' ')
+                )
+            ).split()
+        ).lower()
+
+class EngineType(Enum):
+    browser = "BROWSER"
+    task = "TASK"
 
 
 class LLM(BaseModel):
@@ -83,19 +87,23 @@ class PromptTemplateConfig(BaseModel):
 
 class EngineConfig(BaseModel):
     title: str
-    handler: str
-    llm: str
-    prompt_template: str
+    handler: str | None = None
+    llm: str | None = None
+    prompt_template: str | None = None
     tools: list | None = None
     output_parser: Any | None = None
+    engine_type: str | Enum = None
+    instructions: List[Any] | None = None
+    browser_engine_config: dict | None = None
+    task_engine_config: dict | None = None
 
 
 class AgentConfig(BaseModel):
     title: str
-    goal: str
-    role: str
-    llm: str
-    prompt_template: str
+    goal: str | None = None
+    role: str | None = None
+    llm: str | None = None
+    prompt_template: str | None = None
     agent_id: str | None = None
     name: str | None = None
     description: str | None = None
@@ -117,13 +125,13 @@ class PipeConfig(BaseModel):
 class AppConfig(BaseModel):
     app_name: str
     app_type: str  # TODO: Change this with CliAppTypeEnum
-    llm: list[LLM]
+    llm: list[LLM] | None = None
     memory: list[Memory] = []
-    handler_config: list[HandlerConfig]
-    prompt_template_config: list[PromptTemplateConfig]
-    engine_config: list[EngineConfig]
-    agent_config: list[AgentConfig]
-    pipe_config: list[PipeConfig]
+    handler_config: list[HandlerConfig] | None = None
+    prompt_template_config: list[PromptTemplateConfig] | None = None
+    engine_config: list[EngineConfig] | None = None
+    agent_config: list[AgentConfig] | None = None
+    pipe_config: list[PipeConfig] | None = None
     app_auth_token: str | None = None
 
 
@@ -211,15 +219,45 @@ class AppCreation:
     def _construct_engines(self):
         for engine in self.app_config.engine_config:
             title_2_var = to_snake(engine.title)
-            _handler = to_snake(engine.handler)
-            _llm = to_snake(engine.llm)
-            _prompt_template = to_snake(engine.prompt_template)
-            self.engines[engine.title] = f"""{title_2_var} = Engine(
-                handler={_handler}, llm={_llm},
-                prompt_template={_prompt_template}, tools={engine.tools},
-                output_parser={engine.output_parser}
-            )"""
-
+            engine_type = engine.engine_type.upper()
+            if engine_type == EngineType.task.value:
+                _handler = to_snake(engine.handler)
+                self.engines[engine.title] = f"""{title_2_var} = TaskEngine(
+                                    handler={_handler}, instructions={engine.instructions}
+                                )"""
+                if engine.task_engine_config:
+                    self.engines[engine.title] = f"""{title_2_var} = TaskEngine(
+                                                        handler={_handler}, instructions={engine.instructions},
+                                                        **{engine.task_engine_config}
+                                                    )"""
+                if 'from superagentx.task_engine import TaskEngine' not in self.imports:
+                    self.imports.append(
+                        'from superagentx.task_engine import TaskEngine'
+                    )
+            elif engine_type == EngineType.browser.value:
+                _llm = to_snake(engine.llm)
+                _prompt_template = to_snake(engine.prompt_template)
+                self.engines[engine.title] = f"""{title_2_var} = BrowserEngine(
+                                                llm={_llm}, prompt_template={_prompt_template},
+                                                )"""
+                if engine.browser_engine_config:
+                    self.engines[engine.title] = f"""{title_2_var} = BrowserEngine(
+                                                        llm={_llm}, prompt_template={_prompt_template},
+                                                        **{engine.browser_engine_config}
+                                                    )"""
+                if 'from superagentx.browser_engine import BrowserEngine' not in self.imports:
+                    self.imports.append(
+                        'from superagentx.browser_engine import BrowserEngine'
+                    )
+            else:
+                _handler = to_snake(engine.handler)
+                _llm = to_snake(engine.llm)
+                _prompt_template = to_snake(engine.prompt_template)
+                self.engines[engine.title] = f"""{title_2_var} = Engine(
+                    handler={_handler}, llm={_llm},
+                    prompt_template={_prompt_template}, tools={engine.tools},
+                    output_parser={engine.output_parser}
+                )"""
         if self.engines:
             self.imports.append(
                 'from superagentx.engine import Engine'
@@ -273,6 +311,38 @@ class CliAppTypeEnum(str, Enum):
     ws = 'websocket'
     rest = 'rest'
 
+def dict_to_snake(
+    data: dict[Any, Any], *, treat_digits_as_capitals: bool = False
+) -> dict[Any, Any]:
+
+    converted: dict[Any, Any] = {}
+
+    for k, v in data.items():
+
+        if isinstance(k, str):
+
+            # --- FIX START ---
+            # If the key is ALL CAPS (env var style), keep it exactly as-is
+            if k.isupper():
+                key = k
+            else:
+                key = to_snake(k)
+            # --- FIX END ---
+
+        else:
+            key = k
+
+        if isinstance(v, dict):
+            converted[key] = dict_to_snake(v)
+        elif isinstance(v, list):
+            converted[key] = [dict_to_snake(x) if isinstance(x, dict) else x for x in v]
+        elif isinstance(v, tuple):
+            converted[key] = tuple(dict_to_snake(x) if isinstance(x, dict) else x for x in v)
+        else:
+            converted[key] = v
+
+    return converted
+
 
 class CliApp:
 
@@ -308,7 +378,7 @@ class CliApp:
         self.maintainer_name = maintainer_name
         self.maintainer_email = maintainer_email
         _app_dir = Path(app_dir_path) if app_dir_path else Path().cwd()
-        self._app_dir = _app_dir / self.app_name
+        self._app_dir = _app_dir / to_snake(self.app_name).replace("_", "-")
         self._config_dir = self._app_dir / 'config'
         self._pkg_dir = self._app_dir / self.package_name
         self._jinja_env = Environment(
@@ -413,6 +483,26 @@ class CliApp:
         )
         _toml_path.write_text(_render_toml)
 
+    def create_conf_file(self):
+        _pipe_path = self._pkg_dir / f'{self.package_name}.conf'
+        rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
+        _pipe_template_file = self._jinja_env.get_template('supervisor.conf.jinja2')
+        _render_pipe = _pipe_template_file.render(
+            app_path=self._app_dir,
+            app_name=self.package_name
+        )
+        _pipe_path.write_text(_render_pipe)
+
+    def create_sh_file(self):
+        _pipe_path = self._pkg_dir / f'{self.package_name}.sh'
+        rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
+        _pipe_template_file = self._jinja_env.get_template('deployment.sh.jinja2')
+        _render_pipe = _pipe_template_file.render(
+            app_path=self._app_dir,
+            app_name=self.package_name
+        )
+        _pipe_path.write_text(_render_pipe)
+
     def create_package(self):
         if self._app_dir.exists():
             rprint(
@@ -420,9 +510,8 @@ class CliApp:
                 f'[italic bold yellow]`{self._app_dir.resolve()}`[/italic bold yellow] '
                 f'already exists![/bold red]'
             )
-            sys.exit(1)
         rprint(f'Creating app at [yellow]{self._pkg_dir.parent.resolve()}')
-        self._pkg_dir.mkdir(parents=True)
+        self._pkg_dir.mkdir(parents=True, exist_ok=True)
         pkg_init = self._pkg_dir / '__init__.py'
         pkg_init.touch()
 
@@ -430,6 +519,8 @@ class CliApp:
         self.create_package()
         self.create_toml_file()
         self.create_readme_file()
+        self.create_conf_file()
+        self.create_sh_file()
         if self.app_config:
             self.create_pipe_file_from_app_config()
         else:
