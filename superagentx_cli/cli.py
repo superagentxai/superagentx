@@ -60,6 +60,7 @@ def to_snake(s: str):
 class EngineType(Enum):
     browser = "BROWSER"
     task = "TASK"
+    default = "DEFAULT"
 
 
 class LLM(BaseModel):
@@ -219,36 +220,46 @@ class AppCreation:
     def _construct_engines(self):
         for engine in self.app_config.engine_config:
             title_2_var = to_snake(engine.title)
-            engine_type = engine.engine_type.upper()
-            if engine_type == EngineType.task.value:
-                _handler = to_snake(engine.handler)
-                self.engines[engine.title] = f"""{title_2_var} = TaskEngine(
-                                    handler={_handler}, instructions={engine.instructions}
-                                )"""
-                if engine.task_engine_config:
+            if engine.engine_type:
+                engine_type = engine.engine_type.upper()
+                if engine_type == EngineType.task.value:
+                    _handler = to_snake(engine.handler)
                     self.engines[engine.title] = f"""{title_2_var} = TaskEngine(
-                                                        handler={_handler}, instructions={engine.instructions},
-                                                        **{engine.task_engine_config}
-                                                    )"""
-                if 'from superagentx.task_engine import TaskEngine' not in self.imports:
-                    self.imports.append(
-                        'from superagentx.task_engine import TaskEngine'
-                    )
-            elif engine_type == EngineType.browser.value:
-                _llm = to_snake(engine.llm)
-                _prompt_template = to_snake(engine.prompt_template)
-                self.engines[engine.title] = f"""{title_2_var} = BrowserEngine(
-                                                llm={_llm}, prompt_template={_prompt_template},
-                                                )"""
-                if engine.browser_engine_config:
+                                        handler={_handler}, instructions={engine.instructions}
+                                    )"""
+                    if engine.task_engine_config:
+                        self.engines[engine.title] = f"""{title_2_var} = TaskEngine(
+                                                            handler={_handler}, instructions={engine.instructions},
+                                                            **{engine.task_engine_config}
+                                                        )"""
+                    if 'from superagentx.task_engine import TaskEngine' not in self.imports:
+                        self.imports.append(
+                            'from superagentx.task_engine import TaskEngine'
+                        )
+                elif engine_type == EngineType.browser.value:
+                    _llm = to_snake(engine.llm)
+                    _prompt_template = to_snake(engine.prompt_template)
                     self.engines[engine.title] = f"""{title_2_var} = BrowserEngine(
-                                                        llm={_llm}, prompt_template={_prompt_template},
-                                                        **{engine.browser_engine_config}
+                                                    llm={_llm}, prompt_template={_prompt_template},
                                                     )"""
-                if 'from superagentx.browser_engine import BrowserEngine' not in self.imports:
-                    self.imports.append(
-                        'from superagentx.browser_engine import BrowserEngine'
-                    )
+                    if engine.browser_engine_config:
+                        self.engines[engine.title] = f"""{title_2_var} = BrowserEngine(
+                                                            llm={_llm}, prompt_template={_prompt_template},
+                                                            **{engine.browser_engine_config}
+                                                        )"""
+                    if 'from superagentx.browser_engine import BrowserEngine' not in self.imports:
+                        self.imports.append(
+                            'from superagentx.browser_engine import BrowserEngine'
+                        )
+                else:
+                    _handler = to_snake(engine.handler)
+                    _llm = to_snake(engine.llm)
+                    _prompt_template = to_snake(engine.prompt_template)
+                    self.engines[engine.title] = f"""{title_2_var} = Engine(
+                        handler={_handler}, llm={_llm},
+                        prompt_template={_prompt_template}, tools={engine.tools},
+                        output_parser={engine.output_parser}
+                    )"""
             else:
                 _handler = to_snake(engine.handler)
                 _llm = to_snake(engine.llm)
