@@ -9,7 +9,7 @@
 
 directory={{ app_path }}
 
-command={{ app_path }}/.venv/bin/dotenv -f {{ app_path }}/.env run -- {{ app_path }}/.venv/bin/uvicorn ai_chat_application.restpipe:ai_chat_application_app --host 0.0.0.0 --port 9000
+command={{ app_path }}/.venv/bin/dotenv -f {{ app_path }}/.env run -- {{ app_path }}/.venv/bin/uvicorn {{ app_name }}.restpipe:{{ app_name }}_app --host 0.0.0.0 --port 9000
 
 ; Logging configuration
 stdout_logfile=/var/log/supervisor/{{ app_name }}.log
