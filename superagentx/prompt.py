@@ -60,7 +60,15 @@ class PromptTemplate:
         prompt = await self._get_prompt()
         if not kwargs:
             kwargs = {}
-        format_string = input_prompt.format(**kwargs)
+        if kwargs:
+            try:
+                format_string = input_prompt.format_map({k: v for k, v in kwargs.items()})
+            except Exception:
+                # If formatting fails, fall back to raw string
+                format_string = input_prompt
+        else:
+            # Do NOT format if no kwargs are provided
+            format_string = input_prompt
         content = {
             "role": "user",
             "content": format_string

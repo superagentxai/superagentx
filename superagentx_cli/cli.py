@@ -93,7 +93,7 @@ class EngineConfig(BaseModel):
     prompt_template: str | None = None
     tools: list | None = None
     output_parser: Any | None = None
-    engine_type: str | Enum = None
+    engine_type: str | Enum | None = None
     instructions: List[Any] | None = None
     browser_engine_config: dict | None = None
     task_engine_config: dict | None = None
