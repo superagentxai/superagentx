@@ -6,6 +6,7 @@ import os
 import re
 import uuid
 import aiopath
+import sys
 from typing import TypeVar, Any
 
 import pathlib
@@ -217,6 +218,19 @@ class BrowserEngine(BaseEngine):
                                 self.sensitive_data
                             )
                             _kwargs = _kwargs.model_dump()
+                        if tool_name == "take_screenshots":
+                            file_path = aiopath.Path(self.screenshot_path)
+                            if not await file_path.exists():
+                                os.makedirs(file_path, exist_ok=True)
+
+                            if await file_path.is_dir():
+                                if sys.platform == "win32":
+                                    file_path = f"{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.png"
+                                elif sys.platform == "linux":
+                                    file_path = f"/{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.png"
+                                else:
+                                    file_path = f"{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.png"
+                            _kwargs["path"] = file_path
                             print(_kwargs)
                         logger.debug(
                             f'Executing tool function : {self.handler.__class__}.{tool_name}, '
@@ -333,19 +347,19 @@ class BrowserEngine(BaseEngine):
                                 toast_config=self.toast_config
                             )
                             await asyncio.sleep(4)
-                            if self.screenshot_path:
-                                file_path = aiopath.Path(self.screenshot_path)
-                                if await file_path.is_dir():
-                                    file_path = f"{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.jpg"
-                                await self.browser_context.take_screenshot(
-                                    path=file_path
-                                )
-                                await show_toast(
-                                    page=await self.browser_context.get_current_page(),
-                                    message="Screen Captured",
-                                    toast_config=self.toast_config
-                                )
-                                await asyncio.sleep(2)
+                            # if self.screenshot_path:
+                            #     file_path = aiopath.Path(self.screenshot_path)
+                            #     if await file_path.is_dir():
+                            #         file_path = f"{self.screenshot_path.strip('/')}/img_{uuid.uuid4().hex}.jpg"
+                            #     await self.browser_context.take_screenshot(
+                            #         path=file_path
+                            #     )
+                            #     await show_toast(
+                            #         page=await self.browser_context.get_current_page(),
+                            #         message="Screen Captured",
+                            #         toast_config=self.toast_config
+                            #     )
+                            #     await asyncio.sleep(2)
                             await self.browser_context.close()
                             await self.browser.close()
                             results.append(res)

@@ -1,7 +1,10 @@
 import asyncio
+import base64
 import json
 import logging
 import time
+from pathlib import Path
+from uuid import uuid4
 
 import pyotp
 import ntplib
@@ -777,5 +780,52 @@ class BrowserHandler(BaseHandler):
 
         except Exception as e:
             msg = f'Selection failed: {str(e)}'
+            logger.error(msg)
+            return ToolResult(error=msg, include_in_memory=True)
+
+
+    # @tool
+    # async def take_screenshots(self, path: str):
+    #     """
+    #     Take a **SCREENSHOT** of the current browser context.
+    #     """
+    #     try:
+    #         await self.browser_context.take_screenshot(
+    #             path=path,
+    #             # full_page=True
+    #         )
+    #
+    #         msg = f'Screenshot saved to path: {path}'
+    #
+    #         return ToolResult(extracted_content=msg, include_in_memory=True)
+    #
+    #     except Exception as e:
+    #         msg = f"Failed to take screenshot: {e}"
+    #         logger.error(msg)
+    #         return ToolResult(error=msg, include_in_memory=True)
+
+    @tool
+    async def take_screenshots(self, path: str):
+        """
+        Take a SCREENSHOT of the current browser context.
+        Supports directory paths for multiple screenshots.
+        """
+        logger.info(f"Browser Handler Screenshot path: {path}")
+        try:
+            screenshot_path = Path(path)
+
+            # If directory → generate unique filename
+            # if screenshot_path.exists() and screenshot_path.is_dir():
+            #     screenshot_path = screenshot_path / f"img_{uuid4().hex}.png"
+
+            await self.browser_context.take_screenshot(
+                path=str(screenshot_path)
+            )
+
+            msg = f"Screenshot saved at: {screenshot_path}"
+            return ToolResult(extracted_content=msg, include_in_memory=True)
+
+        except Exception as e:
+            msg = f"Failed to take screenshot: {e}"
             logger.error(msg)
             return ToolResult(error=msg, include_in_memory=True)
