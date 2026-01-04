@@ -65,9 +65,11 @@ class Agent:
             agent_id: str | None = None,
             name: str | None = None,
             description: str | None = None,
-            engines: list[Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] | None = None,
+            engines: list[
+                         Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] | None = None,
             output_format: str | None = None,
             max_retry: int = 5,
+            human_approval: bool = False,
             return_engine_result: bool = False
     ):
         """
@@ -105,10 +107,12 @@ class Agent:
         self.agent_id = agent_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.agent_id}'
         self.description = description
-        self.engines: list[Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] = engines or []
+        self.engines: list[
+            Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] = engines or []
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
         self.return_engine_result = return_engine_result
+        self.human_approval = human_approval
         self.engine_result_format = ENGINE_RESULT_FORMAT
         if self.return_engine_result:
             self.engine_result_format = """{{ reason: Set the reason for result, is_goal_satisfied: 'True' if result 
@@ -289,6 +293,18 @@ class Agent:
                 engine_result=engine_result
             )
 
+    async def get_human_approval(self, query: str) -> bool:
+        """Asks for human approval via terminal without blocking the event loop."""
+        loop = asyncio.get_running_loop()
+        logger.info(f"\n[!] HUMAN APPROVAL REQUIRED FOR AGENT: {self.name}")
+        logger.info(f"    Instruction: {query}")
+
+        def _ask():
+            return input("    Approve this execution? (y/n): ").strip().lower()
+
+        answer = await loop.run_in_executor(None, _ask)
+        return answer == 'y'
+
     async def execute(
             self,
             *,
@@ -314,6 +330,7 @@ class Agent:
                 This should be a clear and actionable statement that the method can execute.
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
+            pipe_id: Pipe interface execution id.
             old_memory: An optional previous context of the user's instruction
             verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
             stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
@@ -336,6 +353,37 @@ class Agent:
         if not self.llm:
             verify_goal = False
 
+        # --- NEW LOGIC: Check for Human Approval before the retry loop ---
+        logger.debug(f"Human Approval {self.human_approval}")
+        if self.human_approval:
+            approved = await self.get_human_approval(query_instruction)
+            if not approved:
+                logger.info(f"Agent `{self.name}` execution rejected by human.")
+                if status_callback:
+                    await _maybe_await(status_callback(
+                        event="human_status_rejection",
+                        pipe_id=pipe_id,
+                        agent_id=self.agent_id,
+                        agent=self.name,
+                        query=query_instruction,
+                        conversation_id=conversation_id
+                    ))
+                raise StopSuperAgentX(message="Execution rejected by human approval.",
+                                      goal_result=GoalResult(
+                                          name=self.name,
+                                          agent_id=self.agent_id,
+                                          content="Execution rejected by human approval.",
+                                          is_goal_satisfied=False
+                                      ))
+            if status_callback:
+                await _maybe_await(status_callback(
+                    event="human_status_approved",
+                    pipe_id=pipe_id,
+                    agent_id=self.agent_id,
+                    agent=self.name,
+                    query=query_instruction,
+                    conversation_id=conversation_id
+                ))
         # Callback: agent execution started
         if status_callback:
             await _maybe_await(status_callback(
