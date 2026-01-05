@@ -6,9 +6,64 @@ from superagentx.llm.models import ChatCompletionParams
 
 class AIHandler(BaseHandler):
     """
-       An abstract handler class for managing content creation operations.
-       This class extends BaseHandler and defines the interface for creating various types of content,
-       such as text, images, and videos. Subclasses must implement specific methods for content generation and processing.
+        AIHandler is a flexible orchestration class designed to manage a comprehensive
+        suite of text-based AI capabilities within the SuperAgentX framework. It provides
+        a unified interface for interacting with LLMs and exposes tools that agents can
+        call during reasoning, workflows, or autonomous execution.
+
+        This handler can support an extensive range of natural-language and text-processing
+        tasks, including but not limited to:
+
+        Core Text Generation
+        ---------------------
+        - **Freeform Text Generation:** Creative writing, articles, essays, responses,
+          instructions, storytelling, dialogue simulation, etc.
+        - **Rewriting & Editing:** Grammar correction, paraphrasing, tone adjustments,
+          formalization, simplification, expansion, and refinement.
+        - **Summarization:** Short, medium, or long summaries of documents, transcripts,
+          conversations, PDFs, or datasets.
+        - **Translation:** Multi-language translation with domain-specific tuning.
+
+        Analytical & Classification Tasks
+        ---------------------------------
+        - **Text Classification:** Topic labeling, intent detection, category assignment.
+        - **Sentiment Analysis:** Polarity (positive/negative/neutral) and emotion analysis.
+        - **Semantic Similarity:** Compare meaning similarity between texts.
+        - **Clustering Assistance:** Grouping similar texts via LLM-based reasoning.
+        - **Entity Recognition (NER):** Extracting names, dates, locations, organizations.
+        - **Information Extraction:** Extracting structured data, attributes, metadata.
+
+        Reasoning & Logic Tasks
+        ------------------------
+        - **Multi-step Reasoning:** Deep analysis, comparisons, evaluations, breakdowns.
+        - **Planning & Strategy:** Action plans, step-by-step solutions, workflow creation.
+        - **Deductive/Inductive Reasoning:** Logical problem solving and inference.
+        - **Mathematical Reasoning:** Solving equations, word problems, tables (text-based).
+        - **Data Interpretation:** Explain charts or numerical tables when provided as text.
+
+        Code & Technical Tasks
+        -----------------------
+        - **SQL Query Generation:** Convert natural language to SQL.
+        - **Code Generation:** Python, JS, Bash, or other languages (small snippets or utilities).
+        - **Code Explanation:** Explaining what code does.
+        - **Bug Detection (textual):** Identifying issues in code through reasoning.
+        - **Regex Generation:** Creating or explaining regular expressions.
+        - **API Request Creation:** Generating structured JSON API payloads.
+
+        Knowledge & Retrieval-Style Tasks
+        ---------------------------------
+        - **Question Answering:** Factual, conceptual, or contextual Q&A.
+        - **Knowledge Synthesis:** Combining multiple facts into a coherent explanation.
+        - **Document Understanding:** Interpreting and analyzing long text documents.
+        - **Pseudo-RAG Reasoning:** Processing user-provided text as a knowledge source.
+
+        Organizational / Productivity Tasks
+        -----------------------------------
+        - **Note Taking:** Bullet point extraction, key point highlighting.
+        - **Task Breakdown:** Turning goals into actionable steps.
+        - **Document Drafting:** Proposals, reports, outlines, agendas.
+        - **Email & Message Generation:** Professional, casual, or role-specific writing.
+
     """
 
     def __init__(

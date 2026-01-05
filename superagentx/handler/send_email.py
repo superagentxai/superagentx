@@ -1,11 +1,9 @@
 import logging
 import os
 import smtplib
-from email import encoders
 from email.message import EmailMessage
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
 from ssl import SSLContext
+from typing import Optional, List
 
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
@@ -20,20 +18,17 @@ class SendEmailFailed(Exception):
 
 class EmailHandler(BaseHandler):
     """
-     A handler class for managing email operations.
-    This class extends BaseHandler and provides methods for sending emails, managing recipients,
-    and handling attachments, facilitating efficient email communication.
-
+    Handler class for managing email operations.
     """
 
     def __init__(
             self,
             host: str,
             port: int,
-            username: str | None = None,
-            password: str | None = None,
+            username: Optional[str] = None,
+            password: Optional[str] = None,
             ssl: bool = False,
-            ssl_context: SSLContext | None = None
+            ssl_context: Optional[SSLContext] = None
     ):
         super().__init__()
         self.host = host
@@ -41,17 +36,11 @@ class EmailHandler(BaseHandler):
         self.username = username
         self.password = password
         self.ssl = ssl
-        if ssl:
-            self._conn = smtplib.SMTP_SSL(
-                host=host,
-                port=port,
-                context=ssl_context
-            )
-        else:
-            self._conn = smtplib.SMTP(
-                host=host,
-                port=port
-            )
+        self.ssl_context = ssl_context
+
+        # ⚠ Do NOT create the SMTP connection here.
+        # It must be created per-email, inside send_email.
+        self._conn = None
 
     @tool
     async def send_email(
@@ -61,69 +50,100 @@ class EmailHandler(BaseHandler):
             to: list[str],
             subject: str,
             body: str,
-            from_name: str | None = None,
-            cc: list[str] | None = None,
-            bcc: list[str] | None = None,
-            attachment_path: str | None = None
+            from_name: Optional[str] = None,
+            cc: Optional[List[str]] = None,
+            bcc: Optional[List[str]] = None,
+            attachment_path: Optional[str] = None,
     ):
-
-        """
-        Asynchronously sends an email with specified parameters, including sender, recipients, subject, and body.
-        This method also supports optional fields such as CC, BCC, and attachments for comprehensive email communication.
-
-        parameter:
-            sender (str): The email address of the sender.
-            to (list[str]): A list of recipient email addresses to whom the email will be sent.
-            subject (str): The subject line of the email.
-            body (str): The content of the email.
-            from_name (str | None, optional): The name of the sender to display in the email. Defaults to None.
-            cc (list[str] | None, optional): A list of email addresses to be included in the CC field. Defaults to None.
-            bcc (list[str] | None, optional): A list of email addresses to be included in the BCC field. Defaults to None.
-            attachment_path (str | None, optional): The file path of any attachment to be included with the email. Defaults to None.
-        """
-
         try:
-            msg = EmailMessage() if not attachment_path else MIMEMultipart()
+            # 1. Build Email
+
+            msg = EmailMessage()
             msg.set_content(body)
-            msg['From'] = f"{from_name} <{sender}>"
-            msg['To'] = ', '.join(to)
-            msg['Cc'] = ', '.join(cc) if cc else ''
-            msg['Bcc'] = ', '.join(bcc) if bcc else ''
-            msg['Subject'] = subject
 
-            if attachment_path:
-                attachment_name = os.path.basename(attachment_path)
-                async with open(attachment_path, "rb") as attachment:
-                    part = MIMEBase('application', 'octet-stream')
-                    await sync_to_async(part.set_payload, await attachment.read())
-                    await sync_to_async(encoders.encode_base64, part)
-                    await sync_to_async(
-                        part.add_header,
-                        'Content-Disposition',
-                        f"attachment; filename= {attachment_name}"
-                    )
-                    await sync_to_async(
-                        msg.attach,
-                        part
-                    )
+            msg["From"] = f"{from_name} <{sender}>" if from_name else sender
+            msg["To"] = ", ".join(to)
 
+            if cc:
+                msg["Cc"] = ", ".join(cc)
+            if bcc:
+                msg["Bcc"] = ", ".join(bcc)
+
+            msg["Subject"] = subject.strip()
             all_recipients = to + (cc or []) + (bcc or [])
+
+            # Attach file
+            if attachment_path:
+                filename = os.path.basename(attachment_path)
+                with open(attachment_path, "rb") as f:
+                    file_data = f.read()
+
+                msg.add_attachment(
+                    file_data,
+                    maintype="application",
+                    subtype="octet-stream",
+                    filename=filename
+                )
+
+            # 2. Create and connect SMTP
+
+            def create_conn():
+                if self.ssl:
+                    return smtplib.SMTP_SSL(
+                        host=self.host,
+                        port=self.port,
+                        context=self.ssl_context
+                    )
+                else:
+                    return smtplib.SMTP(
+                        host=self.host,
+                        port=self.port
+                    )
+
+            self._conn = await sync_to_async(create_conn)
+
+            # Explicit connect (fixes your error)
+
+            await sync_to_async(self._conn.connect, self.host, self.port)
+
+            # 3. TLS
+
+            if not self.ssl:
+                try:
+                    await sync_to_async(self._conn.starttls)
+                except Exception:
+                    # Some SMTP debug servers don't support TLS
+                    pass
+
+            # 4. Login
 
             if self.username and self.password:
                 await sync_to_async(
                     self._conn.login,
-                    user=self.username,
-                    password=self.password
+                    self.username,
+                    self.password
                 )
+
+            # 5. Send the email
 
             res = await sync_to_async(
                 self._conn.sendmail,
-                from_addr=sender,
-                to_addrs=all_recipients,
-                msg=msg.as_string()
+                sender,
+                all_recipients,
+                msg.as_string()
             )
-            await sync_to_async(self._conn.close)
+
             return res
+
         except Exception as e:
-            logger.error('Failed to send email!', exc_info=e)
+            logger.error("Failed to send email!", exc_info=e)
             raise SendEmailFailed(f"Failed to send email!\n{e}")
+
+        finally:
+            # 6. Quit connection safely
+
+            if self._conn:
+                try:
+                    await sync_to_async(self._conn.quit)
+                except Exception:
+                    pass
