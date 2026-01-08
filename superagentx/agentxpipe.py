@@ -10,6 +10,8 @@ from superagentx.config import is_verbose_enabled
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
+from superagentx.db_store.db_interface import StorageAdapter
+from superagentx.db_store import ConfigLoader
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
 
 is_verbose_enabled()
@@ -27,7 +29,8 @@ class AgentXPipe:
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
             memory: Any | None = None,
-            stop_if_goal_not_satisfied: bool = False
+            stop_if_goal_not_satisfied: bool = False,
+            workflow_store: bool = False,
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -51,6 +54,8 @@ class AgentXPipe:
                 These agents can perform tasks and contribute to achieving the defined goal.
             memory: An optional memory instance that allows the engine to retain information across interactions.
                 This can enhance the pipe's contextual awareness and improve its performance over time.
+            workflow_store: A flag to indicate agentic workflow is required to persist states. This is useful, if a human
+                    approvals are enabled to wait and act after a human action is being performed.
             stop_if_goal_not_satisfied: A flag indicating whether to stop processing if the goal is not satisfied.
                 When set to True, the agentxpipe operation will halt if the defined goal is not met,
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
@@ -63,8 +68,9 @@ class AgentXPipe:
         self.memory = memory
         if self.memory:
             self.memory_id = uuid.uuid4().hex
+        self.workflow_store = workflow_store
+        self.storage = None
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
-
         logger.debug(
             f'Initiating AgentXPipe...\n'
             f'Id : {self.pipe_id}\n'
@@ -205,7 +211,20 @@ class AgentXPipe:
         trigger_break = False
         results = []
         old_memory = None
+
+        if self.workflow_store:
+            self.storage = ConfigLoader.load_db_config()
+            await self.storage.setup()
+            await self.storage.create_pipe(pipe_id=self.pipe_id, executed_by="Agent_System")
+            await self.storage.update_pipe_status(self.pipe_id, "In-Progress")
+
         async for _agents in iter_to_aiter(self.agents):
+
+            if self.storage:
+                # If
+                if await self.storage.is_agent_processed(self.pipe_id, _agents.agent_id):
+                    logger.info(f" Skipping {_agents.name}: Already processed in this pipe.")
+                    continue
             pre_result = await self._pre_result(results=results)
             logger.debug(f'Updated with previous results.\nPrevious Result : {pre_result}')
             if self.memory:
@@ -224,6 +243,7 @@ class AgentXPipe:
                                 verify_goal=verify_goal,
                                 stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
                                 conversation_id=conversation_id,
+                                storage=self.storage,
                                 status_callback=status_callback
 
                             )
@@ -241,6 +261,7 @@ class AgentXPipe:
                         verify_goal=verify_goal,
                         stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
                         conversation_id=conversation_id,
+                        storage=self.storage,
                         status_callback=status_callback
                     )
                     logger.debug(f'Agent result : {_res}')
@@ -255,10 +276,12 @@ class AgentXPipe:
                             [assistant],
                             conversation_id=conversation_id
                         )
+                await self.storage.update_pipe_status(self.pipe_id, "Completed")
             except StopSuperAgentX as ex:
                 trigger_break = True
                 logger.warning(ex)
                 _res = ex.goal_result
+                await self.storage.update_pipe_status(self.pipe_id, "Failed", error=str(ex))
 
             if _res:
                 results.append(_res)

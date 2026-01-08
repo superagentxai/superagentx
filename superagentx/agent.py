@@ -6,6 +6,7 @@ from json import JSONDecodeError
 from typing import Literal, Any
 
 from superagentx.browser_engine import BrowserEngine
+from superagentx.db_store import StorageAdapter
 from superagentx.task_engine import TaskEngine
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.engine import Engine
@@ -254,6 +255,7 @@ class Agent:
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 logger.debug(f'Engine(s) are executing : {",".join([str(_engine) for _engine in _engines])}')
+
                 _res = await asyncio.gather(
                     *[
                         _engine.start(**params)
@@ -300,7 +302,7 @@ class Agent:
         logger.info(f"    Instruction: {query}")
 
         def _ask():
-            return input("    Approve this execution? (y/n): ").strip().lower()
+            return input("Approve this execution? (y/n): ").strip().lower()
 
         answer = await loop.run_in_executor(None, _ask)
         return answer == 'y'
@@ -315,6 +317,7 @@ class Agent:
             verify_goal: bool = True,
             stop_if_goal_not_satisfied: bool = False,
             conversation_id: str | None = None,
+            storage: StorageAdapter = None,
             status_callback: StatusCallback | None = None
     ) -> GoalResult | None:
         """
@@ -338,6 +341,8 @@ class Agent:
                 preventing any further actions. Defaults to False, allowing the process to continue regardless
                 of goal satisfaction.
             conversation_id: A string representing the unique identifier of the conversation.
+            storage: An optional storage adapter to store Agentic Workflow states. This is useful, if a human
+                    approvals are enabled to wait and act after a human action is being performed.
             status_callback: This optional status call back method helps enhance user experience to get live updates of
                 agents executions
 
@@ -349,16 +354,23 @@ class Agent:
         """
 
         _goal_result = None
-
         if not self.llm:
             verify_goal = False
 
-        # --- NEW LOGIC: Check for Human Approval before the retry loop ---
+        # Check for Human Approval before the retry loop ---
         logger.debug(f"Human Approval {self.human_approval}")
         if self.human_approval:
+            if storage:
+                await storage.update_pipe_status(pipe_id, "Waiting-for-Approval")
+
             approved = await self.get_human_approval(query_instruction)
             if not approved:
                 logger.info(f"Agent `{self.name}` execution rejected by human.")
+                if storage:
+                    await storage.mark_agent_completed(pipe_id=pipe_id, agent_id=self.agent_id, agent_name=self.name,
+                                                       status="REJECTED")
+                    await storage.update_pipe_status(pipe_id, "Failed", error="Human rejected execution")
+
                 if status_callback:
                     await _maybe_await(status_callback(
                         event="human_status_rejection",
@@ -368,6 +380,7 @@ class Agent:
                         query=query_instruction,
                         conversation_id=conversation_id
                     ))
+
                 raise StopSuperAgentX(message="Execution rejected by human approval.",
                                       goal_result=GoalResult(
                                           name=self.name,
@@ -375,6 +388,12 @@ class Agent:
                                           content="Execution rejected by human approval.",
                                           is_goal_satisfied=False
                                       ))
+            else:
+                if storage:
+                    await storage.mark_agent_completed(pipe_id=pipe_id, agent_id=self.agent_id, agent_name=self.name,
+                                                       goal_result=_goal_result, status="APPROVED")
+                    await storage.update_pipe_status(pipe_id, "In-Progress")
+
             if status_callback:
                 await _maybe_await(status_callback(
                     event="human_status_approved",
@@ -384,6 +403,7 @@ class Agent:
                     query=query_instruction,
                     conversation_id=conversation_id
                 ))
+
         # Callback: agent execution started
         if status_callback:
             await _maybe_await(status_callback(
@@ -418,6 +438,10 @@ class Agent:
                     conversation_id=conversation_id,
                     status_callback=status_callback
                 )
+
+                if storage:
+                    await storage.mark_agent_completed(pipe_id=pipe_id, agent_id=self.agent_id, agent_name=self.name,
+                                                       goal_result=_goal_result, status="COMPLETED")
 
                 # Callback: iteration complete
                 if status_callback:
@@ -464,6 +488,8 @@ class Agent:
                 raise
             except Exception as e:
                 logger.exception(f"Error executing agent `{self.name}` on retry {_retry}: {e}")
+                await storage.mark_agent_completed(pipe_id=pipe_id, agent_id=self.agent_id, agent_name=self.name,
+                                                   goal_result=_goal_result, status="ERROR")
                 if status_callback:
                     await _maybe_await(status_callback(
                         event="agent_execute_error",
