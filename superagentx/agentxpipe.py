@@ -10,7 +10,6 @@ from superagentx.config import is_verbose_enabled
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
-from superagentx.db_store.db_interface import StorageAdapter
 from superagentx.db_store import ConfigLoader
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
 
@@ -222,7 +221,8 @@ class AgentXPipe:
 
             if self.storage:
                 # If
-                if await self.storage.is_agent_processed(self.pipe_id, _agents.agent_id):
+                if await self.storage.is_agent_processed(pipe_id=self.pipe_id, agent_id=_agents.agent_id,
+                                                         agent_name=_agents.name):
                     logger.info(f" Skipping {_agents.name}: Already processed in this pipe.")
                     continue
             pre_result = await self._pre_result(results=results)
@@ -276,12 +276,14 @@ class AgentXPipe:
                             [assistant],
                             conversation_id=conversation_id
                         )
-                await self.storage.update_pipe_status(self.pipe_id, "Completed")
+                if self.storage:
+                    await self.storage.update_pipe_status(self.pipe_id, "Completed")
             except StopSuperAgentX as ex:
                 trigger_break = True
                 logger.warning(ex)
                 _res = ex.goal_result
-                await self.storage.update_pipe_status(self.pipe_id, "Failed", error=str(ex))
+                if self.storage:
+                    await self.storage.update_pipe_status(self.pipe_id, "Failed", error=str(ex))
 
             if _res:
                 results.append(_res)

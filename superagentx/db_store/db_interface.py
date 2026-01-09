@@ -19,10 +19,10 @@ class StorageAdapter(ABC):
 
     @abstractmethod
     # --- Agent Operations ---
-    async def is_agent_processed(self, pipe_id: str, agent_id: str) -> bool:
+    async def is_agent_processed(self, pipe_id: str, agent_id: str, agent_name: str) -> bool:
         pass
 
     @abstractmethod
     async def mark_agent_completed(self, pipe_id: str, agent_id: str, agent_name: str, status: str,
-                                   goal_result: Any = None):
+                                   input_content: str, goal_result: Any = None, updated_by: str = "System"):
         pass

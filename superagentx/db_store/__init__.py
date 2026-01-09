@@ -1,7 +1,10 @@
+from dotenv import load_dotenv
 from superagentx.db_store.db_interface import StorageAdapter
 from superagentx.db_store.db_storage import SQLiteStorage, PostgresStorage, SQLBaseStorage
-import yaml
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class StorageFactory:
@@ -21,40 +24,36 @@ class StorageFactory:
 
 class ConfigLoader:
     @staticmethod
-    def load_db_config(file_path: str = "config.yaml") -> StorageAdapter:
-        # 1. Load YAML as the base configuration
-        full_config = {}
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
-                full_config = yaml.safe_load(f) or {}
+    def load_db_config() -> StorageAdapter:
+        # 1. Load the .env file into os.environ
+        load_dotenv()
 
-        db_settings = full_config.get("database", {})
+        # 2. Determine Provider (Default to sqlite if not set)
+        provider = os.getenv("DB_PROVIDER", "sqlite").lower()
 
-        # 2. Determine Provider (Env Var takes priority)
-        # Env Var: DB_PROVIDER="postgres"
-        provider = os.getenv("DB_PROVIDER", db_settings.get("active_provider"))
+        # 3. Build configuration dictionary based on provider
+        provider_config = {}
 
-        if not provider:
-            raise ValueError("No database provider specified in YAML or Environment Variables.")
-
-        # 3. Get Provider-specific config from YAML
-        provider_config = db_settings.get(provider, {})
-
-        # 4. Overwrite YAML settings with Environment Variables if they exist
-        # Mapping standard env naming to your provider keys
         if provider == "sqlite":
-            provider_config["db_path"] = os.getenv("SQLITE_DB_PATH", provider_config.get("db_path", "agents.db"))
+            provider_config["db_path"] = os.getenv("SQLITE_DB_PATH", "agents.db")
 
         elif provider == "postgres":
-            provider_config["host"] = os.getenv("POSTGRES_HOST", provider_config.get("host"))
-            provider_config["user"] = os.getenv("POSTGRES_USER", provider_config.get("user"))
-            provider_config["password"] = os.getenv("POSTGRES_PASSWORD", provider_config.get("password"))
-            provider_config["db"] = os.getenv("POSTGRES_DB", provider_config.get("db"))
-            provider_config["port"] = int(os.getenv("POSTGRES_PORT", provider_config.get("port", 5432)))
+            provider_config["host"] = os.getenv("POSTGRES_HOST", "localhost")
+            provider_config["user"] = os.getenv("POSTGRES_USER")
+            provider_config["password"] = os.getenv("POSTGRES_PASSWORD")
+            provider_config["db"] = os.getenv("POSTGRES_DB")
+            provider_config["port"] = int(os.getenv("POSTGRES_PORT", 5432))
+
+            # Basic Validation for Postgres
+            if not all([provider_config["user"], provider_config["password"], provider_config["db"]]):
+                raise ValueError("Postgres requires POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB in .env")
 
         elif provider == "mongodb":
-            provider_config["uri"] = os.getenv("MONGO_URI", provider_config.get("uri"))
-            provider_config["db_name"] = os.getenv("MONGO_DB_NAME", provider_config.get("db_name"))
+            provider_config["uri"] = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+            provider_config["db_name"] = os.getenv("MONGO_DB_NAME", "agent_db")
 
-        print(f" Initializing storage provider: {provider} (via {'Env' if os.getenv('DB_PROVIDER') else 'YAML'})")
+        else:
+            raise ValueError(f"Unsupported database provider: {provider}")
+
+        logger.info(f"🔧 Initializing storage: {provider}")
         return StorageFactory.get_storage(provider, provider_config)
