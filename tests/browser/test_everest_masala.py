@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'gpt-4o', 'llm_type': 'openai'}
+    llm_config = {'model': 'gpt-5.1', 'llm_type': 'openai'}
 
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
     response = {'llm': llm_client, 'llm_type': 'openai'}
@@ -138,7 +138,7 @@ class TestEverestMasalaExtractAgent:
             llm=llm_client,
             prompt_template=prompt_template,
             take_screenshot=True,
-            browser=browser
+            # browser=browser
             # browser_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
         )
 
@@ -160,7 +160,8 @@ class TestEverestMasalaExtractAgent:
             llm=llm_client,
             prompt_template=excel_prompt,
             max_retry=1,
-            engines=[excel_engine]
+            engines=[excel_engine],
+            human_approval=True
         )
 
         task = """

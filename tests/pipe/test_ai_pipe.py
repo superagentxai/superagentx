@@ -176,8 +176,7 @@ class TestIOConsolePipe:
         Balance or not, remote work is a ticking time bomb.
         """
         result = await pipe.flow(
-            query_instruction=discussion,
-            status_callback=status_callback
+            query_instruction=discussion
         )
         logger.info(f"Spamfilter result => \n{result}")
         assert result
@@ -195,7 +194,8 @@ class TestIOConsolePipe:
             llm=llm_client,
             prompt_template=prompt_template,
             engines=[ai_agent_engine],
-            max_retry=1
+            max_retry=1,
+
         )
 
         scriptwriter = Agent(
@@ -207,7 +207,8 @@ class TestIOConsolePipe:
             llm=llm_client,
             prompt_template=prompt_template,
             engines=[ai_agent_engine],
-            max_retry=1
+            max_retry=1,
+            human_approval=True
 
         )
 
@@ -223,11 +224,10 @@ class TestIOConsolePipe:
         )
 
         pipe = AgentXPipe(
-            agents=[analyst, scriptwriter, formatter], stop_if_goal_not_satisfied=False
+            agents=[analyst, scriptwriter, formatter], workflow_store=True, stop_if_goal_not_satisfied=False
         )
         result = await pipe.flow(
             query_instruction=discussion,
-            status_callback=status_callback
         )
         logger.info(f"Writer result => \n{result}")
         assert result
