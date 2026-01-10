@@ -130,6 +130,7 @@ class AgentXPipe:
         return [
             (f'Reason: {result.reason}\n'
              f'Result: \n{yaml.dump(result.result)}\n'
+             f'Content: \n{result.content}'
              f'Is Goal Satisfied: {result.is_goal_satisfied}\n\n')
             async for result in iter_to_aiter(results)
         ]
