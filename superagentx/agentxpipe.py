@@ -213,7 +213,7 @@ class AgentXPipe:
         old_memory = None
 
         if self.workflow_store:
-            self.storage = ConfigLoader.load_db_config()
+            self.storage = await ConfigLoader.load_db_config()
             await self.storage.setup()
             await self.storage.create_pipe(pipe_id=self.pipe_id, executed_by="Agent_System")
             await self.storage.update_pipe_status(self.pipe_id, "In-Progress")

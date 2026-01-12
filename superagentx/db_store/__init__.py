@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class StorageFactory:
     @staticmethod
-    def get_storage(provider: str, config: dict) -> StorageAdapter:
+    async def get_storage(provider: str, config: dict) -> StorageAdapter:
         providers = {
             "sqlite": SQLiteStorage,
             "postgres": PostgresStorage
@@ -24,7 +24,7 @@ class StorageFactory:
 
 class ConfigLoader:
     @staticmethod
-    def load_db_config() -> StorageAdapter:
+    async def load_db_config() -> StorageAdapter:
         # 1. Load the .env file into os.environ
         load_dotenv()
 
@@ -56,4 +56,4 @@ class ConfigLoader:
             raise ValueError(f"Unsupported database provider: {provider}")
 
         logger.info(f"🔧 Initializing storage: {provider}")
-        return StorageFactory.get_storage(provider, provider_config)
+        return await StorageFactory.get_storage(provider, provider_config)

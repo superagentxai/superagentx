@@ -1,6 +1,7 @@
 import asyncio
 
 from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.engine import Engine
 from superagentx.handler.ai import AIHandler
 from superagentx.llm import LLMClient
@@ -13,7 +14,7 @@ async def main():
     # Step 1: Initialize LLM
     # Note: You need to setup your OpenAI API key before running this step.
     # export OPENAI_API_KEY=<your-api-key>
-    llm_config = {"model": "gpt-4o", "llm_type": "openai"}
+    llm_config = {"model": "gpt-5-nano"}
     llm_client = LLMClient(llm_config=llm_config)
 
     # Step 2: Setup MCP tool handler (Reddit trending analyzer)
@@ -32,9 +33,19 @@ async def main():
     agent = Agent(goal="Generate content based on social media posts user input",
                   role="You're Content Generator",
                   llm=llm_client, prompt_template=prompt_template,
+                  human_approval=True,
                   engines=[content_engine])
 
-    result = await agent.execute(query_instruction="Create the digital marketing content")
+    # result = await agent.execute(query_instruction="Create the digital marketing content")
+
+    pipe = AgentXPipe(
+        agents=[agent]
+    )
+    task = "Create the digital marketing content"
+
+    result = await pipe.flow(
+        query_instruction=task
+    )
 
     print(f"Agent Result : {result}")
 

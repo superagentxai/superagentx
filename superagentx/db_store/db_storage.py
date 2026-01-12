@@ -139,7 +139,7 @@ class SQLBaseStorage(StorageAdapter):
         )
 
     async def setup(self) -> None:
-        async with self.engine.begin() as conn:
+        async with self.engine.connect() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
     # -------------------------------------------------------------------
