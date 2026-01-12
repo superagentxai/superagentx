@@ -6,6 +6,8 @@ from json import JSONDecodeError
 from typing import Literal, Any
 
 from superagentx.browser_engine import BrowserEngine
+from superagentx.channels.base import HumanApprovalChannel
+from superagentx.channels.console_channel import ConsoleApprovalChannel
 from superagentx.db_store import StorageAdapter
 from superagentx.task_engine import TaskEngine
 from superagentx.constants import SEQUENCE, PARALLEL
@@ -71,6 +73,7 @@ class Agent:
             output_format: str | None = None,
             max_retry: int = 5,
             human_approval: bool = False,
+            approval_channel: HumanApprovalChannel = None,
             return_engine_result: bool = False
     ):
         """
@@ -114,6 +117,7 @@ class Agent:
         self.max_retry = max_retry if max_retry >= 1 else 1
         self.return_engine_result = return_engine_result
         self.human_approval = human_approval
+        self.approval_channel = approval_channel or ConsoleApprovalChannel()
         self.engine_result_format = ENGINE_RESULT_FORMAT
         if self.return_engine_result:
             self.engine_result_format = """{{ reason: Set the reason for result, is_goal_satisfied: 'True' if result 
@@ -221,6 +225,7 @@ class Agent:
                             content=_res,
                             error=_msg
                         )
+            return None
         else:
             return GoalResult(
                 name=self.name,
@@ -295,17 +300,22 @@ class Agent:
                 engine_result=engine_result
             )
 
-    async def get_human_approval(self, query: str, pre_result: str | list[str] = None) -> bool:
-        """Asks for human approval via terminal without blocking the event loop."""
-        loop = asyncio.get_running_loop()
-        logger.info(f"\n[!] HUMAN APPROVAL REQUIRED FOR AGENT: {self.name}")
-        logger.info(f"    Instruction: {query} \n {pre_result}")
-
-        def _ask():
-            return input("Approve this execution? (y/n): ").strip().lower()
-
-        answer = await loop.run_in_executor(None, _ask)
-        return answer == 'y'
+    async def _request_human_approval(
+            self,
+            *,
+            query: str,
+            pre_result,
+            pipe_id=None,
+            conversation_id=None
+    ) -> bool:
+        return await self.approval_channel.request_approval(
+            agent_id=self.agent_id,
+            agent_name=self.name,
+            query=query,
+            pre_result=pre_result,
+            pipe_id=pipe_id,
+            conversation_id=conversation_id
+        )
 
     async def execute(
             self,
@@ -371,7 +381,12 @@ class Agent:
             if storage:
                 await storage.update_pipe_status(pipe_id, "Waiting-for-Approval")
 
-            approved = await self.get_human_approval(query=query_instruction, pre_result=pre_result)
+            approved = await self._request_human_approval(
+                query=query_instruction,
+                pre_result=pre_result,
+                pipe_id=pipe_id,
+                conversation_id=conversation_id
+            )
 
             if not approved:
                 if storage:
