@@ -69,7 +69,7 @@ discussion = """From: jane@edu.tech.net (Jane Mitchell)
 
 @pytest.fixture
 def ai_client_init() -> dict:
-    llm_config = {'model': 'gpt-5-mini', 'llm_type': 'openai', 'async_mode': False}
+    llm_config = {'model': 'gpt-5-mini'}
 
     # llm_config = {'model': 'anthropic.claude-3-5-sonnet-20240620-v1:0', 'llm_type': 'bedrock', 'async_mode': True}
 

@@ -230,10 +230,14 @@ class SQLBaseStorage(StorageAdapter):
                         result_data: dict | None = None
                     elif hasattr(goal_result, "model_dump"):
                         try:
-                            result_data = goal_result.model_dump()
-                        except Exception:
+                            result_data = goal_result.model_dump(
+                                mode="json",
+                                exclude_none=True,
+                                round_trip=True,
+                            )
+                        except Exception as ex:
                             logger.warning(
-                                "goal_result serialization failed",
+                                f"goal_result serialization failed {ex}",
                                 extra={
                                     "pipe_id": pipe_id,
                                     "agent_id": agent_id,
