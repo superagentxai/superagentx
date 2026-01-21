@@ -122,13 +122,22 @@ class AgentXPipe:
     ) -> list[str]:
         if not results:
             return []
-        return [
-            (f'Reason: {result.reason}\n'
-             f'Result: \n{yaml.dump(result.result)}\n'
-             f'Content: \n{result.content}'
-             f'Is Goal Satisfied: {result.is_goal_satisfied}\n\n')
-            async for result in iter_to_aiter(results)
-        ]
+        parallel_res = []
+        async for result in iter_to_aiter(results):
+            if isinstance(result, list):
+                async for _res in iter_to_aiter(result):
+                    parallel_res.append(f'Reason: {_res.reason}\n'
+                     f'Result: \n{yaml.dump(_res.result)}\n'
+                     f'Content: \n{_res.content}'
+                     f'Is Goal Satisfied: {_res.is_goal_satisfied}\n\n')
+
+            else:
+                parallel_res.append(
+                    f'Reason: {result.reason}\n'
+                 f'Result: \n{yaml.dump(result.result)}\n'
+                 f'Content: \n{result.content}'
+                 f'Is Goal Satisfied: {result.is_goal_satisfied}\n\n')
+        return parallel_res
 
     async def add_memory(
             self,

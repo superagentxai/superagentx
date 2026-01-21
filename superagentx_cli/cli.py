@@ -33,16 +33,15 @@ def dict_to_kwargs(d: dict) -> list:
 
 
 def str_to_obj_str(l: list) -> str:
-    _l = '['
-    for __l in l:
-        if isinstance(__l, list):
-            _l = _l + str_to_obj_str(__l)
+    parts = []
+
+    for item in l:
+        if isinstance(item, list):
+            parts.append(str_to_obj_str(item))
         else:
-            _l = _l + to_snake(__l) + ', '
-    if _l.endswith(', '):
-        _l = _l.rstrip(', ')
-    _l = _l + ']'
-    return _l
+            parts.append(to_snake(item))
+
+    return '[' + ', '.join(parts) + ']'
 
 
 def to_snake(s: str):
