@@ -52,7 +52,7 @@ class TestWeatherTaskAgent:
             ]
         )
 
-        weather_agent = Agent(engines=[engine])
+        weather_agent = Agent(engines=[engine], human_approval=True)
 
         result = await weather_agent.execute(query_instruction='')
         logger.info(f'Result ==> {result}')

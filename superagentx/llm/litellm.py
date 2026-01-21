@@ -1,6 +1,7 @@
 import inspect
 import logging
 import typing
+import warnings
 from typing import Callable
 
 from openai.types.chat.chat_completion import ChatCompletion, Choice, ChoiceLogprobs
@@ -12,6 +13,8 @@ from superagentx.llm.client import Client
 from superagentx.utils.helper import sync_to_async, ptype_to_json_scheme
 
 logger = logging.getLogger(__name__)
+warnings.filterwarnings("ignore", category=UserWarning, message=".*Pydantic serializer warnings.*")
+
 
 
 def _to_chat_message(obj) -> ChatCompletionMessage:
@@ -27,25 +30,25 @@ def convert_model_response_to_chat_completion(
     model_response: ModelResponse,
 ) -> ChatCompletion:
     """
-    Convert a custom ModelResponse object into a standard OpenAI ChatCompletion object.
+        Convert a custom ModelResponse object into a standard OpenAI ChatCompletion object.
 
-    Args:
-        model_response (ModelResponse): The source model response object.
+        Args:
+            model_response (ModelResponse): The source model response object.
 
-    Returns:
-        ChatCompletion: Converted ChatCompletion instance.
-    """
+        Returns:
+            ChatCompletion: Converted ChatCompletion instance.
+        """
     if not hasattr(model_response, "choices") or not hasattr(model_response, "model"):
-        raise ValueError("Invalid ModelResponse: missing required fields ('choices', 'model')")
+        raise ValueError(
+            "Invalid ModelResponse: missing required fields ('choices', 'model')"
+        )
 
     converted_choices: list[Choice] = []
 
     for idx, choice in enumerate(model_response.choices):
-        # Get message content from message or delta
         msg = getattr(choice, "message", None) or getattr(choice, "delta", None)
-        message_content = _to_chat_message(msg) if msg else ChatCompletionMessage(role="assistant", content="")
+        message = _to_chat_message(msg)
 
-        # Handle optional logprobs
         logprobs = getattr(choice, "logprobs", None)
         if isinstance(logprobs, dict):
             logprobs = ChoiceLogprobs(**logprobs)
@@ -53,29 +56,33 @@ def convert_model_response_to_chat_completion(
         converted_choices.append(
             Choice(
                 index=idx,
-                message=message_content,
-                finish_reason=getattr(choice, "finish_reason", "stop") or "stop",
+                message=message,
+                finish_reason=getattr(choice, "finish_reason", None) or "stop",
                 logprobs=logprobs,
             )
         )
 
-    # Convert usage if present
     usage = None
     usage_data = getattr(model_response, "usage", None)
     if usage_data:
         if isinstance(usage_data, dict):
             usage = CompletionUsage(**usage_data)
         elif hasattr(usage_data, "model_dump"):
-            usage = CompletionUsage(**usage_data.model_dump())
+            usage = CompletionUsage(
+                **usage_data.model_dump(
+                    mode="json",
+                    exclude_none=True,
+                )
+            )
 
     return ChatCompletion(
         id=getattr(model_response, "id", "unknown"),
-        choices=converted_choices,
-        created=getattr(model_response, "created", 0),
-        model=getattr(model_response, "model", "unknown"),
         object="chat.completion",
-        system_fingerprint=getattr(model_response, "system_fingerprint", None),
+        created=getattr(model_response, "created", 0),
+        model=model_response.model,
+        choices=converted_choices,
         usage=usage,
+        system_fingerprint=getattr(model_response, "system_fingerprint", None),
     )
 
 
