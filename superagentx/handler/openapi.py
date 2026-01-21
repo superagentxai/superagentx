@@ -5,6 +5,7 @@ import aiofiles
 import aiohttp
 import yaml
 from yaml import safe_load
+from typing import Dict, Any, Optional
 
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.decorators import tool
@@ -17,7 +18,7 @@ class OpenAPIHandler(BaseHandler):
     def __init__(
             self,
             *,
-            base_url: str,
+            base_url: str = None,
             spec_url_path: str = None,
             spec_file_path: str = None
     ):
@@ -120,3 +121,56 @@ class OpenAPIHandler(BaseHandler):
                         f"Error {response.status}: {response.text}"
                     )
                 return await response.json()
+
+    @tool
+    async def execute_rest_api(
+            self,
+            method: str,
+            endpoint: str,
+            headers: Optional[Dict[str, str]] = None,
+            params: Optional[Dict[str, str]] = None,
+            body: Optional[Any] = None,
+            timeout: int = 30
+    ) -> Dict[str, Any]:
+        """
+        Executes a REST API call dynamically using aiohttp.
+
+        :param method: HTTP method (GET, POST, PUT, DELETE, PATCH)
+        :param endpoint: Full API URL
+        :param headers: HTTP headers
+        :param params: Query parameters
+        :param body: Request body (JSON or raw)
+        :param timeout: Timeout in seconds
+        :return: Response details
+        """
+
+        try:
+            body = body or {}
+            timeout_cfg = aiohttp.ClientTimeout(total=timeout)
+
+            async with aiohttp.ClientSession(timeout=timeout_cfg) as session:
+                async with session.request(
+                        method=method.upper(),
+                        url=endpoint,
+                        headers=headers,
+                        params=params,
+                        json=body
+                ) as response:
+
+                    # Try JSON first, fallback to text
+                    try:
+                        response_body = await response.json()
+                    except aiohttp.ContentTypeError:
+                        response_body = await response.text()
+
+                    return {
+                        "status_code": response.status,
+                        "headers": dict(response.headers),
+                        "body": response_body
+                    }
+
+        except Exception as ex:
+            return {
+                "error": True,
+                "message": str(ex)
+            }
