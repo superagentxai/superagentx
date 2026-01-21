@@ -1,6 +1,7 @@
 import inspect
 import logging
 import typing
+import warnings
 from typing import Callable
 
 from openai.types.chat.chat_completion import ChatCompletion, Choice, ChoiceLogprobs
@@ -12,6 +13,8 @@ from superagentx.llm.client import Client
 from superagentx.utils.helper import sync_to_async, ptype_to_json_scheme
 
 logger = logging.getLogger(__name__)
+warnings.filterwarnings("ignore", category=UserWarning, message=".*Pydantic serializer warnings.*")
+
 
 
 def _to_chat_message(obj) -> ChatCompletionMessage:
