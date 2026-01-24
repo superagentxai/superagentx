@@ -21,11 +21,6 @@ Unlike traditional chatbots, SuperAgentX is designed for action, not just conver
 
 ## ✨ Why SuperAgentX?
 
-Most AI systems today:
-- Answer questions
-- Suggest next steps
-- Stop before taking real action
-
 SuperAgentX enables AI agents to:
 - Execute multi-step workflows
 - Interact with browsers, APIs, databases, tools & MCPs
@@ -38,14 +33,6 @@ All while keeping humans firmly in control.
 
 ```shell
 pip install superagentx
-```
-#### Install Playwright for Browser AI Automation
-```bash
-pip install playwright
-```
-
-```bash
-playwright install
 ```
 
 ## 🧠 Core Capabilities
@@ -106,6 +93,15 @@ A built-in **Human Approval Governance Agent**:
 
 ## Browser AI Agent
 
+#### Install Playwright for Browser AI Automation
+```bash
+pip install playwright
+```
+
+```bash
+playwright install
+```
+
 ```python
 import asyncio
 
@@ -150,9 +146,6 @@ asyncio.run(main())
 ## Run
 <img src="https://github.com/superagentxai/superagentx/blob/master/assets/superagentx_browser.gif" title="Browser Engine"/>
 
-```bash
-$ export OPENAI_API_KEY=sk-******************
-```
 
 ## Key Features
 
@@ -185,9 +178,6 @@ This SuperAgentX example utilizes two handlers, Amazon and Walmart, to search fo
 2. Memory Context Enabled
 3. LLM configured to OpenAI
 4. Pre-requisites
-
-## Architecture
-<img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/architecture.png" title="SuperAgentX Architecture"/>
 
 ## Environment Setup
 ```shell
