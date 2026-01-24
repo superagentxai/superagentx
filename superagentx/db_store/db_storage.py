@@ -311,6 +311,15 @@ class SQLBaseStorage(StorageAdapter):
                 )
                 raise
 
+    async def close(self) -> None:
+        """
+        Properly close async engine and release all resources.
+        Must be called BEFORE event loop shutdown.
+        """
+        if self.engine:
+            await self.engine.dispose()
+            logger.info("SQLAlchemy async engine disposed")
+
 
 # -------------------------------------------------------------------
 # Storage Implementations

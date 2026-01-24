@@ -26,3 +26,7 @@ class StorageAdapter(ABC):
     async def mark_agent_completed(self, pipe_id: str, agent_id: str, agent_name: str, status: str,
                                    input_content: str, goal_result: Any = None, updated_by: str = "System"):
         pass
+
+    @abstractmethod
+    async def close(self) -> None:
+        pass

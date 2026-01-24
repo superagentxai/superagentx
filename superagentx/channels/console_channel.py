@@ -1,7 +1,8 @@
 import asyncio
+import json
 import logging
 import sys
-from typing import Callable
+from typing import Callable, Any
 
 from superagentx.channels.base import HumanApprovalChannel
 
@@ -34,6 +35,11 @@ def _print_colored_console(message: str, *, color: str = "cyan") -> None:
     sys.stdout.write(f"{color_code}{message}{reset}\n")
     sys.stdout.flush()
 
+def safe_format_result(result: Any) -> Any:
+    try:
+        return json.loads(result) if isinstance(result, str) else result
+    except Exception as e:
+        return str(result)
 
 class ConsoleApprovalChannel(HumanApprovalChannel):
 
@@ -55,7 +61,7 @@ class ConsoleApprovalChannel(HumanApprovalChannel):
             f" HUMAN APPROVAL REQUIRED\n"
             f" Agent : {agent_name} ({agent_id})\n"
             f" Query : {query}\n"
-            f" Result: {pre_result}\n"
+            f" Result: {safe_format_result(pre_result)}\n"
             f"{header}"
         )
 

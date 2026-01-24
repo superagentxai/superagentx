@@ -279,12 +279,22 @@ class AgentXPipe:
                         )
                 if self.storage:
                     await self.storage.update_pipe_status(self.pipe_id, "Completed")
+                    await self.storage.close()
             except StopSuperAgentX as ex:
                 trigger_break = True
                 logger.warning(ex)
                 _res = ex.goal_result
                 if self.storage:
                     await self.storage.update_pipe_status(self.pipe_id, "Failed", error=str(ex))
+                    await self.storage.close()
+            finally:
+                # Always close DB connection if workflow_store is enabled
+                if self.workflow_store and self.storage:
+                    try:
+                        await self.storage.close()
+                        logger.info(f"DB connection closed for pipe {self.pipe_id}")
+                    except Exception as e:
+                        logger.warning(f"Failed to close DB connection: {e}")
 
             if _res:
                 results.append(_res)
