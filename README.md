@@ -6,7 +6,10 @@
 <br/>
 
 
-**SuperAgentX**: A lightweight autonomous true multi-agent framework with AGI capabilities.
+**SuperAgentX**: is an open-source, modular agentic AI framework that enables AI agents to plan, act, and execute real-world workflows—with built-in human approval, governance, and auditability.
+Unlike traditional chatbots, SuperAgentX is designed for action, not just conversation.
+
+
 
 <br/>
 
@@ -16,8 +19,20 @@
 
 </div>
 
-<h1 align="center">SuperAgentX - Multi-Agent, Browser Intelligence and MCP - Made Easy</h1>
-<br/><br/>
+## ✨ Why SuperAgentX?
+
+Most AI systems today:
+- Answer questions
+- Suggest next steps
+- Stop before taking real action
+
+SuperAgentX enables AI agents to:
+- Execute multi-step workflows
+- Interact with browsers, APIs, databases, tools & MCPs
+- Pause for **human approval** before sensitive actions
+- Persist execution state, memory, and audit logs
+
+All while keeping humans firmly in control.
 
 # Quick start
 
@@ -32,6 +47,62 @@ pip install playwright
 ```bash
 playwright install
 ```
+
+## 🧠 Core Capabilities
+
+### 🔹 Massive Model & Tool Support
+- ✅ **100+ LLMs supported** (OpenAI, Azure OpenAI, Gemini, Claude, Bedrock, OSS models)
+- ✅ **10,000+ MCP (Model Context Protocol) tools supported**
+- ✅ **Browser Agents** using real browser automation (Playwright)
+
+---
+
+### 🔹 Agentic AI (Beyond Chatbots)
+Agents can:
+- Understand goals
+- Plan execution steps
+- Call tools dynamically
+- Run sequential or parallel workflows
+- Retry, reflect, and recover
+
+---
+
+### 🔹 Human-in-the-Loop Governance
+A built-in **Human Approval Governance Agent**:
+- Pauses sensitive actions
+- Requests explicit approval
+- Resumes or aborts execution
+- Persists decisions for audit
+
+➡️ AI **cannot act blindly**.
+
+---
+
+## 🗄️ Persistent Data Store & Memory
+
+### Supported Data Stores
+- 🗃 **SQLite** – lightweight, local workflows
+- 🗄 **PostgreSQL** – production-grade, multi-tenant systems
+
+### Stored Data
+- Workflow state
+- Agent decisions
+- Human approvals
+- Tool outputs
+- Audit logs
+- Context & memory snapshots
+
+---
+
+## 🧩 Example: AI Food Ordering with Approval
+1. Plan order
+2. Calculate total
+3. Generate checkout summary
+4. **Pause for approval**
+5. Browser agent completes checkout
+6. Persist confirmation & logs
+
+<img src="assets/human-approval.png" title="SuperAgentX Architecture"/>
 
 ## Browser AI Agent
 
@@ -102,27 +173,6 @@ $ export OPENAI_API_KEY=sk-******************
 💎 **Agentic RPA (Robotic Process Automation)** – SuperAgentX enables computer-use automation for both browser-based and desktop applications, making it an ideal solution for enterprises looking to streamline operations, reduce manual effort, and boost productivity.
 
 
-## Table of contents
-- [What is SuperAgentX?](#what-is-superagentx)
-- [Why SuperAgentX?](#why-superagentx)
-- [Getting Started](#getting-started)
-- [Installing Dependencies](#installing-dependencies)
-- [Contribution](#contribution)
-- [License](#license)
-
-## What is SuperAgentX?
-
-**The Ultimate Modular Autonomous Agentic AI Framework for Progressing Towards AGI.** <br/><br/>
-SuperAgentX is an advanced agentic AI framework designed to accelerate the development of Artificial General Intelligence (AGI). It provides a powerful, modular, and flexible platform for building autonomous AI agents capable of executing complex tasks with minimal human intervention. By integrating cutting-edge AI technologies and promoting efficient, scalable agent behavior, SuperAgentX embodies a critical step forward in the path toward superintelligence and AGI. Whether for research, development, or deployment, SuperAgentX is built to push the boundaries of what's possible with autonomous AI systems.
-
-## Why SuperAgentX?
-
-SuperAgentX addresses the growing need for highly capable, autonomous AI systems that can perform complex tasks with minimal human intervention. As we approach the limits of narrow AI, there's a need for an adaptable and scalable framework to bridge the gap toward AGI (Artificial General Intelligence). Here’s why SuperAgentX stands out:
-
-**Super**: Cutting-edge AI systems with exceptional capabilities, paving the way to **AGI** (Artificial General Intelligence) and **ASI** (Artificial Super Intelligence).</p>
-**Agent**: Autonomous Multi AI agent framework designed to make decisions, act independently, and handle complex tasks. </p>
-**X**: The unknown, the limitless, the extra factor that makes SuperAgentX revolutionary, futuristic, and transformative.</p>
-
 ### Getting Started
 
 ```shell
@@ -139,20 +189,6 @@ This SuperAgentX example utilizes two handlers, Amazon and Walmart, to search fo
 ## Architecture
 <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/architecture.png" title="SuperAgentX Architecture"/>
 
-## Large Language Models
-
-| Icon                                                                                                                                                          | LLM Name          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Status                                                                                                                                           |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/openai.png" title="OpenAI" height="20" width="20"/>              | **OpenAI**                                                                                     | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/azure-icon.png" title="Azure OpenAI" height="20" width="20"/>    | **Azure OpenAI**                                                                               | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |  
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/awsbedrock.png" title="AWS Bedrock" height="20" width="20"/>     | **AWS Bedrock**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/gemini.png" title="Google Gemini" height="20" width="20"/>       | **Google Gemini**                                                                              | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/meta.png" title="Google Gemini" height="20" width="20"/>         | **Meta Llama**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ollama.png" title="Ollama" height="20" width="20"/>              | **Ollama**                                                                                     | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/claude-ai-logo.png" title="Claude AI" height="20" width="20"/>   | **Claude AI**                                                                                  | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/checkmark.png" title="Tested" height="20" width="20"/>   |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/mistral-ai-logo.png" title="Mistral AI" height="20" width="30"/> | **Mistral AI**                                                                                 | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png" title="TODO" height="20" width="20"/>          |
-| <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/llms/ibm.png" title="IBM WatsonX AI" height="20" width="30"/>         | **IBM WatsonX**                                                                                | <img src="https://github.com/superagentxai/superagentX/blob/master/docs/images/todo.png" title="TODO" height="20" width="20"/>          |
-
 ## Environment Setup
 ```shell
 $ python3.12 -m pip install poetry
@@ -167,3 +203,13 @@ $ source venv/bin/activate
 ## License
 
 SuperAgentX is released under the [MIT](https://github.com/superagentxai/superagentX/blob/master/LICENSE) License.
+
+## 🤝 Contributing
+Fork → Branch → Commit → Pull Request  
+Keep contributions modular and documented.
+
+## 📬 Connect
+- 🌐 https://www.superagentx.ai
+- 💻 https://github.com/superagentxai/superagentx
+
+⭐ Star the repo and join the community!
