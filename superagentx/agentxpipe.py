@@ -12,6 +12,8 @@ from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
 from superagentx.db_store import ConfigLoader
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
+from superagentx.utils.observability.trace_decorator import pipe_trace
+
 
 is_verbose_enabled()
 
@@ -211,12 +213,22 @@ class AgentXPipe:
         trigger_break = False
         results = []
         old_memory = None
+        _res = None
 
         if self.workflow_store:
             self.storage = await ConfigLoader.load_db_config()
             await self.storage.setup()
-            await self.storage.create_pipe(pipe_id=self.pipe_id, executed_by="Agent_System")
-            await self.storage.update_pipe_status(self.pipe_id, "In-Progress")
+
+            await self.storage.create_pipe(
+                    pipe_id=self.pipe_id,
+                    input_query=query_instruction,
+                    executed_by="Agent_System"
+            )
+
+            await self.storage.update_pipe_status(
+                    pipe_id=self.pipe_id,
+                    status="In-Progress"
+            )
 
         async for _agents in iter_to_aiter(self.agents):
 
@@ -302,6 +314,7 @@ class AgentXPipe:
                 break
         return results
 
+    @pipe_trace
     async def flow(
             self,
             query_instruction: str,
@@ -332,7 +345,6 @@ class AgentXPipe:
                 corresponding operation and may include additional context or data.
         """
         logger.info(f"Pipe {self.name} starting...")
-
         if status_callback:
             await _maybe_await(status_callback(
                 event="pipe_flow_start",
@@ -358,3 +370,17 @@ class AgentXPipe:
             ))
 
         return goal_result
+
+    async def _load_storage_once(self):
+        """
+        Lazily initialize storage exactly once per pipe.
+        Used by observability decorators.
+        """
+        if self.storage:
+            return self.storage
+
+        from superagentx.db_store import ConfigLoader
+
+        self.storage = await ConfigLoader.load_db_config()
+        await self.storage.setup()
+        return self.storage

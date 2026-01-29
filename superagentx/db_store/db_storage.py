@@ -12,7 +12,6 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
@@ -23,46 +22,40 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship,
 )
+from sqlalchemy.sql.sqltypes import BigInteger
 
 from superagentx.db_store.db_interface import StorageAdapter
 from superagentx.db_store.sql_status_enum import PipeStatus, AgentStatus
 
-# -------------------------------------------------------------------
-# Logging
-# -------------------------------------------------------------------
-
 logger = logging.getLogger(__name__)
 
 
-# -------------------------------------------------------------------
-# Time Utilities
-# -------------------------------------------------------------------
+from datetime import timezone
 
+def ensure_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+def duration_ms(start: datetime, end: datetime) -> int:
+    start = ensure_utc(start)
+    end = ensure_utc(end)
+    return int((end - start).total_seconds() * 1000)
 
 def utcnow() -> datetime:
     """Return timezone-aware UTC timestamp."""
     return datetime.now(timezone.utc)
 
 
-# -------------------------------------------------------------------
-# SQLAlchemy Base
-# -------------------------------------------------------------------
-
-
 class Base(DeclarativeBase):
     pass
 
-
-# -------------------------------------------------------------------
-# Models
-# -------------------------------------------------------------------
 
 class DBPipe(Base):
     __tablename__ = "pipes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     pipe_id: Mapped[str] = mapped_column(String(50), unique=True, index=True)
-
     status: Mapped[str] = mapped_column(
         String(30),
         default=PipeStatus.PENDING,
@@ -120,6 +113,140 @@ class DBAgent(Base):
 
     pipe = relationship("DBPipe", back_populates="agents")
 
+class DBTrace(Base):
+    __tablename__ = "otel_traces"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    trace_id: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+
+    conversation_id: Mapped[str | None] = mapped_column(String(50))
+
+    query_input: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    error_message: Mapped[str | None] = mapped_column(Text)
+
+    start_time: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+    )
+    end_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+
+    duration_ms: Mapped[int | None] = mapped_column(BigInteger)
+    metadata_: Mapped[dict | None] = mapped_column(
+        "metadata",
+        JSON,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+    )
+
+    spans = relationship(
+        "DBSpan",
+        back_populates="trace",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+class DBSpan(Base):
+    __tablename__ = "otel_spans"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    span_id: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+
+    trace_id: Mapped[int] = mapped_column(
+        ForeignKey("otel_traces.id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    # parent span (self-referencing)
+    parent_span_id: Mapped[str | None] = mapped_column(
+        ForeignKey("otel_spans.span_id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
+
+    span_name: Mapped[str] = mapped_column(String(255))
+    span_kind: Mapped[str] = mapped_column(String(32))  # agent | engine | tool | llm | human
+
+    start_time: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+    )
+    end_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    duration_ms: Mapped[int | None] = mapped_column(BigInteger)
+    status: Mapped[str] = mapped_column(String(32))
+    error_message: Mapped[str | None] = mapped_column(Text)
+
+    # --- Relationships ---
+    trace = relationship("DBTrace", back_populates="spans")
+
+    parent = relationship(
+        "DBSpan",
+        remote_side="DBSpan.span_id",
+        back_populates="children",
+    )
+
+    children = relationship(
+        "DBSpan",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+    )
+
+    attributes = relationship(
+        "DBSpanAttribute",
+        back_populates="span",
+        cascade="all, delete-orphan",
+    )
+
+    events = relationship(
+        "DBSpanEvent",
+        back_populates="span",
+        cascade="all, delete-orphan",
+    )
+
+
+class DBSpanAttribute(Base):
+    __tablename__ = "span_attributes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    span_id: Mapped[str] = mapped_column(
+        ForeignKey("otel_spans.span_id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    attribute_key: Mapped[str] = mapped_column(String(128), index=True)
+    attribute_value: Mapped[dict] = mapped_column(JSON)
+
+    span = relationship("DBSpan", back_populates="attributes")
+
+class DBSpanEvent(Base):
+    __tablename__ = "span_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    span_id: Mapped[str] = mapped_column(
+        ForeignKey("otel_spans.span_id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    event_name: Mapped[str] = mapped_column(String(128), index=True)
+    event_time: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+    )
+
+    event_data: Mapped[dict | None] = mapped_column(JSON)
+
+    span = relationship("DBSpan", back_populates="events")
+
 
 # -------------------------------------------------------------------
 # Base SQL Storage
@@ -154,6 +281,8 @@ class SQLBaseStorage(StorageAdapter):
     async def create_pipe(
             self,
             pipe_id: str,
+            conversation_id: str = None,
+            input_query: str = None ,
             executed_by: str = "System",
     ) -> None:
         async with self.session_factory() as session:
@@ -164,6 +293,17 @@ class SQLBaseStorage(StorageAdapter):
                             pipe_id=pipe_id,
                             executed_by=executed_by,
                             status="Pending",
+                        )
+                    )
+
+                    # Start trace together with pipe
+                    session.add(
+                        DBTrace(
+                            trace_id=pipe_id,  # pipe_id == trace_id
+                            conversation_id=conversation_id or pipe_id,
+                            query_input=input_query,
+                            status="started",
+                            start_time=utcnow(),
                         )
                     )
             except IntegrityError:
@@ -193,6 +333,27 @@ class SQLBaseStorage(StorageAdapter):
 
                 pipe.status = status
                 pipe.error_details = error
+
+                # 🔚 End trace when pipe reaches terminal state
+                if status in {"Completed", "Failed"}:
+                    trace = await session.scalar(
+                        select(DBTrace).where(DBTrace.trace_id == pipe_id)
+                    )
+
+                    if trace and not trace.end_time:
+                        trace.end_time = utcnow()
+
+                        start = ensure_utc(trace.start_time)
+                        end = ensure_utc(trace.end_time)
+
+                        trace.duration_ms = int(
+                            (end - start).total_seconds() * 1000
+                        )
+
+                        trace.status = (
+                            "success" if status == "Completed" else "error"
+                        )
+                        trace.error_message = error
 
     # -------------------------------------------------------------------
     # Agent Operations
@@ -310,6 +471,158 @@ class SQLBaseStorage(StorageAdapter):
                     },
                 )
                 raise
+
+    async def start_trace(
+        self,
+        trace_id: str,
+        conversation_id: str,
+        query_input: str | None = None,
+        metadata: dict | None = None,
+        status: str = "started",
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                session.add(
+                    DBTrace(
+                        trace_id=trace_id,
+                        conversation_id=conversation_id,
+                        query_input=query_input,
+                        status=status,
+                        metadata_=metadata,
+                        start_time=utcnow(),
+                    )
+                )
+
+    async def end_trace(
+            self,
+            trace_id: str,  # pipe_id
+            status: str = "success",
+            error_message: str | None = None,
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                trace = await session.scalar(
+                    select(DBTrace).where(DBTrace.trace_id == trace_id)
+                )
+                print(f"End trace: {trace_id}")
+                if not trace:
+                    logger.debug(
+                        "end_trace skipped: trace not found",
+                        extra={"trace_id": trace_id},
+                    )
+                    return
+
+                trace.end_time = utcnow()
+                trace.duration_ms = duration_ms(trace.start_time, trace.end_time)
+                trace.status = status
+                trace.error_message = error_message
+
+    async def start_span(
+            self,
+            *,
+            span_id: str,
+            trace_id: str,
+            span_name: str,
+            span_kind: str,
+            parent_span_id: str | None = None,
+            status: str = "started",
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                trace = await session.scalar(
+                    select(DBTrace).where(DBTrace.trace_id == trace_id)
+                )
+                if not trace:
+                    logger.debug(
+                        "start_span skipped: trace not found",
+                        extra={"trace_id": trace_id},
+                    )
+                    return
+
+                session.add(
+                    DBSpan(
+                        span_id=span_id,
+                        trace_id=trace.id,  # FK to trace PK
+                        parent_span_id=parent_span_id,  # 🔹 hierarchy
+                        span_name=span_name,
+                        span_kind=span_kind,
+                        status=status,
+                        start_time=utcnow(),
+                    )
+                )
+
+    async def end_span(
+            self,
+            *,
+            span_id: str,
+            status: str = "ok",
+            error_message: str | None = None,
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                span = await session.scalar(
+                    select(DBSpan).where(DBSpan.span_id == span_id)
+                )
+                if not span:
+                    return
+
+                span.end_time = utcnow()
+                span.duration_ms = int(
+                    (ensure_utc(span.end_time) - ensure_utc(span.start_time))
+                    .total_seconds() * 1000
+                )
+                span.status = status
+                span.error_message = error_message
+
+    async def add_span_attribute(
+        self,
+        span_id: str,
+        key: str,
+        value: Any,
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                session.add(
+                    DBSpanAttribute(
+                        span_id=span_id,
+                        attribute_key=key,
+                        attribute_value=value,
+                    )
+                )
+
+    async def add_span_attributes(
+        self,
+        span_id: str,
+        attributes: dict[str, Any],
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                for key, value in attributes.items():
+                    session.add(
+                        DBSpanAttribute(
+                            span_id=span_id,
+                            attribute_key=key,
+                            attribute_value=value,
+                        )
+                    )
+
+    async def add_span_event(
+        self,
+        span_id: str,
+        event_name: str,
+        event_data: dict | None = None,
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                session.add(
+                    DBSpanEvent(
+                        span_id=span_id,
+                        event_name=event_name,
+                        event_time=utcnow(),
+                        event_data=event_data,
+                    )
+                )
+
 
     async def close(self) -> None:
         """

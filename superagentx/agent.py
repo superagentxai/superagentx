@@ -17,6 +17,7 @@ from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.result import GoalResult
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
+from superagentx.utils.observability.span_decorator import agent_span
 
 logger = logging.getLogger(__name__)
 
@@ -317,6 +318,7 @@ class Agent:
             conversation_id=conversation_id
         )
 
+    @agent_span
     async def execute(
             self,
             *,
@@ -564,4 +566,3 @@ class Agent:
             ))
 
         return _goal_result
-

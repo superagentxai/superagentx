@@ -37,7 +37,13 @@ dependencies = [
     "pyyaml (>=6.0.2)",
     "importlib-resources (>=6.5.2)",
     "pyotp (>=2.9.0)",
-    "ntplib (>=0.4.0)"
+    "ntplib (>=0.4.0)",
+    "opentelemetry-sdk (>=1.35.0,<2.0.0)",
+    "opentelemetry-exporter-otlp (>=1.35.0,<2.0.0)",
+    "opentelemetry-instrumentation-logging (>=0.56b0,<0.57)",
+    "opentelemetry-instrumentation-asyncio (>=0.56b0,<0.57)",
+    "opentelemetry-instrumentation-requests (>=0.56b0,<0.57)",
+    "opentelemetry-instrumentation-sqlalchemy (>=0.56b0,<0.57)"
 ]
 
 [project.urls]
@@ -74,7 +80,7 @@ all =[
     "chromadb>=1.0.10",
     "opentelemetry-exporter-otlp-proto-grpc>=1.33.1",
     "boto3>=1.35.8",
-    "google-genai>=1.20.0"
+    "google-genai>=1.20.0",
 ]
 
 [tool.poetry]

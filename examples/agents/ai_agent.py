@@ -39,7 +39,8 @@ async def main():
     # result = await agent.execute(query_instruction="Create the digital marketing content")
 
     pipe = AgentXPipe(
-        agents=[agent]
+        agents=[agent],
+        workflow_store=True
     )
     task = "Create the digital marketing content"
 
