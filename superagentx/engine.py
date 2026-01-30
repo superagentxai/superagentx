@@ -2,6 +2,7 @@ import inspect
 import logging
 import typing
 
+from superagentx.db_store import StorageAdapter
 from superagentx.exceptions import ToolError
 from superagentx.handler.base import BaseHandler
 from superagentx.handler.exceptions import InvalidHandler
@@ -9,6 +10,7 @@ from superagentx.handler.mcp import MCPHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, sync_to_async, rm_trailing_spaces, StatusCallback, _maybe_await
+from superagentx.utils.observability.engine_telemetry_decorator import engine_telemetry
 from superagentx.utils.parsers.base import BaseParser
 
 logger = logging.getLogger(__name__)
@@ -92,6 +94,10 @@ class Engine:
         # Use explicitly provided tools if any, otherwise infer all from handler
         return await self.__funcs_props(funcs=self.tools or funcs)
 
+    @engine_telemetry(
+        engine_type="tool",
+        engine_name_resolver=lambda self, **_: f"{self.handler.__class__.__name__}",
+    )
     async def start(
             self,
             input_prompt: str,
@@ -101,6 +107,7 @@ class Engine:
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
             conversation_id: str | None = None,
+            storage: StorageAdapter | None = None,
             status_callback: StatusCallback | None = None,
             **kwargs
     ) -> list[typing.Any]:
@@ -148,6 +155,14 @@ class Engine:
 
         # Get tool call suggestions from the LLM
         messages = await self.llm.afunc_chat_completion(chat_completion_params=chat_params)
+
+        if pipe_id and agent_id and storage:
+            span_id = f"{pipe_id}:{agent_id}:{self.handler.__class__.__name__}"
+
+            from superagentx.utils.observability.telemetry_llm_usage import extract_llm_usage
+
+            await extract_llm_usage(storage=storage, span_id=span_id, llm_response=messages)
+
         if not messages:
             raise ToolError("No tools matched or executed!")
 

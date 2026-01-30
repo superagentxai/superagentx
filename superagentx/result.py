@@ -11,5 +11,7 @@ class GoalResult(BaseModel):
     content: Any | None = None
     error: str | None = None
     verify_goal: bool = True
+    approved_status: str = "auto"
+    approved_by: str | None = None
     is_goal_satisfied: bool | None = None
     engine_result: Any | None = None

@@ -12,7 +12,7 @@ maintainers = [
 readme = "README.md"
 
 keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM", "cli"]
-requires-python = ">=3.12,<=3.13"
+requires-python = ">=3.12,<=3.14"
 
 dependencies = [
     "pydantic>=2.8.2",
@@ -43,7 +43,7 @@ dependencies = [
     "opentelemetry-instrumentation-logging (>=0.56b0,<0.57)",
     "opentelemetry-instrumentation-asyncio (>=0.56b0,<0.57)",
     "opentelemetry-instrumentation-requests (>=0.56b0,<0.57)",
-    "opentelemetry-instrumentation-sqlalchemy (>=0.56b0,<0.57)"
+    "opentelemetry-instrumentation-httpx (>=0.56b0,<0.57)"
 ]
 
 [project.urls]
@@ -80,7 +80,7 @@ all =[
     "chromadb>=1.0.10",
     "opentelemetry-exporter-otlp-proto-grpc>=1.33.1",
     "boto3>=1.35.8",
-    "google-genai>=1.20.0",
+    "google-genai>=1.20.0"
 ]
 
 [tool.poetry]

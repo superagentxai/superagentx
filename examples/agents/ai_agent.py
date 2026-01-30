@@ -14,6 +14,7 @@ async def main():
     # Step 1: Initialize LLM
     # Note: You need to setup your OpenAI API key before running this step.
     # export OPENAI_API_KEY=<your-api-key>
+
     llm_config = {"model": "gpt-5-nano"}
     llm_client = LLMClient(llm_config=llm_config)
 
@@ -33,7 +34,7 @@ async def main():
     agent = Agent(goal="Generate content based on social media posts user input",
                   role="You're Content Generator",
                   llm=llm_client, prompt_template=prompt_template,
-                  human_approval=True,
+                  human_approval=True, max_retry=1,
                   engines=[content_engine])
 
     # result = await agent.execute(query_instruction="Create the digital marketing content")

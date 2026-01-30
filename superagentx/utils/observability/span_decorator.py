@@ -8,6 +8,9 @@ from typing import Any
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
 
+from superagentx.llm import LLMClient
+from superagentx.prompt import PromptTemplate
+
 logger = logging.getLogger(__name__)
 MAX_ATTR_LEN = 2048  # safe default for OTEL + DB
 
@@ -106,10 +109,21 @@ def agent_span(func):
         pipe_id = kwargs.get("pipe_id")
         conversation_id = kwargs.get("conversation_id")
         storage = kwargs.get("storage")
+        pre_result= kwargs.get("pre_result")
+        old_memory= kwargs.get("old_memory")
 
         span_name = f"agent.execute::{self.name}"
         span_id = f"{pipe_id}:{self.agent_id}" if pipe_id else None
         start_time = time.perf_counter()
+
+        attributes = {
+            "pipe.id": pipe_id,
+            "agent.id": self.agent_id,
+            "agent.name": self.name,
+            "conversation.id": conversation_id or pipe_id,
+            "pre_result": pre_result,
+            "old_memory": old_memory,
+        }
 
         # -------------------------------------------------
         # CASE 1: OpenTelemetry
@@ -117,12 +131,7 @@ def agent_span(func):
         if OTEL_ENDPOINT and pipe_id:
             with otel_tracer.start_as_current_span(
                 name=span_name,
-                attributes={
-                    "pipe.id": pipe_id,
-                    "agent.id": self.agent_id,
-                    "agent.name": self.name,
-                    "conversation.id": conversation_id or pipe_id,
-                },
+                attributes=attributes,
             ) as span:
                 try:
                     result = await func(self, *args, **kwargs)
@@ -167,6 +176,28 @@ def agent_span(func):
                     event_data={"agent_name": self.name},
                 )
 
+                agent_attributes = {
+                    "role": self.role,
+                    "goal": self.goal,
+                    "prompt_template": self.prompt_template,
+                    "pre_result": pre_result,
+                    "old_memory": old_memory,
+                    "engine": self.engines,
+                }
+
+                if self.llm:
+                    llm: LLMClient = self.llm
+                    agent_attributes["llm"] = llm.llm_config
+
+                if self.prompt_template:
+                    prompt_template: PromptTemplate = self.prompt_template
+                    agent_attributes["system_prompt"] = prompt_template.system_message
+
+                await add_result_to_span_attributes(
+                    storage=storage,
+                    span_id=span_id,
+                    result=agent_attributes,
+                )
                 result = await func(self, *args, **kwargs)
                 await add_result_to_span_attributes(
                     storage=storage,

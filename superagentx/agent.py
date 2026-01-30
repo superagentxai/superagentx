@@ -242,6 +242,7 @@ class Agent:
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             pipe_id: str | None = None,
+            storage: StorageAdapter = None,
             conversation_id: str | None = None,
             status_callback: StatusCallback | None = None
 
@@ -254,6 +255,7 @@ class Agent:
             "pipe_id": pipe_id,
             "agent_id": self.agent_id,
             "agent_name": self.name,
+            "storage": storage,
             "status_callback": status_callback
         }
         if conversation_id:
@@ -421,6 +423,7 @@ class Agent:
                         name=self.name,
                         agent_id=self.agent_id,
                         content="Rejected by human",
+                        approved_status="REJECTED",
                         is_goal_satisfied=False
                     )
                 )
@@ -480,6 +483,7 @@ class Agent:
                     old_memory=old_memory,
                     pipe_id=pipe_id,
                     verify_goal=verify_goal,
+                    storage=storage,
                     conversation_id=conversation_id,
                     status_callback=status_callback
                 )

@@ -543,7 +543,7 @@ class SQLBaseStorage(StorageAdapter):
                     DBSpan(
                         span_id=span_id,
                         trace_id=trace.id,  # FK to trace PK
-                        parent_span_id=parent_span_id,  # 🔹 hierarchy
+                        parent_span_id=parent_span_id,  #  hierarchy
                         span_name=span_name,
                         span_kind=span_kind,
                         status=status,
