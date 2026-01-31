@@ -36,7 +36,7 @@ class TestMCPRedditAgent:
         prompt_template = PromptTemplate()
 
         # ✅ Enable engine to execute MCP Tools
-        mcp_engine = Engine(handler=mcp_handler, llm=llm_client, prompt_template=prompt_template)
+        # mcp_engine = Engine(handler=mcp_handler, llm=llm_client, prompt_template=prompt_template)
 
         goal = "Review and perform user's input"
 
@@ -45,10 +45,11 @@ class TestMCPRedditAgent:
             goal=goal,
             role="You're an Analyst",
             llm=llm_client,
+            tool=mcp_handler,
             prompt_template=prompt_template,
             max_retry=1
         )
-        await reddit_search_agent.add(mcp_engine)
+        # await reddit_search_agent.add(mcp_engine)
 
         pipe = AgentXPipe(
             agents=[reddit_search_agent],
