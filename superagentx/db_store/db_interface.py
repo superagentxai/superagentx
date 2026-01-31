@@ -153,3 +153,15 @@ class StorageAdapter(ABC):
         event_data: dict | None = None,
     ) -> None:
         pass
+
+    @abstractmethod
+    async def record_metric(
+            self,
+            *,
+            name: str,
+            value: float,
+            labels: dict | None = None,
+            trace_id: str | None = None,
+            span_id: str | None = None,
+    ) -> None:
+        pass

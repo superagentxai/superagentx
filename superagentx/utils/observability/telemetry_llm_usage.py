@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 from superagentx.db_store import StorageAdapter
+from superagentx.utils.observability.metrics import record_metric_safe
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,14 @@ async def extract_llm_usage(storage: StorageAdapter, span_id: str,  llm_response
                     span_id=span_id,
                     key=f"llm.{key}",
                     value=value,
+                )
+
+                await record_metric_safe(
+                    storage=storage,
+                    name=f"llm.{key}",
+                    value=value,
+                    span_id=span_id,
+                    labels={"model": usage.get("model")},
                 )
 
     except Exception as e:

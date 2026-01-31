@@ -41,7 +41,7 @@ def engine_telemetry(
 
             span_id = None
             if pipe_id and agent_id:
-                span_id = f"{pipe_id}:{agent_id}:{engine_name}"
+                span_id = f"{pipe_id}:{agent_id}"
 
             result = None
             error: str | None = None
@@ -49,6 +49,7 @@ def engine_telemetry(
 
             try:
                 result = await func(*args, **kwargs)
+
                 return result
 
             except Exception as e:
@@ -57,15 +58,12 @@ def engine_telemetry(
                 raise
 
             finally:
-                # -------------------------------------------------
-                # TELEMETRY (NON-BLOCKING)
-                # -------------------------------------------------
                 try:
                     if storage and span_id:
                         from superagentx.utils.observability.engine_span_attributes import (
                             add_engine_span_attributes,
                         )
-
+                        print(f"add_engine_span_attributes: {storage} {span_id} {engine_name} {engine_name} {result} ")
                         await add_engine_span_attributes(
                             storage=storage,
                             span_id=span_id,

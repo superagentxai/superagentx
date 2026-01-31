@@ -1,9 +1,12 @@
 import functools
 import logging
 import os
+import time
 
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
+
+from superagentx.utils.observability.metrics import record_metric_safe
 
 logger = logging.getLogger(__name__)
 
@@ -66,15 +69,24 @@ def pipe_trace(func):
                     status="started",
                     metadata={},
                 )
-
-                result = await func(self, *args, **kwargs)
-
-                await self.storage.end_trace(
-                    trace_id=self.pipe_id,
-                    status="completed",
-                )
-                return result
-
+                start = time.perf_counter()
+                try:
+                    result = await func(self, *args, **kwargs)
+                    await record_metric_safe(
+                        storage=self.storage,
+                        name="pipe.success_total",
+                        value=1,
+                        trace_id=self.pipe_id,
+                    )
+                    return result
+                finally:
+                    duration = (time.perf_counter() - start) * 1000
+                    await record_metric_safe(
+                        storage=self.storage,
+                        name="pipe.duration_ms",
+                        value=duration,
+                        trace_id=self.pipe_id,
+                    )
             except Exception as e:
                 try:
                     await self.storage.end_trace(

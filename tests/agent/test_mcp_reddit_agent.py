@@ -4,6 +4,7 @@ import logging
 import pytest
 
 from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.engine import Engine
 from superagentx.handler.mcp import MCPHandler
 from superagentx.llm import LLMClient
@@ -49,10 +50,13 @@ class TestMCPRedditAgent:
         )
         await reddit_search_agent.add(mcp_engine)
 
-        # ✅ Ask question with live callback
-        result = await reddit_search_agent.execute(
-            query_instruction="What are the current hot posts on Reddit's frontpage and summarize?",
-            status_callback=status_callback  # <-- callback passed here
+        pipe = AgentXPipe(
+            agents=[reddit_search_agent],
+            workflow_store=True
+        )
+
+        result = await pipe.flow(
+            query_instruction="What are the current latest posts on Reddit's frontpage and summarize?"
         )
 
         # logger.info(f'Result ==> {result}')

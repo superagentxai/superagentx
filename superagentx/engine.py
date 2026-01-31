@@ -122,6 +122,7 @@ class Engine:
             pre_result: Optional string to prepend to the prompt.
             old_memory: List of previous context (memory).
             conversation_id: Unique identifier for the conversation session.
+            storage: To collect metrics and store into database for auditing purposes.
             kwargs: Dynamic parameters for the prompt template.
             status_callback: This optional status call back method helps enhance user experience to get
             live updates of agents executions
@@ -156,8 +157,9 @@ class Engine:
         # Get tool call suggestions from the LLM
         messages = await self.llm.afunc_chat_completion(chat_completion_params=chat_params)
 
+        # Telemetry Data
         if pipe_id and agent_id and storage:
-            span_id = f"{pipe_id}:{agent_id}:{self.handler.__class__.__name__}"
+            span_id = f"{pipe_id}:{agent_id}"
 
             from superagentx.utils.observability.telemetry_llm_usage import extract_llm_usage
 

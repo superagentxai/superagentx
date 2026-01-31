@@ -10,6 +10,7 @@ from opentelemetry.trace import Status, StatusCode
 
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
+from superagentx.utils.observability.metrics import record_metric_safe
 
 logger = logging.getLogger(__name__)
 MAX_ATTR_LEN = 2048  # safe default for OTEL + DB
@@ -224,6 +225,15 @@ def agent_span(func):
                 await storage.end_span(
                     span_id=span_id,
                     status="ok",
+                )
+
+                await record_metric_safe(
+                    storage=storage,
+                    name="agent.duration_ms",
+                    value=duration_ms,
+                    trace_id=pipe_id,
+                    span_id=span_id,
+                    labels={"agent": self.name},
                 )
 
                 return result

@@ -6,7 +6,9 @@ import re
 from typing import Any, Callable, Dict, List, Awaitable
 
 from superagentx.base import BaseEngine
+from superagentx.db_store import StorageAdapter
 from superagentx.handler.base import BaseHandler
+from superagentx.utils.observability.engine_telemetry_decorator import engine_telemetry
 
 logger = logging.getLogger(__name__)
 
@@ -359,16 +361,23 @@ class TaskEngine(BaseEngine):
                 await self._run_sequence([step])
             else:
                 raise ValueError(f"Invalid instruction step: {step}")
-
         return self.results
 
     # ----------------------------------------------------
     # Public API
     # ----------------------------------------------------
+    @engine_telemetry(
+        engine_type="task",
+        engine_name_resolver=lambda self, **_: f"{self.handler.__class__.__name__}",
+    )
     async def start(
             self,
             input_prompt: str | None = None,
+            pipe_id: str | None = None,
+            agent_id: str | None = None,
+            agent_name: str | None = None,
             pre_result: str | None = None,
+            storage: StorageAdapter | None = None,
             old_memory: List[dict] | None = None,
             conversation_id: str | None = None,
             **kwargs,

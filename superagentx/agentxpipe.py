@@ -216,11 +216,13 @@ class AgentXPipe:
         _res = None
 
         if self.workflow_store:
+            print(f"Storing workflow : {self.workflow_store}")
             self.storage = await ConfigLoader.load_db_config()
             await self.storage.setup()
 
             await self.storage.create_pipe(
                     pipe_id=self.pipe_id,
+                    conversation_id=conversation_id,
                     input_query=query_instruction,
                     executed_by="Agent_System"
             )

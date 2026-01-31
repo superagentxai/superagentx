@@ -248,6 +248,21 @@ class DBSpanEvent(Base):
     span = relationship("DBSpan", back_populates="events")
 
 
+class DBMetric(Base):
+    __tablename__ = "otel_metrics"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128), index=True)
+    value: Mapped[float]
+    labels: Mapped[dict | None] = mapped_column(JSON)
+    trace_id: Mapped[str | None] = mapped_column(String(50), index=True)
+    span_id: Mapped[str | None] = mapped_column(String(50), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+    )
+
+
 # -------------------------------------------------------------------
 # Base SQL Storage
 # -------------------------------------------------------------------
@@ -296,7 +311,7 @@ class SQLBaseStorage(StorageAdapter):
                         )
                     )
 
-                    # Start trace together with pipe
+                async with session.begin():
                     session.add(
                         DBTrace(
                             trace_id=pipe_id,  # pipe_id == trace_id
@@ -306,8 +321,9 @@ class SQLBaseStorage(StorageAdapter):
                             start_time=utcnow(),
                         )
                     )
+
             except IntegrityError:
-                logger.info(
+                logger.warning(
                     "Pipe already exists",
                     extra={"pipe_id": pipe_id},
                 )
@@ -623,6 +639,26 @@ class SQLBaseStorage(StorageAdapter):
                     )
                 )
 
+    async def record_metric(
+            self,
+            *,
+            name: str,
+            value: float,
+            labels: dict | None = None,
+            trace_id: str | None = None,
+            span_id: str | None = None,
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                session.add(
+                    DBMetric(
+                        name=name,
+                        value=value,
+                        labels=labels,
+                        trace_id=trace_id,
+                        span_id=span_id,
+                    )
+                )
 
     async def close(self) -> None:
         """
@@ -631,7 +667,7 @@ class SQLBaseStorage(StorageAdapter):
         """
         if self.engine:
             await self.engine.dispose()
-            logger.info("SQLAlchemy async engine disposed")
+            logger.debug("SQLAlchemy async engine disposed")
 
 
 # -------------------------------------------------------------------

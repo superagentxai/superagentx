@@ -4,16 +4,9 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------
-# Config
-# ---------------------------------------------------------------------
-
 ENGINE_ATTR_MAX_LEN = 2048  # safe for OTEL + SQL storage
 
 
-# ---------------------------------------------------------------------
-# Helpers (SAFE, NON-BLOCKING)
-# ---------------------------------------------------------------------
 
 def _engine_safe_serialize(value: Any) -> str | int | float | bool | None:
     """
@@ -39,10 +32,6 @@ def _engine_truncate(value: Any, limit: int = ENGINE_ATTR_MAX_LEN):
         return value[:limit] + "...(truncated)"
     return value
 
-
-# ---------------------------------------------------------------------
-# MAIN API
-# ---------------------------------------------------------------------
 
 async def add_engine_span_attributes(
     *,
@@ -71,9 +60,7 @@ async def add_engine_span_attributes(
         return
 
     try:
-        # -------------------------------------------------
-        # Identity
-        # -------------------------------------------------
+
         await storage.add_span_attribute(
             span_id=span_id,
             key="tool.name",
@@ -86,9 +73,6 @@ async def add_engine_span_attributes(
             value=engine_type,
         )
 
-        # -------------------------------------------------
-        # Input
-        # -------------------------------------------------
         if input_data is not None:
             await storage.add_span_attribute(
                 span_id=span_id,
@@ -98,10 +82,11 @@ async def add_engine_span_attributes(
                 ),
             )
 
-        # -------------------------------------------------
-        # Output
-        # -------------------------------------------------
         if output_data is not None:
+            print(f"result: {_engine_truncate(
+                    _engine_safe_serialize(output_data)
+                )} - {span_id}")
+
             await storage.add_span_attribute(
                 span_id=span_id,
                 key="tool.output",
@@ -110,9 +95,6 @@ async def add_engine_span_attributes(
                 ),
             )
 
-        # -------------------------------------------------
-        # Status
-        # -------------------------------------------------
         if status:
             await storage.add_span_attribute(
                 span_id=span_id,
@@ -120,9 +102,6 @@ async def add_engine_span_attributes(
                 value=status,
             )
 
-        # -------------------------------------------------
-        # Error
-        # -------------------------------------------------
         if error:
             await storage.add_span_attribute(
                 span_id=span_id,
@@ -130,9 +109,6 @@ async def add_engine_span_attributes(
                 value=_engine_truncate(error),
             )
 
-        # -------------------------------------------------
-        # Custom metadata
-        # -------------------------------------------------
         if metadata:
             for k, v in metadata.items():
                 try:
