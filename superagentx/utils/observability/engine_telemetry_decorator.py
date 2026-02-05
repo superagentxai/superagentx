@@ -63,7 +63,6 @@ def engine_telemetry(
                         from superagentx.utils.observability.engine_span_attributes import (
                             add_engine_span_attributes,
                         )
-                        print(f"add_engine_span_attributes: {storage} {span_id} {engine_name} {engine_name} {result} ")
                         await add_engine_span_attributes(
                             storage=storage,
                             span_id=span_id,

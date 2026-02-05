@@ -327,8 +327,9 @@ class TaskEngine(BaseEngine):
     # ----------------------------------------------------
     # Main Execution
     # ----------------------------------------------------
-    async def _execute(self) -> List[Dict[str, Any]]:
+    async def _execute(self, pre_result: str = None) -> List[Dict[str, Any]]:
         """Core execution loop for code and instructions."""
+        print(f"Pre Result : {pre_result}")
         if self.code:
             # Code Execution Step
             if self.safe_mode:
@@ -402,4 +403,4 @@ class TaskEngine(BaseEngine):
         self._validate_instructions_type()
 
         # Begin execution and await the result
-        return await self._execute()
+        return await self._execute(pre_result=pre_result)

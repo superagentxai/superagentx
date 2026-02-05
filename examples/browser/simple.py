@@ -8,7 +8,7 @@ from superagentx.prompt import PromptTemplate
 
 
 async def main():
-    llm_client: LLMClient = LLMClient(llm_config={'model': 'gpt-5'})
+    llm_client: LLMClient = LLMClient(llm_config={'model': 'openai/gpt-5-mini'})
 
     prompt_template = PromptTemplate()
 

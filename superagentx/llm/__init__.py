@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import datetime, timezone
 from typing import List, Callable
 
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
@@ -309,18 +310,22 @@ class LLMClient:
                 usage_data = response.usage
 
                 # Add the created Message instance to the list
+                # Extract nested data once to avoid repeated attribute lookups
+                msg = choice.message
+                usage = usage_data
+                details = getattr(usage, "completion_tokens_details", None)
+
                 message_instances.append(
                     Message(
-                        role=choice.message.role,
+                        role=msg.role,
                         model=response.model,
-                        content=choice.message.content,
-                        tool_calls=tool_calls_data if tool_calls_data else None,
-                        completion_tokens=usage_data.completion_tokens,
-                        prompt_tokens=usage_data.prompt_tokens,
-                        total_tokens=usage_data.total_tokens,
-                        reasoning_tokens=usage_data.completion_tokens_details.reasoning_tokens
-                        if usage_data.completion_tokens_details else 0,
-                        created=response.created
+                        content=msg.content,
+                        tool_calls=tool_calls_data or None,  # Concise falsy check
+                        completion_tokens=usage.completion_tokens,
+                        prompt_tokens=usage.prompt_tokens,
+                        total_tokens=usage.total_tokens,
+                        reasoning_tokens=details.reasoning_tokens if details.reasoning_tokens else 0,
+                        created=datetime.fromtimestamp(response.created, tz=timezone.utc)
                     )
                 )
 

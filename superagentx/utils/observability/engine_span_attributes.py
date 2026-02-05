@@ -83,10 +83,6 @@ async def add_engine_span_attributes(
             )
 
         if output_data is not None:
-            print(f"result: {_engine_truncate(
-                    _engine_safe_serialize(output_data)
-                )} - {span_id}")
-
             await storage.add_span_attribute(
                 span_id=span_id,
                 key="tool.output",
