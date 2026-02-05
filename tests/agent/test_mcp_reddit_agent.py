@@ -15,9 +15,10 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'openai/gpt-5-mini'}
+    llm_config = {'model': 'ollama/glm-4.7:cloud'}
+    llm_config = {'model': 'llama-3.3-70b-instruct:free', 'llm_type': "routeway"}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
-    return {'llm': llm_client, 'llm_type': 'openai'}
+    return {'llm': llm_client}
 
 
 async def status_callback(event: str, **kwargs):
@@ -53,7 +54,7 @@ class TestMCPRedditAgent:
 
         pipe = AgentXPipe(
             agents=[reddit_search_agent],
-            workflow_store=True
+            workflow_store=False
         )
 
         result = await pipe.flow(

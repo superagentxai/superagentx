@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 _retries = 5
 _deepseek_base_url = 'https://api.deepseek.com'
 _anthropic_base_url = "https://api.anthropic.com/v1/"
+_routeway_base_url = "https://api.routeway.ai/v1"
 
 
 class LLMClient:
@@ -57,14 +58,14 @@ class LLMClient:
         self.async_mode = self.llm_config_model.async_mode
 
         match self.llm_config_model.llm_type:
-            case LLMType.OPENAI_CLIENT | LLMType.ANTHROPIC_CLIENT | LLMType.DEEPSEEK:
+            case LLMType.OPENAI_CLIENT | LLMType.ANTHROPIC_CLIENT | LLMType.DEEPSEEK | LLMType.ROUTEWAY:
                 self.client = self._init_openai_cli()
             case LLMType.AZURE_OPENAI_CLIENT:
                 self.client = self._init_azure_openai_cli()
             case LLMType.BEDROCK_CLIENT:
                 self.client = self._init_bedrock_cli(**kwargs)
             case LLMType.GEMINI_CLIENT:
-                self.client = self.__init_gemini_cli(**kwargs)
+                self.client = self._init_gemini_cli(**kwargs)
             case LLMType.OLLAMA:
                 self.client = self._init_ollama_cli(**kwargs)
             case _:
@@ -87,6 +88,10 @@ class LLMClient:
             base_url = self.llm_config_model.base_url or _deepseek_base_url
             api_key = self.llm_config_model.api_key or os.getenv("DEEPSEEK_API_KEY")
 
+        if LLMType.ROUTEWAY == self.llm_config_model.llm_type:
+            base_url = self.llm_config_model.base_url or _routeway_base_url
+            api_key = self.llm_config_model.api_key or os.getenv("Routeway_API_KEY")
+
         if LLMType.OPENAI_CLIENT == self.llm_config_model.llm_type:
             api_key = self.llm_config_model.api_key or os.getenv("OPENAI_API_KEY")
 
@@ -107,7 +112,7 @@ class LLMClient:
     def __init_litellm_cli(self):
         return LiteLLMClient(model=self.llm_config_model.model)
 
-    def __init_gemini_cli(self, **kwargs):
+    def _init_gemini_cli(self, **kwargs):
         from superagentx.llm.gemini import GeminiClient
 
         # Set the parameters from pydantic model class or from environment variables.
@@ -324,7 +329,11 @@ class LLMClient:
                         completion_tokens=usage.completion_tokens,
                         prompt_tokens=usage.prompt_tokens,
                         total_tokens=usage.total_tokens,
-                        reasoning_tokens=details.reasoning_tokens if details.reasoning_tokens else 0,
+                        reasoning_tokens=(
+                            details.reasoning_tokens
+                            if details and hasattr(details, 'reasoning_tokens')
+                            else 0
+                        ),
                         created=datetime.fromtimestamp(response.created, tz=timezone.utc)
                     )
                 )
