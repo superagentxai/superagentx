@@ -12,7 +12,7 @@ maintainers = [
 readme = "README.md"
 
 keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM", "cli"]
-requires-python = ">=3.12,<=3.13"
+requires-python = ">=3.12,<=3.14"
 
 dependencies = [
     "pydantic>=2.8.2",
@@ -37,7 +37,13 @@ dependencies = [
     "pyyaml (>=6.0.2)",
     "importlib-resources (>=6.5.2)",
     "pyotp (>=2.9.0)",
-    "ntplib (>=0.4.0)"
+    "ntplib (>=0.4.0)",
+    "opentelemetry-sdk (>=1.35.0,<2.0.0)",
+    "opentelemetry-exporter-otlp (>=1.35.0,<2.0.0)",
+    "opentelemetry-instrumentation-logging (>=0.56b0,<0.57)",
+    "opentelemetry-instrumentation-asyncio (>=0.56b0,<0.57)",
+    "opentelemetry-instrumentation-requests (>=0.56b0,<0.57)",
+    "opentelemetry-instrumentation-httpx (>=0.56b0,<0.57)"
 ]
 
 [project.urls]

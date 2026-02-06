@@ -1,13 +1,14 @@
 import asyncio
 
 from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.browser_engine import BrowserEngine
 from superagentx.llm import LLMClient
 from superagentx.prompt import PromptTemplate
 
 
 async def main():
-    llm_client: LLMClient = LLMClient(llm_config={'model': 'gpt-4.1', 'llm_type': 'openai'})
+    llm_client: LLMClient = LLMClient(llm_config={'model': 'openai/gpt-5-mini'})
 
     prompt_template = PromptTemplate()
 
@@ -28,7 +29,12 @@ async def main():
         engines=[browser_engine]
     )
 
-    result = await fifo_analyser_agent.execute(
+    pipe = AgentXPipe(
+        agents=[fifo_analyser_agent],
+        workflow_store=True
+    )
+
+    result = await pipe.flow(
         query_instruction=query_instruction
     )
 
