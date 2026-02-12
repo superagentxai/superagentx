@@ -20,10 +20,19 @@ this to your environment's path variable.
 </Note>
 
 ## Create an Application
+ ### For Linux / macOS
 ```shell
 $ mkdir <"folderName">
-$ python -m venv venv
-$ Source venv/bin/activate
+$ python -m venv .venv
+$ Source .venv/bin/activate
+$ pip install superagentx
+```
+
+### For Windows (PowerShell)
+```shell
+$ mkdir <"folderName">
+$ python -m venv .venv
+$ .venv\Scripts\activate
 $ pip install superagentx
 ```
 ## Simple Tutorial

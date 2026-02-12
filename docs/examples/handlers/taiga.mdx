@@ -1,0 +1,58 @@
+---
+title: 'Taiga Handler'
+icon: 't'
+---
+
+Taiga is an open-source project management platform built for agile teams. It supports epics, user stories,
+tasks, and issues with configurable workflows.The TaigaHandler provides an asynchronous interface to the
+Taiga REST API, enabling secure authentication and efficient retrieval of project and workflow data for
+automation and agent-driven workflows.
+
+## Example
+
+To create a TaigaHandler, initialize it with your Taiga username and password.
+The handler authenticates automatically and reuses a single HTTP session for optimal performance.
+
+```python
+from superagentx_handlers.taiga import TaigaHandler
+
+taiga_handler = TaigaHandler(
+    username="your_username",
+    password="your_password"
+)
+```
+
+**Get Projects:** <br />
+Retrieves all projects where the authenticated user is a member.
+
+```python
+projects = await taiga_handler.get_projects()
+for project in projects:
+    print(project["name"])
+```
+
+**Get Workflow Stages:** <br />
+Fetches workflow stages for a specific project and entity type.
+```python
+stages = await taiga_handler.get_stages(
+    kind="task-statuses",
+    project_id=12345
+)
+print(stages)
+```
+
+**Get All Processes:** <br />
+Aggregates all workflow stages (epics, user stories, tasks, and issues) across every project the user belongs to.
+```python
+processes = await taiga_handler.get_all_processes()
+
+for project, workflows in processes.items():
+    print(project, workflows.keys())
+```
+
+**Session Management:**<br />
+The handler maintains a reusable asynchronous HTTP session and handles authentication transparently.
+To gracefully close the session:
+```python
+await taiga_handler.close()
+```
