@@ -1,0 +1,89 @@
+---
+title: 'Zoho Help Desk Handler'
+icon: 'z'
+---
+
+Zoho Desk is a cloud-based help desk platform used to manage customer support tickets, workflows, and automation.
+The ZohoHelpDeskHandler provides a structured interface for interacting with the Zoho Desk REST API, enabling agent-driven and
+automated ticket management.
+
+This handler supports secure OAuth-based authentication and exposes tool-enabled methods to retrieve, update, and transition tickets
+across statuses, process stages, and blueprint workflows.
+
+## Example
+
+## Initialize ZohoHelpDeskHandler
+Create the handler using explicit parameters.
+
+```python
+from superagentx_handlers.zoho.helpdesk import ZohoHelpDeskHandler
+
+zoho_handler = ZohoHelpDeskHandler(
+    org_id="123456789",
+    auth_token="your_oauth_access_token"
+)
+```
+
+## Get Ticket
+
+**Retrieve a Ticket by ID:** <br />
+Fetches full ticket details including status, fields, and metadata.
+
+```python
+ticket = zoho_handler.get_ticket("987654321")
+print(ticket["subject"], ticket["status"])
+```
+
+## Update Ticket
+
+**Update Ticket Fields:** <br />
+Allows updating any mutable ticket field such as priority, description, or custom fields.
+
+```python
+updated_ticket = zoho_handler.update_ticket(
+    ticket_id="987654321",
+    fields={
+        "priority": "High",
+        "description": "Issue escalated for immediate attention"
+    }
+)
+print(updated_ticket)
+```
+
+## Change Ticket Status
+
+**Update Ticket Status:** <br />
+Transitions a ticket between standard statuses like Open, In Progress, or Closed.
+
+```python
+zoho_handler.change_status(
+    ticket_id="987654321",
+    status="In Progress"
+)
+```
+
+## Change Process Stage
+
+**Move Ticket to Custom Process Stage:** <br />
+Updates a custom field representing internal workflow stages.
+
+```python
+zoho_handler.change_process_stage(
+    ticket_id="987654321",
+    stage_name="L2 Review"
+)
+```
+
+## Trigger Blueprint Transition
+
+**Execute a Blueprint Transition:** <br />
+Triggers a Zoho Blueprint workflow transition using a transition ID.
+
+```python
+response = zoho_handler.trigger_blueprint_transition(
+    ticket_id="987654321",
+    transition_id="456789012"
+)
+print(response)
+)
+```

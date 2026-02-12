@@ -1,0 +1,12 @@
+---
+title: 'Human Approval'
+icon: 'h'
+---
+
+
+In SuperAgentX, Human-in-the-Loop approval is used as a governance step inside a task or browser agent workflow.
+When the agent reaches a sensitive operation (for example: deleting data, triggering payments, or sending external
+communications), execution is automatically paused. A human approval request is raised through a configured channel
+(UI, notification, or dashboard), and the agent waits for a decision. Once approval is received, the agent resumes
+execution; if rejected, the workflow is safely stopped. All approval actions are logged, making the process transparent,
+auditable, and fully controlled by humans.

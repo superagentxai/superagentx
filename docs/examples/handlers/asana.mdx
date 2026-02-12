@@ -1,0 +1,113 @@
+---
+title: 'Asana Handler'
+icon: 'a'
+---
+
+Asana is a powerful project management platform designed to organize work,
+track tasks, and streamline team collaboration. Through the Asana API, developers can programmatically
+manage workspaces, users, projects, tasks, dependencies, and portfolios. The AsanaHandler provides a clean,
+asynchronous interface for integrating Asana capabilities into agentic and automation-driven workflows.
+
+## Example
+
+To create the AsanaHandler object, initialize it with your Asana Personal Access Token (PAT).
+The handler authenticates using the Asana API client and exposes core operations as tools.
+
+```python
+import os
+from superagentx_handlers.asana import AsanaHandler
+
+asana_handler = AsanaHandler(
+    token=os.getenv("ASANA_ACCESS_TOKEN")
+)
+```
+
+**Get Workspaces:** <br />
+Retrieves all Asana workspaces accessible to the authenticated user.
+```python
+workspaces = await asana_handler.get_workspaces()
+print(workspaces)
+```
+**Tasks:** <br />
+
+**Create Task:** <br />
+Creates a new task in a specified workspace with optional project, assignee, and due date.
+```python
+task = await asana_handler.create_task(
+    name="Design API documentation",
+    workspace_id="123456789",
+    project_id="987654321",
+    assignee_id="1122334455",
+    due_on="2026-02-10"
+)
+print(task)
+```
+
+**Update Task:** <br />
+Updates task details such as name, completion status, assignee, or due date.
+```python
+updated_task = await asana_handler.update_task(
+    task_id="123456789",
+    completed=True
+)
+print(updated_task)
+```
+
+**Delete Task:** <br />
+Deletes a task permanently from Asana.
+```python
+response = await asana_handler.delete_task(
+    task_id="123456789"
+)
+print(response)
+```
+**Users:** <br />
+
+**Get Users:** <br />
+Retrieves all users across all accessible workspaces.
+```python
+users = await asana_handler.get_users()
+for user in users["data"]:
+    print(user["name"])
+```
+
+**Projects:** <br />
+
+**Get Projects:** <br />
+Fetches all projects across accessible workspaces.
+```python
+projects = await asana_handler.get_projects()
+print(projects)
+```
+
+**Task Dependencies:** <br />
+
+**Get Task Dependencies:** <br />
+Retrieves tasks that must be completed before a given task.
+```python
+dependencies = await asana_handler.get_dependencies_for_task(
+    task_id="123456789"
+)
+print(dependencies)
+```
+**Get Task Dependents:** <br />
+Retrieves tasks that depend on the given task.
+```python
+dependents = await asana_handler.get_dependents_for_task(
+    task_id="123456789"
+)
+print(dependents)
+```
+
+**Portfolios:** <br />
+
+**Get Portfolios:** <br />
+Retrieves all portfolios across accessible workspaces and users.
+```python
+portfolios = await asana_handler.get_portfolios()
+print(portfolios)
+```
+
+
+
+

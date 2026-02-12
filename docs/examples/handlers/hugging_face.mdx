@@ -1,0 +1,67 @@
+---
+title: 'HuggingFace Runner'
+icon: 'face-smiling-hands'
+---
+
+Hugging Face provides a rich ecosystem of state-of-the-art machine learning models for NLP, vision, audio, and multimodal tasks.
+Using the transformers pipeline API, models can be loaded and executed with minimal configuration.
+
+The HuggingFaceRunner is an asynchronous machine learning runner designed for agentic and tool-based workflows. It dynamically loads
+Hugging Face pipelines, supports CPU and GPU execution, and caches loaded models to avoid redundant initialization.
+This makes it efficient, scalable, and ideal for repeated inference workloads.
+
+## Example
+
+To use the HuggingFaceRunner, first initialize the runner and load a pipeline configuration.
+The runner automatically caches pipelines based on task, model, device, and data type.
+
+```python
+from superagentx_handlers.ml.huggingface import HuggingFaceRunner
+
+runner = HuggingFaceRunner()
+
+await runner.load({
+    "task": "text-classification",
+    "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+    "device": "cpu"
+})
+```
+
+## Running Inference
+
+**Run Model Inference:** <br />
+Executes the loaded pipeline with given inputs and optional parameters.
+
+```python
+result = await runner.run(
+    inputs="I really love using this framework!",
+    params={}
+)
+
+print(result)
+```
+
+## GPU & Precision Support
+
+**Enable GPU Execution:** <br />
+If CUDA is available, the runner automatically switches to GPU execution.
+
+```python
+await runner.load({
+    "task": "text-generation",
+    "model_name": "gpt2",
+    "device": "gpu"
+})
+```
+
+**Enable FP16 Precision:** <br />
+Reduces memory usage and improves performance on supported GPUs.
+
+```python
+await runner.load({
+    "task": "text-generation",
+    "model_name": "gpt2",
+    "device": "gpu",
+    "torch_dtype": "fp16"
+})
+```
