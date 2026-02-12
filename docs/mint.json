@@ -63,7 +63,7 @@
         "handler",
         "mcp",
         "conversation",
-        "human_Approval",
+        "human_approval",
         "storage"
       ]
     },
@@ -98,8 +98,7 @@
                 "examples/handlers/aws/iam",
                 "examples/handlers/aws/security_groups",
                 "examples/handlers/aws/serverless",
-                "examples/handlers/aws/iam",
-                "examples/handlers/cognito"
+                "examples/handlers/aws/cognito"
               ]
             },
         {
