@@ -22,11 +22,13 @@ from superagentx.computer_use.utils import (
     log_response,
     manipulate_string
 )
+from superagentx.db_store import StorageAdapter
 from superagentx.handler.exceptions import InvalidHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
 from superagentx.prompt import PromptTemplate
 from superagentx.utils.helper import iter_to_aiter, rm_trailing_spaces, sync_to_async
 from superagentx.computer_use.browser.models import InputTextParams, GoToUrl, ToastConfig, MFAParams
+from superagentx.utils.observability.engine_telemetry_decorator import engine_telemetry
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +275,7 @@ class BrowserEngine(BaseEngine):
                     actions_result.append(result)
         return actions_result
 
-    async def _execute(self) -> list:
+    async def _execute(self, pipe_id: str, agent_id: str, storage: StorageAdapter = None) -> list:
         result = None
         results = []
         counter = 0
@@ -313,6 +315,14 @@ class BrowserEngine(BaseEngine):
                 messages = await self.llm.afunc_chat_completion(
                     chat_completion_params=chat_completion_params
                 )
+
+                if pipe_id and agent_id and storage:
+                    span_id = f"{pipe_id}:{agent_id}"
+
+                    from superagentx.utils.observability.telemetry_llm_usage import extract_llm_usage
+
+                    await extract_llm_usage(storage=storage, span_id=span_id, llm_response=messages)
+
                 if not messages:
                     return results
                 res = messages[0].content
@@ -407,11 +417,19 @@ class BrowserEngine(BaseEngine):
             results.append(res)
             return results
 
+    @engine_telemetry(
+        engine_type="browser",
+        engine_name_resolver=lambda self, **_: f"{self.handler.__class__.__name__}",
+    )
     async def start(
             self,
             input_prompt: str,
+            pipe_id: str | None = None,
+            agent_id: str | None = None,
+            agent_name: str | None = None,
             pre_result: str | None = None,
             old_memory: list[dict] | None = None,
+            storage: StorageAdapter | None = None,
             conversation_id: str | None = None,
             **kwargs
     ) -> list:
@@ -465,5 +483,5 @@ class BrowserEngine(BaseEngine):
         prompt_messages = await rm_trailing_spaces(prompt_messages)
         self.msgs = self.msgs + prompt_messages
         logger.debug(f"Prompt Message : {self.msgs}")
-        result = await self._execute()
+        result = await self._execute(pipe_id=pipe_id, agent_id=agent_id, storage=storage)
         return result

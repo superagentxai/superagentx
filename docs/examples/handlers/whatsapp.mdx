@@ -1,0 +1,38 @@
+---
+title: 'WhatsApp Handler'
+icon: 'whatsapp'
+---
+
+WhatsApp is one of the most widely used messaging platforms for real-time communication. The WhatsAppHandler enables agents and
+automation workflows to send WhatsApp text messages programmatically using the WhatsApp Cloud API.
+
+This handler abstracts authentication, request formatting, and error handling, allowing seamless integration with WhatsApp for
+notifications, alerts, approvals, and conversational workflows.
+
+## Example
+
+## Initialize WhatsAppHandler
+Create the handler using explicit parameters or environment variables.
+
+```python
+from superagentx_handlers.communication.whatsapp import WhatsappHandler
+
+whatsapp_handler = WhatsappHandler(
+    phone_number_id="123456789012345",
+    access_token="your_access_token"
+)
+```
+
+## Send WhatsApp Message
+
+**Send a Text Message:** <br />
+Sends a plain text message to a WhatsApp user using their phone number in E.164 format.
+
+```python
+response = await whatsapp_handler.send_whatsapp_message(
+    to_number="919876543210",
+    message_text="🚀 Your deployment completed successfully!"
+)
+print(response)
+```
+

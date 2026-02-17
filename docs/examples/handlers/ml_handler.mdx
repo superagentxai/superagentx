@@ -1,0 +1,38 @@
+---
+title: 'Universal ML Handler'
+icon: 'head-side-gear'
+---
+
+Modern AI systems often rely on multiple machine learning frameworks, each optimized for different tasks. The UniversalMLHandler
+provides a unified, framework-agnostic interface for running machine learning inference across different ML ecosystems.
+
+This handler dynamically routes inference requests to the appropriate framework-specific runner (such as Hugging Face, TensorFlow,
+or scikit-learn) using an internal router. It abstracts away framework-specific initialization and execution details,
+enabling agents and automation workflows to invoke ML models through a single, consistent API.
+
+## Example
+
+To run inference using the UniversalMLHandler, specify the framework, model configuration, and input data.
+The handler automatically loads the required runner and executes inference.
+
+```python
+from superagentx_handlers.ml.universal import UniversalMLHandler
+
+ml_handler = UniversalMLHandler()
+```
+
+## Run Inference
+
+**Run Hugging Face Model:** <br />
+Executes a Hugging Face pipeline using a unified interface.
+
+```python
+response = await ml_handler.run(
+    framework="huggingface",
+    task="text-classification",
+    model_name="distilbert-base-uncased-finetuned-sst-2-english",
+    inputs="This framework is incredibly flexible!",
+    device="cpu"
+)
+print(response["output"])
+```

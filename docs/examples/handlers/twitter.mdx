@@ -1,0 +1,37 @@
+---
+title: 'Twitter Handler'
+icon: 'twitter'
+---
+
+TwitterHandler is an asynchronous tool to post tweets with optional hashtags, user mentions,
+and links. Links are automatically shortened using TinyURL. It uses Tweepy’s AsyncClient to
+interact with the Twitter API efficiently, ensuring easy and flexible tweet creation.
+
+## Example
+
+To create the TwitterHandler object, initialize it with your Twitter API credentials.
+The handler uses Tweepy’s AsyncClient to interact with the Twitter API.
+
+```python
+import os
+from superagentx_handlers.twitter import TwitterHandler
+
+twitter_handler = TwitterHandler(
+    api_key=os.getenv("CONSUMER_KEY"),
+    api_secret_key=os.getenv("CONSUMER_SECRET"),
+    access_token=os.getenv("ACCESS_TOKEN"),
+    access_token_secret=os.getenv("ACCESS_TOKEN_SECRET")
+)
+```
+
+**Post a Tweet:** <br />
+Posts a tweet with optional hashtags, user mentions, and a shortened link.
+```python
+response = await twitter_handler.post_tweet(
+    text="Launching our new AI feature!",
+    link="https://example.com/product",
+    hash_tags=["AI", "MachineLearning"],
+    user_tags=["openai"]
+)
+print(response)
+```

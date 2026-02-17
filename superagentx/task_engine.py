@@ -6,7 +6,9 @@ import re
 from typing import Any, Callable, Dict, List, Awaitable
 
 from superagentx.base import BaseEngine
+from superagentx.db_store import StorageAdapter
 from superagentx.handler.base import BaseHandler
+from superagentx.utils.observability.engine_telemetry_decorator import engine_telemetry
 
 logger = logging.getLogger(__name__)
 
@@ -325,8 +327,9 @@ class TaskEngine(BaseEngine):
     # ----------------------------------------------------
     # Main Execution
     # ----------------------------------------------------
-    async def _execute(self) -> List[Dict[str, Any]]:
+    async def _execute(self, pre_result: str = None) -> List[Dict[str, Any]]:
         """Core execution loop for code and instructions."""
+        print(f"Pre Result : {pre_result}")
         if self.code:
             # Code Execution Step
             if self.safe_mode:
@@ -359,16 +362,23 @@ class TaskEngine(BaseEngine):
                 await self._run_sequence([step])
             else:
                 raise ValueError(f"Invalid instruction step: {step}")
-
         return self.results
 
     # ----------------------------------------------------
     # Public API
     # ----------------------------------------------------
+    @engine_telemetry(
+        engine_type="task",
+        engine_name_resolver=lambda self, **_: f"{self.handler.__class__.__name__}",
+    )
     async def start(
             self,
             input_prompt: str | None = None,
+            pipe_id: str | None = None,
+            agent_id: str | None = None,
+            agent_name: str | None = None,
             pre_result: str | None = None,
+            storage: StorageAdapter | None = None,
             old_memory: List[dict] | None = None,
             conversation_id: str | None = None,
             **kwargs,
@@ -393,4 +403,4 @@ class TaskEngine(BaseEngine):
         self._validate_instructions_type()
 
         # Begin execution and await the result
-        return await self._execute()
+        return await self._execute(pre_result=pre_result)

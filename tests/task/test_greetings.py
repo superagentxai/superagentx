@@ -1,5 +1,7 @@
 import logging
 
+from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.task_engine import TaskEngine
 from superagentx.handler.task.greetings.welcome_handler import WelcomeHandler
 
@@ -25,5 +27,17 @@ class TestGreetings:
             ]
         )
 
-        result = await engine.start()
+        task_agent = Agent(
+        engines=[engine]
+     )
+
+        pipe = AgentXPipe(
+            agents=[task_agent],
+            workflow_store=True
+        )
+
+        result = await pipe.flow(
+            query_instruction="query_instruction"
+        )
+
         logger.info(f"Code : {result}")

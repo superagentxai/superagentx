@@ -1,0 +1,263 @@
+---
+title: 'AWS Cognito Handler'
+icon: 'a'
+---
+
+AWS Cognito is a fully managed identity service that provides user authentication, authorization, and user
+management for modern applications. It supports user pools, identity providers (IdPs), MFA, OAuth flows,
+and fine-grained access control.
+
+The AWSCognitoHandler provides an asynchronous, agent-friendly interface to the AWS Cognito Identity Provider (IDP)
+API. It is designed for automation, governance, and security workflows, enabling programmatic control over users,
+groups, authentication flows, MFA, and user pool configuration.
+
+The handler supports secure credential management using AWS STS role assumption and exposes Cognito operations
+as LLM-compatible tools.
+
+## Example
+
+To create the AWSCognitoHandler, initialize it with AWS credentials or an IAM role.
+The handler automatically assumes the role (if provided) and initializes a Cognito client.
+
+```python
+import os
+from superagentx_handlers.aws.cognito import AWSCognitoHandler
+
+cognito_handler = AWSCognitoHandler(
+    region_name=os.getenv("AWS_REGION"),
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    aws_role_arn=os.getenv("AWS_ROLE_ARN"),
+    role_session_name="superagentx-session"
+)
+```
+
+## User Pool Management: <br />
+
+**List User Pools:** <br />
+Retrieves all Cognito user pools in the AWS account.
+
+```python
+pools = await cognito_handler.list_user_pools()
+print(pools)
+```
+
+**Create User Pool:** <br />
+Creates a new user pool with optional policies and schema.
+
+```python
+pool = await cognito_handler.create_user_pool(
+    pool_name="my-user-pool"
+)
+print(pool)
+
+```
+
+**Describe User Pool:** <br />
+Fetches metadata and configuration of a specific user pool.
+
+```python
+details = await cognito_handler.describe_user_pool(
+    user_pool_id="us-east-1_XXXXXXX"
+)
+print(details)
+```
+
+## User Pool Management: <br />
+
+**Create User (Admin):** <br />
+Creates a new user with a temporary password.
+
+```python
+user = await cognito_handler.admin_create_user(
+    user_pool_id="us-east-1_XXXXXXX",
+    username="john.doe",
+    temporary_password="Temp@123",
+    user_attributes=[
+        {"Name": "email", "Value": "john@example.com"}
+    ]
+)
+print(user)
+```
+
+**Get User Details:** <br />
+Retrieves user attributes and status.
+
+```python
+user = await cognito_handler.admin_get_user(
+    user_pool_id="us-east-1_XXXXXXX",
+    username="john.doe"
+)
+print(user)
+```
+
+**Enable / Disable User:** <br />
+Controls user access within the pool.
+
+```python
+await cognito_handler.admin_disable_user(
+    user_pool_id="us-east-1_XXXXXXX",
+    username="john.doe"
+)
+
+await cognito_handler.admin_enable_user(
+    user_pool_id="us-east-1_XXXXXXX",
+    username="john.doe"
+)
+```
+
+**Delete User:** <br />
+Removes a user permanently.
+
+```python
+await cognito_handler.admin_delete_user(
+    user_pool_id="us-east-1_XXXXXXX",
+    username="john.doe"
+)
+```
+
+## Group Management: <br />
+
+**Create Group:** </br>
+Creates a new group in a user pool.
+
+```python
+group = await cognito_handler.create_group(
+    user_pool_id="us-east-1_XXXXXXX",
+    group_name="admins",
+    description="Administrator group"
+)
+print(group)
+```
+
+**Add User to Group:** <br />
+Assigns a user to a group.
+
+```python
+await cognito_handler.admin_add_user_to_group(
+    user_pool_id="us-east-1_XXXXXXX",
+    username="john.doe",
+    group_name="admins"
+)
+```
+
+**List Groups:** <br />
+Lists all groups in a user pool.
+
+```python
+groups = await cognito_handler.list_groups(
+    user_pool_id="us-east-1_XXXXXXX"
+)
+print(groups)
+```
+
+## Authentication & Authorization: <br />
+
+**Initiate Authentication:** <br />
+Starts an authentication flow (USER_PASSWORD_AUTH, REFRESH_TOKEN_AUTH, etc.).
+
+```python
+auth = await cognito_handler.initiate_auth(
+    client_id="CLIENT_ID",
+    auth_flow="USER_PASSWORD_AUTH",
+    auth_parameters={
+        "USERNAME": "john.doe",
+        "PASSWORD": "Password@123"
+    }
+)
+print(auth)
+```
+
+**Respond to Auth Challenge:** <br />
+Handles MFA or password challenges.
+
+```python
+challenge = await cognito_handler.respond_to_auth_challenge(
+    client_id="CLIENT_ID",
+    challenge_name="SOFTWARE_TOKEN_MFA",
+    challenge_responses={
+        "USERNAME": "john.doe",
+        "SOFTWARE_TOKEN_MFA_CODE": "123456"
+    },
+    session=auth.get("Session")
+)
+print(challenge)
+```
+
+**Global Sign-Out:** <br />
+Signs the user out from all active sessions.
+
+```python
+await cognito_handler.global_sign_out(
+    access_token="ACCESS_TOKEN"
+)
+```
+
+## MFA & Security: <br />
+
+**Set User MFA Preference:** <br />
+Configures MFA for a user.
+
+```python
+await cognito_handler.set_user_mfa_preference(
+    access_token="ACCESS_TOKEN",
+    software_mfa={"Enabled": True, "PreferredMfa": True}
+)
+```
+
+**Verify Software Token:** <br />
+Verifies an MFA token.
+
+```python
+await cognito_handler.verify_software_token(
+    access_token="ACCESS_TOKEN",
+    user_code="123456"
+)
+```
+
+## Identity Providers (IdP) <br />
+
+**Create Identity Provider:** <br />
+Adds an external IdP (Google, SAML, OIDC).
+
+```python
+idp = await cognito_handler.create_identity_provider(
+    user_pool_id="us-east-1_XXXXXXX",
+    provider_name="Google",
+    provider_type="Google",
+    provider_details={
+        "client_id": "GOOGLE_CLIENT_ID",
+        "client_secret": "GOOGLE_SECRET"
+    }
+)
+print(idp)
+```
+
+**List Identity Providers:** <br />
+Lists all configured IdPs.
+
+```python
+providers = await cognito_handler.list_identity_providers(
+    user_pool_id="us-east-1_XXXXXXX"
+)
+print(providers)
+```
+
+## Session & Resource Management: <br />
+
+**Tag Resources:** <br />
+Adds tags to a Cognito resource.
+
+```python
+await cognito_handler.tag_resource(
+    resource_arn="RESOURCE_ARN",
+    tags={"env": "prod", "team": "security"}
+)
+```
+
+**Close Handler:** <br />
+Gracefully releases underlying AWS resources.
+
+```python
+await cognito_handler.close()
+```

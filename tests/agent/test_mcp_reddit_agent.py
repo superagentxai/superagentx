@@ -4,6 +4,7 @@ import logging
 import pytest
 
 from superagentx.agent import Agent
+from superagentx.agentxpipe import AgentXPipe
 from superagentx.engine import Engine
 from superagentx.handler.mcp import MCPHandler
 from superagentx.llm import LLMClient
@@ -14,9 +15,10 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def agent_client_init() -> dict:
-    llm_config = {'model': 'openai/gpt-5-mini'}
+    llm_config = {'model': 'ollama/glm-4.7:cloud'}
+    llm_config = {'model': 'llama-3.3-70b-instruct:free', 'llm_type': "routeway"}
     llm_client: LLMClient = LLMClient(llm_config=llm_config)
-    return {'llm': llm_client, 'llm_type': 'openai'}
+    return {'llm': llm_client}
 
 
 async def status_callback(event: str, **kwargs):
@@ -35,7 +37,7 @@ class TestMCPRedditAgent:
         prompt_template = PromptTemplate()
 
         # ✅ Enable engine to execute MCP Tools
-        mcp_engine = Engine(handler=mcp_handler, llm=llm_client, prompt_template=prompt_template)
+        # mcp_engine = Engine(handler=mcp_handler, llm=llm_client, prompt_template=prompt_template)
 
         goal = "Review and perform user's input"
 
@@ -44,15 +46,19 @@ class TestMCPRedditAgent:
             goal=goal,
             role="You're an Analyst",
             llm=llm_client,
+            tool=mcp_handler,
             prompt_template=prompt_template,
             max_retry=1
         )
-        await reddit_search_agent.add(mcp_engine)
+        # await reddit_search_agent.add(mcp_engine)
 
-        # ✅ Ask question with live callback
-        result = await reddit_search_agent.execute(
-            query_instruction="What are the current hot posts on Reddit's frontpage and summarize?",
-            status_callback=status_callback  # <-- callback passed here
+        pipe = AgentXPipe(
+            agents=[reddit_search_agent],
+            workflow_store=False
+        )
+
+        result = await pipe.flow(
+            query_instruction="What are the current latest posts on Reddit's frontpage and summarize?"
         )
 
         # logger.info(f'Result ==> {result}')

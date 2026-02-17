@@ -159,3 +159,37 @@ await agent.add(engine_3, engine_4, execute_type='PARALLEL')
 # Engines execution will be in following order
 # [engine_1, engine_2, [engine_3, engine_4]]
 ```
+
+## Task Agent
+
+In SuperAgentX, a task agent is a focused, self-contained component that executes a complete workflow from start to
+finish. It receives an input or trigger, applies decision logic, and uses SuperAgentX handlers and tools to interact
+with external systems such as APIs, databases, or messaging services. Task agents are typically asynchronous and
+event-driven, enabling reliable automation of monitoring, processing, and orchestration tasks with minimal human
+intervention.
+
+
+```python
+    task_agent = Agent(engines=[engine])
+```
+
+
+## Browser Agent
+In SuperAgentX, a browser agent is a specialized agent designed to interact with web interfaces just like a human user.
+It can navigate pages, fill forms, click buttons, extract data, and handle multi-step web workflows using a controlled
+browser environment. Browser agents are used when APIs are unavailable or insufficient, enabling automated web actions
+such as scraping, verification, onboarding, and portal-based operations within a larger task workflow.
+
+
+```python
+    browser_agent = Agent(
+        name="Review & Pay Agent",
+        role="Browser Payment Executor",
+        goal="Review checkout and pay using credit card",
+        llm=llm,
+        human_approval=True,   # governance point
+        prompt_template=browser_prompt,
+        engines=[browser_engine],
+        max_retry=2
+    )
+```

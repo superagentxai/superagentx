@@ -14,13 +14,14 @@ class LLMType(str, Enum):
     ANTHROPIC_CLIENT = 'anthropic'
     OLLAMA = 'ollama'
     LITELLM = 'litellm'
+    ROUTEWAY = 'routeway'
 
     @classmethod
     def has_member_key(cls, key):
         return key in cls.__members__
 
     @classmethod
-    def has_member_value(cls, value) -> bool:
+    def has_member_value(cls, value) -> bool | None:
         try:
             if cls(value):
                 return True

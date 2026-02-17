@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any
 import re
 import asyncio
@@ -50,3 +51,17 @@ async def rm_trailing_spaces(data):
         return data.rstrip()  # Remove trailing whitespace
     else:
         return data
+
+def ensure_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+def duration_ms(start: datetime, end: datetime) -> int:
+    start = ensure_utc(start)
+    end = ensure_utc(end)
+    return int((end - start).total_seconds() * 1000)
+
+def utcnow() -> datetime:
+    """Return timezone-aware UTC timestamp."""
+    return datetime.now(timezone.utc)

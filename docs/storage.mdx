@@ -1,0 +1,29 @@
+---
+title: 'Storage'
+icon: 'container-storage'
+---
+
+## Data Storage & Persistence
+
+The system supports multiple data stores to handle both lightweight development workflows and production-scale deployments.
+
+   >**SQLite** is used for local development and simple, single-node workflows where minimal setup and portability are required.
+
+    >**PostgreSQL** is recommended for production environments, supporting multi-tenant architectures, higher concurrency,
+    and robust data integrity.
+
+The data store persists all critical operational information, including:
+
+>Workflow state to enable recovery, retries, and resumable execution
+
+>Agent decisions for traceability and debugging
+
+>Human approvals to support human-in-the-loop workflows
+
+>Tool outputs generated during task execution
+
+>Audit logs for compliance, monitoring, and observability
+
+>Context and memory snapshots to maintain continuity across agent runs
+
+This persistence layer ensures reliability, transparency, and full lifecycle visibility across all agent workflows.

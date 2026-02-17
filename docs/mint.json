@@ -62,7 +62,9 @@
         "prompt",
         "handler",
         "mcp",
-        "conversation"
+        "conversation",
+        "human_Approval",
+        "storage"
       ]
     },
     {
@@ -96,7 +98,8 @@
                 "examples/handlers/aws/iam",
                 "examples/handlers/aws/security_groups",
                 "examples/handlers/aws/serverless",
-                "examples/handlers/aws/iam"
+                "examples/handlers/aws/iam",
+                "examples/handlers/cognito"
               ]
             },
         {
@@ -198,7 +201,15 @@
             "examples/handlers/zohohirs",
             "examples/handlers/slack",
             "examples/handlers/gitlab",
-            "examples/handlers/github"
+            "examples/handlers/github",
+            "examples/handlers/twitter",
+            "examples/handlers/asana",
+            "examples/handlers/taiga",
+            "examples/handlers/hugging_face",
+            "examples/handlers/ml_handler",
+            "examples/handlers/whatsapp",
+            "examples/handlers/zoho_help_desk"
+
       ]
     },
     {

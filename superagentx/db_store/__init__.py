@@ -55,5 +55,5 @@ class ConfigLoader:
         else:
             raise ValueError(f"Unsupported database provider: {provider}")
 
-        logger.info(f"🔧 Initializing storage: {provider}")
+        logger.debug(f"  Initializing storage: {provider}")
         return await StorageFactory.get_storage(provider, provider_config)
