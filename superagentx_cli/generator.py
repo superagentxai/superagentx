@@ -1,0 +1,408 @@
+from enum import Enum
+
+import re
+import json
+import sys
+from typing import Dict, List, Optional, Any
+
+from jinja2 import Environment
+from pydantic import BaseModel
+
+
+# ==========================================================
+# Utilities
+# ==========================================================
+
+def to_snake(s):
+    if not isinstance(s, str):
+        return s
+    return '_'.join(
+        re.sub(
+            '([A-Z][a-z]+)', r' \1',
+            re.sub(
+                '([A-Z]+)', r' \1',
+                s.replace('-', ' ')
+            )
+        ).split()
+    ).lower()
+
+
+def dict_to_snake(data: dict) -> dict:
+    converted = {}
+    for k, v in data.items():
+        key = k if k.isupper() else to_snake(k) if isinstance(k, str) else k
+
+        if isinstance(v, dict):
+            converted[key] = dict_to_snake(v)
+        elif isinstance(v, list):
+            converted[key] = [dict_to_snake(i) if isinstance(i, dict) else i for i in v]
+        else:
+            converted[key] = v
+    return converted
+
+
+def list_to_snake_obj(value):
+    """
+    Converts:
+        ["A", ["B", "C"]]
+    into:
+        [a, [b, c]]
+    """
+    if isinstance(value, list):
+        return "[" + ", ".join(list_to_snake_obj(v) for v in value) + "]"
+    else:
+        return to_snake(value)
+
+
+# ==========================================================
+# Models
+# ==========================================================
+
+class LLM(BaseModel):
+    title: str
+    llm_config: dict
+
+
+class HandlerConfig(BaseModel):
+    title: str
+    handler_name: str
+    src_path: str
+    attributes: Optional[dict] = None
+
+
+class PromptTemplateConfig(BaseModel):
+    title: str
+    prompt_type: Optional[str] = None
+    system_message: Optional[str] = None
+
+class EngineType(Enum):
+    browser = "BROWSER"
+    task = "TASK"
+    default = "DEFAULT"
+
+class EngineConfig(BaseModel):
+    title: str
+    handler: str | None = None
+    llm: str | None = None
+    prompt_template: str | None = None
+    tools: list | None = None
+    output_parser: Any | None = None
+    engine_type: str | Enum | None = None
+    instructions: List[Any] | None = None
+    browser_engine_config: dict | None = None
+    task_engine_config: dict | None = None
+
+class AgentConfig(BaseModel):
+    title: str
+    goal: Optional[str]
+    role: Optional[str]
+    llm: Optional[str]
+    prompt_template: Optional[str]
+    agent_id: Optional[str]
+    name: Optional[str]
+    description: Optional[str]
+    engines: List[Any]
+    output_format: Optional[str]
+    max_retry: int = 5
+
+
+class PipeConfig(BaseModel):
+    title: str
+    pipe_id: Optional[str]
+    name: Optional[str]
+    description: Optional[str]
+    agents: List[Any]
+    memory: Optional[Any]
+    stop_if_goal_not_satisfied: bool = False
+
+
+class AppConfig(BaseModel):
+    app_name: Optional[str]
+    llm: Optional[List[LLM]]
+    handler_config: Optional[List[HandlerConfig]]
+    prompt_template_config: Optional[List[PromptTemplateConfig]]
+    engine_config: Optional[List[EngineConfig]]
+    agent_config: Optional[List[AgentConfig]]
+    pipe_config: Optional[List[PipeConfig]]
+
+
+# ==========================================================
+# Embedded Template
+# ==========================================================
+
+APP_TEMPLATE = """
+{%- for import in imports %}
+{{ import }}
+{%- endfor %}
+
+async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
+    # LLM Configuration
+    {%- for llm in llms %}
+    {{ llm }}
+    {%- endfor %}
+
+    # Prompt Templates
+    {%- for prompt in prompts %}
+    {{ prompt }}
+    {%- endfor %}
+
+    # Handlers
+    {%- for handler in handlers %}
+    {{ handler }}
+    {%- endfor %}
+
+    # Engines
+    {%- for engine in engines %}
+    {{ engine }}
+    {%- endfor %}
+
+    # Agents
+    {%- for agent in agents %}
+    {{ agent }}
+    {%- endfor %}
+
+    # Pipe
+    {{ pipe }}
+
+    return {{ pipe_name }}
+
+get_pipe = get_{{ pipe_name }}_pipe
+"""
+
+
+# ==========================================================
+# Compiler
+# ==========================================================
+
+class SuperAgentXCompiler:
+
+    def __init__(self, config: AppConfig):
+        self.config = config
+        self.imports = []
+        self.llms = {}
+        self.prompts = {}
+        self.handlers = {}
+        self.engines = {}
+        self.agents = {}
+        self.pipe = None
+        self.pipe_name = None
+
+    # ---------------- LLM ----------------
+
+    def build_llms(self):
+        if not self.config.llm:
+            return
+
+        for llm in self.config.llm:
+            var = to_snake(llm.title)
+
+            config_lines = []
+            for k, v in llm.llm_config.items():
+                if v is not None:
+                    if isinstance(v, str):
+                        config_lines.append(f'"{k}": "{v}"')
+                    else:
+                        config_lines.append(f'"{k}": {v}')
+
+            block = ",\n        ".join(config_lines)
+
+            self.llms[llm.title] = f"""{var}_config = {{
+        {block}
+    }}
+
+    {var} = LLMClient(llm_config={var}_config)
+"""
+
+        if self.llms:
+            self.imports.append("from superagentx.llm import LLMClient")
+
+    # ---------------- Prompts ----------------
+
+    def build_prompts(self):
+        if not self.config.prompt_template_config:
+            return
+
+        for prompt in self.config.prompt_template_config:
+            var = to_snake(prompt.title)
+
+            self.prompts[prompt.title] = f"""{var} = PromptTemplate(
+        prompt_type={repr(prompt.prompt_type)},
+        system_message={repr(prompt.system_message)}
+    )
+"""
+
+        if self.prompts:
+            self.imports.append("from superagentx.prompt import PromptTemplate")
+
+    # ---------------- Handlers ----------------
+
+    def build_handlers(self):
+        if not self.config.handler_config:
+            return
+
+        for handler in self.config.handler_config:
+            var = to_snake(handler.title)
+
+            kwargs = []
+            for k, v in (handler.attributes or {}).items():
+                if isinstance(v, str) and v in self.llms:
+                    kwargs.append(f"{k}={to_snake(v)}")
+                elif isinstance(v, str):
+                    kwargs.append(f'{k}="{v}"')
+                else:
+                    kwargs.append(f"{k}={v}")
+
+            self.handlers[handler.title] = f"""{var} = {handler.handler_name}({", ".join(kwargs)})
+"""
+
+            self.imports.append(f"from {handler.src_path} import {handler.handler_name}")
+
+    # ---------------- Engines ----------------
+
+    def build_engines(self):
+        if not self.config.engine_config:
+            return
+
+        for engine in self.config.engine_config:
+            var = to_snake(engine.title)
+
+            if engine.engine_type:
+                engine_type = engine.engine_type.upper()
+
+                # Task Agent
+                if engine_type == EngineType.task.value:
+                    _handler = to_snake(engine.handler)
+                    self.engines[engine.title] = f"""{var} = TaskEngine(
+                        handler={_handler}, instructions={engine.instructions}
+                    )"""
+                    if engine.task_engine_config:
+                        self.engines[engine.title] = f"""{var} = TaskEngine(
+                            handler={_handler}, instructions={engine.instructions},
+                            **{engine.task_engine_config}
+                        )"""
+                    if 'from superagentx.task_engine import TaskEngine' not in self.imports:
+                        self.imports.append(
+                            'from superagentx.task_engine import TaskEngine'
+                        )
+                # Browser Agent
+                elif engine.engine_type == EngineType.browser.value:
+                    _llm = to_snake(engine.llm)
+                    _prompt_template = to_snake(engine.prompt_template)
+                    self.engines[engine.title] = f"""{var} = BrowserEngine(
+                        llm={_llm}, prompt_template={_prompt_template},
+                    )"""
+                    if engine.browser_engine_config:
+                        self.engines[engine.title] = f"""{var} = BrowserEngine(
+                            llm={_llm}, prompt_template={_prompt_template},
+                            **{engine.browser_engine_config}
+                        )"""
+                    if 'from superagentx.browser_engine import BrowserEngine' not in self.imports:
+                        self.imports.append(
+                                'from superagentx.browser_engine import BrowserEngine'
+                            )
+            else:
+                self.engines[engine.title] = f"""{var} = Engine(
+                    handler={to_snake(engine.handler)},
+                    llm={to_snake(engine.llm)},
+                    prompt_template={to_snake(engine.prompt_template)},
+                    tools={engine.tools},
+                    output_parser={engine.output_parser}
+                )"""
+                if self.engines:
+                    self.imports.append("from superagentx.engine import Engine")
+
+    # ---------------- Agents ----------------
+
+    def build_agents(self):
+        if not self.config.agent_config:
+            return
+
+        for agent in self.config.agent_config:
+            var = to_snake(agent.title)
+
+            engines_list = list_to_snake_obj(agent.engines)
+
+            self.agents[agent.title] = f"""{var} = Agent(
+        llm={to_snake(agent.llm)},
+        prompt_template={to_snake(agent.prompt_template)},
+        engines={engines_list},
+        goal={repr(agent.goal)},
+        role={repr(agent.role)},
+        agent_id={repr(agent.agent_id)},
+        name={repr(agent.name)},
+        description={repr(agent.description)},
+        output_format={repr(agent.output_format)},
+        max_retry={agent.max_retry}
+    )
+"""
+
+        if self.agents:
+            self.imports.append("from superagentx.agent import Agent")
+
+    # ---------------- Pipe ----------------
+
+    def build_pipe(self):
+        if not self.config.pipe_config:
+            return
+
+        pipe = self.config.pipe_config[0]
+        self.pipe_name = to_snake(pipe.title)
+
+        agents_list = list_to_snake_obj(pipe.agents)
+
+        self.pipe = f"""{self.pipe_name} = AgentXPipe(
+        agents={agents_list},
+        memory={pipe.memory or []},
+        pipe_id={repr(pipe.pipe_id)},
+        name={repr(pipe.name)},
+        description={repr(pipe.description)},
+        stop_if_goal_not_satisfied={pipe.stop_if_goal_not_satisfied}
+    )"""
+
+        self.imports.append("from superagentx.agentxpipe import AgentXPipe")
+
+    # ---------------- Render ----------------
+
+    def render(self):
+        self.build_llms()
+        self.build_prompts()
+        self.build_handlers()
+        self.build_engines()
+        self.build_agents()
+        self.build_pipe()
+
+        env = Environment()
+        template = env.from_string(APP_TEMPLATE)
+
+        return template.render(
+            imports=list(dict.fromkeys(self.imports)),
+            pipe_name=self.pipe_name,
+            llms=self.llms.values(),
+            prompts=self.prompts.values(),
+            handlers=self.handlers.values(),
+            engines=self.engines.values(),
+            agents=self.agents.values(),
+            pipe=self.pipe
+        )
+
+
+# ==========================================================
+# CLI ENTRY
+# ==========================================================
+
+if __name__ == "__main__":
+
+    if len(sys.argv) < 2:
+        print("Usage: python superagentx_compiler.py config.json")
+        sys.exit(1)
+
+    with open(sys.argv[1], "r") as f:
+        raw = json.load(f)
+
+    config_dict = dict_to_snake(raw["app_config"])
+    app_config = AppConfig(**config_dict)
+
+    compiler = SuperAgentXCompiler(app_config)
+    result = compiler.render()
+
+    print(result)
