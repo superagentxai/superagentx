@@ -121,7 +121,7 @@ class AppConfig(BaseModel):
     app_name: str
     app_type: str
     llm_config: dict[Any, Any] | None = None
-    prompt_template: dict[Any, Any]
+    prompt_template: str | None = None
     llm: list[LLM] | None = None
     memory: list[dict] | None = None
     handler_config: list[HandlerConfig] | None = None
