@@ -8,6 +8,8 @@ from typing import Dict, List, Optional, Any
 from jinja2 import Environment
 from pydantic import BaseModel
 
+from superagentx.memory import Memory
+
 
 # ==========================================================
 # Utilities
@@ -106,6 +108,7 @@ class AgentConfig(BaseModel):
     max_retry: int = 5
 
 
+
 class PipeConfig(BaseModel):
     title: str
     pipe_id: Optional[str]
@@ -115,15 +118,17 @@ class PipeConfig(BaseModel):
     memory: Optional[Any]
     stop_if_goal_not_satisfied: bool = False
 
-
 class AppConfig(BaseModel):
-    app_name: Optional[str]
-    llm: Optional[List[LLM]]
-    handler_config: Optional[List[HandlerConfig]]
-    prompt_template_config: Optional[List[PromptTemplateConfig]]
-    engine_config: Optional[List[EngineConfig]]
-    agent_config: Optional[List[AgentConfig]]
-    pipe_config: Optional[List[PipeConfig]]
+    app_name: str
+    app_type: str
+    llm: list[LLM] | None = None
+    memory: list[dict] | None = None
+    handler_config: list[HandlerConfig] | None = None
+    prompt_template_config: list[PromptTemplateConfig] | None = None
+    engine_config: list[EngineConfig] | None = None
+    agent_config: list[AgentConfig] | None = None
+    pipe_config: list[PipeConfig] | None = None
+    app_auth_token: str | None = None
 
 
 # ==========================================================
