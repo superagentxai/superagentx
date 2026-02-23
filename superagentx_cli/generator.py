@@ -69,13 +69,13 @@ class HandlerConfig(BaseModel):
     title: str
     handler_name: str
     src_path: str
-    attributes: Optional[dict] = None
+    attributes: dict | None = None
 
 
 class PromptTemplateConfig(BaseModel):
     title: str
-    prompt_type: Optional[str] = None
-    system_message: Optional[str] = None
+    prompt_type: str | None = None
+    system_message: str | None = None
 
 class EngineType(Enum):
     browser = "BROWSER"
@@ -96,31 +96,32 @@ class EngineConfig(BaseModel):
 
 class AgentConfig(BaseModel):
     title: str
-    goal: Optional[str]
-    role: Optional[str]
-    llm: Optional[str]
-    prompt_template: Optional[str]
-    agent_id: Optional[str]
-    name: Optional[str]
-    description: Optional[str]
+    goal: str | None = None
+    role: str | None = None
+    llm: str | None = None
+    prompt_template: str | None = None
+    agent_id: str | None = None
+    name: str | None = None
+    description: str | None = None
     engines: List[Any]
-    output_format: Optional[str]
+    output_format: str | None = None
     max_retry: int = 5
-
 
 
 class PipeConfig(BaseModel):
     title: str
-    pipe_id: Optional[str]
-    name: Optional[str]
-    description: Optional[str]
-    agents: List[Any]
-    memory: Optional[Any]
+    pipe_id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    agents: list[str | list[str]]
+    memory: str | None = None
     stop_if_goal_not_satisfied: bool = False
 
 class AppConfig(BaseModel):
     app_name: str
     app_type: str
+    llm_config: dict[Any, Any] | None = None
+    prompt_template: dict[Any, Any]
     llm: list[LLM] | None = None
     memory: list[dict] | None = None
     handler_config: list[HandlerConfig] | None = None
@@ -271,6 +272,11 @@ class SuperAgentXCompiler:
         for engine in self.config.engine_config:
             var = to_snake(engine.title)
 
+            if engine.prompt_template:
+                prompt_template_code = f'PromptTemplate(system_message={repr(engine.prompt_template)})'
+            else:
+                prompt_template_code = 'PromptTemplate()'
+
             if engine.engine_type:
                 engine_type = engine.engine_type.upper()
 
@@ -278,13 +284,13 @@ class SuperAgentXCompiler:
                 if engine_type == EngineType.task.value:
                     _handler = to_snake(engine.handler)
                     self.engines[engine.title] = f"""{var} = TaskEngine(
-                        handler={_handler}, instructions={engine.instructions}
-                    )"""
+                           handler={_handler}, instructions={engine.instructions}
+                       )"""
                     if engine.task_engine_config:
                         self.engines[engine.title] = f"""{var} = TaskEngine(
-                            handler={_handler}, instructions={engine.instructions},
-                            **{engine.task_engine_config}
-                        )"""
+                               handler={_handler}, instructions={engine.instructions},
+                               **{engine.task_engine_config}
+                           )"""
                     if 'from superagentx.task_engine import TaskEngine' not in self.imports:
                         self.imports.append(
                             'from superagentx.task_engine import TaskEngine'
@@ -294,25 +300,25 @@ class SuperAgentXCompiler:
                     _llm = to_snake(engine.llm)
                     _prompt_template = to_snake(engine.prompt_template)
                     self.engines[engine.title] = f"""{var} = BrowserEngine(
-                        llm={_llm}, prompt_template={_prompt_template},
-                    )"""
+                           llm={_llm}, prompt_template={prompt_template_code},
+                       )"""
                     if engine.browser_engine_config:
                         self.engines[engine.title] = f"""{var} = BrowserEngine(
-                            llm={_llm}, prompt_template={_prompt_template},
-                            **{engine.browser_engine_config}
-                        )"""
+                               llm={_llm}, prompt_template={_prompt_template},
+                               **{engine.browser_engine_config}
+                           )"""
                     if 'from superagentx.browser_engine import BrowserEngine' not in self.imports:
                         self.imports.append(
-                                'from superagentx.browser_engine import BrowserEngine'
-                            )
+                            'from superagentx.browser_engine import BrowserEngine'
+                        )
             else:
                 self.engines[engine.title] = f"""{var} = Engine(
-                    handler={to_snake(engine.handler)},
-                    llm={to_snake(engine.llm)},
-                    prompt_template={to_snake(engine.prompt_template)},
-                    tools={engine.tools},
-                    output_parser={engine.output_parser}
-                )"""
+                       handler={to_snake(engine.handler)},
+                       llm={to_snake(engine.llm)},
+                       prompt_template={prompt_template_code},
+                       tools={engine.tools},
+                       output_parser={engine.output_parser}
+                   )"""
                 if self.engines:
                     self.imports.append("from superagentx.engine import Engine")
 
@@ -327,9 +333,14 @@ class SuperAgentXCompiler:
 
             engines_list = list_to_snake_obj(agent.engines)
 
+            if agent.prompt_template:
+                prompt_template_code = f'PromptTemplate(system_message={repr(agent.prompt_template)})'
+            else:
+                prompt_template_code = 'PromptTemplate()'
+
             self.agents[agent.title] = f"""{var} = Agent(
         llm={to_snake(agent.llm)},
-        prompt_template={to_snake(agent.prompt_template)},
+        prompt_template={prompt_template_code},
         engines={engines_list},
         goal={repr(agent.goal)},
         role={repr(agent.role)},
@@ -343,6 +354,7 @@ class SuperAgentXCompiler:
 
         if self.agents:
             self.imports.append("from superagentx.agent import Agent")
+            self.imports.append("from superagentx.prompt import PromptTemplate")
 
     # ---------------- Pipe ----------------
 
@@ -350,7 +362,8 @@ class SuperAgentXCompiler:
         if not self.config.pipe_config:
             return
 
-        pipe = self.config.pipe_config[0]
+        pipe= self.config.pipe_config[0]
+
         self.pipe_name = to_snake(pipe.title)
 
         agents_list = list_to_snake_obj(pipe.agents)
