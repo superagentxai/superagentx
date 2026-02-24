@@ -105,6 +105,8 @@ class AgentConfig(BaseModel):
     description: str | None = None
     engines: List[Any]
     output_format: str | None = None
+    human_approval: bool = False
+    agents_config: dict | None = None
     max_retry: int = 5
 
 
@@ -330,7 +332,6 @@ class SuperAgentXCompiler:
 
         for agent in self.config.agent_config:
             var = to_snake(agent.title)
-
             engines_list = list_to_snake_obj(agent.engines)
 
             if agent.prompt_template:
@@ -347,6 +348,7 @@ class SuperAgentXCompiler:
         agent_id={repr(agent.agent_id)},
         name={repr(agent.name)},
         description={repr(agent.description)},
+        human_approval={repr(agent.human_approval)},
         output_format={repr(agent.output_format)},
         max_retry={agent.max_retry}
     )
