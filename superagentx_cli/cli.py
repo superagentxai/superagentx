@@ -436,6 +436,7 @@ class CliApp:
         rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
         compiler = SuperAgentXCompiler(self.app_config)
         _formatted_code = compiler.render()
+        _pipe_path.write_text(_formatted_code)
 
     def _create_app_pipe_file(self, app_type: str):
         _app_type_pipe_path = self._pkg_dir / f'{app_type}pipe.py'
