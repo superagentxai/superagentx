@@ -102,8 +102,9 @@ class AgentConfig(BaseModel):
     prompt_template: str | None = None
     agent_id: str | None = None
     name: str | None = None
+    tool: str | None = None
     description: str | None = None
-    engines: List[Any]
+    engines: List[Any] | None = None
     output_format: str | None = None
     human_approval: bool = False
     agents_config: dict | None = None
@@ -344,6 +345,7 @@ class SuperAgentXCompiler:
         prompt_template={prompt_template_code},
         engines={engines_list},
         goal={repr(agent.goal)},
+        tool={to_snake(agent.tool)},
         role={repr(agent.role)},
         agent_id={repr(agent.agent_id)},
         name={repr(agent.name)},
@@ -410,19 +412,19 @@ class SuperAgentXCompiler:
 # CLI ENTRY
 # ==========================================================
 
-if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-        print("Usage: python superagentx_compiler.py config.json")
-        sys.exit(1)
-
-    with open(sys.argv[1], "r") as f:
-        raw = json.load(f)
-
-    config_dict = dict_to_snake(raw["app_config"])
-    app_config = AppConfig(**config_dict)
-
-    compiler = SuperAgentXCompiler(app_config)
-    result = compiler.render()
-
-    print(result)
+# if __name__ == "__main__":
+#
+#     if len(sys.argv) < 2:
+#         print("Usage: python superagentx_compiler.py config.json")
+#         sys.exit(1)
+#
+#     with open(sys.argv[1], "r") as f:
+#         raw = json.load(f)
+#
+#     config_dict = dict_to_snake(raw["app_config"])
+#     app_config = AppConfig(**config_dict)
+#
+#     compiler = SuperAgentXCompiler(app_config)
+#     result = compiler.render()
+#
+#     print(result)

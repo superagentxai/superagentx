@@ -21,17 +21,10 @@ async def main():
 
     content_creator_handler = AIHandler(llm=llm_client)
 
-    # Step 3: Create Prompt Template
-    prompt_template = PromptTemplate()
-
-    # Step 4: Create Engine for Reddit analysis using MCP
-    content_engine = Engine(handler=content_creator_handler, llm=llm_client,
-                            prompt_template=prompt_template)
-
     # Step 5: Define Reddit Agent
     agent = Agent(goal="Generate a Greetings Message",
                   role="You're Content Generator",
-                  llm=llm_client, prompt_template=prompt_template,
+                  llm=llm_client, prompt_template=PromptTemplate(),
                   tool=content_creator_handler,
                   human_approval=True, max_retry=1
                   )
