@@ -14,6 +14,7 @@ from pydantic import BaseModel, ValidationError
 from rich import print as rprint
 
 from superagentx_cli.exceptions import AppConfigError
+from superagentx_cli.generator import SuperAgentXCompiler
 
 PKG_NAME_COMP = re.compile(r'^[A-Za-z][a-zA-Z0-9_ -]*$')
 EMAIL_COMP = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
@@ -63,14 +64,13 @@ class EngineType(Enum):
     default = "DEFAULT"
 
 
+# ==========================================================
+# Models
+# ==========================================================
+
 class LLM(BaseModel):
     title: str
     llm_config: dict
-
-
-class Memory(BaseModel):
-    title: str
-    memory_config: dict
 
 
 class HandlerConfig(BaseModel):
@@ -85,7 +85,6 @@ class PromptTemplateConfig(BaseModel):
     prompt_type: str | None = None
     system_message: str | None = None
 
-
 class EngineConfig(BaseModel):
     title: str
     handler: str | None = None
@@ -98,7 +97,6 @@ class EngineConfig(BaseModel):
     browser_engine_config: dict | None = None
     task_engine_config: dict | None = None
 
-
 class AgentConfig(BaseModel):
     title: str
     goal: str | None = None
@@ -107,9 +105,12 @@ class AgentConfig(BaseModel):
     prompt_template: str | None = None
     agent_id: str | None = None
     name: str | None = None
+    tool: str | None = None
     description: str | None = None
-    engines: list[str | list[str]]
+    engines: List[Any] | None = None
     output_format: str | None = None
+    human_approval: bool = False
+    agents_config: dict | None = None
     max_retry: int = 5
 
 
@@ -122,12 +123,13 @@ class PipeConfig(BaseModel):
     memory: str | None = None
     stop_if_goal_not_satisfied: bool = False
 
-
 class AppConfig(BaseModel):
     app_name: str
-    app_type: str  # TODO: Change this with CliAppTypeEnum
+    app_type: str
+    llm_config: dict[Any, Any] | None = None
+    prompt_template: str | None = None
     llm: list[LLM] | None = None
-    memory: list[Memory] = []
+    memory: list[dict] | None = None
     handler_config: list[HandlerConfig] | None = None
     prompt_template_config: list[PromptTemplateConfig] | None = None
     engine_config: list[EngineConfig] | None = None
@@ -432,8 +434,8 @@ class CliApp:
 
         _pipe_path = self._pkg_dir / 'pipe.py'
         rprint(f'Creating pipe file at [yellow]{_pipe_path.resolve()}')
-        _formatted_code = self.render_pipe()
-        _pipe_path.write_text(_formatted_code)
+        compiler = SuperAgentXCompiler(self.app_config)
+        _formatted_code = compiler.render()
 
     def _create_app_pipe_file(self, app_type: str):
         _app_type_pipe_path = self._pkg_dir / f'{app_type}pipe.py'
