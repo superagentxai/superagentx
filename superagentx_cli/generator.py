@@ -250,7 +250,7 @@ class SuperAgentXCompiler:
             return
 
         for handler in self.config.handler_config:
-            var = to_snake(handler.title)
+            var = to_snake(handler.handler_name)
 
             kwargs = []
             for k, v in (handler.attributes or {}).items():
