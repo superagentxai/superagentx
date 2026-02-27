@@ -16,9 +16,9 @@ async def main():
     # export OPENAI_API_KEY=<your-api-key>
 
     llm_config = {"model": "gemini/gemini-2.5-flash"}
-    llm_config = {"model": "gpt-5-nano"}
-    llm_config = {'model': 'gpt-5-nano'}
-    llm_config = {'model': 'llama-3.3-70b-instruct:free', 'llm_type': "routeway"}
+    # llm_config = {"model": "gpt-5-nano"}
+    # llm_config = {'model': 'gpt-5-nano'}
+    # llm_config = {'model': 'llama-3.3-70b-instruct:free', 'llm_type': "routeway"}
     llm_client = LLMClient(llm_config=llm_config)
 
     # Step 2: Setup MCP tool handler (Reddit trending analyzer)

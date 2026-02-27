@@ -211,109 +211,182 @@ class AgentXPipe:
             status_callback: StatusCallback | None = None
     ):
         trigger_break = False
-        results = []
+        results: list[GoalResult] = []
         old_memory = None
-        _res = None
 
+        # ----------------------------
+        # Setup Storage (once)
+        # ----------------------------
         if self.workflow_store:
             self.storage = await ConfigLoader.load_db_config()
             await self.storage.setup()
 
             await self.storage.create_pipe(
-                    pipe_id=self.pipe_id,
-                    conversation_id=conversation_id,
-                    input_query=query_instruction,
-                    executed_by="Agent_System"
+                pipe_id=self.pipe_id,
+                conversation_id=conversation_id,
+                input_query=query_instruction,
+                executed_by="Agent_System"
             )
 
             await self.storage.update_pipe_status(
-                    pipe_id=self.pipe_id,
-                    status="In-Progress"
+                pipe_id=self.pipe_id,
+                status="In-Progress"
             )
 
-        async for _agents in iter_to_aiter(self.agents):
+        try:
+            async for _agents in iter_to_aiter(self.agents):
 
-            if self.storage:
-                # If
-                if await self.storage.is_agent_processed(pipe_id=self.pipe_id, agent_id=_agents.agent_id,
-                                                         agent_name=_agents.name):
-                    logger.info(f" Skipping {_agents.name}: Already processed in this pipe.")
-                    continue
-            pre_result = await self._pre_result(results=results)
-            logger.debug(f'Updated with previous results.\nPrevious Result : {pre_result}')
-            if self.memory:
-                old_memory = await self.retrieve_memory(query_instruction, conversation_id=conversation_id)
-                logger.debug(f"Updated with old memory.\n{old_memory}")
-            try:
-                if isinstance(_agents, list):
-                    logger.debug(f'Agent(s) are executing : {",".join([str(_agent) for _agent in _agents])}')
-                    _res = await asyncio.gather(
-                        *[
-                            _agent.execute(
-                                query_instruction=query_instruction,
-                                pipe_id=self.pipe_id,
-                                pre_result=pre_result,
-                                old_memory=old_memory,
-                                verify_goal=verify_goal,
-                                stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
-                                conversation_id=conversation_id,
-                                storage=self.storage,
-                                status_callback=status_callback
+                pre_result = await self._pre_result(results=results)
 
-                            )
-                            async for _agent in iter_to_aiter(_agents)
-                        ]
-                    )
-                    logger.debug(f'Agent(s) results : {_res}')
-                else:
-                    logger.debug(f'Agent is executing : {_agents}')
-                    _res = await _agents.execute(
-                        query_instruction=query_instruction,
-                        pipe_id=self.pipe_id,
-                        pre_result=pre_result,
-                        old_memory=old_memory,
-                        verify_goal=verify_goal,
-                        stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
-                        conversation_id=conversation_id,
-                        storage=self.storage,
-                        status_callback=status_callback
-                    )
-                    logger.debug(f'Agent result : {_res}')
                 if self.memory:
-                    if _res.result and _res.reason:
-                        assistant = {
-                            "role": "assistant",
-                            "content": f"{yaml.dump(_res.result)}",
-                            "reason": _res.reason
-                        }
-                        await self.add_memory(
-                            [assistant],
-                            conversation_id=conversation_id
-                        )
-                if self.storage:
-                    await self.storage.update_pipe_status(self.pipe_id, "Completed")
-                    await self.storage.close()
-            except StopSuperAgentX as ex:
-                trigger_break = True
-                logger.warning(ex)
-                _res = ex.goal_result
-                if self.storage:
-                    await self.storage.update_pipe_status(self.pipe_id, "Failed", error=str(ex))
-                    await self.storage.close()
-            finally:
-                # Always close DB connection if workflow_store is enabled
-                if self.workflow_store and self.storage:
-                    try:
-                        await self.storage.close()
-                        logger.info(f"DB connection closed for pipe {self.pipe_id}")
-                    except Exception as e:
-                        logger.warning(f"Failed to close DB connection: {e}")
+                    old_memory = await self.retrieve_memory(
+                        query_instruction,
+                        conversation_id=conversation_id
+                    )
 
-            if _res:
-                results.append(_res)
-            if trigger_break:
-                break
-        return results
+                # ----------------------------
+                # EXECUTION BLOCK
+                # ----------------------------
+                try:
+
+                    # ==========================
+                    # PARALLEL EXECUTION
+                    # ==========================
+                    if isinstance(_agents, list):
+
+                        agents_list = [
+                            agent async for agent in iter_to_aiter(_agents)
+                        ]
+
+                        logger.debug(
+                            f'Executing Parallel Agents: '
+                            f'{",".join([str(a) for a in agents_list])}'
+                        )
+
+                        parallel_results = await asyncio.gather(
+                            *[
+                                agent.execute(
+                                    query_instruction=query_instruction,
+                                    pipe_id=self.pipe_id,
+                                    pre_result=pre_result,
+                                    old_memory=old_memory,
+                                    verify_goal=verify_goal,
+                                    stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
+                                    conversation_id=conversation_id,
+                                    storage=self.storage,
+                                    status_callback=status_callback
+                                )
+                                for agent in agents_list
+                            ],
+                            return_exceptions=True  # 🔥 prevents crash
+                        )
+
+                        # Normalize and handle failures individually
+                        for agent, res in zip(agents_list, parallel_results):
+
+                            if isinstance(res, Exception):
+                                logger.error(
+                                    f"Agent {agent.name} failed: {res}",
+                                    exc_info=True
+                                )
+                                continue  # Don't break entire pipe
+
+                            if not res:
+                                continue
+
+                            results.append(res)
+
+                            # Memory write
+                            if (
+                                    self.memory
+                                    and getattr(res, "result", None)
+                                    and getattr(res, "reason", None)
+                            ):
+                                assistant = {
+                                    "role": "assistant",
+                                    "content": f"{yaml.dump(res.result)}",
+                                    "reason": res.reason
+                                }
+                                await self.add_memory(
+                                    [assistant],
+                                    conversation_id=conversation_id
+                                )
+
+                    # ==========================
+                    # SEQUENTIAL EXECUTION
+                    # ==========================
+                    else:
+
+                        agent = _agents
+
+                        logger.debug(f'Executing Agent: {agent}')
+
+                        res = await agent.execute(
+                            query_instruction=query_instruction,
+                            pipe_id=self.pipe_id,
+                            pre_result=pre_result,
+                            old_memory=old_memory,
+                            verify_goal=verify_goal,
+                            stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
+                            conversation_id=conversation_id,
+                            storage=self.storage,
+                            status_callback=status_callback
+                        )
+
+                        if res:
+                            results.append(res)
+
+                            if (
+                                    self.memory
+                                    and getattr(res, "result", None)
+                                    and getattr(res, "reason", None)
+                            ):
+                                assistant = {
+                                    "role": "assistant",
+                                    "content": f"{yaml.dump(res.result)}",
+                                    "reason": res.reason
+                                }
+                                await self.add_memory(
+                                    [assistant],
+                                    conversation_id=conversation_id
+                                )
+
+                except StopSuperAgentX as ex:
+                    trigger_break = True
+                    logger.warning(ex)
+
+                    if ex.goal_result:
+                        results.append(ex.goal_result)
+
+                    break  # intentional stop
+
+                except Exception as ex:
+                    # Do NOT crash the pipe
+                    logger.error(
+                        f"Unexpected error in agent execution: {ex}",
+                        exc_info=True
+                    )
+                    continue
+
+                if trigger_break:
+                    break
+
+            return results
+
+        finally:
+            # ----------------------------
+            # Close Storage Safely
+            # ----------------------------
+            if self.workflow_store and self.storage:
+                try:
+                    await self.storage.update_pipe_status(
+                        self.pipe_id,
+                        "Completed" if not trigger_break else "Failed"
+                    )
+                    await self.storage.close()
+                    logger.info(f"DB connection closed for pipe {self.pipe_id}")
+                except Exception as e:
+                    logger.warning(f"Failed to close DB connection: {e}")
 
     @pipe_trace
     async def flow(
