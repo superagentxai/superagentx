@@ -15,7 +15,7 @@ async def main():
     # Note: You need to setup your OpenAI API key before running this step.
     # export OPENAI_API_KEY=<your-api-key>
 
-    llm_config = {"model": "gemini/gemini-2.5-flash"}
+    llm_config = {"model": "gemini/gemini-2.5-flash", 'llm_type': "litellm"}
     # llm_config = {"model": "gpt-5-nano"}
     # llm_config = {'model': 'gpt-5-nano'}
     # llm_config = {'model': 'llama-3.3-70b-instruct:free', 'llm_type': "routeway"}

@@ -45,9 +45,25 @@ async def main():
         max_retry=1
     )
 
+    summary_agent = Agent(
+        llm=llm_client,
+        prompt_template=PromptTemplate(
+            system_message="Summarise the received content and display all points in bullet points"
+        ),
+        engines=None,
+        goal="Summarise the content",
+        tool=handler,
+        role="Summarise Content",
+        agent_id="agent-1771984014221",
+        name="Summary Agent",
+        description="",
+        human_approval=False,
+        max_retry=1
+    )
+
     # All 3 agents run in PARALLEL
     pipe = AgentXPipe(
-        agents=[[agent_seo, agent_linkedin, agent_twitter]],
+        agents=[[agent_seo, agent_linkedin, agent_twitter], summary_agent],
         workflow_store=False
     )
 

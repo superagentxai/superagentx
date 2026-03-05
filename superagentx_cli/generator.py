@@ -1,14 +1,10 @@
 from enum import Enum
-
+import os
 import re
-import json
-import sys
-from typing import Dict, List, Optional, Any
+from typing import List, Optional, Any
 
 from jinja2 import Environment
 from pydantic import BaseModel
-
-from superagentx.memory import Memory
 
 
 # ==========================================================
@@ -131,7 +127,7 @@ class AppConfig(BaseModel):
     prompt_template_config: list[PromptTemplateConfig] | None = None
     engine_config: list[EngineConfig] | None = None
     agent_config: list[AgentConfig] | None = None
-    pipe_config: list[PipeConfig] | None = None
+    pipe_config: list[PipeConfig]
     app_auth_token: str | None = None
 
 
@@ -144,10 +140,14 @@ APP_TEMPLATE = """
 {{ import }}
 {%- endfor %}
 
+{%- if load_dotenv %}
+load_dotenv()
+{%- endif %}
+
 async def get_{{ pipe_name }}_pipe() -> AgentXPipe:
     # LLM Configuration
     {%- for llm in llms %}
-    {{ llm }}
+    {{ llm | indent(4)}}
     {%- endfor %}
 
     # Prompt Templates
@@ -193,6 +193,7 @@ class SuperAgentXCompiler:
         self.handlers = {}
         self.engines = {}
         self.agents = {}
+        self.env_vars = {}
         self.pipe = None
         self.pipe_name = None
 
@@ -204,26 +205,66 @@ class SuperAgentXCompiler:
 
         for llm in self.config.llm:
             var = to_snake(llm.title)
+            llm_config_copy = dict(llm.llm_config)
+
+            llm_type = llm_config_copy.get("llm_type") or llm_config_copy.get("llmType")
+            model = llm_config_copy.get("model", "")
+            api_key = llm_config_copy.get("api_key") or llm_config_copy.get("apiKey")
+
+            provider = self.detect_provider(llm.title, str(llm_type), str(model))
+
+            if provider and api_key:
+                env_name = f"{provider}_API_KEY"
+                self.env_vars[env_name] = api_key
+                llm_config_copy["api_key"] = f'os.getenv("{env_name}")'
+                llm_config_copy.pop("apiKey", None)
 
             config_lines = []
-            for k, v in llm.llm_config.items():
-                if v is not None:
-                    if isinstance(v, str):
-                        config_lines.append(f'"{k}": "{v}"')
-                    else:
-                        config_lines.append(f'"{k}": {v}')
+            for k, v in llm_config_copy.items():
+                if v is None:
+                    continue
+                if isinstance(v, str) and v.startswith("os.getenv"):
+                    config_lines.append(f'"{k}": {v}')
+                elif isinstance(v, str):
+                    config_lines.append(f'"{k}": "{v}"')
+                else:
+                    config_lines.append(f'"{k}": {v}')
 
-            block = ",\n        ".join(config_lines)
+            block = ",\n    ".join(config_lines)
 
-            self.llms[llm.title] = f"""{var}_config = {{
-        {block}
-    }}
-
-    {var} = LLMClient(llm_config={var}_config)
-"""
+            self.llms[llm.title] = (
+                f"{var}_config = {{\n"
+                f"    {block}\n"
+                f"}}\n\n"
+                f"{var} = LLMClient(llm_config={var}_config)"
+            )
 
         if self.llms:
             self.imports.append("from superagentx.llm import LLMClient")
+
+    def detect_provider(self, title: str, llm_type: str, model: str) -> Optional[str]:
+        combined = f"{title} {llm_type} {model}".lower()
+
+        if "gemini" in combined:
+            return "GEMINI"
+        if "openai" in combined and "azure" not in combined:
+            return "OPENAI"
+        if "anthropic" in combined or "claude" in combined:
+            return "ANTHROPIC"
+        if "xai" in combined:
+            return "XAI"
+        if "huggingface" in combined:
+            return "HUGGINGFACE"
+        if "openrouter" in combined:
+            return "OPENROUTER"
+        if "nvidia" in combined or "nim" in combined:
+            return "NVIDIA"
+        if "azure" in combined:
+            return "AZURE"
+        if "vertex" in combined:
+            return "VERTEX"
+
+        return None
 
     # ---------------- Prompts ----------------
 
@@ -250,7 +291,7 @@ class SuperAgentXCompiler:
             return
 
         for handler in self.config.handler_config:
-            var = to_snake(handler.handler_name)
+            var = to_snake(handler.title)
 
             kwargs = []
             for k, v in (handler.attributes or {}).items():
@@ -261,8 +302,7 @@ class SuperAgentXCompiler:
                 else:
                     kwargs.append(f"{k}={v}")
 
-            self.handlers[handler.title] = f"""{var} = {handler.handler_name}({", ".join(kwargs)})
-"""
+            self.handlers[handler.title] = f"{var} = {handler.handler_name}({', '.join(kwargs)})"
 
             self.imports.append(f"from {handler.src_path} import {handler.handler_name}")
 
@@ -355,7 +395,6 @@ class SuperAgentXCompiler:
         max_retry={agent.max_retry}
     )
 """
-
         if self.agents:
             self.imports.append("from superagentx.agent import Agent")
             self.imports.append("from superagentx.prompt import PromptTemplate")
@@ -366,7 +405,10 @@ class SuperAgentXCompiler:
         if not self.config.pipe_config:
             return
 
-        pipe= self.config.pipe_config[0]
+        pipe: PipeConfig = self.config.pipe_config[0]
+
+        if not pipe:
+            return
 
         self.pipe_name = to_snake(pipe.title)
 
@@ -383,6 +425,23 @@ class SuperAgentXCompiler:
 
         self.imports.append("from superagentx.agentxpipe import AgentXPipe")
 
+    # ---------------- ENV FILE (SAFE) ----------------
+
+    def generate_env_file(self, path=".env"):
+        if not self.env_vars:
+            return
+
+        if os.path.exists(path):
+            print(f" {path} already exists. Skipping generation.")
+            return
+
+        with open(path, "w") as f:
+            for k, v in self.env_vars.items():
+                safe_val = v.replace('"', '\\"')
+                f.write(f'{k}="{safe_val}"\n')
+
+        print(f" .env generated at {path}")
+
     # ---------------- Render ----------------
 
     def render(self):
@@ -393,9 +452,16 @@ class SuperAgentXCompiler:
         self.build_agents()
         self.build_pipe()
 
+        load_dotenv = False
+
+        if self.env_vars:
+            self.imports.insert(0, "from dotenv import load_dotenv")
+            self.imports.insert(1, "import os")
+            load_dotenv = True
+
         env = Environment()
         template = env.from_string(APP_TEMPLATE)
-
+        self.generate_env_file(".env")
         return template.render(
             imports=list(dict.fromkeys(self.imports)),
             pipe_name=self.pipe_name,
@@ -404,7 +470,8 @@ class SuperAgentXCompiler:
             handlers=self.handlers.values(),
             engines=self.engines.values(),
             agents=self.agents.values(),
-            pipe=self.pipe
+            pipe=self.pipe,
+            load_dotenv=load_dotenv
         )
 
 
