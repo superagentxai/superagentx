@@ -266,6 +266,7 @@ class Agent:
 
     ) -> GoalResult:
         results = []
+
         params = {
             "input_prompt": query_instruction,
             "pre_result": pre_result,
@@ -301,6 +302,7 @@ class Agent:
             results.append(_res)
 
         logger.debug(f'Verifying agent goal `{verify_goal}`')
+
         if verify_goal:
             final_result = await self._verify_goal(
                 results=results,

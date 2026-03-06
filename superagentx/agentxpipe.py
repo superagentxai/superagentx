@@ -278,7 +278,7 @@ class AgentXPipe:
                                 )
                                 for agent in agents_list
                             ],
-                            return_exceptions=True  # 🔥 prevents crash
+                            return_exceptions=True  #prevents crash
                         )
 
                         # Normalize and handle failures individually
