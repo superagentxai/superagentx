@@ -78,7 +78,9 @@ class Agent:
             max_retry: int = 5,
             human_approval: bool = False,
             approval_channel: HumanApprovalChannel = None,
-            return_engine_result: bool = False
+            return_engine_result: bool = False,
+            capabilities: list[str] | None = None,
+            tags: list[str] | None = None
     ):
         """
         Initializes a new Agent instance.
@@ -138,6 +140,8 @@ class Agent:
         self.human_approval = human_approval
         self.approval_channel = approval_channel or ConsoleApprovalChannel()
         self.engine_result_format = ENGINE_RESULT_FORMAT
+        self.capabilities = capabilities or []
+        self.tags = tags or []
         if self.return_engine_result:
             self.engine_result_format = """{{ reason: Set the reason for result, is_goal_satisfied: 'True' if result 
             satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean. }}"""

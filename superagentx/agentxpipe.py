@@ -7,6 +7,7 @@ import yaml
 
 from superagentx.agent import Agent
 from superagentx.config import is_verbose_enabled
+from superagentx.router.router_engine import RouterEngine
 from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
@@ -29,6 +30,7 @@ class AgentXPipe:
             name: str | None = None,
             description: str | None = None,
             agents: list[Agent | list[Agent]] | None = None,
+            router: RouterEngine | None = None,
             memory: Any | None = None,
             stop_if_goal_not_satisfied: bool = False,
             workflow_store: bool = False,
@@ -66,6 +68,7 @@ class AgentXPipe:
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
         self.description = description
         self.agents: list[Agent | list[Agent]] = agents or []
+        self.router = router
         self.memory = memory
         if self.memory:
             self.memory_id = uuid.uuid4().hex
@@ -258,6 +261,30 @@ class AgentXPipe:
                             agent async for agent in iter_to_aiter(_agents)
                         ]
 
+                        # ----------------------------------
+                        # ROUTER INVOCATION
+                        # ----------------------------------
+                        if self.router:
+                            try:
+                                context = {
+                                    "query": query_instruction,
+                                    "pre_result": pre_result,
+                                    "conversation_id": conversation_id
+                                }
+                                routed_agents = await self.router.route(
+                                    agents_list,
+                                    context
+                                )
+                                if routed_agents:
+                                    agents_list = routed_agents
+
+                                logger.debug(
+                                    f"Router selected agents: "
+                                    f"{','.join([a.role for a in agents_list])}"
+                                )
+                            except Exception as e:
+                                logger.warning(f"Router failed: {e}")
+
                         logger.debug(
                             f'Executing Parallel Agents: '
                             f'{",".join([str(a) for a in agents_list])}'
@@ -391,7 +418,7 @@ class AgentXPipe:
     @pipe_trace
     async def flow(
             self,
-            query_instruction: str,
+            query_instruction: str | None = None,
             verify_goal: bool = True,
             conversation_id: str | None = None,
             status_callback: StatusCallback | None = None
