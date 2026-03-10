@@ -261,6 +261,7 @@ class Agent:
             self,
             query_instruction: str,
             pre_result: str | None = None,
+            previous_agent_result: GoalResult | None = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             pipe_id: str | None = None,
@@ -274,6 +275,7 @@ class Agent:
         params = {
             "input_prompt": query_instruction,
             "pre_result": pre_result,
+            "previous_agent_result": previous_agent_result,
             "old_memory": old_memory,
             "pipe_id": pipe_id,
             "agent_id": self.agent_id,
@@ -356,6 +358,7 @@ class Agent:
             query_instruction: str,
             pipe_id: str | None = None,
             pre_result: str | None = None,
+            previous_agent_result: GoalResult | None = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             stop_if_goal_not_satisfied: bool = False,
@@ -376,6 +379,7 @@ class Agent:
                 This should be a clear and actionable statement that the method can execute.
             pre_result: An optional pre-computed result or state to be used during the execution.
                 Defaults to `None` if not provided.
+            previous_agent_result: GoalResult - Previous Agent's goal result object is being sent to the next agent!
             pipe_id: Pipe interface execution id.
             old_memory: An optional previous context of the user's instruction
             verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
@@ -509,6 +513,7 @@ class Agent:
                 _goal_result = await self._execute(
                     query_instruction=query_instruction,
                     pre_result=pre_result,
+                    previous_agent_result=previous_agent_result,
                     old_memory=old_memory,
                     pipe_id=pipe_id,
                     verify_goal=verify_goal,

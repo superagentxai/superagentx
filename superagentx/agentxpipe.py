@@ -215,6 +215,7 @@ class AgentXPipe:
     ):
         trigger_break = False
         results: list[GoalResult] = []
+        previous_agent_result: GoalResult | None = None
         old_memory = None
 
         # ----------------------------
@@ -352,6 +353,7 @@ class AgentXPipe:
                             query_instruction=query_instruction,
                             pipe_id=self.pipe_id,
                             pre_result=pre_result,
+                            previous_agent_result=previous_agent_result,
                             old_memory=old_memory,
                             verify_goal=verify_goal,
                             stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
@@ -359,9 +361,9 @@ class AgentXPipe:
                             storage=self.storage,
                             status_callback=status_callback
                         )
-
                         if res:
                             results.append(res)
+                            previous_agent_result = res
 
                             if (
                                     self.memory

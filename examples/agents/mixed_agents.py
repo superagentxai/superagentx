@@ -99,7 +99,7 @@ async def main():
             [blog_agent, linkedin_agent],   # router decides which to run
             editor_agent
         ],
-        router=None,
+        router=router,
         workflow_store=False
     )
 

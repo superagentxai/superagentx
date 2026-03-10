@@ -79,7 +79,7 @@ class RouterEngine:
             query = str(context.get("query", "")).lower()
 
             # ------------------------------------------------
-            # 1️⃣ CONDITION ROUTING
+            # CONDITION ROUTING
             # ------------------------------------------------
             if self.mode in ("condition", "hybrid") and self.condition_fn:
 
@@ -99,7 +99,7 @@ class RouterEngine:
                         return filtered
 
             # ------------------------------------------------
-            # 2️⃣ CAPABILITY ROUTING
+            # CAPABILITY ROUTING
             # ------------------------------------------------
             if self.mode in ("capability", "hybrid"):
 
@@ -123,7 +123,7 @@ class RouterEngine:
                     return capable_agents
 
             # ------------------------------------------------
-            # 3️⃣ LLM ROUTING
+            # LLM ROUTING
             # ------------------------------------------------
             if self.mode in ("llm", "hybrid") and self.llm:
 
@@ -151,7 +151,6 @@ Example:
                 )
                 chat_params = ChatCompletionParams(messages=messages)
                 response = await self.llm.afunc_chat_completion(chat_completion_params=chat_params)
-                print(f"Chat Response {response}")
                 selected = await _parse_llm_response(response)
 
                 if selected:
