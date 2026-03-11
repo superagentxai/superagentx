@@ -1,3 +1,4 @@
+
 from enum import Enum
 import os
 import re
@@ -100,12 +101,16 @@ class AgentConfig(BaseModel):
     name: str | None = None
     tool: str | None = None
     description: str | None = None
+    capabilities: list[str] | None = None
     engines: List[Any] | None = None
     output_format: str | None = None
     human_approval: bool = False
     agents_config: dict | None = None
     max_retry: int = 5
 
+class RouterConfig(BaseModel):
+    mode: str
+    llm: LLM | None = None
 
 class PipeConfig(BaseModel):
     title: str
@@ -113,6 +118,7 @@ class PipeConfig(BaseModel):
     name: str | None = None
     description: str | None = None
     agents: list[str | list[str]]
+    router: RouterConfig | None = None
     memory: str | None = None
     stop_if_goal_not_satisfied: bool = False
 
@@ -123,6 +129,7 @@ class AppConfig(BaseModel):
     prompt_template: str | None = None
     llm: list[LLM] | None = None
     memory: list[dict] | None = None
+    capabilities: list[str] | None = None
     handler_config: list[HandlerConfig] | None = None
     prompt_template_config: list[PromptTemplateConfig] | None = None
     engine_config: list[EngineConfig] | None = None
@@ -389,6 +396,7 @@ class SuperAgentXCompiler:
         role={repr(agent.role)},
         agent_id={repr(agent.agent_id)},
         name={repr(agent.name)},
+        capabilities={repr(agent.capabilities)},
         description={repr(agent.description)},
         human_approval={repr(agent.human_approval)},
         output_format={repr(agent.output_format)},
@@ -410,6 +418,10 @@ class SuperAgentXCompiler:
         if not pipe:
             return
 
+        router = None
+        if pipe.router:
+            router = f'RouterEngine(mode={repr(pipe.router.mode)}, llm={repr(pipe.router.llm)})'
+
         self.pipe_name = to_snake(pipe.title)
 
         agents_list = list_to_snake_obj(pipe.agents)
@@ -420,6 +432,7 @@ class SuperAgentXCompiler:
         pipe_id={repr(pipe.pipe_id)},
         name={repr(pipe.name)},
         description={repr(pipe.description)},
+        router={router},
         stop_if_goal_not_satisfied={pipe.stop_if_goal_not_satisfied}
     )"""
 
@@ -488,7 +501,7 @@ class SuperAgentXCompiler:
 #     with open(sys.argv[1], "r") as f:
 #         raw = json.load(f)
 #
-#     config_dict = dict_to_snake(raw["app_config"])
+#     config_dict = dict_to_snake(raw["appConfig"])
 #     app_config = AppConfig(**config_dict)
 #
 #     compiler = SuperAgentXCompiler(app_config)
