@@ -408,41 +408,74 @@ class Agent:
 
         _goal_result = None
 
-        if not self.llm:
-            verify_goal = False
+        try:
+            if not self.llm:
+                verify_goal = False
 
-        # ------------------------------------------------------------------
-        # HUMAN APPROVAL (FINAL AGENT STATE)
-        # ------------------------------------------------------------------
-        if self.human_approval:
-            if storage:
-                await storage.update_pipe_status(pipe_id, "Waiting-for-Approval")
+            # ------------------------------------------------------------------
+            # HUMAN APPROVAL (FINAL AGENT STATE)
+            # ------------------------------------------------------------------
+            if self.human_approval:
+                if storage:
+                    await storage.update_pipe_status(pipe_id, "Waiting-for-Approval")
 
-            approved = await self._request_human_approval(
-                query=query_instruction,
-                pre_result=pre_result,
-                pipe_id=pipe_id,
-                conversation_id=conversation_id
-            )
+                approved = await self._request_human_approval(
+                    query=query_instruction,
+                    pre_result=pre_result,
+                    pipe_id=pipe_id,
+                    conversation_id=conversation_id
+                )
 
-            if not approved:
+                if not approved:
+                    if storage:
+                        await storage.mark_agent_completed(
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent_name=self.name,
+                            input_content=query_instruction,
+                            status="REJECTED"
+                        )
+                        await storage.update_pipe_status(
+                            pipe_id,
+                            "Failed",
+                            error="Human rejected execution"
+                        )
+
+                    if status_callback:
+                        await _maybe_await(status_callback(
+                            event="human_status_rejected",
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent=self.name,
+                            query=query_instruction,
+                            conversation_id=conversation_id
+                        ))
+
+                    raise StopSuperAgentX(
+                        message="Execution rejected by human approval.",
+                        goal_result=GoalResult(
+                            name=self.name,
+                            agent_id=self.agent_id,
+                            content="Rejected by human",
+                            approved_status="REJECTED",
+                            is_goal_satisfied=False
+                        )
+                    )
+
+                # Approved is FINAL agent status
                 if storage:
                     await storage.mark_agent_completed(
                         pipe_id=pipe_id,
                         agent_id=self.agent_id,
                         agent_name=self.name,
                         input_content=query_instruction,
-                        status="REJECTED"
+                        status="APPROVED"
                     )
-                    await storage.update_pipe_status(
-                        pipe_id,
-                        "Failed",
-                        error="Human rejected execution"
-                    )
+                    await storage.update_pipe_status(pipe_id, "In-Progress")
 
                 if status_callback:
                     await _maybe_await(status_callback(
-                        event="human_status_rejected",
+                        event="human_status_approved",
                         pipe_id=pipe_id,
                         agent_id=self.agent_id,
                         agent=self.name,
@@ -450,31 +483,12 @@ class Agent:
                         conversation_id=conversation_id
                     ))
 
-                raise StopSuperAgentX(
-                    message="Execution rejected by human approval.",
-                    goal_result=GoalResult(
-                        name=self.name,
-                        agent_id=self.agent_id,
-                        content="Rejected by human",
-                        approved_status="REJECTED",
-                        is_goal_satisfied=False
-                    )
-                )
-
-            # Approved is FINAL agent status
-            if storage:
-                await storage.mark_agent_completed(
-                    pipe_id=pipe_id,
-                    agent_id=self.agent_id,
-                    agent_name=self.name,
-                    input_content=query_instruction,
-                    status="APPROVED"
-                )
-                await storage.update_pipe_status(pipe_id, "In-Progress")
-
+            # ------------------------------------------------------------------
+            # EXECUTION START CALLBACK
+            # ------------------------------------------------------------------
             if status_callback:
                 await _maybe_await(status_callback(
-                    event="human_status_approved",
+                    event="agent_execute_start",
                     pipe_id=pipe_id,
                     agent_id=self.agent_id,
                     agent=self.name,
@@ -482,125 +496,117 @@ class Agent:
                     conversation_id=conversation_id
                 ))
 
-        # ------------------------------------------------------------------
-        # EXECUTION START CALLBACK
-        # ------------------------------------------------------------------
-        if status_callback:
-            await _maybe_await(status_callback(
-                event="agent_execute_start",
-                pipe_id=pipe_id,
-                agent_id=self.agent_id,
-                agent=self.name,
-                query=query_instruction,
-                conversation_id=conversation_id
-            ))
-
-        # ------------------------------------------------------------------
-        # EXECUTION LOOP
-        # ------------------------------------------------------------------
-        for retry in range(1, self.max_retry + 1):
-            try:
-                if status_callback:
-                    await _maybe_await(status_callback(
-                        event="agent_execute",
-                        pipe_id=pipe_id,
-                        agent_id=self.agent_id,
-                        agent=self.name,
-                        retry=retry,
-                        conversation_id=conversation_id
-                    ))
-
-                _goal_result = await self._execute(
-                    query_instruction=query_instruction,
-                    pre_result=pre_result,
-                    previous_agent_result=previous_agent_result,
-                    old_memory=old_memory,
-                    pipe_id=pipe_id,
-                    verify_goal=verify_goal,
-                    storage=storage,
-                    conversation_id=conversation_id,
-                    status_callback=status_callback
-                )
-
-                # Store COMPLETED only when NO human approval
-                if storage and not self.human_approval:
-                    await storage.mark_agent_completed(
-                        pipe_id=pipe_id,
-                        agent_id=self.agent_id,
-                        agent_name=self.name,
-                        input_content=query_instruction,
-                        goal_result=_goal_result,
-                        status="COMPLETED"
-                    )
-
-                if status_callback:
-                    await _maybe_await(status_callback(
-                        event="agent_iteration_complete",
-                        pipe_id=pipe_id,
-                        agent_id=self.agent_id,
-                        agent=self.name,
-                        retry=retry,
-                        goal_result=_goal_result,
-                        conversation_id=conversation_id
-                    ))
-
-                if not verify_goal or _goal_result.is_goal_satisfied:
+            # ------------------------------------------------------------------
+            # EXECUTION LOOP
+            # ------------------------------------------------------------------
+            for retry in range(1, self.max_retry + 1):
+                try:
                     if status_callback:
                         await _maybe_await(status_callback(
-                            event="agent_goal_satisfied",
+                            event="agent_execute",
                             pipe_id=pipe_id,
                             agent_id=self.agent_id,
                             agent=self.name,
+                            retry=retry,
+                            conversation_id=conversation_id
+                        ))
+
+                    _goal_result = await self._execute(
+                        query_instruction=query_instruction,
+                        pre_result=pre_result,
+                        previous_agent_result=previous_agent_result,
+                        old_memory=old_memory,
+                        pipe_id=pipe_id,
+                        verify_goal=verify_goal,
+                        storage=storage,
+                        conversation_id=conversation_id,
+                        status_callback=status_callback
+                    )
+
+                    # Store COMPLETED only when NO human approval
+                    if storage and not self.human_approval:
+                        await storage.mark_agent_completed(
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent_name=self.name,
+                            input_content=query_instruction,
+                            goal_result=_goal_result,
+                            status="COMPLETED"
+                        )
+
+                    if status_callback:
+                        await _maybe_await(status_callback(
+                            event="agent_iteration_complete",
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent=self.name,
+                            retry=retry,
                             goal_result=_goal_result,
                             conversation_id=conversation_id
                         ))
-                    return _goal_result
 
-                if stop_if_goal_not_satisfied:
-                    raise StopSuperAgentX(
-                        message="Goal not satisfied. Stopping execution.",
-                        goal_result=_goal_result
-                    )
+                    if not verify_goal or _goal_result.is_goal_satisfied:
+                        if status_callback:
+                            await _maybe_await(status_callback(
+                                event="agent_goal_satisfied",
+                                pipe_id=pipe_id,
+                                agent_id=self.agent_id,
+                                agent=self.name,
+                                goal_result=_goal_result,
+                                conversation_id=conversation_id
+                            ))
+                        return _goal_result
 
-            except StopSuperAgentX:
-                raise
+                    if stop_if_goal_not_satisfied:
+                        raise StopSuperAgentX(
+                            message="Goal not satisfied. Stopping execution.",
+                            goal_result=_goal_result
+                        )
 
-            except Exception as e:
-                logger.exception(f"Agent `{self.name}` failed on retry {retry}: {e}")
+                except StopSuperAgentX:
+                    raise
 
-                # Store ERROR only when NO human approval
-                if storage and not self.human_approval:
-                    await storage.mark_agent_completed(
-                        pipe_id=pipe_id,
-                        agent_id=self.agent_id,
-                        agent_name=self.name,
-                        input_content=query_instruction,
-                        goal_result=_goal_result,
-                        status="ERROR"
-                    )
+                except Exception as e:
+                    logger.exception(f"Agent `{self.name}` failed on retry {retry}: {e}")
 
-                if status_callback:
+                    # Store ERROR only when NO human approval
+                    if storage and not self.human_approval:
+                        await storage.mark_agent_completed(
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent_name=self.name,
+                            input_content=query_instruction,
+                            goal_result=_goal_result,
+                            status="ERROR"
+                        )
+
+                    if status_callback:
+                        await _maybe_await(status_callback(
+                            event="agent_execute_error",
+                            pipe_id=pipe_id,
+                            agent_id=self.agent_id,
+                            agent=self.name,
+                            retry=retry,
+                            error=str(e),
+                            conversation_id=conversation_id
+                        ))
+
+            return _goal_result
+
+            # -----------------------------------
+            # CRITICAL: ALWAYS EXECUTE THIS
+            # -----------------------------------
+        finally:
+            if status_callback:
+                try:
                     await _maybe_await(status_callback(
-                        event="agent_execute_error",
+                        event="agent_execute_complete",
                         pipe_id=pipe_id,
                         agent_id=self.agent_id,
                         agent=self.name,
-                        retry=retry,
-                        error=str(e),
+                        goal_result=_goal_result,
                         conversation_id=conversation_id
                     ))
+                except Exception as cb_ex:
+                    logger.error(f"Failed to send agent_execute_complete: {cb_ex}")
 
-        # ------------------------------------------------------------------
-        # EXECUTION FINISHED (MAX RETRIES)
-        # ------------------------------------------------------------------
-        if status_callback:
-            await _maybe_await(status_callback(
-                event="agent_execute_complete",
-                pipe_id=pipe_id,
-                agent_id=self.agent_id,
-                agent=self.name,
-                goal_result=_goal_result,
-                conversation_id=conversation_id
-            ))
-
-        return _goal_result
