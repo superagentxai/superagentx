@@ -110,7 +110,7 @@ class AgentConfig(BaseModel):
 
 class RouterConfig(BaseModel):
     mode: str
-    llm: LLM | None = None
+    llm: str | None = None
 
 class PipeConfig(BaseModel):
     title: str
@@ -420,7 +420,13 @@ class SuperAgentXCompiler:
 
         router = None
         if pipe.router:
-            router = f'RouterEngine(mode={repr(pipe.router.mode)}, llm={repr(pipe.router.llm)})'
+            if isinstance(pipe.router.llm, str) and pipe.router.llm in self.llms:
+                llm_ref = to_snake(pipe.router.llm)
+            else:
+                llm_ref = repr(pipe.router.llm)
+
+            router = f'RouterEngine(mode={repr(pipe.router.mode)}, llm={llm_ref})'
+            self.imports.append("from superagentx.router.router_engine import RouterEngine")
 
         self.pipe_name = to_snake(pipe.title)
 
@@ -486,25 +492,3 @@ class SuperAgentXCompiler:
             pipe=self.pipe,
             load_dotenv=load_dotenv
         )
-
-
-# ==========================================================
-# CLI ENTRY
-# ==========================================================
-
-# if __name__ == "__main__":
-#
-#     if len(sys.argv) < 2:
-#         print("Usage: python superagentx_compiler.py config.json")
-#         sys.exit(1)
-#
-#     with open(sys.argv[1], "r") as f:
-#         raw = json.load(f)
-#
-#     config_dict = dict_to_snake(raw["appConfig"])
-#     app_config = AppConfig(**config_dict)
-#
-#     compiler = SuperAgentXCompiler(app_config)
-#     result = compiler.render()
-#
-#     print(result)
