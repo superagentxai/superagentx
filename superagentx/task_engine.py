@@ -1,3 +1,5 @@
+import json
+
 import asyncio
 import inspect
 import logging
@@ -8,6 +10,7 @@ from typing import Any, Callable, Dict, List, Awaitable
 from superagentx.base import BaseEngine
 from superagentx.db_store import StorageAdapter
 from superagentx.handler.base import BaseHandler
+from superagentx.result import GoalResult
 from superagentx.utils.observability.engine_telemetry_decorator import engine_telemetry
 
 logger = logging.getLogger(__name__)
@@ -223,7 +226,7 @@ class TaskEngine(BaseEngine):
     # ----------------------------------------------------
     # Method Execution
     # ----------------------------------------------------
-    async def _execute_method(self, method_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_method(self, method_name: str, params: Dict[str, Any], previous_agent_result: str = None) -> Dict[str, Any]:
         """Execute a single handler or tool method."""
         self._ensure_step_limit()
         self.n_steps += 1
@@ -237,6 +240,13 @@ class TaskEngine(BaseEngine):
 
         # Resolve dynamic parameters before execution
         params = self._resolve_dynamic_params(params or {})
+
+        # Normalize previous result
+        if previous_agent_result is not None:
+            if isinstance(previous_agent_result, (dict, list)):
+                previous_agent_result = json.dumps(previous_agent_result)
+
+            params["previous_agent_result"] = previous_agent_result
 
         try:
             if inspect.iscoroutinefunction(func):
@@ -265,7 +275,7 @@ class TaskEngine(BaseEngine):
     # ----------------------------------------------------
     # Parallel Execution (auto-map + success/failure grouping)
     # ----------------------------------------------------
-    async def _run_parallel(self, parallel_steps: List[Dict[str, Any]]) -> None:
+    async def _run_parallel(self, parallel_steps: List[Dict[str, Any]], previous_agent_result: str = None) -> None:
         """Run multiple steps concurrently using asyncio.gather."""
         tasks = []
         method_names = []
@@ -276,7 +286,7 @@ class TaskEngine(BaseEngine):
                 raise ValueError(f"Invalid parallel step: {step}")
             name, params = next(iter(step.items()))
             method_names.append(name)
-            tasks.append(self._execute_method(name, params))
+            tasks.append(self._execute_method(method_name=name, params=params, previous_agent_result=previous_agent_result))
 
         # Run all tasks concurrently
         batch = await asyncio.gather(*tasks)
@@ -315,21 +325,20 @@ class TaskEngine(BaseEngine):
     # ----------------------------------------------------
     # Sequential Execution
     # ----------------------------------------------------
-    async def _run_sequence(self, steps: List[Dict[str, Any]]) -> None:
+    async def _run_sequence(self, steps: List[Dict[str, Any]],  previous_agent_result: str = None) -> None:
         """Run steps one after another."""
         for step in steps:
             if not isinstance(step, dict) or len(step) != 1:
                 raise ValueError(f"Invalid sequence step: {step}")
             name, params = next(iter(step.items()))
             # Await each sequential step
-            await self._execute_method(name, params)
+            await self._execute_method(method_name=name, params=params, previous_agent_result=previous_agent_result)
 
     # ----------------------------------------------------
     # Main Execution
     # ----------------------------------------------------
-    async def _execute(self, pre_result: str = None) -> List[Dict[str, Any]]:
+    async def _execute(self, task_agent_input: str = None, pre_result: str = None) -> List[Dict[str, Any]]:
         """Core execution loop for code and instructions."""
-        print(f"Pre Result : {pre_result}")
         if self.code:
             # Code Execution Step
             if self.safe_mode:
@@ -356,10 +365,10 @@ class TaskEngine(BaseEngine):
         for step in self.instructions:
             if isinstance(step, list):
                 # Parallel execution
-                await self._run_parallel(step)
+                await self._run_parallel(parallel_steps=step, previous_agent_result=task_agent_input)
             elif isinstance(step, dict):
                 # Sequential execution (a single method call)
-                await self._run_sequence([step])
+                await self._run_sequence(steps=[step], previous_agent_result=task_agent_input)
             else:
                 raise ValueError(f"Invalid instruction step: {step}")
         return self.results
@@ -378,6 +387,7 @@ class TaskEngine(BaseEngine):
             agent_id: str | None = None,
             agent_name: str | None = None,
             pre_result: str | None = None,
+            previous_agent_result: GoalResult | None = None,
             storage: StorageAdapter | None = None,
             old_memory: List[dict] | None = None,
             conversation_id: str | None = None,
@@ -385,6 +395,10 @@ class TaskEngine(BaseEngine):
     ) -> List[Any]:
         """Main entry point for execution."""
         logger.debug("[TaskEngine] Starting execution for: %s", input_prompt)
+
+        task_agent_input = None
+        if isinstance(previous_agent_result, GoalResult):
+            task_agent_input = previous_agent_result.result
 
         # Set up execution context
         self.context = {
@@ -403,4 +417,4 @@ class TaskEngine(BaseEngine):
         self._validate_instructions_type()
 
         # Begin execution and await the result
-        return await self._execute(pre_result=pre_result)
+        return await self._execute(task_agent_input=task_agent_input, pre_result=pre_result)
