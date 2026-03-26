@@ -420,7 +420,7 @@ class SuperAgentXCompiler:
 
         router = None
         if pipe.router:
-            router = f'RouterEngine(mode={repr(pipe.router.mode)}, llm={llm_ref})'
+            router = f'RouterEngine(mode={repr(pipe.router.mode)}, llm={repr(pipe.router.llm)})'
             self.imports.append("from superagentx.router.router_engine import RouterEngine")
 
         self.pipe_name = to_snake(pipe.title)
