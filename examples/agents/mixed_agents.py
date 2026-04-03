@@ -87,7 +87,7 @@ async def main():
     # ----------------------------
     router = RouterEngine(
         llm=llm_client,
-        mode="capability"
+        mode="llm"
     )
 
     # ----------------------------
@@ -103,7 +103,7 @@ async def main():
         workflow_store=False
     )
 
-    task = "Create digital marketing content about Agentic AI"
+    task = "Create a blog for digital marketing content about Agentic AI"
 
     result = await pipe.flow(
         query_instruction=task
@@ -114,7 +114,7 @@ async def main():
     print("\n==============================")
     print("🎯 FINAL RESULT")
     print("==============================\n")
-    print(result)
+    # print(result)
 
     print(f"\n⏱ Total Execution Time: {end_time - start_time:.2f} seconds")
 

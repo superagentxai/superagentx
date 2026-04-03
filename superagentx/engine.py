@@ -136,7 +136,6 @@ class Engine:
         input_prompt += f"\nConversation Id: {conversation_id}"
 
         kwargs = kwargs or {}
-
         # Prepare prompt messages
         messages = await self.prompt_template.get_messages(
             input_prompt=input_prompt,

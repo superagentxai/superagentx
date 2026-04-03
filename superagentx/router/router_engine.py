@@ -101,7 +101,7 @@ class RouterEngine:
             # ------------------------------------------------
             # CAPABILITY ROUTING
             # ------------------------------------------------
-            if self.mode in ("capability", "hybrid"):
+            elif self.mode in ("capability", "hybrid"):
 
                 capable_agents = []
 
@@ -125,26 +125,29 @@ class RouterEngine:
             # ------------------------------------------------
             # LLM ROUTING
             # ------------------------------------------------
-            if self.mode in ("llm", "hybrid") and self.llm:
+            elif self.mode in ("llm", "hybrid") and self.llm:
 
-                agent_names = [a.role for a in agents]
+                agent_map = {
+                    str(getattr(a, "id", idx)): getattr(a, "role", "")
+                    for idx, a in enumerate(agents)
+                }
 
                 prompt = f"""
-You are an AI routing system.
+                        You are an AI routing system.
 
-Task:
-{query}
+                        Task:
+                          {query}
 
-Available agents:
-{agent_names}
+                        Available agents:
+                          {agent_map}
 
-Select which agents should execute this task.
+                        Select which agents should execute this task.
 
-Return ONLY JSON list of agent names.
+                        Return ONLY JSON list of agent names.
 
-Example:
-["agent1","agent2"]
-"""
+                         Example:
+                         ["0","2"]
+                        """
                 prompt_template = PromptTemplate()
                 messages = await prompt_template.get_messages(
                     input_prompt=prompt
@@ -154,10 +157,11 @@ Example:
                 selected = await _parse_llm_response(response)
 
                 if selected:
+                    selected_set = set(str(s).strip() for s in selected)
 
                     filtered = [
-                        a for a in agents
-                        if a.role in selected
+                        a for idx, a in enumerate(agents)
+                        if str(getattr(a, "id", idx)) in selected_set
                     ]
 
                     if filtered:
@@ -169,11 +173,11 @@ Example:
                         return filtered
 
             # ------------------------------------------------
-            # FALLBACK
+            # FallBack
             # ------------------------------------------------
-            logger.debug("Router(fallback): returning all agents")
-
-            return agents
+            else:
+                logger.debug("Router(fallback): returning all agents")
+                return agents
 
         except Exception as e:
 
