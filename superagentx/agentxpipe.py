@@ -137,6 +137,7 @@ class AgentXPipe:
              f'Result: \n{yaml.dump(result.result)}\n'
              f'Content: \n{result.content}'
              f'Is Goal Satisfied: {result.is_goal_satisfied}\n\n')
+
             async for result in iter_to_aiter(results)
         ]
 
@@ -215,7 +216,7 @@ class AgentXPipe:
     ):
         trigger_break = False
         results: list[GoalResult] = []
-        previous_agent_result: GoalResult | None = None
+        previous_agent_result: str | None = None,
         old_memory = None
 
         # ----------------------------
@@ -297,6 +298,7 @@ class AgentXPipe:
                                     query_instruction=query_instruction,
                                     pipe_id=self.pipe_id,
                                     pre_result=pre_result,
+                                    previous_agent_result=previous_agent_result,
                                     old_memory=old_memory,
                                     verify_goal=verify_goal,
                                     stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
@@ -308,7 +310,6 @@ class AgentXPipe:
                             ],
                             return_exceptions=True  #prevents crash
                         )
-
                         # Normalize and handle failures individually
                         for agent, res in zip(agents_list, parallel_results):
 
@@ -323,6 +324,8 @@ class AgentXPipe:
                                 continue
 
                             results.append(res)
+                            if getattr(res, "result", None):
+                                previous_agent_result += (res.result,)
 
                             # Memory write
                             if (
@@ -363,7 +366,9 @@ class AgentXPipe:
                         )
                         if res:
                             results.append(res)
-                            previous_agent_result = res
+
+                            if getattr(res, "result", None):
+                                previous_agent_result = res.result
 
                             if (
                                     self.memory

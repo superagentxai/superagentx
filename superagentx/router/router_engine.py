@@ -128,7 +128,10 @@ class RouterEngine:
             elif self.mode in ("llm", "hybrid") and self.llm:
 
                 agent_map = {
-                    str(getattr(a, "id", idx)): getattr(a, "role", "")
+                    str(getattr(a, "id", idx)): {
+                        "role": getattr(a, "role", ""),
+                        "goal": getattr(a, "goal", "")
+                    }
                     for idx, a in enumerate(agents)
                 }
 
@@ -136,7 +139,7 @@ class RouterEngine:
                         You are an AI routing system.
 
                         Task:
-                          {query}
+                          {context}
 
                         Available agents:
                           {agent_map}
@@ -154,6 +157,7 @@ class RouterEngine:
                 )
                 chat_params = ChatCompletionParams(messages=messages)
                 response = await self.llm.afunc_chat_completion(chat_completion_params=chat_params)
+
                 selected = await _parse_llm_response(response)
 
                 if selected:
@@ -165,7 +169,6 @@ class RouterEngine:
                     ]
 
                     if filtered:
-
                         logger.debug(
                             f"Router(llm): {[a.role for a in filtered]}"
                         )

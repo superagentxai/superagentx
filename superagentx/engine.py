@@ -105,6 +105,7 @@ class Engine:
             agent_id: str | None = None,
             agent_name: str | None = None,
             pre_result: str | None = None,
+            previous_agent_result: str | None = None,
             old_memory: list[dict] | None = None,
             conversation_id: str | None = None,
             storage: StorageAdapter | None = None,
@@ -132,7 +133,7 @@ class Engine:
         """
         # Incorporate pre-result and conversation context into the prompt
         if pre_result:
-            input_prompt += f'\n\n{pre_result}'
+            input_prompt += f'\n\n{pre_result} \n\n {previous_agent_result}'
         input_prompt += f"\nConversation Id: {conversation_id}"
 
         kwargs = kwargs or {}
