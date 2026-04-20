@@ -6,7 +6,11 @@ import inspect
 class BaseHandler(abc.ABC):
     tools = []
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        self._extra_config = kwargs or {}
+        for key, value in self._extra_config.items():
+            setattr(self, key, value)
+
         self._get_tools()
 
     def _get_tools(self) -> list[str]:
