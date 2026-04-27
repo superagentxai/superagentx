@@ -42,7 +42,7 @@ async def get_pipe():
         handler=slack,
         instructions=[{
             "send_slack_message": {
-                "text": "{previous_agent_result}"
+                "text": ""
             }
         }]
     )

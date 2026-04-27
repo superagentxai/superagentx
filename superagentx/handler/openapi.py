@@ -130,7 +130,8 @@ class OpenAPIHandler(BaseHandler):
             headers: Optional[Dict[str, str]] = None,
             params: Optional[Dict[str, str]] = None,
             body: Optional[Any] = None,
-            timeout: int = 30
+            timeout: int = 30,
+            **kwargs
     ) -> Dict[str, Any]:
         """
         Executes a REST API call dynamically using aiohttp.
@@ -145,6 +146,11 @@ class OpenAPIHandler(BaseHandler):
         """
 
         try:
+            previous_agent_result = kwargs.get("previous_agent_result")
+            logger.debug("Previous agent result: %s", previous_agent_result)
+            if previous_agent_result:
+                body = previous_agent_result
+
             body = body or {}
             timeout_cfg = aiohttp.ClientTimeout(total=timeout)
 

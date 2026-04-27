@@ -387,7 +387,7 @@ class TaskEngine(BaseEngine):
             agent_id: str | None = None,
             agent_name: str | None = None,
             pre_result: str | None = None,
-            previous_agent_result: GoalResult | None = None,
+            previous_agent_result: str | None = None,
             storage: StorageAdapter | None = None,
             old_memory: List[dict] | None = None,
             conversation_id: str | None = None,
@@ -395,10 +395,6 @@ class TaskEngine(BaseEngine):
     ) -> List[Any]:
         """Main entry point for execution."""
         logger.debug("[TaskEngine] Starting execution for: %s", input_prompt)
-
-        task_agent_input = None
-        if isinstance(previous_agent_result, GoalResult):
-            task_agent_input = previous_agent_result.result
 
         # Set up execution context
         self.context = {
@@ -408,7 +404,6 @@ class TaskEngine(BaseEngine):
             "conversation_id": conversation_id,
             **(kwargs or {}),
         }
-
         # Reset runtime state
         self.results = []
         self.last_result = None
@@ -417,4 +412,4 @@ class TaskEngine(BaseEngine):
         self._validate_instructions_type()
 
         # Begin execution and await the result
-        return await self._execute(task_agent_input=task_agent_input, pre_result=pre_result)
+        return await self._execute(task_agent_input=previous_agent_result, pre_result=pre_result)
