@@ -130,7 +130,8 @@ class OpenAPIHandler(BaseHandler):
             headers: Optional[Dict[str, str]] = None,
             params: Optional[Dict[str, str]] = None,
             body: Optional[Any] = None,
-            timeout: int = 30
+            timeout: int = 30,
+            **kwargs
     ) -> Dict[str, Any]:
         """
         Executes a REST API call dynamically using aiohttp.
@@ -145,7 +146,25 @@ class OpenAPIHandler(BaseHandler):
         """
 
         try:
+            if body is None or body == "":
+                previous_agent_result = kwargs.get("previous_agent_result")
+                logger.debug("Previous agent result: %s", previous_agent_result)
+                if previous_agent_result:
+                    body = previous_agent_result
+
             body = body or {}
+
+            if isinstance(body, str):
+                body = body.strip()
+                if not body:
+                    body = {}
+                else:
+                    try:
+                        body = json.loads(body)
+                    except json.JSONDecodeError:
+                        logger.error("Invalid JSON body: %s", body)
+                        body = {}
+
             timeout_cfg = aiohttp.ClientTimeout(total=timeout)
 
             async with aiohttp.ClientSession(timeout=timeout_cfg) as session:
