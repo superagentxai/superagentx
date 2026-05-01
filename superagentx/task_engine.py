@@ -5,7 +5,7 @@ import inspect
 import logging
 import traceback
 import re
-from typing import Any, Callable, Dict, List, Awaitable
+from typing import Any, Callable, Dict, List, Awaitable, Optional
 
 from superagentx.base import BaseEngine
 from superagentx.db_store import StorageAdapter
@@ -226,7 +226,7 @@ class TaskEngine(BaseEngine):
     # ----------------------------------------------------
     # Method Execution
     # ----------------------------------------------------
-    async def _execute_method(self, method_name: str, params: Dict[str, Any], previous_agent_result: str = None) -> Dict[str, Any]:
+    async def _execute_method(self, method_name: str, params: Dict[str, Any], previous_agent_result: Optional[str] = None) -> Dict[str, Any]:
         """Execute a single handler or tool method."""
         self._ensure_step_limit()
         self.n_steps += 1
