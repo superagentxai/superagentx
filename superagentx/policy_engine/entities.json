@@ -1,0 +1,7 @@
+[
+  {
+    "uid": { "type": "User", "id": "user_ram" },
+    "attrs": { "status": "InActive" },
+    "parents": []
+  }
+]
