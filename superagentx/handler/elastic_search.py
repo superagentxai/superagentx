@@ -25,10 +25,9 @@ class ElasticsearchHandler(BaseHandler):
             api_key: str | None = None,
             username: str | None = None,
             password: str | None = None,
-            ca_certs: str | None = None,
-            **kwargs
+            ca_certs: str | None = None
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self._conn = AsyncElasticsearch(
             hosts=hosts,
             cloud_id=cloud_id,

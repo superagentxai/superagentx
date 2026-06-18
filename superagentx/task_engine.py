@@ -226,63 +226,40 @@ class TaskEngine(BaseEngine):
     # ----------------------------------------------------
     # Method Execution
     # ----------------------------------------------------
-    async def _execute_method(
-            self,
-            method_name: str,
-            params: Dict[str, Any],
-            previous_agent_result: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    async def _execute_method(self, method_name: str, params: Dict[str, Any], previous_agent_result: Optional[str] = None) -> Dict[str, Any]:
         """Execute a single handler or tool method."""
-
         self._ensure_step_limit()
         self.n_steps += 1
 
         func = self.tools.get(method_name) or getattr(self.handler, method_name, None)
 
         if func is None:
-            result = {
-                method_name: {
-                    "success": False,
-                    "error": f"Method `{method_name}` not found",
-                }
-            }
-
+            result = {method_name: {"success": False, "error": f"Method `{method_name}` not found"}}
             self.last_result = result
             return result
 
+        # Resolve dynamic parameters before execution
         params = self._resolve_dynamic_params(params or {})
 
+        # Normalize previous result
         if previous_agent_result is not None:
-
             if isinstance(previous_agent_result, (dict, list)):
                 previous_agent_result = json.dumps(previous_agent_result)
 
-            try:
-                sig = inspect.signature(func)
-
-                if "previous_agent_result" in sig.parameters:
-                    params["previous_agent_result"] = previous_agent_result
-
-            except Exception:
-                pass
+            params["previous_agent_result"] = previous_agent_result
 
         try:
-
             if inspect.iscoroutinefunction(func):
+                # Function is natively async, await it directly
                 output = await func(**params)
-
             else:
+                # Function is synchronous, run it in a separate thread
                 output = await asyncio.to_thread(func, **params)
 
-            result = {
-                method_name: {
-                    "success": True,
-                    "result": output,
-                }
-            }
+            result = {method_name: {"success": True, "result": output}}
 
         except Exception as e:
-
+            # Capture execution errors
             result = {
                 method_name: {
                     "success": False,
@@ -293,7 +270,6 @@ class TaskEngine(BaseEngine):
 
         self.results.append(result)
         self.last_result = result
-
         return result
 
     # ----------------------------------------------------

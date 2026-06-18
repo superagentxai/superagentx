@@ -70,10 +70,9 @@ class AIHandler(BaseHandler):
             self,
             llm: LLMClient,
             role: str | None = None,
-            story_content: str | None = None,
-            **kwargs
+            story_content: str | None = None
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.llm = llm
         self.role = role
         self.story_content = story_content

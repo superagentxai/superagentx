@@ -52,13 +52,8 @@ class BrowserHandler(BaseHandler):
     feature, enabling seamless automation of web interactions within AI-driven workflows.
     """
 
-    def __init__(
-            self,
-            llm: LLMClient,
-            browser_context: BrowserContext,
-            **kwargs
-    ):
-        super().__init__(**kwargs)
+    def __init__(self, llm: LLMClient, browser_context: BrowserContext):
+        super().__init__()
         self.llm = llm
         self.browser_context = browser_context
 

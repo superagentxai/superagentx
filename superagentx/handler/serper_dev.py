@@ -8,11 +8,8 @@ from superagentx.handler.decorators import tool
 
 class SerperDevToolHandler(BaseHandler):
 
-    def __init__(
-            self,
-            **kwargs
-    ):
-        super().__init__(**kwargs)
+    def __init__(self):
+        super().__init__()
         self.search_url: str = "https://google.serper.dev/search"
 
     @tool
