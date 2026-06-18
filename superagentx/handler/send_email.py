@@ -28,9 +28,10 @@ class EmailHandler(BaseHandler):
             username: Optional[str] = None,
             password: Optional[str] = None,
             ssl: bool = False,
-            ssl_context: Optional[SSLContext] = None
+            ssl_context: Optional[SSLContext] = None,
+            **kwargs
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.host = host
         self.port = port
         self.username = username

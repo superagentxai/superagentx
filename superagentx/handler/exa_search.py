@@ -16,9 +16,10 @@ class ExaHandler(BaseHandler):
 
     def __init__(
             self,
-            api_key: str | None = None
+            api_key: str | None = None,
+            **kwargs
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         api_key = api_key or os.getenv("EXA_API_KEY")
         self.exa = Exa(api_key=api_key)
 
