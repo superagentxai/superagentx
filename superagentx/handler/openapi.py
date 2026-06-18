@@ -20,9 +20,10 @@ class OpenAPIHandler(BaseHandler):
             *,
             base_url: str = None,
             spec_url_path: str = None,
-            spec_file_path: str = None
+            spec_file_path: str = None,
+            **kwargs
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.base_url = base_url
         self.base_url = self.base_url.rstrip('/') if self.base_url else self.base_url
         self.spec_url = f"{self.base_url}/{spec_url_path}" if self.base_url and spec_url_path else None
@@ -79,7 +80,7 @@ class OpenAPIHandler(BaseHandler):
             method: str,
             params: dict = None,
             body: dict = None,
-            headers: dict = None
+            headers: dict = None,
     ):
         """
         Make an API call to the specified endpoint.

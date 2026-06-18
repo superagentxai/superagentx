@@ -92,7 +92,8 @@ class MCPHandler(BaseHandler):
             mcp_args: list[str] | None = None,
             sse_url: str | None = None,
             headers: dict[str, str] | None = None,
-            env: dict[str, str] | None = None
+            env: dict[str, str] | None = None,
+            **kwargs
     ):
         """
         Initializes the MCPHandler instance with the specified command and configuration.
@@ -103,7 +104,7 @@ class MCPHandler(BaseHandler):
         :param headers: Optional HTTP headers to include in the request.
         :param env: Optional environment variables to set when running the server.
         """
-        super().__init__()
+        super().__init__(**kwargs)
 
         # Command and arguments for starting the MCP server
         self.command: str | None = command
