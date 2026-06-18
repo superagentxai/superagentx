@@ -12,9 +12,10 @@ class FinancialHandler(BaseHandler):
     def __init__(
             self,
             symbol: str,
-            api_key: str | None = None
+            api_key: str | None = None,
+            **kwargs
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.api_key = api_key or os.getenv("FINANCIAL_DATA_API_KEY")
         self.symbol = symbol
 
