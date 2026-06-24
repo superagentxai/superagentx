@@ -170,41 +170,77 @@ class TaskEngine(BaseEngine):
 
         return _get_from_path(inner, path)
 
-
     def _normalize_previous_agent_result(self, result: Any) -> Dict[str, Any]:
+        """
+        Normalize previous agent outputs into a structure that supports:
+
+        $prev_result.read_latest_email.result.body
+
+        instead of:
+
+        $prev_result.read_latest_email.result[0].body
+
+        when the result contains a single item.
+        """
+
         if result is None:
             return {}
 
         normalized: Dict[str, Any] = {}
 
         def extract(obj):
+            if obj is None:
+                return
+
+            # Handle GoalResult and similar objects
+            if hasattr(obj, "result"):
+                extract(obj.result)
+                return
+
+            # Handle dictionaries
             if isinstance(obj, dict):
                 for key, value in obj.items():
 
-                    # Case 1: Standard handler response
+                    # Standard tool/handler response
                     if (
                             isinstance(value, dict)
                             and value.get("success") is True
                             and "result" in value
                     ):
-                        normalized[key] = value["result"]
+                        result_data = value["result"]
 
-                    # Case 2: Direct dictionary payload
+                        # Unwrap single-item list
+                        if (
+                                isinstance(result_data, list)
+                                and len(result_data) == 1
+                                and isinstance(result_data[0], dict)
+                        ):
+                            result_data = result_data[0]
+
+                        normalized[key] = {
+                            "result": result_data
+                        }
+
+                    # Nested dictionary
                     elif isinstance(value, dict):
                         normalized[key] = value
                         extract(value)
 
-                    # Case 3: Primitive/List payload
+                    # Primitive/List value
                     else:
                         normalized[key] = value
 
+            # Handle lists/tuples recursively
             elif isinstance(obj, (list, tuple)):
                 for item in obj:
                     extract(item)
+
+            # Primitive fallback
             else:
                 normalized["result"] = obj
 
         extract(result)
+
         return normalized
 
     def _resolve_dynamic_params(self, params: Dict[str, Any], previous_agent_result: Optional[Any] = None) -> Dict[str, Any]:
