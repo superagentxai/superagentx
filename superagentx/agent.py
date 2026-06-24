@@ -330,7 +330,6 @@ class Agent:
                 agent_id=self.agent_id,
                 result=results,
                 content=results,
-                result=results,
                 verify_goal=False,
                 is_goal_satisfied=None,
                 engine_result=engine_result
