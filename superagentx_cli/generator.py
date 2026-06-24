@@ -28,15 +28,22 @@ def to_snake(s):
 
 def dict_to_snake(data: dict) -> dict:
     converted = {}
+
     for k, v in data.items():
         key = k if k.isupper() else to_snake(k) if isinstance(k, str) else k
 
-        if isinstance(v, dict):
+        if k == "headers" and isinstance(v, dict):
+            converted[key] = v  # keep header names exactly
+        elif isinstance(v, dict):
             converted[key] = dict_to_snake(v)
         elif isinstance(v, list):
-            converted[key] = [dict_to_snake(i) if isinstance(i, dict) else i for i in v]
+            converted[key] = [
+                dict_to_snake(i) if isinstance(i, dict) else i
+                for i in v
+            ]
         else:
             converted[key] = v
+
     return converted
 
 

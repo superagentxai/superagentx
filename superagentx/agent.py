@@ -329,6 +329,7 @@ class Agent:
                 name=self.name,
                 agent_id=self.agent_id,
                 content=results,
+                result=results,
                 verify_goal=False,
                 is_goal_satisfied=None,
                 engine_result=engine_result
