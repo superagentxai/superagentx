@@ -1,18 +1,17 @@
 [project]
 name = "superagentx"
-version = "1.0.9b5"
+version = "2.0.1b"
 description = "The Ultimate Modular Autonomous Multi AI Agent Framework."
+readme = "README.md"
+requires-python = ">=3.12,<=3.14"
 license = { text = "MIT" }
 authors = [
-    { name = "SuperAgentX AI", email = "<support@superagentx.ai>"},
+    { name = "SuperAgentX AI", email = "support@superagentx.ai"},
 ]
 maintainers = [
-    { name = "SuperAgentX AI", email = "<support@superagentx.ai>"},
+    { name = "SuperAgentX AI", email = "support@superagentx.ai"},
 ]
-readme = "README.md"
-
 keywords = ["superagentX", "AGI", "Agentic AI", "ASI", "superagentx", "agent", "LLM", "cli"]
-requires-python = ">=3.12,<=3.14"
 
 dependencies = [
     "pydantic>=2.8.2",
@@ -24,26 +23,27 @@ dependencies = [
     "aiosqlite>=0.20.0",
     "SQLAlchemy>=2.0.45",
     "asyncpg>=0.31.0",
-    "websockets (>=15.0.1,<16.0.0)",
+    "websockets>=15.0.1,<16.0.0",
     "aiofiles>=24.1.0",
     "camel-converter>=4.0.1",
-    "yapf (>=0.43.0,<0.44.0)",
-    "httpx (>=0.28.1,<0.29.0)",
-    "mcp (>=1.7.0,<2.0.0)",
-    "aiopath (==0.7.7)",
-    "markdownify (>=1.1.0)",
-    "psutil (>=7.0.0 )",
-    "playwright (>=1.52.0)",
-    "pyyaml (>=6.0.2)",
-    "importlib-resources (>=6.5.2)",
-    "pyotp (>=2.9.0)",
-    "ntplib (>=0.4.0)",
-    "opentelemetry-sdk (>=1.35.0,<2.0.0)",
-    "opentelemetry-exporter-otlp (>=1.35.0,<2.0.0)",
-    "opentelemetry-instrumentation-logging (>=0.56b0,<0.57)",
-    "opentelemetry-instrumentation-asyncio (>=0.56b0,<0.57)",
-    "opentelemetry-instrumentation-requests (>=0.56b0,<0.57)",
-    "opentelemetry-instrumentation-httpx (>=0.56b0,<0.57)"
+    "yapf>=0.43.0,<0.44.0",
+    "httpx>=0.28.1,<0.29.0",
+    "mcp>=1.7.0,<2.0.0",
+    "aiopath==0.7.7",
+    "markdownify>=1.1.0",
+    "psutil>=7.0.0",
+    "playwright>=1.52.0",
+    "pyyaml>=6.0.2",
+    "importlib-resources>=6.5.2",
+    "pyotp>=2.9.0",
+    "ntplib>=0.4.0",
+    "opentelemetry-sdk>=1.35.0,<2.0.0",
+    "opentelemetry-exporter-otlp>=1.35.0,<2.0.0",
+    "opentelemetry-instrumentation-logging>=0.56b0,<0.57",
+    "opentelemetry-instrumentation-asyncio>=0.56b0,<0.57",
+    "opentelemetry-instrumentation-requests>=0.56b0,<0.57",
+    "opentelemetry-instrumentation-httpx>=0.56b0,<0.57",
+    "fastapi>=0.139.0",
 ]
 
 [project.urls]
@@ -83,19 +83,21 @@ all =[
     "google-genai>=1.20.0"
 ]
 
-[tool.poetry]
-packages = [
-    { include = "superagentx" },
-    { include = "superagentx_cli" }
+# Replacement for Poetry's test dependency group
+[dependency-groups]
+test = [
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.24.0",
 ]
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.3"
-pytest-asyncio = "^0.24.0"
+# Replacement for Poetry's packages configuration
+[tool.hatch.build.targets.wheel]
+packages = ["superagentx", "superagentx_cli"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+# Swapped out poetry-core for hatchling
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

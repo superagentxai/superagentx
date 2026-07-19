@@ -271,7 +271,6 @@ class Agent:
 
     ) -> GoalResult:
         results = []
-
         params = {
             "input_prompt": query_instruction,
             "pre_result": pre_result,
@@ -292,7 +291,8 @@ class Agent:
             params["conversation_id"] = conversation_id
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
-                logger.debug(f'Engine(s) are executing : {",".join([str(_engine) for _engine in _engines])}')
+                logger.debug(f'Engine(s) are executing : {",".join([str(_engine)
+                                                                for _engine in _engines])}')
 
                 _res = await asyncio.gather(
                     *[

@@ -133,7 +133,11 @@ class Engine:
         """
         # Incorporate pre-result and conversation context into the prompt
         if pre_result:
-            input_prompt += f'\n\n{pre_result} \n\n {previous_agent_result}'
+            input_prompt += f'\n\n[Context Data]:\n{pre_result}'
+
+        if previous_agent_result:
+            input_prompt += f'\n\n[Upstream Agent Output]:\n{previous_agent_result}'
+
         input_prompt += f"\nConversation Id: {conversation_id}"
 
         kwargs = kwargs or {}

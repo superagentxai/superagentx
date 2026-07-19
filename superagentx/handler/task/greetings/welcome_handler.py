@@ -36,7 +36,7 @@ class WelcomeHandler(BaseHandler):
         """
         Send a greeting message.
         """
-        logger.info("Sending greeting: %s", message)
+        logger.debug("Sending greeting: %s", message)
 
         return {
             "status": "sent",

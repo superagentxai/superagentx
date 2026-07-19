@@ -462,5 +462,5 @@ class TaskEngine(BaseEngine):
         self.n_steps = 0
 
         self._validate_instructions_type()
-
+        print(f"Task Engine {previous_agent_result}")
         return await self._execute(task_agent_input=previous_agent_result, pre_result=pre_result)
