@@ -579,8 +579,6 @@ class AgentXPipe:
                 if len(next_layer) == 1
                 else [agent.name for agent in next_layer]
             )
-            print(f"Source: {source}")
-            print(f"Destination: {destination}")
             blueprint.add_path(source, destination)
 
         if status_callback:
@@ -634,12 +632,11 @@ class AgentXPipe:
 
         checkpoint = store.load(run_id)
 
-        if status_callback:
-            goal_result : list[GoalResult] = []
-            if checkpoint:
-                goal_result = checkpoint.goal_results
-                print(checkpoint.goal_results)
+        goal_result: list[GoalResult] = []
+        if checkpoint:
+            goal_result = checkpoint.goal_results
 
+        if status_callback:
             await _maybe_await(status_callback(
                 event="pipe_flow_end",
                 pipe_id=self.pipe_id,
@@ -648,7 +645,7 @@ class AgentXPipe:
                 result=goal_result
            ))
 
-        return checkpoint
+        return checkpoint, goal_result
 
     async def _load_storage_once(self):
         """
