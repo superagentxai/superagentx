@@ -1,11 +1,12 @@
 import asyncio
 import logging
 import uuid
-from typing import Literal, Any
+from typing import Literal, Any, List
 
 import yaml
 
 from superagentx.agent import Agent
+from superagentx.agentxdag import InMemoryStore, AgentXDag, WorkflowBlueprint
 from superagentx.config import is_verbose_enabled
 from superagentx.router.router_engine import RouterEngine
 from superagentx.constants import SEQUENCE, PARALLEL
@@ -34,6 +35,7 @@ class AgentXPipe:
             memory: Any | None = None,
             stop_if_goal_not_satisfied: bool = False,
             workflow_store: bool = False,
+            stop_on_node_failure: bool = True,
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -75,6 +77,8 @@ class AgentXPipe:
         self.workflow_store = workflow_store
         self.storage = None
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
+        self.stop_on_node_failure = stop_on_node_failure
+
         logger.debug(
             f'Initiating AgentXPipe...\n'
             f'Id : {self.pipe_id}\n'
@@ -422,37 +426,163 @@ class AgentXPipe:
                 except Exception as e:
                     logger.warning(f"Failed to close DB connection: {e}")
 
-    @pipe_trace
+    # @pipe_trace
+    # async def flow(
+    #         self,
+    #         query_instruction: str | None = None,
+    #         verify_goal: bool = True,
+    #         conversation_id: str | None = None,
+    #         status_callback: StatusCallback | None = None
+    # ) -> list[GoalResult]:
+    #     """
+    #     Processes the specified query instruction and executes a flow of operations.
+    #
+    #     This method interprets the `query_instruction` and coordinates a series of
+    #     actions aimed at achieving the associated goals. It can involve multiple agents
+    #     and may utilize previously defined workflows to effectively generate results.
+    #     The method returns a list of GoalResult instances that indicate the outcomes of
+    #     the executed operations.
+    #
+    #     query_instruction: A string representing the instruction or query that defines the goal to be achieved.
+    #             This should be a clear and actionable statement that the method can execute.
+    #         verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
+    #         conversation_id: A string representing the unique identifier of the conversation. Default `None`
+    #          status_callback: status call back method helps enhance user experience to get live updates of
+    #             agents executions. Default `None`
+    #
+    #     Returns:
+    #         list[GoalResult]
+    #             A list of GoalResult instances representing the outcomes of the operations executed in response to
+    #             the query instruction. Each GoalResult provides details about the success or failure of the
+    #             corresponding operation and may include additional context or data.
+    #     """
+    #     logger.info(f"Pipe {self.name} starting...")
+    #     if status_callback:
+    #         await _maybe_await(status_callback(
+    #             event="pipe_flow_start",
+    #             pipe_id=self.pipe_id,
+    #             query=query_instruction,
+    #             conversation_id=conversation_id
+    #         ))
+    #
+    #     goal_result: list[GoalResult] = await self._flow(
+    #         query_instruction=query_instruction,
+    #         verify_goal=verify_goal,
+    #         conversation_id=conversation_id,
+    #         status_callback=status_callback
+    #     )
+    #
+    #     if status_callback:
+    #         await _maybe_await(status_callback(
+    #             event="pipe_flow_end",
+    #             pipe_id=self.pipe_id,
+    #             query=query_instruction,
+    #             conversation_id=conversation_id,
+    #             result=goal_result
+    #         ))
+    #
+    #     return goal_result
+
     async def flow(
             self,
-            query_instruction: str | None = None,
-            verify_goal: bool = True,
+            *,
+            query_instruction: str = None,
+            pre_result: list | None = None,
+            run_id: str | None = None,
+            verify_goal: bool = False,
             conversation_id: str | None = None,
             status_callback: StatusCallback | None = None
-    ) -> list[GoalResult]:
+    ):
         """
-        Processes the specified query instruction and executes a flow of operations.
+        Executes the AgentXPipe workflow.
 
-        This method interprets the `query_instruction` and coordinates a series of
-        actions aimed at achieving the associated goals. It can involve multiple agents
-        and may utilize previously defined workflows to effectively generate results.
-        The method returns a list of GoalResult instances that indicate the outcomes of
-        the executed operations.
+        Example
+        -------
+        pipe = AgentXPipe(
+            agents=[
+                [agent_seo, agent_linkedin, agent_twitter],
+                summary_agent
+            ]
+        )
 
-        query_instruction: A string representing the instruction or query that defines the goal to be achieved.
-                This should be a clear and actionable statement that the method can execute.
-            verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
-            conversation_id: A string representing the unique identifier of the conversation. Default `None`
-             status_callback: status call back method helps enhance user experience to get live updates of
-                agents executions. Default `None`
-
-        Returns:
-            list[GoalResult]
-                A list of GoalResult instances representing the outcomes of the operations executed in response to
-                the query instruction. Each GoalResult provides details about the success or failure of the
-                corresponding operation and may include additional context or data.
+        await pipe.flow(
+            query_instruction="Write LinkedIn content"
+        )
         """
-        logger.info(f"Pipe {self.name} starting...")
+
+        if not self.agents:
+            raise ValueError("No agents configured for AgentXPipe.")
+
+        run_id = run_id or str(uuid.uuid4())
+
+        # -----------------------------------------------------
+        # Normalize into execution layers
+        #
+        # Example:
+        # [
+        #     agent1,
+        #     [agent2, agent3],
+        #     agent4
+        # ]
+        #
+        # becomes
+        #
+        # [
+        #     [agent1],
+        #     [agent2, agent3],
+        #     [agent4]
+        # ]
+        # -----------------------------------------------------
+
+        layers: list[list[Agent]] = []
+
+        for layer in self.agents:
+            if isinstance(layer, list):
+                if not layer:
+                    continue
+                layers.append(layer)
+            else:
+                layers.append([layer])
+
+        blueprint = WorkflowBlueprint(
+            name=self.name or "AgentX Workflow"
+        )
+
+        # -----------------------------------------------------
+        # Register Nodes
+        # -----------------------------------------------------
+
+        registered: set[str] = set()
+
+        for layer in layers:
+            for agent in layer:
+
+                if agent.name in registered:
+                    continue
+
+                blueprint.add_node(agent)
+                registered.add(agent.name)
+
+        # -----------------------------------------------------
+        # Build Dependencies
+        # -----------------------------------------------------
+
+        for current_layer, next_layer in zip(layers, layers[1:]):
+            source = (
+                current_layer[0].name
+                if len(current_layer) == 1
+                else [agent.name for agent in current_layer]
+            )
+
+            destination = (
+                next_layer[0].name
+                if len(next_layer) == 1
+                else [agent.name for agent in next_layer]
+            )
+            print(f"Source: {source}")
+            print(f"Destination: {destination}")
+            blueprint.add_path(source, destination)
+
         if status_callback:
             await _maybe_await(status_callback(
                 event="pipe_flow_start",
@@ -461,23 +591,64 @@ class AgentXPipe:
                 conversation_id=conversation_id
             ))
 
-        goal_result: list[GoalResult] = await self._flow(
-            query_instruction=query_instruction,
-            verify_goal=verify_goal,
-            conversation_id=conversation_id,
-            status_callback=status_callback
+        # -----------------------------------------------------
+        # Create Store
+        # -----------------------------------------------------
+
+        store = InMemoryStore()
+
+        # -----------------------------------------------------
+        # Create DAG Engine
+        # -----------------------------------------------------
+
+        dag_engine = AgentXDag(
+            blueprint=blueprint,
+            store=store,
+            pipe_id=self.pipe_id,
+            name=self.name,
+            description=self.description,
+            router=self.router,
+            memory=self.memory,
+            workflow_store=self.workflow_store,
+            stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
+            stop_on_node_failure=self.stop_on_node_failure,
         )
 
+        # -----------------------------------------------------
+        # Execute Workflow
+        # -----------------------------------------------------
+
+        await dag_engine.execute(
+            run_id=run_id,
+            verify_goal=verify_goal,
+            conversation_id=conversation_id,
+            initial_ctx={
+                "query_instruction": query_instruction,
+                "pre_result": pre_result or [],
+            },
+        )
+
+        # -----------------------------------------------------
+        # Return Checkpoint
+        # -----------------------------------------------------
+
+        checkpoint = store.load(run_id)
+
         if status_callback:
+            goal_result : list[GoalResult] = []
+            if checkpoint:
+                goal_result = checkpoint.goal_results
+                print(checkpoint.goal_results)
+
             await _maybe_await(status_callback(
                 event="pipe_flow_end",
                 pipe_id=self.pipe_id,
                 query=query_instruction,
                 conversation_id=conversation_id,
                 result=goal_result
-            ))
+           ))
 
-        return goal_result
+        return checkpoint
 
     async def _load_storage_once(self):
         """

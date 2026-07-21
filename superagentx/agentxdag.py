@@ -10,6 +10,7 @@ from superagentx.agent import Agent
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.orchestrator.checkpoint import RunCheckpoint
 from superagentx.orchestrator.node_state import NodeState
+from superagentx.result import GoalResult
 from superagentx.router.router_engine import RouterEngine
 from superagentx.utils.helper import StatusCallback
 
@@ -162,7 +163,6 @@ class AgentXDag:
             pipe_id: Optional[str] = None,
             name: Optional[str] = None,
             description: Optional[str] = None,
-            agents: Optional[List[Union[Agent, List[Agent]]]] = None,
             router: Optional[RouterEngine] = None,
             memory: Optional[Any] = None,
             stop_if_goal_not_satisfied: bool = False,
@@ -190,7 +190,7 @@ class AgentXDag:
         self.pipe_id = pipe_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
         self.description = description
-        self.agents = agents or []
+        # self.agents = agents or []
         self.router = router
         self.memory = memory
         self.workflow_store = workflow_store
@@ -257,6 +257,8 @@ class AgentXDag:
     async def execute(
             self,
             run_id: str,
+            verify_goal: bool = True,
+            conversation_id: str | None = None,
             initial_ctx: Optional[Dict[str, Any]] = None,
             status_callback: Optional[StatusCallback] = None
     ) -> Dict[str, NodeState]:
@@ -276,6 +278,7 @@ class AgentXDag:
             Exception: Escalates unexpected unrecoverable programmatic runtime system core failures if global teardown flags are bypassed.
         """
         checkpoint = self.store.load(run_id)
+        goal_results: list[GoalResult] = []
 
         # 1. Pipeline Checkpoint Re-hydration & Matrix Seeding
         if not checkpoint:
@@ -321,7 +324,7 @@ class AgentXDag:
 
                 if not parent_policy_passed:
                     states[node] = NodeState.SKIPPED
-                    logger.info(f"⏭️  Skipping Node '{node}' due to upstream pipeline conditions.")
+                    logger.info(f"  Skipping Node '{node}' due to upstream pipeline conditions.")
                     self._unblock_children(node, runtime_indegree, ready_queue)
                     continue
 
@@ -330,7 +333,7 @@ class AgentXDag:
                                                                                   NodeState.COMPLETED):
                     states[node] = NodeState.WAITING_FOR_APPROVAL
                     logger.info(
-                        f"🛑 [PAUSED] Execution ID [{run_id}] - Node '{node}' requires human validation validation review.")
+                        f" [PAUSED] Execution ID [{run_id}] - Node '{node}' requires human validation validation review.")
                     continue
 
                 states[node] = NodeState.RUNNING
@@ -345,14 +348,23 @@ class AgentXDag:
                         previous_agent_result = None
                     elif len(parents) == 1:
                         raw_val = results.get(parents[0])
+
+                        if isinstance(raw_val, GoalResult):
+                            goal_results.append(raw_val)
+
                         previous_agent_result = self._extract_output(raw_val) if raw_val is not None else None
                     else:
                         context_blocks = []
                         for parent in parents:
                             # Safely fetch and isolate the snapshot value text immediately
                             raw_val = results.get(parent)
+
+                            if isinstance(raw_val, GoalResult):
+                                goal_results.append(raw_val)
+
                             parent_output = self._extract_output(raw_val)
-                            context_blocks.append(f"### Output from Upstream Agent [{parent}]:\n{parent_output}")
+                            # context_blocks.append(f"### Output from Upstream Agent [{parent}]:\n{parent_output}")
+                            context_blocks.append(parent_output)
                         previous_agent_result = "\n\n".join(context_blocks)
 
                     # Dynamic Framework Method Signature Packaging Alignment
@@ -362,9 +374,9 @@ class AgentXDag:
                             pipe_id=self.pipe_id,
                             pre_result=global_ctx.get("pre_result", []),
                             previous_agent_result=previous_agent_result,
-                            verify_goal=self.stop_if_goal_not_satisfied,
+                            verify_goal=verify_goal,
                             stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
-                            conversation_id=run_id,
+                            conversation_id=conversation_id,
                             storage=self.storage,
                             status_callback=status_callback
                         )
@@ -390,15 +402,15 @@ class AgentXDag:
                     # 7. Granular Node Isolation and Containment Handling
                     states[node] = NodeState.FAILED
                     results[node] = getattr(e, "goal_result", f"Error structural exception trace: {str(e)}")
-                    logger.error(f"❌ Execution crash localized on Node identity marker [{node}]: {e}")
+                    logger.error(f" Execution crash localized on Node identity marker [{node}]: {e}")
 
                     if self.stop_on_node_failure:
                         logger.critical(
-                            "🚨 'stop_on_node_failure' flag active. Launching immediate global framework shutdown pipeline sequence.")
+                            " 'stop_on_node_failure' flag active. Launching immediate global framework shutdown pipeline sequence.")
                         abort_pipeline = True
                         break
 
-            # 8. Transmit Transaction Checks Interceptively & Persist Securely
+            # 8. Transmit Transaction Checks Interceptive & Persist Securely
             if abort_pipeline:
                 # Cancel all remaining active in-flight parallel operations securely
                 for active_task in list(tasks.keys()):
@@ -414,6 +426,9 @@ class AgentXDag:
 
                 self.store.save(checkpoint)
                 break
+
+            # Save GoalResults from all agents
+            checkpoint.goal_results = goal_results
 
             self.store.save(checkpoint)
 

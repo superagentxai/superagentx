@@ -2,6 +2,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 from superagentx.orchestrator.node_state import NodeState
+from superagentx.result import GoalResult
+
 
 class RunCheckpoint(BaseModel):
     """
@@ -17,3 +19,5 @@ class RunCheckpoint(BaseModel):
                                        description="Global instruction sets, queries, and environmental settings variables.")
     version: int = Field(default=1,
                          description="Schema structure version control tracking for safe backwards compatibility migrations.")
+
+    goal_results: list[GoalResult] = Field(default_factory=list, description="Goal results for this run.")

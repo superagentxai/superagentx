@@ -1,5 +1,4 @@
 import asyncio
-import logging
 
 from superagentx.agent import Agent
 from superagentx.handler.ai import AIHandler
@@ -110,8 +109,6 @@ async def main():
         }
     )
 
-    print("📊 Pipeline Node State Matrix:")
-    print("=" * 50)
     for node, state in final_states.items():
         print(f" - Node: [{node:<22}] State: {state.value}")
 
