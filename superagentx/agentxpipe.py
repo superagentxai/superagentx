@@ -426,62 +426,6 @@ class AgentXPipe:
                 except Exception as e:
                     logger.warning(f"Failed to close DB connection: {e}")
 
-    # @pipe_trace
-    # async def flow(
-    #         self,
-    #         query_instruction: str | None = None,
-    #         verify_goal: bool = True,
-    #         conversation_id: str | None = None,
-    #         status_callback: StatusCallback | None = None
-    # ) -> list[GoalResult]:
-    #     """
-    #     Processes the specified query instruction and executes a flow of operations.
-    #
-    #     This method interprets the `query_instruction` and coordinates a series of
-    #     actions aimed at achieving the associated goals. It can involve multiple agents
-    #     and may utilize previously defined workflows to effectively generate results.
-    #     The method returns a list of GoalResult instances that indicate the outcomes of
-    #     the executed operations.
-    #
-    #     query_instruction: A string representing the instruction or query that defines the goal to be achieved.
-    #             This should be a clear and actionable statement that the method can execute.
-    #         verify_goal: Option to enable or disable goal verification after agent execution. Default `True`
-    #         conversation_id: A string representing the unique identifier of the conversation. Default `None`
-    #          status_callback: status call back method helps enhance user experience to get live updates of
-    #             agents executions. Default `None`
-    #
-    #     Returns:
-    #         list[GoalResult]
-    #             A list of GoalResult instances representing the outcomes of the operations executed in response to
-    #             the query instruction. Each GoalResult provides details about the success or failure of the
-    #             corresponding operation and may include additional context or data.
-    #     """
-    #     logger.info(f"Pipe {self.name} starting...")
-    #     if status_callback:
-    #         await _maybe_await(status_callback(
-    #             event="pipe_flow_start",
-    #             pipe_id=self.pipe_id,
-    #             query=query_instruction,
-    #             conversation_id=conversation_id
-    #         ))
-    #
-    #     goal_result: list[GoalResult] = await self._flow(
-    #         query_instruction=query_instruction,
-    #         verify_goal=verify_goal,
-    #         conversation_id=conversation_id,
-    #         status_callback=status_callback
-    #     )
-    #
-    #     if status_callback:
-    #         await _maybe_await(status_callback(
-    #             event="pipe_flow_end",
-    #             pipe_id=self.pipe_id,
-    #             query=query_instruction,
-    #             conversation_id=conversation_id,
-    #             result=goal_result
-    #         ))
-    #
-    #     return goal_result
 
     async def flow(
             self,
@@ -624,6 +568,7 @@ class AgentXPipe:
                 "query_instruction": query_instruction,
                 "pre_result": pre_result or [],
             },
+            status_callback=status_callback,
         )
 
         # -----------------------------------------------------
