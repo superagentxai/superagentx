@@ -280,6 +280,8 @@ class AgentXDag:
         checkpoint = self.store.load(run_id)
         goal_results: list[GoalResult] = []
 
+        waiting_for_approval = False
+
         # 1. Pipeline Checkpoint Re-hydration & Matrix Seeding
         if not checkpoint:
             checkpoint = RunCheckpoint(
@@ -329,12 +331,38 @@ class AgentXDag:
                     continue
 
                 # 4. Human Approval Interception Checks
-                if node in self.bp.requires_approval and states.get(node) not in (NodeState.RUNNING,
-                                                                                  NodeState.COMPLETED):
+                # if node in self.bp.requires_approval and states.get(node) not in (NodeState.RUNNING,
+                #                                                                   NodeState.COMPLETED):
+                #     states[node] = NodeState.WAITING_FOR_APPROVAL
+                #     logger.info(
+                #         f" [PAUSED] Execution ID [{run_id}] - Node '{node}' requires human validation validation review.")
+                #     continue
+
+                if node in self.bp.requires_approval and states.get(node) not in (
+                        NodeState.RUNNING,
+                        NodeState.COMPLETED,
+                        NodeState.WAITING_FOR_APPROVAL,
+                ):
                     states[node] = NodeState.WAITING_FOR_APPROVAL
+
                     logger.info(
-                        f" [PAUSED] Execution ID [{run_id}] - Node '{node}' requires human validation validation review.")
-                    continue
+                        f"[WAITING_FOR_APPROVAL] "
+                        f"Execution ID [{run_id}] - "
+                        f"Node '{node}' requires human approval."
+                    )
+
+                    checkpoint.approval_node = node
+                    checkpoint.approval_status = "WAITING"
+                    checkpoint.goal_results = goal_results
+
+                    # Persist the waiting state immediately.
+                    self.store.save(checkpoint)
+
+                    print(f"CHECKPOINT WAITING STATE: {checkpoint}")
+
+                    waiting_for_approval = True
+
+                    break
 
                 states[node] = NodeState.RUNNING
                 node_item = self.bp.nodes[node]
@@ -386,6 +414,20 @@ class AgentXDag:
 
                 tasks[task] = node
 
+            # if not tasks:
+            #     break
+
+            if waiting_for_approval:
+                logger.info(
+                    f"Workflow paused for human approval. "
+                    f"run_id={run_id}"
+                )
+                checkpoint.goal_results = goal_results
+                self.store.save(checkpoint)
+
+                print(f"CHECKPOINT WAITING STATE: {checkpoint}")
+                break
+
             if not tasks:
                 break
 
@@ -431,5 +473,7 @@ class AgentXDag:
             checkpoint.goal_results = goal_results
 
             self.store.save(checkpoint)
+
+            print(f"CHECKPOINT SAVE STATE: {checkpoint}")
 
         return states

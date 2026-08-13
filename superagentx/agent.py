@@ -381,22 +381,6 @@ class Agent:
             "role": "developer"
         }
 
-        # payload = {
-        #     "agent": {
-        #         "id": self.agent_id,
-        #         "name": self.name,
-        #         "description": self.description,
-        #         "capabilities": self.capabilities,
-        #         "tags": self.tags
-        #     },
-        #     "principal": principal,
-        #     "query": query_instruction,
-        #     "previous_agent_result": previous_agent_result,
-        #     "conversation_id": conversation_id,
-        #     "pipe_id": pipe_id,
-        #     "policies": self.policies
-        # }
-
         payload = {
             "query": query_instruction,
             "principal": principal,
@@ -409,14 +393,18 @@ class Agent:
 
         decision = await policy_client.evaluate(payload)
 
+        logger.info(
+            "Policy decision for agent=%s: %s",
+            self.name,
+            decision.decision,
+        )
+
         if decision.decision == "DENY":
             raise PermissionError(
                 decision.reason or "Agent execution denied by policy."
             )
 
-        if decision.decision == "APPROVAL":
-            # TODO
-            pass
+        return decision
 
 
     @agent_span
@@ -475,6 +463,8 @@ class Agent:
         """
 
         _goal_result = None
+        approval_required = False
+        policy_decision = None
 
         try:
             if not self.llm:
@@ -483,17 +473,27 @@ class Agent:
             # -----------------------------------
             # POLICY AUTHORIZATION
             # -----------------------------------
-            await self._authorize(
+            policy_decision = await self._authorize(
                 query_instruction=query_instruction,
                 pipe_id=pipe_id,
                 conversation_id=conversation_id,
                 previous_agent_result=previous_agent_result,
             )
 
+            policy_requires_approval = (
+                    policy_decision is not None
+                    and policy_decision.decision == "APPROVE"
+            )
+
+            approval_required = (
+                    self.human_approval
+                    or policy_requires_approval
+            )
+
             # ------------------------------------------------------------------
             # HUMAN APPROVAL (FINAL AGENT STATE)
             # ------------------------------------------------------------------
-            if self.human_approval:
+            if approval_required:
                 if storage:
                     await storage.update_pipe_status(pipe_id, "Waiting-for-Approval")
 

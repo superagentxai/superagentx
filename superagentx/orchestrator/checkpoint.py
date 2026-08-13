@@ -21,3 +21,6 @@ class RunCheckpoint(BaseModel):
                          description="Schema structure version control tracking for safe backwards compatibility migrations.")
 
     goal_results: list[GoalResult] = Field(default_factory=list, description="Goal results for this run.")
+
+    approval_node: str | None = None
+    approval_status: str | None = None
