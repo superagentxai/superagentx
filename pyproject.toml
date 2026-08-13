@@ -44,6 +44,8 @@ dependencies = [
     "opentelemetry-instrumentation-requests>=0.56b0,<0.57",
     "opentelemetry-instrumentation-httpx>=0.56b0,<0.57",
     "fastapi>=0.139.0",
+    "typer>=0.26.8",
+    "orjson>=3.11.9",
 ]
 
 [project.urls]

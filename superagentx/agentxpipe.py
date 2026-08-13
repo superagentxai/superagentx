@@ -1,8 +1,8 @@
 import asyncio
 import logging
 import uuid
-from typing import Literal, Any, List
-
+from typing import Literal, Any, List, Optional
+import os
 import yaml
 
 from superagentx.agent import Agent
@@ -36,6 +36,7 @@ class AgentXPipe:
             stop_if_goal_not_satisfied: bool = False,
             workflow_store: bool = False,
             stop_on_node_failure: bool = True,
+            platform_url: Optional[str] = None
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -78,6 +79,8 @@ class AgentXPipe:
         self.storage = None
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
         self.stop_on_node_failure = stop_on_node_failure
+        self.platform_url = platform_url or os.getenv("PLATFORM_URL")
+
 
         logger.debug(
             f'Initiating AgentXPipe...\n'
@@ -397,6 +400,23 @@ class AgentXPipe:
                         results.append(ex.goal_result)
 
                     break  # intentional stop
+
+                except PermissionError as ex:
+                    logger.warning("Policy denied execution: %s", ex)
+
+                    results.append(
+                        GoalResult(
+                            name=agent.name,
+                            agent_id=agent.agent_id,
+                            result="Request denied by governance policy.",
+                            reason=str(ex),
+                            error=str(ex),
+                            verify_goal=False,
+                            is_goal_satisfied=False,
+                        )
+                    )
+
+                    return results
 
                 except Exception as ex:
                     # Do NOT crash the pipe

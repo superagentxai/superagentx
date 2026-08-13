@@ -4,7 +4,9 @@ import logging
 import uuid
 from json import JSONDecodeError
 from typing import Literal, Any
-
+from superagentx.policy import (
+    policy_client
+)
 from superagentx.browser_engine import BrowserEngine
 from superagentx.channels.base import HumanApprovalChannel
 from superagentx.channels.console_channel import ConsoleApprovalChannel
@@ -69,6 +71,7 @@ class Agent:
             prompt_template: PromptTemplate | None = None,
             agent_id: str | None = None,
             name: str | None = None,
+            policies: list[dict] | None = None,
             description: str | None = None,
             engines: list[
                          Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] | None = None,
@@ -142,6 +145,7 @@ class Agent:
         self.engine_result_format = ENGINE_RESULT_FORMAT
         self.capabilities = capabilities or []
         self.tags = tags or []
+        self.policies = policies or []
         if self.return_engine_result:
             self.engine_result_format = """{{ reason: Set the reason for result, is_goal_satisfied: 'True' if result 
             satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean. }}"""
@@ -352,6 +356,69 @@ class Agent:
             conversation_id=conversation_id
         )
 
+    def to_dict(self):
+        return {
+            "id": self.agent_id,
+            "name": self.name,
+            "description": self.description,
+            "capabilities": self.capabilities,
+            "tags": self.tags,
+        }
+
+    async def _authorize(
+            self,
+            *,
+            query_instruction: str,
+            pipe_id: str | None = None,
+            conversation_id: str | None = None,
+            previous_agent_result=None,
+    ):
+        if not self.policies:
+            return
+        #
+        principal = {
+            "id": "user123",
+            "role": "developer"
+        }
+
+        # payload = {
+        #     "agent": {
+        #         "id": self.agent_id,
+        #         "name": self.name,
+        #         "description": self.description,
+        #         "capabilities": self.capabilities,
+        #         "tags": self.tags
+        #     },
+        #     "principal": principal,
+        #     "query": query_instruction,
+        #     "previous_agent_result": previous_agent_result,
+        #     "conversation_id": conversation_id,
+        #     "pipe_id": pipe_id,
+        #     "policies": self.policies
+        # }
+
+        payload = {
+            "query": query_instruction,
+            "principal": principal,
+            "agent": self.to_dict(),
+            "policies": self.policies,
+            "pipe_id": pipe_id,
+            "conversation_id": conversation_id,
+            "previous_agent_result": previous_agent_result,
+        }
+
+        decision = await policy_client.evaluate(payload)
+
+        if decision.decision == "DENY":
+            raise PermissionError(
+                decision.reason or "Agent execution denied by policy."
+            )
+
+        if decision.decision == "APPROVAL":
+            # TODO
+            pass
+
+
     @agent_span
     async def execute(
             self,
@@ -412,6 +479,16 @@ class Agent:
         try:
             if not self.llm:
                 verify_goal = False
+
+            # -----------------------------------
+            # POLICY AUTHORIZATION
+            # -----------------------------------
+            await self._authorize(
+                query_instruction=query_instruction,
+                pipe_id=pipe_id,
+                conversation_id=conversation_id,
+                previous_agent_result=previous_agent_result,
+            )
 
             # ------------------------------------------------------------------
             # HUMAN APPROVAL (FINAL AGENT STATE)
