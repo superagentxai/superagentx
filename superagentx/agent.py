@@ -79,8 +79,7 @@ class Agent:
             tool_args: dict[str, Any] | None = None,
             output_format: str | None = None,
             max_retry: int = 5,
-            human_approval: bool = False,
-            approval_channel: HumanApprovalChannel = None,
+            human_approval: HumanApprovalChannel = None,
             return_engine_result: bool = False,
             capabilities: list[str] | None = None,
             tags: list[str] | None = None
@@ -119,9 +118,7 @@ class Agent:
                 (e.g., text, JSON, or a custom schema).
             max_retry: Maximum number of retry attempts for recoverable failures
                 during execution. Defaults to 5.
-            human_approval: Whether certain actions require explicit human
-                approval before proceeding.
-            approval_channel: The channel or mechanism used to request and receive
+            human_approval: The channel or mechanism used to request and receive
                 human approval when enabled.
             return_engine_result: Whether to return raw engine execution results
                 instead of (or in addition to) post-processed agent output.
@@ -140,8 +137,7 @@ class Agent:
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
         self.return_engine_result = return_engine_result
-        self.human_approval = human_approval
-        self.approval_channel = approval_channel or ConsoleApprovalChannel()
+        self.human_approval = human_approval or ConsoleApprovalChannel()
         self.engine_result_format = ENGINE_RESULT_FORMAT
         self.capabilities = capabilities or []
         self.tags = tags or []
@@ -265,7 +261,7 @@ class Agent:
             self,
             query_instruction: str,
             pre_result: str | None = None,
-            previous_agent_result: str | None = None,
+            previous_agent_result: Any = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             pipe_id: str | None = None,
@@ -347,7 +343,7 @@ class Agent:
             pipe_id=None,
             conversation_id=None
     ) -> bool:
-        return await self.approval_channel.request_approval(
+        return await self.human_approval.request_approval(
             agent_id=self.agent_id,
             agent_name=self.name,
             query=query,
@@ -371,14 +367,15 @@ class Agent:
             query_instruction: str,
             pipe_id: str | None = None,
             conversation_id: str | None = None,
-            previous_agent_result=None,
+            previous_agent_result: Any = None,
     ):
+
         if not self.policies:
             return
         #
         principal = {
             "id": "user123",
-            "role": "developer"
+            "role": "USER"
         }
 
         payload = {
@@ -414,13 +411,14 @@ class Agent:
             query_instruction: str,
             pipe_id: str | None = None,
             pre_result: str | None = None,
-            previous_agent_result: str | None = None,
+            previous_agent_result: Any = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             stop_if_goal_not_satisfied: bool = False,
             conversation_id: str | None = None,
             storage: StorageAdapter = None,
-            status_callback: StatusCallback | None = None
+            status_callback: StatusCallback | None = None,
+            approval_granted: bool = False,
     ) -> GoalResult | None:
         """
         Executes the specified query instruction to achieve a defined goal.
@@ -473,12 +471,20 @@ class Agent:
             # -----------------------------------
             # POLICY AUTHORIZATION
             # -----------------------------------
-            policy_decision = await self._authorize(
-                query_instruction=query_instruction,
-                pipe_id=pipe_id,
-                conversation_id=conversation_id,
-                previous_agent_result=previous_agent_result,
-            )
+            # -----------------------------------
+            if not approval_granted:
+                policy_decision = await self._authorize(
+                    query_instruction=query_instruction,
+                    pipe_id=pipe_id,
+                    conversation_id=conversation_id,
+                    previous_agent_result=previous_agent_result,
+                )
+            else:
+                logger.info(
+                    "Skipping policy re-authorization for agent=%s "
+                    "because approval_granted=True",
+                    self.name,
+                )
 
             policy_requires_approval = (
                     policy_decision is not None
@@ -486,8 +492,8 @@ class Agent:
             )
 
             approval_required = (
-                    self.human_approval
-                    or policy_requires_approval
+                not approval_granted
+                and policy_requires_approval
             )
 
             # ------------------------------------------------------------------
@@ -602,7 +608,7 @@ class Agent:
                     )
 
                     # Store COMPLETED only when NO human approval
-                    if storage and not self.human_approval:
+                    if storage and not approval_required:
                         await storage.mark_agent_completed(
                             pipe_id=pipe_id,
                             agent_id=self.agent_id,
@@ -648,7 +654,7 @@ class Agent:
                     logger.exception(f"Agent `{self.name}` failed on retry {retry}: {e}")
 
                     # Store ERROR only when NO human approval
-                    if storage and not self.human_approval:
+                    if storage and not approval_required:
                         await storage.mark_agent_completed(
                             pipe_id=pipe_id,
                             agent_id=self.agent_id,

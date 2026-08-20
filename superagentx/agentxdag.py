@@ -12,7 +12,8 @@ from superagentx.orchestrator.checkpoint import RunCheckpoint
 from superagentx.orchestrator.node_state import NodeState
 from superagentx.result import GoalResult
 from superagentx.router.router_engine import RouterEngine
-from superagentx.utils.helper import StatusCallback
+from superagentx.utils.helper import StatusCallback,_maybe_await
+
 
 logger = logging.getLogger("SuperAgentX.DAG")
 
@@ -62,39 +63,39 @@ class WorkflowContext:
         return self._states.get(node_name)
 
 
-class InMemoryStore:
-    """
-    Simulates high-speed persistent transactional database round-trips via strict
-    Pydantic JSON model serialization protocols.
-    """
-
-    def __init__(self):
-        """Initializes the underlying volatile textual string data dictionary framework map."""
-        self._storage: Dict[str, str] = {}
-
-    def save(self, checkpoint: RunCheckpoint) -> None:
-        """
-        Serializes and commits an active Pydantic execution snapshot securely into storage.
-
-        Args:
-            checkpoint (RunCheckpoint): Instantiated validated structural snapshot object mapping matrix.
-        """
-        self._storage[checkpoint.run_id] = checkpoint.model_dump_json()
-
-    def load(self, run_id: str) -> Optional[RunCheckpoint]:
-        """
-        Re-hydrates and parses valid serialized JSON strings back into active Pydantic tracking models.
-
-        Args:
-            run_id (str): Unique execution tracking string lookup token.
-
-        Returns:
-            Optional[RunCheckpoint]: Hydrated data tracking class model or None if index lookup bounds fail.
-        """
-        raw_json = self._storage.get(run_id)
-        if not raw_json:
-            return None
-        return RunCheckpoint.model_validate_json(raw_json)
+# class InMemoryStore:
+#     """
+#     Simulates high-speed persistent transactional database round-trips via strict
+#     Pydantic JSON model serialization protocols.
+#     """
+#
+#     def __init__(self):
+#         """Initializes the underlying volatile textual string data dictionary framework map."""
+#         self._storage: Dict[str, str] = {}
+#
+#     def save(self, checkpoint: RunCheckpoint) -> None:
+#         """
+#         Serializes and commits an active Pydantic execution snapshot securely into storage.
+#
+#         Args:
+#             checkpoint (RunCheckpoint): Instantiated validated structural snapshot object mapping matrix.
+#         """
+#         self._storage[checkpoint.run_id] = checkpoint.model_dump_json()
+#
+#     def load(self, run_id: str) -> Optional[RunCheckpoint]:
+#         """
+#         Re-hydrates and parses valid serialized JSON strings back into active Pydantic tracking models.
+#
+#         Args:
+#             run_id (str): Unique execution tracking string lookup token.
+#
+#         Returns:
+#             Optional[RunCheckpoint]: Hydrated data tracking class model or None if index lookup bounds fail.
+#         """
+#         raw_json = self._storage.get(run_id)
+#         if not raw_json:
+#             return None
+#         return RunCheckpoint.model_validate_json(raw_json)
 
 
 class WorkflowBlueprint:
@@ -114,23 +115,20 @@ class WorkflowBlueprint:
         self.nodes: Dict[str, Union[Agent, Callable]] = {}
         self.graph: Dict[str, List[str]] = defaultdict(list)
         self.reverse_graph: Dict[str, List[str]] = defaultdict(list)
-        self.requires_approval: Set[str] = set()
 
     def add_node(self, node: Union[Agent, Callable], name: Optional[str] = None,
-                 approval_required: bool = False) -> None:
+                 ) -> None:
         """
         Registers a processing node (SuperAgentX Agent instance or generic async/sync Callable) into the graph.
 
         Args:
             node (Union[Agent, Callable]): Structural executor element component to register.
             name (Optional[str]): Target string override name tag identifier key.
-            approval_required (bool): Declares if human gate validation intervention rules apply before parsing.
         """
         node_name = name or getattr(node, "name", getattr(node, "__name__", str(node)))
         self.nodes[node_name] = node
-        if approval_required:
-            self.requires_approval.add(node_name)
-        logger.debug(f"Registered Node blueprint reference: [{node_name}] (Approval required: {approval_required})")
+
+        logger.debug(f"Registered Node blueprint reference: [{node_name}]")
 
     def add_path(self, *sequence: Union[str, List[str]]) -> None:
         """
@@ -159,7 +157,7 @@ class AgentXDag:
             self,
             *,
             blueprint: WorkflowBlueprint,
-            store: InMemoryStore,
+            # store: InMemoryStore,
             pipe_id: Optional[str] = None,
             name: Optional[str] = None,
             description: Optional[str] = None,
@@ -186,7 +184,7 @@ class AgentXDag:
             stop_on_node_failure (bool): If True, any node error forces immediate global teardown of active parallel tasks.
         """
         self.bp = blueprint
-        self.store = store
+        # self.store = store
         self.pipe_id = pipe_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
         self.description = description
@@ -254,14 +252,117 @@ class AgentXDag:
 
         return str(val)
 
+    def _resolve_previous_agent_result(
+        self,
+        node: str,
+        results: Dict[str, Any],
+        goal_results: List[GoalResult],
+    ) -> Optional[str]:
+        """
+        Resolve the finalized output of the upstream parent agent(s).
+
+        This must happen before policy authorization so the policy context
+        can evaluate conditions that depend on the previous agent result.
+        """
+        parents = self.bp.reverse_graph.get(node, [])
+
+        if not parents:
+            return None
+
+        if len(parents) == 1:
+            raw_val = results.get(parents[0])
+
+            if isinstance(raw_val, GoalResult):
+                goal_results.append(raw_val)
+
+            return (
+                self._extract_output(raw_val)
+                if raw_val is not None
+                else None
+            )
+
+        context_blocks: List[str] = []
+
+        for parent in parents:
+            raw_val = results.get(parent)
+
+            if isinstance(raw_val, GoalResult):
+                goal_results.append(raw_val)
+
+            parent_output = self._extract_output(raw_val)
+
+            if parent_output:
+                context_blocks.append(parent_output)
+
+        return "\n\n".join(context_blocks) if context_blocks else None
+
+
+    async def _emit_checkpoint(
+            self,
+            *,
+            checkpoint: RunCheckpoint,
+            run_id: str,
+            node: str | None,
+            status_callback: Optional[StatusCallback],
+    ) -> None:
+        """
+        Publish the current workflow checkpoint through the existing
+        status_callback -> RabbitMQ pipeline.
+        """
+
+        checkpoint.version += 1
+
+        if not status_callback:
+            return
+
+        node_item = (
+            self.bp.nodes.get(node)
+            if node is not None
+            else None
+        )
+
+        checkpoint_message = {
+            "event": "workflow_checkpoint",
+            "run_id": run_id,
+            "pipe_id": self.pipe_id,
+            "node": node,
+            "agent_id": (
+                getattr(node_item, "agent_id", None)
+                if node_item is not None
+                else None
+            ),
+            "agent": (
+                getattr(node_item, "name", node)
+                if node_item is not None
+                else node
+            ),
+            "checkpoint_version": checkpoint.version,
+            "checkpoint": checkpoint.model_dump(
+                mode="json"
+            ),
+        }
+
+        logger.info(
+            "Publishing workflow_checkpoint: "
+            "run_id=%s version=%s node=%s",
+            run_id,
+            checkpoint.version,
+            node,
+        )
+
+        await _maybe_await(
+            status_callback(**checkpoint_message)
+        )
+
     async def execute(
             self,
             run_id: str,
             verify_goal: bool = True,
             conversation_id: str | None = None,
             initial_ctx: Optional[Dict[str, Any]] = None,
-            status_callback: Optional[StatusCallback] = None
-    ) -> Dict[str, NodeState]:
+            status_callback: Optional[StatusCallback] = None,
+            checkpoint: RunCheckpoint | None = None,
+    ) -> RunCheckpoint:
         """
         Executes the entire structural workflow pipeline using real-time fluid queue calculations.
         Intercepts thread operations seamlessly when exceptions are detected or conditional policy rules shift.
@@ -277,17 +378,23 @@ class AgentXDag:
         Raises:
             Exception: Escalates unexpected unrecoverable programmatic runtime system core failures if global teardown flags are bypassed.
         """
-        checkpoint = self.store.load(run_id)
         goal_results: list[GoalResult] = []
 
-        waiting_for_approval = False
-
-        # 1. Pipeline Checkpoint Re-hydration & Matrix Seeding
-        if not checkpoint:
+        if checkpoint is None:
             checkpoint = RunCheckpoint(
                 run_id=run_id,
-                states={node: NodeState.PENDING for node in self.bp.nodes},
-                global_ctx=initial_ctx or {}
+                states={
+                    node: NodeState.PENDING
+                    for node in self.bp.nodes
+                },
+                global_ctx=initial_ctx or {},
+            )
+
+            await self._emit_checkpoint(
+                checkpoint=checkpoint,
+                run_id=run_id,
+                node=None,
+                status_callback=status_callback,
             )
 
         states = checkpoint.states
@@ -326,74 +433,177 @@ class AgentXDag:
 
                 if not parent_policy_passed:
                     states[node] = NodeState.SKIPPED
+                    await self._emit_checkpoint(
+                        checkpoint=checkpoint,
+                        run_id=run_id,
+                        node=node,
+                        status_callback=status_callback,
+                    )
                     logger.info(f"  Skipping Node '{node}' due to upstream pipeline conditions.")
                     self._unblock_children(node, runtime_indegree, ready_queue)
                     continue
 
-                # 4. Human Approval Interception Checks
-                # if node in self.bp.requires_approval and states.get(node) not in (NodeState.RUNNING,
-                #                                                                   NodeState.COMPLETED):
-                #     states[node] = NodeState.WAITING_FOR_APPROVAL
-                #     logger.info(
-                #         f" [PAUSED] Execution ID [{run_id}] - Node '{node}' requires human validation validation review.")
-                #     continue
+                # states[node] = NodeState.RUNNING
 
-                if node in self.bp.requires_approval and states.get(node) not in (
-                        NodeState.RUNNING,
-                        NodeState.COMPLETED,
-                        NodeState.WAITING_FOR_APPROVAL,
-                ):
-                    states[node] = NodeState.WAITING_FOR_APPROVAL
+                node_item = self.bp.nodes[node]
 
-                    logger.info(
-                        f"[WAITING_FOR_APPROVAL] "
-                        f"Execution ID [{run_id}] - "
-                        f"Node '{node}' requires human approval."
+                # ---------------------------------------------------------
+                # Resolve upstream agent output BEFORE policy authorization.
+                #
+                # The policy/context builder may depend on the previous
+                # agent's result. Previously this value was calculated only
+                # after _authorize(), which caused downstream authorization
+                # requests to receive previous_agent_result=None.
+                # ---------------------------------------------------------
+                previous_agent_result = None
+
+                if isinstance(node_item, Agent):
+                    previous_agent_result = self._resolve_previous_agent_result(
+                        node=node,
+                        results=results,
+                        goal_results=goal_results,
                     )
 
-                    checkpoint.approval_node = node
-                    checkpoint.approval_status = "WAITING"
-                    checkpoint.goal_results = goal_results
+                    logger.debug(
+                        "Resolved previous_agent_result for node='%s': %s",
+                        node,
+                        bool(previous_agent_result),
+                    )
 
-                    # Persist the waiting state immediately.
-                    self.store.save(checkpoint)
+                # ---------------------------------------------------------
+                # 5. APPROVAL DECISION
+                # ---------------------------------------------------------
 
-                    print(f"CHECKPOINT WAITING STATE: {checkpoint}")
+                approval_granted = (
+                        checkpoint.approval_status == "APPROVED"
+                        and checkpoint.approval_node == node
+                )
 
-                    waiting_for_approval = True
+                approval_required = False
 
-                    break
+                if isinstance(node_item, Agent):
+
+                    # -----------------------------------------------------
+                    # POLICY PRE-AUTHORIZATION
+                    #
+                    # Only evaluate policy when this node has NOT already
+                    # received human approval.
+                    # -----------------------------------------------------
+                    if not approval_granted:
+
+                        try:
+                            policy_decision = await node_item._authorize(
+                                query_instruction=global_ctx.get(
+                                    "query_instruction",
+                                    ""
+                                ),
+                                pipe_id=self.pipe_id,
+                                conversation_id=conversation_id,
+                                previous_agent_result=previous_agent_result,
+                            )
+
+                        except PermissionError as ex:
+
+                            logger.warning(
+                                "Policy denied node '%s': %s",
+                                node,
+                                ex,
+                            )
+
+                            states[node] = NodeState.FAILED
+                            results[node] = "POLICY_FAILED"
+
+                            await self._emit_checkpoint(
+                                checkpoint=checkpoint,
+                                run_id=run_id,
+                                node=node,
+                                status_callback=status_callback,
+                            )
+
+                            if self.stop_on_node_failure:
+                                abort_pipeline = True
+
+                            break
+
+                        policy_requires_approval = (
+                                policy_decision is not None
+                                and policy_decision.decision == "APPROVE"
+                        )
+
+                        if policy_requires_approval:
+                            approval_required = True
+
+                            logger.info(
+                                "[APPROVAL_REQUIRED] "
+                                "run_id=%s, node=%s, reason=POLICY_APPROVE",
+                                run_id,
+                                node,
+                            )
+
+                    else:
+
+                        # Human approval was already granted for this exact node.
+                        logger.info(
+                            "Skipping policy pre-authorization for node='%s' "
+                            "because approval_granted=True",
+                            node,
+                        )
+
+                    # -----------------------------------------------------
+                    # HUMAN APPROVAL
+                    # -----------------------------------------------------
+                    if approval_required and not approval_granted:
+
+                        states[node] = NodeState.WAITING_FOR_APPROVAL
+
+                        checkpoint.approval_node = node
+                        checkpoint.approval_status = "WAITING"
+                        checkpoint.goal_results = goal_results
+
+                        await self._emit_checkpoint(
+                            checkpoint=checkpoint,
+                            run_id=run_id,
+                            node=node,
+                            status_callback=status_callback,
+                        )
+
+                        logger.info(
+                            "[WAITING_FOR_APPROVAL] "
+                            "run_id=%s node=%s",
+                            run_id,
+                            node,
+                        )
+
+                        # Stop this execution. The Java Controller owns
+                        # the human approval and will later send RESUME.
+                        return checkpoint
+
+                # ---------------------------------------------------------
+                # 6. START NODE EXECUTION
+                # ---------------------------------------------------------
 
                 states[node] = NodeState.RUNNING
-                node_item = self.bp.nodes[node]
-                ctx = WorkflowContext(global_ctx, results.copy(), states.copy())
 
+                await self._emit_checkpoint(
+                    checkpoint=checkpoint,
+                    run_id=run_id,
+                    node=node,
+                    status_callback=status_callback,
+                )
+
+                ctx = WorkflowContext(
+                    global_ctx,
+                    results.copy(),
+                    states.copy()
+                )
                 # 5. Native Dynamic Dispatch Architecture
                 if isinstance(node_item, Agent):
-                    parents = self.bp.reverse_graph.get(node, [])
-
-                    if not parents:
-                        previous_agent_result = None
-                    elif len(parents) == 1:
-                        raw_val = results.get(parents[0])
-
-                        if isinstance(raw_val, GoalResult):
-                            goal_results.append(raw_val)
-
-                        previous_agent_result = self._extract_output(raw_val) if raw_val is not None else None
-                    else:
-                        context_blocks = []
-                        for parent in parents:
-                            # Safely fetch and isolate the snapshot value text immediately
-                            raw_val = results.get(parent)
-
-                            if isinstance(raw_val, GoalResult):
-                                goal_results.append(raw_val)
-
-                            parent_output = self._extract_output(raw_val)
-                            # context_blocks.append(f"### Output from Upstream Agent [{parent}]:\n{parent_output}")
-                            context_blocks.append(parent_output)
-                        previous_agent_result = "\n\n".join(context_blocks)
+                    # previous_agent_result was resolved before authorization
+                    # and is reused here for actual agent execution.
+                    approval_granted = (
+                            checkpoint.approval_status == "APPROVED"
+                            and checkpoint.approval_node == node
+                    )
 
                     # Dynamic Framework Method Signature Packaging Alignment
                     task = asyncio.create_task(
@@ -406,27 +616,15 @@ class AgentXDag:
                             stop_if_goal_not_satisfied=self.stop_if_goal_not_satisfied,
                             conversation_id=conversation_id,
                             storage=self.storage,
-                            status_callback=status_callback
+                            status_callback=status_callback,
+                            approval_granted=approval_granted,
+
                         )
                     )
                 else:
                     task = asyncio.create_task(node_item(ctx))
 
                 tasks[task] = node
-
-            # if not tasks:
-            #     break
-
-            if waiting_for_approval:
-                logger.info(
-                    f"Workflow paused for human approval. "
-                    f"run_id={run_id}"
-                )
-                checkpoint.goal_results = goal_results
-                self.store.save(checkpoint)
-
-                print(f"CHECKPOINT WAITING STATE: {checkpoint}")
-                break
 
             if not tasks:
                 break
@@ -439,11 +637,31 @@ class AgentXDag:
                 try:
                     results[node] = await task
                     states[node] = NodeState.COMPLETED
+
+                    await self._emit_checkpoint(
+                        checkpoint=checkpoint,
+                        run_id=run_id,
+                        node=node,
+                        status_callback=status_callback,
+                    )
+
+                    logger.debug(
+                        "Node '%s' completed. Output is now available in "
+                        "checkpoint.results for downstream authorization.",
+                        node,
+                    )
+
                     self._unblock_children(node, runtime_indegree, ready_queue)
                 except (Exception, StopSuperAgentX) as e:
                     # 7. Granular Node Isolation and Containment Handling
                     states[node] = NodeState.FAILED
                     results[node] = getattr(e, "goal_result", f"Error structural exception trace: {str(e)}")
+                    await self._emit_checkpoint(
+                        checkpoint=checkpoint,
+                        run_id=run_id,
+                        node=node,
+                        status_callback=status_callback,
+                    )
                     logger.error(f" Execution crash localized on Node identity marker [{node}]: {e}")
 
                     if self.stop_on_node_failure:
@@ -466,14 +684,85 @@ class AgentXDag:
                     if states[remaining_node] in (NodeState.PENDING, NodeState.RUNNING):
                         states[remaining_node] = NodeState.FAILED
 
-                self.store.save(checkpoint)
+                await self._emit_checkpoint(
+                    checkpoint=checkpoint,
+                    run_id=run_id,
+                    node=None,
+                    status_callback=status_callback,
+                )
+
                 break
 
             # Save GoalResults from all agents
             checkpoint.goal_results = goal_results
-
-            self.store.save(checkpoint)
+            # await self._emit_checkpoint(
+            #     checkpoint=checkpoint,
+            #     run_id=run_id,
+            #     node=None,
+            #     status_callback=status_callback,
+            # )
 
             print(f"CHECKPOINT SAVE STATE: {checkpoint}")
 
-        return states
+        return checkpoint
+
+    async def resume(
+            self,
+            run_id: str,
+            *,
+            checkpoint: dict,
+            conversation_id: str | None = None,
+            status_callback: Optional[StatusCallback] = None,
+    ) -> Dict[str, NodeState]:
+
+        checkpoint_model = RunCheckpoint.model_validate(
+            checkpoint
+        )
+
+        if checkpoint_model.run_id != run_id:
+            raise ValueError(
+                "run_id does not match checkpoint.run_id"
+            )
+
+        if checkpoint_model.approval_status != "APPROVED":
+            raise ValueError(
+                f"Workflow is not approved for run_id={run_id}"
+            )
+
+        node = checkpoint_model.approval_node
+
+        if not node:
+            raise ValueError(
+                f"Approved node missing for run_id={run_id}"
+            )
+
+        logger.info(
+            "Resuming run_id=%s node=%s",
+            run_id,
+            node,
+        )
+
+        checkpoint_model.states[node] = NodeState.PENDING
+
+        return await self.execute(
+            run_id=run_id,
+            checkpoint=checkpoint_model,
+            conversation_id=conversation_id,
+            status_callback=status_callback,
+        )
+
+    async def reject(
+            self,
+            *,
+            run_id: str,
+            checkpoint: dict,
+    ):
+        checkpoint_model = RunCheckpoint.model_validate(checkpoint)
+
+        checkpoint_model.approval_status = "REJECTED"
+
+        for node, state in checkpoint_model.states.items():
+            if state == NodeState.WAITING_FOR_APPROVAL:
+                checkpoint_model.states[node] = NodeState.FAILED
+
+        return checkpoint_model.states

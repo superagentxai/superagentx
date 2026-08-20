@@ -22,5 +22,7 @@ class RunCheckpoint(BaseModel):
 
     goal_results: list[GoalResult] = Field(default_factory=list, description="Goal results for this run.")
 
+    version: int = 0
+
     approval_node: str | None = None
     approval_status: str | None = None
