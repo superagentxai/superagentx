@@ -1,31 +1,39 @@
 import os
+
 import httpx
 
 from .models import PolicyDecision
-from dotenv import load_dotenv
-load_dotenv()
+
 
 class PolicyClient:
 
-    def __init__(self, platform_url: str | None = None):
-        self.base_url = platform_url or os.getenv("PLATFORM_URL")
+    def __init__(
+        self,
+        platform_url: str | None = None,
+    ):
+        self.platform_url = platform_url
 
-        if not self.base_url:
+    async def evaluate(
+        self,
+        payload: dict,
+    ) -> PolicyDecision:
+
+        base_url = (
+            self.platform_url
+            or os.getenv("PLATFORM_URL")
+        )
+
+        if not base_url:
             raise ValueError(
                 "PLATFORM_URL is not configured."
             )
 
-    async def evaluate(
-        self,
-        payload: dict
-    ) -> PolicyDecision:
+        base_url = base_url.rstrip("/")
 
-        async with httpx.AsyncClient() as client:
-
+        async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
-                f"{self.base_url}/api/v1/evaluate",
+                f"{base_url}/api/v1/evaluate",
                 json=payload,
-                timeout=30
             )
 
             response.raise_for_status()

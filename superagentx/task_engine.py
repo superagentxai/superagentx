@@ -186,6 +186,7 @@ class TaskEngine(BaseEngine):
         if result is None:
             return {}
 
+
         normalized: Dict[str, Any] = {}
 
         def extract(obj):

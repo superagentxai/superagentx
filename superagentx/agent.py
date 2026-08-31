@@ -391,6 +391,11 @@ class Agent:
         decision = await policy_client.evaluate(payload)
 
         logger.info(
+            "========== AGENT POLICY PAYLOAD ==========\n%s",
+            json.dumps(payload, indent=2, default=str)
+        )
+
+        logger.info(
             "Policy decision for agent=%s: %s",
             self.name,
             decision.decision,

@@ -231,7 +231,11 @@ class AgentXDag:
 
         # Handle SuperAgentX dynamic structural Pydantic GoalResult objects
         if hasattr(val, "__class__") and val.__class__.__name__ == "GoalResult":
-            raw_data = getattr(val, "content", getattr(val, "result", ""))
+            # If content is None, fall back to the actual GoalResult.result.
+            raw_data = getattr(val, "content", None)
+
+            if raw_data is None:
+                raw_data = getattr(val, "result", "")
 
             while isinstance(raw_data, list) and len(raw_data) > 0:
                 raw_data = raw_data[0]
@@ -257,42 +261,126 @@ class AgentXDag:
         node: str,
         results: Dict[str, Any],
         goal_results: List[GoalResult],
-    ) -> Optional[str]:
+    ) -> Optional[Any]:
         """
-        Resolve the finalized output of the upstream parent agent(s).
+        Resolve previous agent result(s).
 
-        This must happen before policy authorization so the policy context
-        can evaluate conditions that depend on the previous agent result.
+        Single parent:
+            Return GoalResult.result directly.
+
+        Multiple/parallel parents:
+            Preserve the original DAG behavior by collecting each upstream
+            result into a labeled text block and joining the blocks.
         """
         parents = self.bp.reverse_graph.get(node, [])
 
         if not parents:
             return None
 
+        # Single upstream parent.
         if len(parents) == 1:
-            raw_val = results.get(parents[0])
+            parent = parents[0]
+            raw_val = results.get(parent)
+
+            logger.info(
+                "Resolving previous agent result | "
+                "node=%s parent=%s raw_type=%s",
+                node,
+                parent,
+                type(raw_val).__name__,
+            )
+
+            if raw_val is None:
+                logger.warning(
+                    "Previous agent result is missing | "
+                    "node=%s parent=%s available_results=%s",
+                    node,
+                    parent,
+                    list(results.keys()),
+                )
+                return None
 
             if isinstance(raw_val, GoalResult):
                 goal_results.append(raw_val)
+                previous_result = raw_val.result
 
-            return (
-                self._extract_output(raw_val)
-                if raw_val is not None
-                else None
-            )
+                logger.info(
+                    "Using GoalResult.result | "
+                    "node=%s parent=%s result_type=%s",
+                    node,
+                    parent,
+                    type(previous_result).__name__,
+                )
 
+                return previous_result
+
+            # Handle serialized/deserialized GoalResult.
+            if isinstance(raw_val, dict) and "result" in raw_val:
+                return raw_val.get("result")
+
+            return raw_val
+
+        # Multiple / parallel upstream parents.
+        #
+        # Preserve the original parallel contract:
+        #
+        # ### Output from Upstream Agent [Agent A]:
+        # result A
+        #
+        # ### Output from Upstream Agent [Agent B]:
+        # result B
+        #
+        # The source is now GoalResult.result instead of _extract_output().
         context_blocks: List[str] = []
 
         for parent in parents:
             raw_val = results.get(parent)
 
+            if raw_val is None:
+                logger.warning(
+                    "Missing result for upstream parent | "
+                    "node=%s parent=%s",
+                    node,
+                    parent,
+                )
+                continue
+
             if isinstance(raw_val, GoalResult):
                 goal_results.append(raw_val)
+                parent_result = raw_val.result
 
-            parent_output = self._extract_output(raw_val)
+            elif isinstance(raw_val, dict) and "result" in raw_val:
+                parent_result = raw_val.get("result")
 
-            if parent_output:
-                context_blocks.append(parent_output)
+            else:
+                parent_result = raw_val
+
+            if parent_result is None:
+                continue
+
+            if isinstance(parent_result, str):
+                parent_output = parent_result
+            elif isinstance(parent_result, (dict, list)):
+                parent_output = json.dumps(
+                    parent_result,
+                    indent=2,
+                    default=str,
+                )
+            else:
+                parent_output = str(parent_result)
+
+            context_blocks.append(
+                f"### Output from Upstream Agent [{parent}]:\n"
+                f"{parent_output}"
+            )
+
+            logger.info(
+                "Parallel upstream result collected | "
+                "node=%s parent=%s result_type=%s",
+                node,
+                parent,
+                type(parent_result).__name__,
+            )
 
         return "\n\n".join(context_blocks) if context_blocks else None
 
@@ -464,10 +552,12 @@ class AgentXDag:
                         goal_results=goal_results,
                     )
 
-                    logger.debug(
-                        "Resolved previous_agent_result for node='%s': %s",
+                    logger.info(
+                        "Resolved previous_agent_result | "
+                        "node=%s type=%s value=%r",
                         node,
-                        bool(previous_agent_result),
+                        type(previous_agent_result).__name__,
+                        previous_agent_result,
                     )
 
                 # ---------------------------------------------------------
@@ -560,6 +650,15 @@ class AgentXDag:
                         checkpoint.approval_status = "WAITING"
                         checkpoint.goal_results = goal_results
 
+                        logger.info(
+                            "🔥 BEFORE APPROVAL CHECKPOINT | "
+                            "run_id=%s node=%s version=%s status_callback=%s",
+                            run_id,
+                            node,
+                            checkpoint.version,
+                            status_callback is not None,
+                        )
+
                         await self._emit_checkpoint(
                             checkpoint=checkpoint,
                             run_id=run_id,
@@ -574,8 +673,6 @@ class AgentXDag:
                             node,
                         )
 
-                        # Stop this execution. The Java Controller owns
-                        # the human approval and will later send RESUME.
                         return checkpoint
 
                 # ---------------------------------------------------------
@@ -636,6 +733,15 @@ class AgentXDag:
                 node = tasks.pop(task)
                 try:
                     results[node] = await task
+
+                    logger.info(
+                        "Node result stored | "
+                        "node=%s type=%s result=%r",
+                        node,
+                        type(results[node]).__name__,
+                        results[node],
+                    )
+
                     states[node] = NodeState.COMPLETED
 
                     await self._emit_checkpoint(
