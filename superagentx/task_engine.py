@@ -186,6 +186,13 @@ class TaskEngine(BaseEngine):
         if result is None:
             return {}
 
+        if isinstance(result, str):
+            cleaned = re.sub(r"^json\s*", "", result.strip())
+            cleaned = re.sub(r"\s*$", "", cleaned)
+            try:
+                result = json.loads(cleaned)
+            except Exception:
+                pass
 
         normalized: Dict[str, Any] = {}
 
