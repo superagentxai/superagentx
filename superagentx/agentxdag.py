@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Union, Set
 
 # SuperAgentX Framework Integrations
 from superagentx.agent import Agent
+from superagentx.constants import APPROVED, APPROVE, WAITING, REJECTED
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.orchestrator.checkpoint import RunCheckpoint
 from superagentx.orchestrator.node_state import NodeState
@@ -525,7 +526,7 @@ class AgentXDag:
                 # ---------------------------------------------------------
 
                 approval_granted = (
-                        checkpoint.approval_status == "APPROVED"
+                        checkpoint.approval_status == APPROVED
                         and checkpoint.approval_node == node
                 )
 
@@ -577,7 +578,7 @@ class AgentXDag:
 
                         policy_requires_approval = (
                                 policy_decision is not None
-                                and policy_decision.decision == "APPROVE"
+                                and policy_decision.decision == APPROVE
                         )
 
                         if policy_requires_approval:
@@ -607,7 +608,7 @@ class AgentXDag:
                         states[node] = NodeState.WAITING_FOR_APPROVAL
 
                         checkpoint.approval_node = node
-                        checkpoint.approval_status = "WAITING"
+                        checkpoint.approval_status = WAITING
                         checkpoint.goal_results = goal_results
 
                         logger.info(
@@ -658,7 +659,7 @@ class AgentXDag:
                     # previous_agent_result was resolved before authorization
                     # and is reused here for actual agent execution.
                     approval_granted = (
-                            checkpoint.approval_status == "APPROVED"
+                            checkpoint.approval_status == APPROVED
                             and checkpoint.approval_node == node
                     )
 
@@ -816,7 +817,7 @@ class AgentXDag:
     ):
         checkpoint_model = RunCheckpoint.model_validate(checkpoint)
 
-        checkpoint_model.approval_status = "REJECTED"
+        checkpoint_model.approval_status = REJECTED
 
         for node, state in checkpoint_model.states.items():
             if state == NodeState.WAITING_FOR_APPROVAL:

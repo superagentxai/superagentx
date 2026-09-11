@@ -8,7 +8,7 @@ from typing import Literal, Any
 from superagentx.browser_engine import BrowserEngine
 from superagentx.channels.base import HumanApprovalChannel
 from superagentx.channels.console_channel import ConsoleApprovalChannel
-from superagentx.constants import SEQUENCE, PARALLEL
+from superagentx.constants import SEQUENCE, PARALLEL, APPROVE, APPROVED, DENY, REJECTED, WAITING, COMPLETED
 from superagentx.db_store import StorageAdapter
 from superagentx.engine import Engine
 from superagentx.exceptions import StopSuperAgentX
@@ -421,7 +421,7 @@ class Agent:
             decision.decision,
         )
 
-        if decision.decision == "DENY":
+        if decision.decision == DENY:
             raise PermissionError(
                 decision.reason or "Agent execution denied by policy."
             )
@@ -512,7 +512,7 @@ class Agent:
 
             policy_requires_approval = (
                     policy_decision is not None
-                    and policy_decision.decision == "APPROVE"
+                    and policy_decision.decision == APPROVE
             )
 
             approval_required = (
@@ -541,7 +541,7 @@ class Agent:
                             agent_id=self.agent_id,
                             agent_name=self.name,
                             input_content=query_instruction,
-                            status="REJECTED"
+                            status=REJECTED
                         )
                         await storage.update_pipe_status(
                             pipe_id,
@@ -565,7 +565,7 @@ class Agent:
                             name=self.name,
                             agent_id=self.agent_id,
                             content="Rejected by human",
-                            approved_status="REJECTED",
+                            approved_status=REJECTED,
                             is_goal_satisfied=False
                         )
                     )
@@ -577,7 +577,7 @@ class Agent:
                         agent_id=self.agent_id,
                         agent_name=self.name,
                         input_content=query_instruction,
-                        status="APPROVED"
+                        status=APPROVED
                     )
                     await storage.update_pipe_status(pipe_id, "In-Progress")
 
@@ -639,7 +639,7 @@ class Agent:
                             agent_name=self.name,
                             input_content=query_instruction,
                             goal_result=_goal_result,
-                            status="COMPLETED"
+                            status=COMPLETED
                         )
 
                     if status_callback:

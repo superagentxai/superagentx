@@ -1,21 +1,20 @@
 import asyncio
 import logging
-import uuid
-from typing import Literal, Any, List, Optional
 import os
+import uuid
+from typing import Literal, Any, Optional
+
 import yaml
 
 from superagentx.agent import Agent
 from superagentx.agentxdag import AgentXDag, WorkflowBlueprint
 from superagentx.config import is_verbose_enabled
-from superagentx.router.router_engine import RouterEngine
 from superagentx.constants import SEQUENCE, PARALLEL
+from superagentx.db_store import ConfigLoader
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
-from superagentx.db_store import ConfigLoader
+from superagentx.router.router_engine import RouterEngine
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
-from superagentx.utils.observability.trace_decorator import pipe_trace
-
 
 is_verbose_enabled()
 
@@ -315,7 +314,7 @@ class AgentXPipe:
                                 )
                                 for agent in agents_list
                             ],
-                            return_exceptions=True  #prevents crash
+                            return_exceptions=True  # prevents crash
                         )
                         parallel_previous_results = []
 
@@ -452,7 +451,6 @@ class AgentXPipe:
                     logger.info(f"DB connection closed for pipe {self.pipe_id}")
                 except Exception as e:
                     logger.warning(f"Failed to close DB connection: {e}")
-
 
     async def flow(
             self,
@@ -599,7 +597,6 @@ class AgentXPipe:
         # Return Checkpoint
         # -----------------------------------------------------
 
-
         goal_result: list[GoalResult] = []
         if checkpoint:
             goal_result = checkpoint.goal_results
@@ -612,7 +609,7 @@ class AgentXPipe:
                 query=query_instruction,
                 conversation_id=conversation_id,
                 result=goal_result
-           ))
+            ))
         return checkpoint, goal_result
 
     async def _load_storage_once(self):
