@@ -4,21 +4,22 @@ import logging
 import uuid
 from json import JSONDecodeError
 from typing import Literal, Any
-from superagentx.policy import (
-    policy_client
-)
+
 from superagentx.browser_engine import BrowserEngine
 from superagentx.channels.base import HumanApprovalChannel
 from superagentx.channels.console_channel import ConsoleApprovalChannel
-from superagentx.db_store import StorageAdapter
-from superagentx.handler.base import BaseHandler
-from superagentx.task_engine import TaskEngine
 from superagentx.constants import SEQUENCE, PARALLEL
+from superagentx.db_store import StorageAdapter
 from superagentx.engine import Engine
 from superagentx.exceptions import StopSuperAgentX
+from superagentx.handler.base import BaseHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
+from superagentx.policy import (
+    policy_client
+)
 from superagentx.prompt import PromptTemplate
 from superagentx.result import GoalResult
+from superagentx.task_engine import TaskEngine
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
 from superagentx.utils.observability.span_decorator import agent_span
 
@@ -282,7 +283,7 @@ class Agent:
             "storage": storage,
             "status_callback": status_callback
         }
-        if not self.engines and self.tool: # If pass tool via Agent
+        if not self.engines and self.tool:  # If pass tool via Agent
             logger.debug(f'Engine(s) is empty')
             engine = Engine(handler=self.tool, llm=self.llm, prompt_template=self.prompt_template)
             await self.add(engine)
@@ -292,7 +293,7 @@ class Agent:
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 logger.debug(f'Engine(s) are executing : {",".join([str(_engine)
-                                                                for _engine in _engines])}')
+                                                                    for _engine in _engines])}')
 
                 _res = await asyncio.gather(
                     *[
@@ -354,7 +355,7 @@ class Agent:
 
     def to_dict(self):
         return {
-            "id": self.agent_id,
+            # "id": self.agent_id,
             "name": self.name,
             "description": self.description,
             "capabilities": self.capabilities,
@@ -369,30 +370,60 @@ class Agent:
             conversation_id: str | None = None,
             previous_agent_result: Any = None,
     ):
-
         if not self.policies:
             return
-        #
+
         principal = {
             "id": "user123",
-            "role": "USER"
+            "role": "USER",
         }
 
-        payload = {
-            "query": query_instruction,
+        metadata = self.to_dict()
+
+        if pipe_id is not None:
+            metadata["pipe_id"] = pipe_id
+
+        if conversation_id is not None:
+            metadata["conversation_id"] = conversation_id
+
+        if previous_agent_result is not None:
+            if hasattr(previous_agent_result, "model_dump"):
+                previous_agent = previous_agent_result.model_dump()
+            elif isinstance(previous_agent_result, dict):
+                previous_agent = previous_agent_result
+            else:
+                previous_agent = {
+                    "result": previous_agent_result,
+                }
+
+            previous_agent_id = None
+
+            if hasattr(previous_agent_result, "agent_id"):
+                previous_agent_id = previous_agent_result.agent_id
+            elif isinstance(previous_agent_result, dict):
+                previous_agent_id = previous_agent_result.get("agent_id")
+
+            metadata["previous_agent"] = {
+                "id": previous_agent_id,
+                "result": previous_agent,
+            }
+
+        request = {
+            "source": {
+                "type": "agent",
+                "id": self.agent_id,
+                "metadata": metadata,
+            },
             "principal": principal,
-            "agent": self.to_dict(),
+            "query": query_instruction,
             "policies": self.policies,
-            "pipe_id": pipe_id,
-            "conversation_id": conversation_id,
-            "previous_agent_result": previous_agent_result,
         }
 
-        decision = await policy_client.evaluate(payload)
+        decision = await policy_client.evaluate(request)
 
         logger.info(
             "========== AGENT POLICY PAYLOAD ==========\n%s",
-            json.dumps(payload, indent=2, default=str)
+            json.dumps(request, indent=2, default=str),
         )
 
         logger.info(
@@ -407,7 +438,6 @@ class Agent:
             )
 
         return decision
-
 
     @agent_span
     async def execute(
@@ -497,8 +527,8 @@ class Agent:
             )
 
             approval_required = (
-                not approval_granted
-                and policy_requires_approval
+                    not approval_granted
+                    and policy_requires_approval
             )
 
             # ------------------------------------------------------------------
@@ -698,4 +728,3 @@ class Agent:
                     ))
                 except Exception as cb_ex:
                     logger.error(f"Failed to send agent_execute_complete: {cb_ex}")
-
