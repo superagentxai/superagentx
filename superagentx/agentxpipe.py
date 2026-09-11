@@ -613,7 +613,6 @@ class AgentXPipe:
                 conversation_id=conversation_id,
                 result=goal_result
            ))
-        print(f"PIPE CHECKPOINT: {checkpoint}")
         return checkpoint, goal_result
 
     async def _load_storage_once(self):

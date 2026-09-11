@@ -28,7 +28,7 @@ def main(
             )
             cli_app.create_project()
         except (AppConfigError, Exception) as ex:
-            sys.stderr.write(f"Superagentx app creation failed!\n{ex}")
+            sys.stderr(f"Superagentx app creation failed!\n{ex}")
             sys.exit(1)
 
 if __name__ == '__main__':

@@ -374,8 +374,8 @@ class Agent:
             return
 
         principal = {
-            "id": "user123",
-            "role": "USER",
+            "id": self.name,
+            "role": "AGENT",
         }
 
         metadata = self.to_dict()
@@ -387,26 +387,15 @@ class Agent:
             metadata["conversation_id"] = conversation_id
 
         if previous_agent_result is not None:
-            if hasattr(previous_agent_result, "model_dump"):
-                previous_agent = previous_agent_result.model_dump()
-            elif isinstance(previous_agent_result, dict):
-                previous_agent = previous_agent_result
-            else:
-                previous_agent = {
-                    "result": previous_agent_result,
-                }
+            previous_agent = (
+                previous_agent_result.model_dump()
+                if hasattr(previous_agent_result, "model_dump")
+                else previous_agent_result
+                if isinstance(previous_agent_result, dict)
+                else {"result": previous_agent_result}
+            )
 
-            previous_agent_id = None
-
-            if hasattr(previous_agent_result, "agent_id"):
-                previous_agent_id = previous_agent_result.agent_id
-            elif isinstance(previous_agent_result, dict):
-                previous_agent_id = previous_agent_result.get("agent_id")
-
-            metadata["previous_agent"] = {
-                "id": previous_agent_id,
-                "result": previous_agent,
-            }
+            metadata["previous_agent"] = previous_agent
 
         request = {
             "source": {

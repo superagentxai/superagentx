@@ -62,42 +62,6 @@ class WorkflowContext:
         """
         return self._states.get(node_name)
 
-
-# class InMemoryStore:
-#     """
-#     Simulates high-speed persistent transactional database round-trips via strict
-#     Pydantic JSON model serialization protocols.
-#     """
-#
-#     def __init__(self):
-#         """Initializes the underlying volatile textual string data dictionary framework map."""
-#         self._storage: Dict[str, str] = {}
-#
-#     def save(self, checkpoint: RunCheckpoint) -> None:
-#         """
-#         Serializes and commits an active Pydantic execution snapshot securely into storage.
-#
-#         Args:
-#             checkpoint (RunCheckpoint): Instantiated validated structural snapshot object mapping matrix.
-#         """
-#         self._storage[checkpoint.run_id] = checkpoint.model_dump_json()
-#
-#     def load(self, run_id: str) -> Optional[RunCheckpoint]:
-#         """
-#         Re-hydrates and parses valid serialized JSON strings back into active Pydantic tracking models.
-#
-#         Args:
-#             run_id (str): Unique execution tracking string lookup token.
-#
-#         Returns:
-#             Optional[RunCheckpoint]: Hydrated data tracking class model or None if index lookup bounds fail.
-#         """
-#         raw_json = self._storage.get(run_id)
-#         if not raw_json:
-#             return None
-#         return RunCheckpoint.model_validate_json(raw_json)
-
-
 class WorkflowBlueprint:
     """
     Maintains the architectural structural rules mapping, graph paths, configurations,
@@ -157,7 +121,6 @@ class AgentXDag:
             self,
             *,
             blueprint: WorkflowBlueprint,
-            # store: InMemoryStore,
             pipe_id: Optional[str] = None,
             name: Optional[str] = None,
             description: Optional[str] = None,
@@ -184,11 +147,9 @@ class AgentXDag:
             stop_on_node_failure (bool): If True, any node error forces immediate global teardown of active parallel tasks.
         """
         self.bp = blueprint
-        # self.store = store
         self.pipe_id = pipe_id or uuid.uuid4().hex
         self.name = name or f'{self.__str__()}-{self.pipe_id}'
         self.description = description
-        # self.agents = agents or []
         self.router = router
         self.memory = memory
         self.workflow_store = workflow_store
@@ -531,7 +492,6 @@ class AgentXDag:
                     self._unblock_children(node, runtime_indegree, ready_queue)
                     continue
 
-                # states[node] = NodeState.RUNNING
 
                 node_item = self.bp.nodes[node]
 
@@ -801,15 +761,6 @@ class AgentXDag:
 
             # Save GoalResults from all agents
             checkpoint.goal_results = goal_results
-            # await self._emit_checkpoint(
-            #     checkpoint=checkpoint,
-            #     run_id=run_id,
-            #     node=None,
-            #     status_callback=status_callback,
-            # )
-
-            print(f"CHECKPOINT SAVE STATE: {checkpoint}")
-
         return checkpoint
 
     async def resume(
