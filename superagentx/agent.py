@@ -8,15 +8,18 @@ from typing import Literal, Any
 from superagentx.browser_engine import BrowserEngine
 from superagentx.channels.base import HumanApprovalChannel
 from superagentx.channels.console_channel import ConsoleApprovalChannel
+from superagentx.constants import SEQUENCE, PARALLEL, APPROVE, APPROVED, DENY, REJECTED, WAITING, COMPLETED
 from superagentx.db_store import StorageAdapter
-from superagentx.handler.base import BaseHandler
-from superagentx.task_engine import TaskEngine
-from superagentx.constants import SEQUENCE, PARALLEL
 from superagentx.engine import Engine
 from superagentx.exceptions import StopSuperAgentX
+from superagentx.handler.base import BaseHandler
 from superagentx.llm import LLMClient, ChatCompletionParams
+from superagentx.policy import (
+    policy_client
+)
 from superagentx.prompt import PromptTemplate
 from superagentx.result import GoalResult
+from superagentx.task_engine import TaskEngine
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
 from superagentx.utils.observability.span_decorator import agent_span
 
@@ -69,6 +72,7 @@ class Agent:
             prompt_template: PromptTemplate | None = None,
             agent_id: str | None = None,
             name: str | None = None,
+            policies: list[dict] | None = None,
             description: str | None = None,
             engines: list[
                          Engine | BrowserEngine | TaskEngine | list[Engine | BrowserEngine | TaskEngine]] | None = None,
@@ -76,8 +80,7 @@ class Agent:
             tool_args: dict[str, Any] | None = None,
             output_format: str | None = None,
             max_retry: int = 5,
-            human_approval: bool = False,
-            approval_channel: HumanApprovalChannel = None,
+            human_approval: HumanApprovalChannel = None,
             return_engine_result: bool = False,
             capabilities: list[str] | None = None,
             tags: list[str] | None = None
@@ -116,9 +119,7 @@ class Agent:
                 (e.g., text, JSON, or a custom schema).
             max_retry: Maximum number of retry attempts for recoverable failures
                 during execution. Defaults to 5.
-            human_approval: Whether certain actions require explicit human
-                approval before proceeding.
-            approval_channel: The channel or mechanism used to request and receive
+            human_approval: The channel or mechanism used to request and receive
                 human approval when enabled.
             return_engine_result: Whether to return raw engine execution results
                 instead of (or in addition to) post-processed agent output.
@@ -137,11 +138,11 @@ class Agent:
         self.output_format = output_format
         self.max_retry = max_retry if max_retry >= 1 else 1
         self.return_engine_result = return_engine_result
-        self.human_approval = human_approval
-        self.approval_channel = approval_channel or ConsoleApprovalChannel()
+        self.human_approval = human_approval or ConsoleApprovalChannel()
         self.engine_result_format = ENGINE_RESULT_FORMAT
         self.capabilities = capabilities or []
         self.tags = tags or []
+        self.policies = policies or []
         if self.return_engine_result:
             self.engine_result_format = """{{ reason: Set the reason for result, is_goal_satisfied: 'True' if result 
             satisfied based on the given goal. Otherwise set as 'False'. Set only 'True' or 'False' boolean. }}"""
@@ -261,7 +262,7 @@ class Agent:
             self,
             query_instruction: str,
             pre_result: str | None = None,
-            previous_agent_result: str | None = None,
+            previous_agent_result: Any = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             pipe_id: str | None = None,
@@ -282,7 +283,7 @@ class Agent:
             "storage": storage,
             "status_callback": status_callback
         }
-        if not self.engines and self.tool: # If pass tool via Agent
+        if not self.engines and self.tool:  # If pass tool via Agent
             logger.debug(f'Engine(s) is empty')
             engine = Engine(handler=self.tool, llm=self.llm, prompt_template=self.prompt_template)
             await self.add(engine)
@@ -292,7 +293,7 @@ class Agent:
         async for _engines in iter_to_aiter(self.engines):
             if isinstance(_engines, list):
                 logger.debug(f'Engine(s) are executing : {",".join([str(_engine)
-                                                                for _engine in _engines])}')
+                                                                    for _engine in _engines])}')
 
                 _res = await asyncio.gather(
                     *[
@@ -343,7 +344,7 @@ class Agent:
             pipe_id=None,
             conversation_id=None
     ) -> bool:
-        return await self.approval_channel.request_approval(
+        return await self.human_approval.request_approval(
             agent_id=self.agent_id,
             agent_name=self.name,
             query=query,
@@ -352,6 +353,81 @@ class Agent:
             conversation_id=conversation_id
         )
 
+    def to_dict(self):
+        return {
+            # "id": self.agent_id,
+            "name": self.name,
+            "description": self.description,
+            "capabilities": self.capabilities,
+            "tags": self.tags,
+        }
+
+    async def _authorize(
+            self,
+            *,
+            query_instruction: str,
+            pipe_id: str | None = None,
+            conversation_id: str | None = None,
+            previous_agent_result: Any = None,
+    ):
+        if not self.policies:
+            return
+
+        principal = {
+            "id": self.name,
+            "role": "AGENT",
+        }
+
+        metadata = self.to_dict()
+
+        if pipe_id is not None:
+            metadata["pipe_id"] = pipe_id
+
+        if conversation_id is not None:
+            metadata["conversation_id"] = conversation_id
+
+        if previous_agent_result is not None:
+            previous_agent = (
+                previous_agent_result.model_dump()
+                if hasattr(previous_agent_result, "model_dump")
+                else previous_agent_result
+                if isinstance(previous_agent_result, dict)
+                else {"result": previous_agent_result}
+            )
+
+            metadata["previous_agent"] = previous_agent
+
+        request = {
+            "source": {
+                "type": "agent",
+                "id": self.agent_id,
+                "metadata": metadata,
+            },
+            "principal": principal,
+            "query": query_instruction,
+            "policies": self.policies,
+        }
+
+        decision = await policy_client.evaluate(request)
+
+        logger.info(
+            "========== AGENT POLICY PAYLOAD ==========\n%s",
+            json.dumps(request, indent=2, default=str),
+        )
+
+        logger.info(
+            "Policy decision for agent=%s: %s",
+            self.name,
+            decision.decision,
+        )
+
+        if decision.decision == DENY:
+            raise PermissionError(
+                decision.reason or "Agent execution denied by policy."
+            )
+
+        return decision
+
     @agent_span
     async def execute(
             self,
@@ -359,13 +435,14 @@ class Agent:
             query_instruction: str,
             pipe_id: str | None = None,
             pre_result: str | None = None,
-            previous_agent_result: str | None = None,
+            previous_agent_result: Any = None,
             old_memory: list[dict] | None = None,
             verify_goal: bool = True,
             stop_if_goal_not_satisfied: bool = False,
             conversation_id: str | None = None,
             storage: StorageAdapter = None,
-            status_callback: StatusCallback | None = None
+            status_callback: StatusCallback | None = None,
+            approval_granted: bool = False,
     ) -> GoalResult | None:
         """
         Executes the specified query instruction to achieve a defined goal.
@@ -408,15 +485,45 @@ class Agent:
         """
 
         _goal_result = None
+        approval_required = False
+        policy_decision = None
 
         try:
             if not self.llm:
                 verify_goal = False
 
+            # -----------------------------------
+            # POLICY AUTHORIZATION
+            # -----------------------------------
+            # -----------------------------------
+            if not approval_granted:
+                policy_decision = await self._authorize(
+                    query_instruction=query_instruction,
+                    pipe_id=pipe_id,
+                    conversation_id=conversation_id,
+                    previous_agent_result=previous_agent_result,
+                )
+            else:
+                logger.info(
+                    "Skipping policy re-authorization for agent=%s "
+                    "because approval_granted=True",
+                    self.name,
+                )
+
+            policy_requires_approval = (
+                    policy_decision is not None
+                    and policy_decision.decision == APPROVE
+            )
+
+            approval_required = (
+                    not approval_granted
+                    and policy_requires_approval
+            )
+
             # ------------------------------------------------------------------
             # HUMAN APPROVAL (FINAL AGENT STATE)
             # ------------------------------------------------------------------
-            if self.human_approval:
+            if approval_required:
                 if storage:
                     await storage.update_pipe_status(pipe_id, "Waiting-for-Approval")
 
@@ -434,7 +541,7 @@ class Agent:
                             agent_id=self.agent_id,
                             agent_name=self.name,
                             input_content=query_instruction,
-                            status="REJECTED"
+                            status=REJECTED
                         )
                         await storage.update_pipe_status(
                             pipe_id,
@@ -458,7 +565,7 @@ class Agent:
                             name=self.name,
                             agent_id=self.agent_id,
                             content="Rejected by human",
-                            approved_status="REJECTED",
+                            approved_status=REJECTED,
                             is_goal_satisfied=False
                         )
                     )
@@ -470,7 +577,7 @@ class Agent:
                         agent_id=self.agent_id,
                         agent_name=self.name,
                         input_content=query_instruction,
-                        status="APPROVED"
+                        status=APPROVED
                     )
                     await storage.update_pipe_status(pipe_id, "In-Progress")
 
@@ -525,14 +632,14 @@ class Agent:
                     )
 
                     # Store COMPLETED only when NO human approval
-                    if storage and not self.human_approval:
+                    if storage and not approval_required:
                         await storage.mark_agent_completed(
                             pipe_id=pipe_id,
                             agent_id=self.agent_id,
                             agent_name=self.name,
                             input_content=query_instruction,
                             goal_result=_goal_result,
-                            status="COMPLETED"
+                            status=COMPLETED
                         )
 
                     if status_callback:
@@ -571,7 +678,7 @@ class Agent:
                     logger.exception(f"Agent `{self.name}` failed on retry {retry}: {e}")
 
                     # Store ERROR only when NO human approval
-                    if storage and not self.human_approval:
+                    if storage and not approval_required:
                         await storage.mark_agent_completed(
                             pipe_id=pipe_id,
                             agent_id=self.agent_id,
@@ -610,4 +717,3 @@ class Agent:
                     ))
                 except Exception as cb_ex:
                     logger.error(f"Failed to send agent_execute_complete: {cb_ex}")
-

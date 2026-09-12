@@ -111,6 +111,7 @@ class AgentConfig(BaseModel):
     capabilities: list[str] | None = None
     engines: List[Any] | None = None
     output_format: str | None = None
+    policies: list[dict] | None = None
     human_approval: bool = False
     agents_config: dict | None = None
     max_retry: int = 5
@@ -404,6 +405,7 @@ class SuperAgentXCompiler:
         agent_id={repr(agent.agent_id)},
         name={repr(agent.name)},
         capabilities={repr(agent.capabilities)},
+        policies={repr(agent.policies)},      # <-- NEW.
         description={repr(agent.description)},
         human_approval={repr(agent.human_approval)},
         output_format={repr(agent.output_format)},

@@ -1,21 +1,20 @@
 import asyncio
 import logging
+import os
 import uuid
-from typing import Literal, Any, List
+from typing import Literal, Any, Optional
 
 import yaml
 
 from superagentx.agent import Agent
-from superagentx.agentxdag import InMemoryStore, AgentXDag, WorkflowBlueprint
+from superagentx.agentxdag import AgentXDag, WorkflowBlueprint
 from superagentx.config import is_verbose_enabled
-from superagentx.router.router_engine import RouterEngine
 from superagentx.constants import SEQUENCE, PARALLEL
+from superagentx.db_store import ConfigLoader
 from superagentx.exceptions import StopSuperAgentX
 from superagentx.result import GoalResult
-from superagentx.db_store import ConfigLoader
+from superagentx.router.router_engine import RouterEngine
 from superagentx.utils.helper import iter_to_aiter, StatusCallback, _maybe_await
-from superagentx.utils.observability.trace_decorator import pipe_trace
-
 
 is_verbose_enabled()
 
@@ -36,6 +35,7 @@ class AgentXPipe:
             stop_if_goal_not_satisfied: bool = False,
             workflow_store: bool = False,
             stop_on_node_failure: bool = True,
+            platform_url: Optional[str] = None
     ):
         """
         Initializes a new instance of the class with specified parameters.
@@ -78,6 +78,8 @@ class AgentXPipe:
         self.storage = None
         self.stop_if_goal_not_satisfied = stop_if_goal_not_satisfied
         self.stop_on_node_failure = stop_on_node_failure
+        self.platform_url = platform_url or os.getenv("PLATFORM_URL")
+        self.dag_engine: AgentXDag | None = None
 
         logger.debug(
             f'Initiating AgentXPipe...\n'
@@ -220,7 +222,7 @@ class AgentXPipe:
     ):
         trigger_break = False
         results: list[GoalResult] = []
-        previous_agent_result: str | None = None,
+        previous_agent_result: Any = None
         old_memory = None
 
         # ----------------------------
@@ -312,8 +314,10 @@ class AgentXPipe:
                                 )
                                 for agent in agents_list
                             ],
-                            return_exceptions=True  #prevents crash
+                            return_exceptions=True  # prevents crash
                         )
+                        parallel_previous_results = []
+
                         # Normalize and handle failures individually
                         for agent, res in zip(agents_list, parallel_results):
 
@@ -329,7 +333,11 @@ class AgentXPipe:
 
                             results.append(res)
                             if getattr(res, "result", None):
-                                previous_agent_result += (res.result,)
+                                parallel_previous_results.append({
+                                    "agent": agent.name,
+                                    "agent_id": agent.agent_id,
+                                    "result": res.result,
+                                })
 
                             # Memory write
                             if (
@@ -347,6 +355,7 @@ class AgentXPipe:
                                     conversation_id=conversation_id
                                 )
 
+                        previous_agent_result = parallel_previous_results
                     # ==========================
                     # SEQUENTIAL EXECUTION
                     # ==========================
@@ -398,6 +407,23 @@ class AgentXPipe:
 
                     break  # intentional stop
 
+                except PermissionError as ex:
+                    logger.warning("Policy denied execution: %s", ex)
+
+                    results.append(
+                        GoalResult(
+                            name=agent.name,
+                            agent_id=agent.agent_id,
+                            result="Request denied by governance policy.",
+                            reason=str(ex),
+                            error=str(ex),
+                            verify_goal=False,
+                            is_goal_satisfied=False,
+                        )
+                    )
+
+                    return results
+
                 except Exception as ex:
                     # Do NOT crash the pipe
                     logger.error(
@@ -425,7 +451,6 @@ class AgentXPipe:
                     logger.info(f"DB connection closed for pipe {self.pipe_id}")
                 except Exception as e:
                     logger.warning(f"Failed to close DB connection: {e}")
-
 
     async def flow(
             self,
@@ -504,7 +529,10 @@ class AgentXPipe:
                 if agent.name in registered:
                     continue
 
-                blueprint.add_node(agent)
+                blueprint.add_node(
+                    agent,
+                )
+
                 registered.add(agent.name)
 
         # -----------------------------------------------------
@@ -528,24 +556,18 @@ class AgentXPipe:
         if status_callback:
             await _maybe_await(status_callback(
                 event="pipe_flow_start",
+                run_id=run_id,
                 pipe_id=self.pipe_id,
                 query=query_instruction,
                 conversation_id=conversation_id
             ))
 
         # -----------------------------------------------------
-        # Create Store
-        # -----------------------------------------------------
-
-        store = InMemoryStore()
-
-        # -----------------------------------------------------
         # Create DAG Engine
         # -----------------------------------------------------
 
-        dag_engine = AgentXDag(
+        self.dag_engine = AgentXDag(
             blueprint=blueprint,
-            store=store,
             pipe_id=self.pipe_id,
             name=self.name,
             description=self.description,
@@ -560,7 +582,7 @@ class AgentXPipe:
         # Execute Workflow
         # -----------------------------------------------------
 
-        await dag_engine.execute(
+        checkpoint = await self.dag_engine.execute(
             run_id=run_id,
             verify_goal=verify_goal,
             conversation_id=conversation_id,
@@ -575,8 +597,6 @@ class AgentXPipe:
         # Return Checkpoint
         # -----------------------------------------------------
 
-        checkpoint = store.load(run_id)
-
         goal_result: list[GoalResult] = []
         if checkpoint:
             goal_result = checkpoint.goal_results
@@ -584,12 +604,12 @@ class AgentXPipe:
         if status_callback:
             await _maybe_await(status_callback(
                 event="pipe_flow_end",
+                run_id=run_id,
                 pipe_id=self.pipe_id,
                 query=query_instruction,
                 conversation_id=conversation_id,
                 result=goal_result
-           ))
-
+            ))
         return checkpoint, goal_result
 
     async def _load_storage_once(self):
@@ -605,3 +625,39 @@ class AgentXPipe:
         self.storage = await ConfigLoader.load_db_config()
         await self.storage.setup()
         return self.storage
+
+    async def resume(
+            self,
+            run_id: str,
+            *,
+            checkpoint: dict,
+            conversation_id: str | None = None,
+            status_callback: StatusCallback | None = None,
+    ):
+        if not self.dag_engine:
+            raise RuntimeError(
+                "DAG engine is not initialized."
+            )
+
+        return await self.dag_engine.resume(
+            run_id=run_id,
+            checkpoint=checkpoint,
+            conversation_id=conversation_id,
+            status_callback=status_callback,
+        )
+
+    async def reject(
+            self,
+            *,
+            run_id: str,
+            checkpoint: dict,
+    ):
+        if not self.dag_engine:
+            raise RuntimeError(
+                "DAG engine is not initialized."
+            )
+
+        return await self.dag_engine.reject(
+            run_id=run_id,
+            checkpoint=checkpoint,
+        )
