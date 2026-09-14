@@ -1,5 +1,7 @@
 import asyncio
 import inspect
+import json
+from datetime import datetime
 import logging
 import os
 import re
@@ -47,7 +49,7 @@ _ASSISTANTS_KEY_NAME = "name"
 _ASSISTANTS_KEY_INSTRUCTIONS = "instructions"
 _TOOLS_KEY_NAME = "tools"
 
-_CUSTOM_CHAT_PATH = "/api/chat"
+_CUSTOM_GENERATE_PATH = "/api/generate"
 
 _CUSTOM_LLM_BASE_URL_ENV = "CUSTOM_LLM_BASE_URL"
 _CUSTOM_LLM_API_KEY_ENV = "CUSTOM_LLM_API_KEY"
@@ -203,21 +205,21 @@ class OpenAIClient(Client):
     # CUSTOM ENDPOINT
     # ============================================================
 
-    def _get_custom_chat_endpoint(self) -> str:
+    def _get_custom_generate_endpoint(self) -> str:
 
         base_url = str(
             self.base_url
         ).rstrip("/")
 
         if base_url.endswith(
-            _CUSTOM_CHAT_PATH
+            _CUSTOM_GENERATE_PATH
         ):
 
             return base_url
 
         return (
             f"{base_url}"
-            f"{_CUSTOM_CHAT_PATH}"
+            f"{_CUSTOM_GENERATE_PATH}"
         )
 
     # ============================================================
@@ -369,10 +371,92 @@ class OpenAIClient(Client):
         )
 
     # ============================================================
+    # TOOL DEFINITIONS
+    # ============================================================
+
+    async def _get_custom_tool_definitions(
+        self,
+        params: dict,
+    ) -> list[dict]:
+        """
+        Resolve SuperAgentX tool metadata into OpenAI-style function
+        definitions. The DCD gateway does not receive a native `tools`
+        request field, so these definitions are injected into the prompt.
+
+        Supported inputs:
+        - Already-built OpenAI-style tool dictionaries
+        - Callable functions/methods decorated with @tool
+        - Objects exposing a callable `func` attribute
+        """
+
+        raw_tools = params.get(_TOOLS_KEY_NAME) or []
+
+        if not isinstance(raw_tools, (list, tuple, set)):
+            raw_tools = [raw_tools]
+
+        tool_definitions = []
+
+        for tool in raw_tools:
+
+            if isinstance(tool, dict):
+                if tool.get("type") == "function":
+                    tool_definitions.append(tool)
+                elif tool.get("function"):
+                    tool_definitions.append({
+                        "type": "function",
+                        "function": tool["function"],
+                    })
+                continue
+
+            func = None
+
+            if callable(tool):
+                func = tool
+            else:
+                candidate = getattr(tool, "func", None)
+                if callable(candidate):
+                    func = candidate
+
+            if func is not None:
+                tool_definitions.append(
+                    await self.get_tool_json(func=func)
+                )
+
+        return tool_definitions
+
+    # ============================================================
+    # TOOLS → PROMPT
+    # ============================================================
+
+    @staticmethod
+    def _tools_to_prompt(
+        tool_definitions: list[dict],
+    ) -> str:
+        """Build deterministic tool instructions for /api/generate."""
+
+        if not tool_definitions:
+            return ""
+
+        return (
+            "You have access to the following tools.\n\n"
+            "TOOL DEFINITIONS:\n"
+            f"{json.dumps(tool_definitions, indent=2, ensure_ascii=False)}\n\n"
+            "TOOL CALLING RULES:\n"
+            "- If a tool is required to answer the user, call the appropriate tool.\n"
+            "- Return ONLY one valid JSON object for a tool call.\n"
+            "- The JSON object must have exactly these fields: name and arguments.\n"
+            "- `name` must exactly match a tool name from TOOL DEFINITIONS.\n"
+            "- `arguments` must be a JSON object matching the tool parameters.\n"
+            "- Do not add Markdown fences.\n"
+            "- Do not return explanatory text when making a tool call.\n"
+            "- If no tool is required, answer normally.\n"
+        )
+
+    # ============================================================
     # BUILD CUSTOM REQUEST
     # ============================================================
 
-    def _build_custom_request(
+    async def _build_custom_request(
         self,
         chat_completion_params: ChatCompletionParams,
     ):
@@ -388,12 +472,26 @@ class OpenAIClient(Client):
             []
         )
 
+        tool_definitions = await self._get_custom_tool_definitions(
+            params
+        )
+
+        tool_prompt = self._tools_to_prompt(
+            tool_definitions
+        )
+
         prompt = self._messages_to_prompt(
             messages
         )
 
+        if tool_prompt:
+            prompt = (
+                f"{tool_prompt}\n"
+                f"{prompt}"
+            )
+
         # ---------------------------------------------------------
-        # Required gateway payload
+        # Required DCD gateway payload
         # ---------------------------------------------------------
 
         payload = {
@@ -417,7 +515,6 @@ class OpenAIClient(Client):
         for key in supported_params:
 
             if key in params:
-
                 payload[key] = params[key]
 
         # ---------------------------------------------------------
@@ -601,6 +698,58 @@ class OpenAIClient(Client):
         )
 
     # ============================================================
+    # CUSTOM TOOL CALL PARSING
+    # ============================================================
+
+    @staticmethod
+    def _parse_tool_call_content(
+        content: str,
+    ) -> dict | None:
+        """Parse the DCD response string when it represents a tool call."""
+
+        if not isinstance(content, str):
+            return None
+
+        candidate = content.strip()
+
+        # Be tolerant of accidental Markdown fences.
+        if candidate.startswith("```") and candidate.endswith("```"):
+            lines = candidate.splitlines()
+            if len(lines) >= 3:
+                candidate = "\n".join(lines[1:-1]).strip()
+
+        try:
+            parsed = json.loads(candidate)
+        except (TypeError, ValueError):
+            return None
+
+        if not isinstance(parsed, dict):
+            return None
+
+        name = parsed.get("name")
+        arguments = parsed.get("arguments")
+
+        if not isinstance(name, str) or not name.strip():
+            return None
+
+        if arguments is None:
+            arguments = {}
+
+        if isinstance(arguments, str):
+            try:
+                arguments = json.loads(arguments)
+            except (TypeError, ValueError):
+                return None
+
+        if not isinstance(arguments, dict):
+            return None
+
+        return {
+            "name": name,
+            "arguments": arguments,
+        }
+
+    # ============================================================
     # CUSTOM RESPONSE → ChatCompletion
     # ============================================================
 
@@ -626,24 +775,18 @@ class OpenAIClient(Client):
             dict
         ):
 
-            response_id = (
-                response_data.get("id")
-            )
+            response_id = response_data.get("id")
 
-            created = (
-                response_data.get("created")
-            )
+            created = response_data.get("created")
 
             response_model = (
                 response_data.get("model")
                 or model
             )
 
-            usage_data = (
-                response_data.get(
-                    "usage",
-                    {}
-                )
+            usage_data = response_data.get(
+                "usage",
+                {}
             )
 
         else:
@@ -654,20 +797,35 @@ class OpenAIClient(Client):
             usage_data = {}
 
         if not response_id:
-
             response_id = (
                 f"custom-"
                 f"{uuid.uuid4().hex}"
             )
 
-        if not created:
+        # DCD returns ISO-8601 `created_at` rather than OpenAI's epoch
+        # timestamp. Convert it when possible.
+        if not created and isinstance(response_data, dict):
+            created_at = response_data.get("created_at")
 
-            created = int(
-                time.time()
-            )
+            if created_at:
+                try:
+                    normalized = str(created_at).replace(
+                        "Z",
+                        "+00:00"
+                    )
+                    created = int(
+                        datetime.fromisoformat(
+                            normalized
+                        ).timestamp()
+                    )
+                except (TypeError, ValueError, OverflowError):
+                    created = None
+
+        if not created:
+            created = int(time.time())
 
         # ---------------------------------------------------------
-        # Usage
+        # DCD usage
         # ---------------------------------------------------------
 
         prompt_tokens = 0
@@ -675,39 +833,89 @@ class OpenAIClient(Client):
         total_tokens = 0
 
         if isinstance(
+            response_data,
+            dict
+        ):
+            prompt_tokens = response_data.get(
+                "prompt_eval_count",
+                0
+            ) or 0
+
+            completion_tokens = response_data.get(
+                "eval_count",
+                0
+            ) or 0
+
+        if isinstance(
             usage_data,
             dict
         ):
-
             prompt_tokens = (
-                usage_data.get(
-                    "prompt_tokens"
-                )
-                or usage_data.get(
-                    "input_tokens"
-                )
+                usage_data.get("prompt_tokens")
+                or usage_data.get("input_tokens")
+                or prompt_tokens
                 or 0
             )
 
             completion_tokens = (
-                usage_data.get(
-                    "completion_tokens"
-                )
-                or usage_data.get(
-                    "output_tokens"
-                )
+                usage_data.get("completion_tokens")
+                or usage_data.get("output_tokens")
+                or completion_tokens
                 or 0
             )
 
             total_tokens = (
-                usage_data.get(
-                    "total_tokens"
-                )
-                or (
-                    prompt_tokens
-                    + completion_tokens
-                )
+                usage_data.get("total_tokens")
+                or 0
             )
+
+        if not total_tokens:
+            total_tokens = (
+                prompt_tokens
+                + completion_tokens
+            )
+
+        # ---------------------------------------------------------
+        # Detect DCD tool-call JSON
+        # ---------------------------------------------------------
+
+        tool_call = cls._parse_tool_call_content(
+            content
+        )
+
+        if tool_call:
+            tool_call_id = (
+                f"call_"
+                f"{uuid.uuid4().hex[:24]}"
+            )
+
+            message = {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": tool_call_id,
+                        "type": "function",
+                        "function": {
+                            "name": tool_call["name"],
+                            "arguments": json.dumps(
+                                tool_call["arguments"],
+                                ensure_ascii=False,
+                            ),
+                        },
+                    }
+                ],
+            }
+
+            finish_reason = "tool_calls"
+
+        else:
+            message = {
+                "role": "assistant",
+                "content": content,
+            }
+
+            finish_reason = "stop"
 
         # ---------------------------------------------------------
         # Create OpenAI-compatible response
@@ -722,11 +930,8 @@ class OpenAIClient(Client):
                 "choices": [
                     {
                         "index": 0,
-                        "message": {
-                            "role": "assistant",
-                            "content": content,
-                        },
-                        "finish_reason": "stop",
+                        "message": message,
+                        "finish_reason": finish_reason,
                     }
                 ],
                 "usage": {
@@ -748,13 +953,11 @@ class OpenAIClient(Client):
     ) -> ChatCompletion:
 
         endpoint = (
-            self._get_custom_chat_endpoint()
+            self._get_custom_generate_endpoint()
         )
 
-        payload, headers = (
-            self._build_custom_request(
-                chat_completion_params
-            )
+        payload, headers = await self._build_custom_request(
+            chat_completion_params
         )
 
         logger.debug(
@@ -1113,6 +1316,10 @@ class OpenAIClient(Client):
             func
         )
 
+        _signature = inspect.signature(func)
+
+        _required = []
+
         async for param, param_type in iter_to_aiter(
             _type_hints.items()
         ):
@@ -1168,6 +1375,13 @@ class OpenAIClient(Client):
                         )
                     }
 
+        for param_name, parameter in _signature.parameters.items():
+            if (
+                param_name in _properties
+                and parameter.default is inspect.Parameter.empty
+            ):
+                _required.append(param_name)
+
         return {
             "type": "function",
             "function": {
@@ -1176,9 +1390,7 @@ class OpenAIClient(Client):
                 "parameters": {
                     "type": "object",
                     "properties": _properties,
-                    "required": list(
-                        _properties.keys()
-                    ),
+                    "required": _required,
                 }
             }
         }
