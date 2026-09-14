@@ -15,9 +15,11 @@ from openai import (
     AsyncOpenAI,
     AsyncAzureOpenAI,
 )
+
 from openai.types import CreateEmbeddingResponse
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.completion import Completion
+
 from typing import Callable
 
 from superagentx.llm import ChatCompletionParams
@@ -59,16 +61,22 @@ class OpenAIClient(Client):
     def __init__(
         self,
         *,
-        client: OpenAI | AsyncOpenAI | AzureOpenAI | AsyncAzureOpenAI,
+        client,
         **kwargs
     ):
         super().__init__(**kwargs)
 
         self.client = client
+
         self.llm_params: dict = kwargs
 
-        # Normalize llm_type
-        raw_llm_type = kwargs.get("llm_type")
+        # ---------------------------------------------------------
+        # Normalize LLM type
+        # ---------------------------------------------------------
+
+        raw_llm_type = kwargs.get(
+            "llm_type"
+        )
 
         try:
             self.llm_type = (
@@ -82,22 +90,28 @@ class OpenAIClient(Client):
         # ---------------------------------------------------------
         # Custom LLM configuration
         #
-        # Parameter has priority over ENV
+        # Explicit parameters take precedence over ENV.
         # ---------------------------------------------------------
 
-        self.base_url = kwargs.get(
-            "base_url",
-            os.getenv(_CUSTOM_LLM_BASE_URL_ENV)
+        self.base_url = (
+            kwargs.get("base_url")
+            or os.getenv(
+                _CUSTOM_LLM_BASE_URL_ENV
+            )
         )
 
-        self.api_key = kwargs.get(
-            "api_key",
-            os.getenv(_CUSTOM_LLM_API_KEY_ENV)
+        self.api_key = (
+            kwargs.get("api_key")
+            or os.getenv(
+                _CUSTOM_LLM_API_KEY_ENV
+            )
         )
 
-        self.client_secret = kwargs.get(
-            "client_secret",
-            os.getenv(_CUSTOM_LLM_CLIENT_SECRET_ENV)
+        self.client_secret = (
+            kwargs.get("client_secret")
+            or os.getenv(
+                _CUSTOM_LLM_CLIENT_SECRET_ENV
+            )
         )
 
         self.is_custom_client = (
@@ -105,26 +119,30 @@ class OpenAIClient(Client):
         )
 
         if self.is_custom_client:
+
             self._validate_custom_config()
 
         # ---------------------------------------------------------
-        # Local embedding model for providers that don't expose
-        # OpenAI-compatible embeddings
+        # Local embedding model
         # ---------------------------------------------------------
 
         if (
             self.llm_type == LLMType.DEEPSEEK
             or self.llm_type == LLMType.ANTHROPIC_CLIENT
         ):
+
             from fastembed import TextEmbedding
 
             self._embed_model_cli = TextEmbedding()
 
         # ---------------------------------------------------------
-        # Existing OpenAI client validation
+        # Existing OpenAI validation
         # ---------------------------------------------------------
 
-        if not self.is_custom_client:
+        if (
+            not self.is_custom_client
+            and self.client is not None
+        ):
 
             if (
                 not isinstance(
@@ -136,108 +154,108 @@ class OpenAIClient(Client):
                         AsyncAzureOpenAI,
                     ),
                 )
-                and not str(client.base_url).startswith(
+                and not str(
+                    self.client.base_url
+                ).startswith(
                     _OPEN_API_BASE_URL_PREFIX
                 )
                 and not OpenAIClient.is_valid_api_key(
                     self.client.api_key
                 )
             ):
+
                 logger.info(
-                    "OpenAI or Azure hosted Open AI client, "
-                    "is not valid!"
+                    "OpenAI or Azure hosted Open AI "
+                    "client is not valid!"
                 )
 
     # ============================================================
-    # CUSTOM LLM
+    # CUSTOM CONFIG VALIDATION
     # ============================================================
 
     def _validate_custom_config(self):
-        """
-        Validate custom LLM configuration.
-
-        Configuration can come from either:
-            1. llm_config parameters
-            2. Environment variables
-
-        Explicit parameters have priority over ENV.
-        """
 
         if not self.base_url:
+
             raise ValueError(
                 "Custom LLM base_url is required. "
-                "Provide 'base_url' in llm_config or set "
-                f"{_CUSTOM_LLM_BASE_URL_ENV}."
+                "Provide 'base_url' or set "
+                "CUSTOM_LLM_BASE_URL."
             )
 
         if not self.api_key:
+
             raise ValueError(
                 "Custom LLM api_key is required. "
-                "Provide 'api_key' in llm_config or set "
-                f"{_CUSTOM_LLM_API_KEY_ENV}."
+                "Provide 'api_key' or set "
+                "CUSTOM_LLM_API_KEY."
             )
 
         if not self.client_secret:
+
             raise ValueError(
                 "Custom LLM client_secret is required. "
-                "Provide 'client_secret' in llm_config or set "
-                f"{_CUSTOM_LLM_CLIENT_SECRET_ENV}."
+                "Provide 'client_secret' or set "
+                "CUSTOM_LLM_CLIENT_SECRET."
             )
 
+    # ============================================================
+    # CUSTOM ENDPOINT
+    # ============================================================
+
     def _get_custom_chat_endpoint(self) -> str:
-        """
-        Build the custom chat endpoint.
 
-        Example:
+        base_url = str(
+            self.base_url
+        ).rstrip("/")
 
-            base_url:
-                https://gateway.example.com
+        if base_url.endswith(
+            _CUSTOM_CHAT_PATH
+        ):
 
-            endpoint:
-                https://gateway.example.com/api/chat
-        """
-
-        base_url = str(self.base_url).rstrip("/")
-
-        if base_url.endswith(_CUSTOM_CHAT_PATH):
             return base_url
 
-        return f"{base_url}{_CUSTOM_CHAT_PATH}"
+        return (
+            f"{base_url}"
+            f"{_CUSTOM_CHAT_PATH}"
+        )
+
+    # ============================================================
+    # MESSAGE VALUE
+    # ============================================================
 
     @staticmethod
-    def _get_message_value(message, key: str, default=None):
-        """
-        Read a message property from either:
-            - dict
-            - Pydantic/OpenAI message object
-        """
+    def _get_message_value(
+        message,
+        key: str,
+        default=None
+    ):
 
-        if isinstance(message, dict):
-            return message.get(key, default)
+        if isinstance(
+            message,
+            dict
+        ):
 
-        return getattr(message, key, default)
+            return message.get(
+                key,
+                default
+            )
+
+        return getattr(
+            message,
+            key,
+            default
+        )
+
+    # ============================================================
+    # MESSAGES → PROMPT
+    # ============================================================
 
     @classmethod
-    def _messages_to_prompt(cls, messages) -> str:
-        """
-        Convert OpenAI/SuperAgentX messages into the custom
-        gateway prompt format.
-
-        Example:
-
-        System:
-            You are a helpful assistant.
-
-        User:
-            What is microservices architecture?
-
-        Result:
-
-        You are a helpful assistant.
-
-        User: What is microservices architecture?
-        Assistant:
-        """
+    def _messages_to_prompt(
+        cls,
+        messages
+    ) -> str:
 
         prompt_parts = []
 
@@ -256,27 +274,46 @@ class OpenAIClient(Client):
             )
 
             # -----------------------------------------------------
-            # Handle list content
+            # Handle multimodal/list content
             # -----------------------------------------------------
 
-            if isinstance(content, list):
+            if isinstance(
+                content,
+                list
+            ):
 
                 content_parts = []
 
                 for item in content:
 
-                    if isinstance(item, dict):
+                    if isinstance(
+                        item,
+                        dict
+                    ):
 
-                        if item.get("type") == "text":
+                        if item.get(
+                            "type"
+                        ) == "text":
+
                             content_parts.append(
-                                str(item.get("text", ""))
+                                str(
+                                    item.get(
+                                        "text",
+                                        ""
+                                    )
+                                )
                             )
 
                     else:
-                        content_parts.append(str(item))
+
+                        content_parts.append(
+                            str(item)
+                        )
 
                 content = "\n".join(
-                    part for part in content_parts if part
+                    part
+                    for part in content_parts
+                    if part
                 )
 
             if content is None:
@@ -285,56 +322,78 @@ class OpenAIClient(Client):
             content = str(content)
 
             # -----------------------------------------------------
-            # Map roles to gateway prompt format
+            # Role mapping
             # -----------------------------------------------------
 
             if role == "system":
-                prompt_parts.append(content)
+
+                prompt_parts.append(
+                    content
+                )
 
             elif role == "user":
+
                 prompt_parts.append(
                     f"User: {content}"
                 )
 
             elif role == "assistant":
+
                 prompt_parts.append(
                     f"Assistant: {content}"
                 )
 
             elif role == "tool":
+
                 prompt_parts.append(
                     f"Tool: {content}"
                 )
 
             else:
+
                 prompt_parts.append(
-                    f"{role.capitalize()}: {content}"
+                    f"{str(role).capitalize()}: "
+                    f"{content}"
                 )
 
-        # The custom gateway expects the model to generate
-        # the next Assistant response.
-        prompt_parts.append("Assistant:")
+        # ---------------------------------------------------------
+        # Tell the model to generate assistant response
+        # ---------------------------------------------------------
 
-        return "\n\n".join(prompt_parts)
+        prompt_parts.append(
+            "Assistant:"
+        )
+
+        return "\n\n".join(
+            prompt_parts
+        )
+
+    # ============================================================
+    # BUILD CUSTOM REQUEST
+    # ============================================================
 
     def _build_custom_request(
         self,
         chat_completion_params: ChatCompletionParams,
     ):
-        """
-        Build request payload and headers for the custom gateway.
-        """
 
-        params = chat_completion_params.model_dump(
-            exclude_none=True
+        params = (
+            chat_completion_params.model_dump(
+                exclude_none=True
+            )
         )
 
-        messages = params.get("messages", [])
+        messages = params.get(
+            "messages",
+            []
+        )
 
-        prompt = self._messages_to_prompt(messages)
+        prompt = self._messages_to_prompt(
+            messages
+        )
 
         # ---------------------------------------------------------
-        # Gateway payload
+        # Required gateway payload
         # ---------------------------------------------------------
 
         payload = {
@@ -344,7 +403,7 @@ class OpenAIClient(Client):
         }
 
         # ---------------------------------------------------------
-        # Forward common generation parameters when supported
+        # Forward supported generation parameters
         # ---------------------------------------------------------
 
         supported_params = (
@@ -358,10 +417,11 @@ class OpenAIClient(Client):
         for key in supported_params:
 
             if key in params:
+
                 payload[key] = params[key]
 
         # ---------------------------------------------------------
-        # Gateway headers
+        # Required customer gateway headers
         # ---------------------------------------------------------
 
         headers = {
@@ -373,48 +433,38 @@ class OpenAIClient(Client):
 
         return payload, headers
 
+    # ============================================================
+    # EXTRACT CUSTOM RESPONSE
+    # ============================================================
+
     @staticmethod
     def _extract_custom_response_content(
-        response_data,
+        response_data
     ) -> str:
-        """
-        Extract generated text from different possible gateway
-        response formats.
-
-        Supported examples:
-
-            {"response": "..."}
-            {"content": "..."}
-            {"text": "..."}
-            {"answer": "..."}
-            {"output": "..."}
-            {"generated_text": "..."}
-
-        Also supports OpenAI-style:
-
-            {
-                "choices": [
-                    {
-                        "message": {
-                            "content": "..."
-                        }
-                    }
-                ]
-            }
-        """
 
         if response_data is None:
+
             return ""
 
         # ---------------------------------------------------------
-        # Direct string response
+        # Direct string
         # ---------------------------------------------------------
 
-        if isinstance(response_data, str):
+        if isinstance(
+            response_data,
+            str
+        ):
+
             return response_data
 
-        if not isinstance(response_data, dict):
-            return str(response_data)
+        if not isinstance(
+            response_data,
+            dict
+        ):
+
+            return str(
+                response_data
+            )
 
         # ---------------------------------------------------------
         # Direct response fields
@@ -431,14 +481,24 @@ class OpenAIClient(Client):
 
         for field in direct_fields:
 
-            value = response_data.get(field)
+            value = response_data.get(
+                field
+            )
 
             if value is not None:
 
-                if isinstance(value, str):
+                if isinstance(
+                    value,
+                    str
+                ):
+
                     return value
 
-                if isinstance(value, dict):
+                if isinstance(
+                    value,
+                    dict
+                ):
+
                     nested_content = (
                         value.get("content")
                         or value.get("text")
@@ -446,43 +506,79 @@ class OpenAIClient(Client):
                     )
 
                     if nested_content is not None:
-                        return str(nested_content)
 
-                return str(value)
+                        return str(
+                            nested_content
+                        )
+
+                return str(
+                    value
+                )
 
         # ---------------------------------------------------------
         # OpenAI-compatible response
         # ---------------------------------------------------------
 
-        choices = response_data.get("choices")
+        choices = response_data.get(
+            "choices"
+        )
 
-        if choices and isinstance(choices, list):
+        if (
+            choices
+            and isinstance(
+                choices,
+                list
+            )
+        ):
 
             first_choice = choices[0]
 
-            if isinstance(first_choice, dict):
+            if isinstance(
+                first_choice,
+                dict
+            ):
 
-                message = first_choice.get("message")
+                message = first_choice.get(
+                    "message"
+                )
 
-                if isinstance(message, dict):
+                if isinstance(
+                    message,
+                    dict
+                ):
 
-                    content = message.get("content")
+                    content = message.get(
+                        "content"
+                    )
 
                     if content is not None:
-                        return str(content)
 
-                text = first_choice.get("text")
+                        return str(
+                            content
+                        )
+
+                text = first_choice.get(
+                    "text"
+                )
 
                 if text is not None:
-                    return str(text)
+
+                    return str(
+                        text
+                    )
 
         # ---------------------------------------------------------
-        # Nested data response
+        # Nested data
         # ---------------------------------------------------------
 
-        data = response_data.get("data")
+        data = response_data.get(
+            "data"
+        )
 
-        if isinstance(data, dict):
+        if isinstance(
+            data,
+            dict
+        ):
 
             nested_content = (
                 data.get("response")
@@ -493,48 +589,61 @@ class OpenAIClient(Client):
             )
 
             if nested_content is not None:
-                return str(nested_content)
+
+                return str(
+                    nested_content
+                )
 
         raise ValueError(
-            "Unable to extract LLM response from custom gateway. "
+            "Unable to extract LLM response "
+            "from custom gateway. "
             f"Response: {response_data}"
         )
+
+    # ============================================================
+    # CUSTOM RESPONSE → ChatCompletion
+    # ============================================================
 
     @classmethod
     def _convert_custom_response(
         cls,
         response_data,
-        model: str,
+        model: str
     ) -> ChatCompletion:
-        """
-        Convert the custom gateway response into an OpenAI
-        compatible ChatCompletion object.
 
-        This allows the rest of SuperAgentX to remain unchanged.
-        """
-
-        content = cls._extract_custom_response_content(
-            response_data
+        content = (
+            cls._extract_custom_response_content(
+                response_data
+            )
         )
 
         # ---------------------------------------------------------
-        # Response metadata
+        # Metadata
         # ---------------------------------------------------------
 
-        if isinstance(response_data, dict):
+        if isinstance(
+            response_data,
+            dict
+        ):
 
-            response_id = response_data.get("id")
+            response_id = (
+                response_data.get("id")
+            )
 
-            created = response_data.get("created")
+            created = (
+                response_data.get("created")
+            )
 
             response_model = (
                 response_data.get("model")
                 or model
             )
 
-            usage_data = response_data.get(
-                "usage",
-                {}
+            usage_data = (
+                response_data.get(
+                    "usage",
+                    {}
+                )
             )
 
         else:
@@ -545,10 +654,17 @@ class OpenAIClient(Client):
             usage_data = {}
 
         if not response_id:
-            response_id = f"custom-{uuid.uuid4().hex}"
+
+            response_id = (
+                f"custom-"
+                f"{uuid.uuid4().hex}"
+            )
 
         if not created:
-            created = int(time.time())
+
+            created = int(
+                time.time()
+            )
 
         # ---------------------------------------------------------
         # Usage
@@ -558,22 +674,35 @@ class OpenAIClient(Client):
         completion_tokens = 0
         total_tokens = 0
 
-        if isinstance(usage_data, dict):
+        if isinstance(
+            usage_data,
+            dict
+        ):
 
             prompt_tokens = (
-                usage_data.get("prompt_tokens")
-                or usage_data.get("input_tokens")
+                usage_data.get(
+                    "prompt_tokens"
+                )
+                or usage_data.get(
+                    "input_tokens"
+                )
                 or 0
             )
 
             completion_tokens = (
-                usage_data.get("completion_tokens")
-                or usage_data.get("output_tokens")
+                usage_data.get(
+                    "completion_tokens"
+                )
+                or usage_data.get(
+                    "output_tokens"
+                )
                 or 0
             )
 
             total_tokens = (
-                usage_data.get("total_tokens")
+                usage_data.get(
+                    "total_tokens"
+                )
                 or (
                     prompt_tokens
                     + completion_tokens
@@ -581,7 +710,7 @@ class OpenAIClient(Client):
             )
 
         # ---------------------------------------------------------
-        # Build OpenAI-compatible response
+        # Create OpenAI-compatible response
         # ---------------------------------------------------------
 
         return ChatCompletion.model_validate(
@@ -608,21 +737,29 @@ class OpenAIClient(Client):
             }
         )
 
+    # ============================================================
+    # ASYNC CUSTOM CHAT
+    # ============================================================
+
     async def _acustom_chat_completion(
         self,
         *,
         chat_completion_params: ChatCompletionParams,
     ) -> ChatCompletion:
 
-        endpoint = self._get_custom_chat_endpoint()
+        endpoint = (
+            self._get_custom_chat_endpoint()
+        )
 
-        payload, headers = self._build_custom_request(
-            chat_completion_params
+        payload, headers = (
+            self._build_custom_request(
+                chat_completion_params
+            )
         )
 
         logger.debug(
             "Calling custom LLM endpoint: %s",
-            endpoint,
+            endpoint
         )
 
         timeout = aiohttp.ClientTimeout(
@@ -641,7 +778,9 @@ class OpenAIClient(Client):
                     json=payload,
                 ) as response:
 
-                    response_text = await response.text()
+                    response_text = (
+                        await response.text()
+                    )
 
                     # -------------------------------------------------
                     # HTTP error
@@ -667,7 +806,10 @@ class OpenAIClient(Client):
                     # -------------------------------------------------
 
                     try:
-                        response_data = await response.json()
+
+                        response_data = (
+                            await response.json()
+                        )
 
                     except Exception as exc:
 
@@ -684,7 +826,7 @@ class OpenAIClient(Client):
         except asyncio.TimeoutError as exc:
 
             raise RuntimeError(
-                f"Custom LLM request timed out after "
+                "Custom LLM request timed out after "
                 f"{_CUSTOM_TIMEOUT_SECONDS} seconds."
             ) from exc
 
@@ -694,14 +836,14 @@ class OpenAIClient(Client):
                 f"Custom LLM connection failed: {exc}"
             ) from exc
 
-        # ---------------------------------------------------------
-        # Convert to OpenAI ChatCompletion
-        # ---------------------------------------------------------
-
         return self._convert_custom_response(
             response_data=response_data,
             model=self._model,
         )
+
+    # ============================================================
+    # SYNC CUSTOM CHAT
+    # ============================================================
 
     def _custom_chat_completion(
         self,
@@ -710,12 +852,13 @@ class OpenAIClient(Client):
     ) -> ChatCompletion:
 
         try:
+
             asyncio.get_running_loop()
 
-            # A running event loop already exists.
             raise RuntimeError(
-                "chat_completion() cannot be called from an "
-                "active event loop when using LLMType.CUSTOM. "
+                "chat_completion() cannot be called "
+                "from an active event loop when using "
+                "LLMType.CUSTOM. "
                 "Use 'await achat_completion()' instead."
             )
 
@@ -724,6 +867,7 @@ class OpenAIClient(Client):
             if str(exc).startswith(
                 "chat_completion() cannot"
             ):
+
                 raise
 
         return asyncio.run(
@@ -742,14 +886,24 @@ class OpenAIClient(Client):
         chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
 
+        # ---------------------------------------------------------
+        # CUSTOM
+        # ---------------------------------------------------------
+
         if self.is_custom_client:
 
             return self._custom_chat_completion(
                 chat_completion_params=chat_completion_params
             )
 
-        params = chat_completion_params.model_dump(
-            exclude_none=True
+        # ---------------------------------------------------------
+        # Existing OpenAI behavior
+        # ---------------------------------------------------------
+
+        params = (
+            chat_completion_params.model_dump(
+                exclude_none=True
+            )
         )
 
         params["model"] = self._model
@@ -758,11 +912,19 @@ class OpenAIClient(Client):
             **params
         )
 
+    # ============================================================
+    # ASYNC CHAT COMPLETION
+    # ============================================================
+
     async def achat_completion(
         self,
         *,
         chat_completion_params: ChatCompletionParams
     ) -> ChatCompletion:
+
+        # ---------------------------------------------------------
+        # CUSTOM
+        # ---------------------------------------------------------
 
         if self.is_custom_client:
 
@@ -770,8 +932,14 @@ class OpenAIClient(Client):
                 chat_completion_params=chat_completion_params
             )
 
-        params = chat_completion_params.model_dump(
-            exclude_none=True
+        # ---------------------------------------------------------
+        # Existing OpenAI behavior
+        # ---------------------------------------------------------
+
+        params = (
+            chat_completion_params.model_dump(
+                exclude_none=True
+            )
         )
 
         params["model"] = self._model
@@ -788,7 +956,9 @@ class OpenAIClient(Client):
     def _get_embeddings(
         response: CreateEmbeddingResponse
     ):
+
         if response and response.data:
+
             return response.data[0].embedding
 
         return None
@@ -799,19 +969,25 @@ class OpenAIClient(Client):
         **kwargs
     ) -> list[float]:
 
-        # Custom gateway currently exposes only /api/chat.
         if self.is_custom_client:
+
             raise NotImplementedError(
-                "Embeddings are not supported by the custom LLM "
-                "gateway. Configure an embedding provider separately."
+                "Embeddings are not supported by the "
+                "custom LLM gateway. "
+                "Configure an embedding provider separately."
             )
 
-        text = text.replace("\n", " ")
+        text = text.replace(
+            "\n",
+            " "
+        )
 
-        response = self.client.embeddings.create(
-            input=[text],
-            model=self._embed_model,
-            **kwargs
+        response = (
+            self.client.embeddings.create(
+                input=[text],
+                model=self._embed_model,
+                **kwargs
+            )
         )
 
         if (
@@ -819,9 +995,11 @@ class OpenAIClient(Client):
             or self.llm_type == LLMType.ANTHROPIC_CLIENT
         ):
 
-            response = self._embed_model_cli.embed(
-                documents=[text],
-                **kwargs
+            response = (
+                self._embed_model_cli.embed(
+                    documents=[text],
+                    **kwargs
+                )
             )
 
             response = [
@@ -830,9 +1008,12 @@ class OpenAIClient(Client):
             ]
 
             if response:
+
                 return response[0]
 
-        return self._get_embeddings(response)
+        return self._get_embeddings(
+            response
+        )
 
     async def aembed(
         self,
@@ -840,14 +1021,18 @@ class OpenAIClient(Client):
         **kwargs
     ) -> list[float]:
 
-        # Custom gateway currently exposes only /api/chat.
         if self.is_custom_client:
+
             raise NotImplementedError(
-                "Embeddings are not supported by the custom LLM "
-                "gateway. Configure an embedding provider separately."
+                "Embeddings are not supported by the "
+                "custom LLM gateway. "
+                "Configure an embedding provider separately."
             )
 
-        text = text.replace("\n", " ")
+        text = text.replace(
+            "\n",
+            " "
+        )
 
         if (
             self.llm_type == LLMType.DEEPSEEK
@@ -861,15 +1046,20 @@ class OpenAIClient(Client):
             )
 
             response = [
-                res async for res in iter_to_aiter(response)
+                res
+                async for res
+                in iter_to_aiter(response)
             ]
 
             if response:
+
                 return response[0]
 
-        response = await self.client.embeddings.create(
-            input=[text],
-            model=self._embed_model,
+        response = (
+            await self.client.embeddings.create(
+                input=[text],
+                model=self._embed_model,
+            )
         )
 
         return await sync_to_async(
@@ -878,7 +1068,7 @@ class OpenAIClient(Client):
         )
 
     # ============================================================
-    # API KEY
+    # API KEY VALIDATION
     # ============================================================
 
     @staticmethod
@@ -887,6 +1077,7 @@ class OpenAIClient(Client):
     ) -> bool:
 
         if not api_key:
+
             return False
 
         api_key_re = re.compile(
@@ -912,11 +1103,15 @@ class OpenAIClient(Client):
 
         _func_name = func.__name__
 
-        _doc_str = inspect.getdoc(func)
+        _doc_str = inspect.getdoc(
+            func
+        )
 
         _properties = {}
 
-        _type_hints = typing.get_type_hints(func)
+        _type_hints = typing.get_type_hints(
+            func
+        )
 
         async for param, param_type in iter_to_aiter(
             _type_hints.items()
@@ -938,11 +1133,14 @@ class OpenAIClient(Client):
                         _properties[param] = {
                             "type": _type,
                             "description": (
-                                f"The {param.replace('_', ' ')}."
+                                f"The "
+                                f"{param.replace('_', ' ')}."
                             ),
                             "items": {
-                                "type": await ptype_to_json_scheme(
-                                    param_type.__args__[0].__name__
+                                "type": (
+                                    await ptype_to_json_scheme(
+                                        param_type.__args__[0].__name__
+                                    )
                                 )
                             }
                         }
@@ -952,7 +1150,8 @@ class OpenAIClient(Client):
                         _properties[param] = {
                             "type": _type,
                             "description": (
-                                f"The {param.replace('_', ' ')}."
+                                f"The "
+                                f"{param.replace('_', ' ')}."
                             ),
                             "items": {
                                 "type": "object"
@@ -964,7 +1163,8 @@ class OpenAIClient(Client):
                     _properties[param] = {
                         "type": _type,
                         "description": (
-                            f"The {param.replace('_', ' ')}."
+                            f"The "
+                            f"{param.replace('_', ' ')}."
                         )
                     }
 
@@ -998,8 +1198,8 @@ class OpenAIClient(Client):
 
             logger.warning(
                 f"Model {model} is not found. "
-                "The cost will be 0. "
-                "In your config_list, add field "
+                "The cost will be 0. In your config_list, "
+                "add field "
                 '{"price" : [prompt_price_per_1k, '
                 'completion_token_price_per_1k]} '
                 "for customized pricing."
@@ -1020,20 +1220,31 @@ class OpenAIClient(Client):
         )
 
         if n_output_tokens is None:
+
             n_output_tokens = 0.0
 
-        tmp_price_1k = OPENAI_PRICE1K[model]
+        tmp_price_1k = OPENAI_PRICE1K[
+            model
+        ]
 
-        if isinstance(tmp_price_1k, tuple):
+        if isinstance(
+            tmp_price_1k,
+            tuple
+        ):
 
             return (
-                tmp_price_1k[0] * n_input_tokens
-                + tmp_price_1k[1] * n_output_tokens
+                tmp_price_1k[0]
+                * n_input_tokens
+                + tmp_price_1k[1]
+                * n_output_tokens
             ) / 1000
 
         return (
             tmp_price_1k
-            * (n_input_tokens + n_output_tokens)
+            * (
+                n_input_tokens
+                + n_output_tokens
+            )
         ) / 1000
 
     # ============================================================
@@ -1072,14 +1283,18 @@ class OpenAIClient(Client):
 
         try:
 
-            encoding = tiktoken.encoding_for_model(
-                self._model
+            encoding = (
+                tiktoken.encoding_for_model(
+                    self._model
+                )
             )
 
         except KeyError:
 
-            encoding = tiktoken.get_encoding(
-                "cl100k_base"
+            encoding = (
+                tiktoken.get_encoding(
+                    "cl100k_base"
+                )
             )
 
         tokens_per_message = 3
@@ -1087,9 +1302,13 @@ class OpenAIClient(Client):
 
         num_tokens = 0
 
-        for message in chat_completion_params.messages:
+        for message in (
+            chat_completion_params.messages
+        ):
 
-            num_tokens += tokens_per_message
+            num_tokens += (
+                tokens_per_message
+            )
 
             content = getattr(
                 message,
@@ -1098,13 +1317,20 @@ class OpenAIClient(Client):
             )
 
             if content:
+
                 num_tokens += len(
-                    encoding.encode(content)
+                    encoding.encode(
+                        content
+                    )
                 )
 
         num_tokens += 3
 
         return num_tokens
+
+    # ============================================================
+    # ACCOUNT TOKENS
+    # ============================================================
 
     async def account_tokens(
         self,
