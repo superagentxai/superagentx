@@ -15,6 +15,7 @@ class LLMType(str, Enum):
     OLLAMA = 'ollama'
     LITELLM = 'litellm'
     ROUTEWAY = 'routeway'
+    CUSTOM = 'custom'
 
     @classmethod
     def has_member_key(cls, key):
