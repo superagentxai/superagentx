@@ -4,6 +4,7 @@ import os
 from datetime import datetime, timezone
 from typing import List, Callable
 
+import httpx
 from openai import OpenAI, AzureOpenAI, AsyncOpenAI, AsyncAzureOpenAI
 from openai.types.chat import ChatCompletion
 
@@ -451,38 +452,64 @@ class LLMClient:
     # ============================================================
 
     def _init_ollama_cli(
-        self,
-        **kwargs
+            self,
+            **kwargs
     ):
-
-        from ollama import AsyncClient
-        from ollama import Client as OllamaCli
         from superagentx.llm.ollama import OllamaClient
 
         host = (
-            kwargs.get("host", None)
-            or os.getenv("OLLAMA_HOST")
+                kwargs.get("host")
+                or self.llm_config_model.base_url
+                or os.getenv("OLLAMA_HOST")
         )
 
-        cli = (
-            AsyncClient(host=host)
-            if self.llm_config_model.async_mode
-            else OllamaCli(host=host)
+        api_key = (
+                kwargs.get("api_key")
+                or self.llm_config_model.api_key
+                or os.getenv("OLLAMA_API_KEY")
         )
+
+        client_secret = (
+                kwargs.get("client_secret")
+                or getattr(
+            self.llm_config_model,
+            "client_secret",
+            None,
+        )
+                or os.getenv("OLLAMA_CLIENT_SECRET")
+        )
+
+        if not host:
+            raise ValueError(
+                "OLLAMA_HOST is required."
+            )
+
+        if not api_key:
+            raise ValueError(
+                "OLLAMA_API_KEY is required."
+            )
+
+        if not client_secret:
+            raise ValueError(
+                "OLLAMA_CLIENT_SECRET is required."
+            )
 
         embed_model = (
             self.llm_config_model.embed_model
         )
 
         return OllamaClient(
-            client=cli,
+            host=host,
+            api_key=api_key,
+            client_secret=client_secret,
             embed_model=(
                 DEFAULT_OLLAMA_EMBED
                 if not embed_model
                 else embed_model
             ),
             model=self.llm_config_model.model,
-            **kwargs
+            async_mode=self.llm_config_model.async_mode,
+            **kwargs,
         )
 
     # ============================================================
