@@ -47,3 +47,11 @@ mcp_handler = MCPHandler(
     sse_url="http://0.0.0.0:8080/sse"
 )
 ```
+
+### Parallel Search example
+
+The [runnable Parallel Search example](https://github.com/superagentxai/superagentx/tree/master/examples/mcp)
+uses the existing stdio handler and engine with a pinned `mcp-remote` bridge to
+the Streamable HTTP endpoint at `https://search.parallel.ai/mcp`. Parallel Search
+is free, keyless and opt-in. The example documents Node.js setup, LLM configuration
+and focused tests, and prints search excerpts with source URLs.
